@@ -11,7 +11,6 @@ public class HelloworldApplication {
 	public static void main(String[] args) {
 		args = new String[] { "--from", "Ruben", "--to", "ChatGPT" };
 		SpringApplication.run(HelloworldApplication.class, args);
-		HelloWorld.main(args);
+		HelloWorld.SayHello(args);
 	}
-
 }

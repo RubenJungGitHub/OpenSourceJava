@@ -6,7 +6,7 @@ import static org.fusesource.jansi.Ansi.*;
 public class HelloWorld {
         public static final String RED = "\u001B[31m";
 
-        public static void main(String[] args) {
+        public static void SayHello(String[] args) {
                 if (args == null || args.length == 0) {
                         args = new String[] { "--from", "Ruben", "--to", "ChatGPT" };
                 }
