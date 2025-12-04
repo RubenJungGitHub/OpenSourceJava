@@ -48,12 +48,6 @@ public class HelloWorldController {
         return "Hello world, " + to + " from " + from + "!";              
     }
 
-    // POST endpoint: /users
-    @PostMapping("/users")
-    public String createUser(@RequestBody String userJson) {
-        // Normally, you'd parse userJson and save it
-        return "Created user: " + userJson;
-    }
 
     @GetMapping("/GetGraphToken")
     public String getGraphToken() {
