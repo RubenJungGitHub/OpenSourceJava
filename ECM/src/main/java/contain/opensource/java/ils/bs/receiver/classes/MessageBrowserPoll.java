@@ -1,4 +1,4 @@
-package contain.opensource.java.helloworld.classes;
+package contain.opensource.java.ils.bs.receiver.classes;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -13,7 +13,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.java.helloworld.constants.NodeType;
+import contain.opensource.java.ils.bs.receiver.constants.NodeType;
 
 public class MessageBrowserPoll {
 

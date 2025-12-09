@@ -1,12 +1,13 @@
-package contain.opensource.java.helloworld.constants;
+package contain.opensource.java.ils.bs.receiver.constants;
 
 public enum NodeType {
     NODEADDED,
-    NODEUPDATED,  //unsure if this is correct
+    NODEUPDATED, // unsure if this is correct
     NODEDELETED;
 
-        public static NodeType fromString(String value) {
-        if (value == null) return null;
+    public static NodeType fromString(String value) {
+        if (value == null)
+            return null;
 
         try {
             return NodeType.valueOf(value.toUpperCase());

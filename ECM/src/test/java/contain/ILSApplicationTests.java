@@ -1,10 +1,10 @@
-package contain.opensource.java.helloworld;
+package contain;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class HelloworldApplicationTests {
+class ILSApplicationTests {
 
 	@Test
 	void contextLoads() {

@@ -1,16 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\helloworld",
-    "\\helloworld\\src",
-    "\\helloworld\\src\\main",
-    "\\helloworld\\src\\main\\java",
-    "\\helloworld\\src\\main\\java\\contain",
-    "\\helloworld\\src\\main\\java\\contain\\opensource",
-    "\\helloworld\\src\\main\\java\\contain\\opensource\\java",
-    "\\helloworld\\src\\main\\java\\contain\\opensource\\java\\helloworld",
-    "\\helloworld\\src\\main\\java\\contain\\opensource\\java\\helloworld\\services"
+    "\\ILS",
+    "\\ILS\\src",
+    "\\ILS\\src\\main",
+    "\\ILS\\src\\main\\java",
+    "\\ILS\\src\\main\\java\\contain",
+    "\\ILS\\src\\main\\java\\contain\\opensource",
+    "\\ILS\\src\\main\\java\\contain\\opensource\\java",
+    "\\ILS\\src\\main\\java\\contain\\opensource\\java\\ILS",
+    "\\ILS\\src\\main\\java\\contain\\opensource\\java\\ILS\\services"
   ],
-  "SelectedNode": "\\helloworld\\src\\main\\java\\contain\\opensource\\java\\helloworld\\HelloworldApplication.java",
+  "SelectedNode": "\\ILS\\src\\main\\java\\contain\\opensource\\java\\ILS\\ILSApplication.java",
   "PreviewInSolutionExplorer": false
 }

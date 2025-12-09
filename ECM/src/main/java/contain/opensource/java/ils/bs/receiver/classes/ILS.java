@@ -1,9 +1,9 @@
-package contain.opensource.java.helloworld.classes;
+package contain.opensource.java.ils.bs.receiver.classes;
 
 import org.fusesource.jansi.AnsiConsole;
 import static org.fusesource.jansi.Ansi.*;
 
-public class HelloWorld {
+public class ILS {
         public static final String RED = "\u001B[31m";
 
         public static void SayHello(String[] args) {
@@ -33,6 +33,6 @@ public class HelloWorld {
                                 .fgGreen().a(" from " + from + "!")
                                 .reset());
 
-                //System.out.println("This text should appear in the default color.");
+                // System.out.println("This text should appear in the default color.");
         }
 }

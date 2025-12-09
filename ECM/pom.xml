@@ -10,9 +10,9 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>contain.opensource.java</groupId>
-	<artifactId>helloworld</artifactId>
+	<artifactId>ILS</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>helloworld</name>
+	<name>ILS</name>
 	<description>Demo project for Spring Boot</description>
 	<url />
 	<licenses>

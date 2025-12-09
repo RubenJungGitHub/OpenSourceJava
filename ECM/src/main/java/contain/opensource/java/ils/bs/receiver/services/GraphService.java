@@ -1,27 +1,27 @@
-package contain.opensource.java.helloworld.services;
+package contain.opensource.java.ils.bs.receiver.services;
 
-import com.microsoft.aad.msal4j.*;
-
-import io.swagger.v3.oas.annotations.Parameter;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.UUID;
 import java.net.MalformedURLException;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Service;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.aad.msal4j.ClientCredentialFactory;
+import com.microsoft.aad.msal4j.ClientCredentialParameters;
+import com.microsoft.aad.msal4j.ConfidentialClientApplication;
+import com.microsoft.aad.msal4j.IAuthenticationResult;
+
+import io.swagger.v3.oas.annotations.Parameter;
 
 @Service
 public class GraphService {
@@ -57,19 +57,22 @@ public class GraphService {
         return this.accessToken;
     }
 
-    /*public String updateItemUUIDGraphAPI(
-            @Parameter(description = "Site ID") @RequestParam String siteId,
-            @Parameter(description = "List ID") @RequestParam String listId,
-            @Parameter(description = "List Item ID") @RequestParam String listItemId,
-            @Parameter(description = "Term Label") @RequestParam String termLabel
-     )
-            */
-            public String updateItemUUIDGraphAPI(
-            @Parameter(description = "List Item ID") @RequestParam String listItemId
-     )
-            {
+    /*
+     * public String updateItemUUIDGraphAPI(
+     * 
+     * @Parameter(description = "Site ID") @RequestParam String siteId,
+     * 
+     * @Parameter(description = "List ID") @RequestParam String listId,
+     * 
+     * @Parameter(description = "List Item ID") @RequestParam String listItemId,
+     * 
+     * @Parameter(description = "Term Label") @RequestParam String termLabel
+     * )
+     */
+    public String updateItemUUIDGraphAPI(
+            @Parameter(description = "List Item ID") @RequestParam String listItemId) {
         try {
-            //First obtain new UUID and accesstoken 
+            // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
             String uuid = GetUUID();
             HttpClient client = HttpClient.newHttpClient();
@@ -83,14 +86,15 @@ public class GraphService {
             String json = objectMapper.writeValueAsString(body);
 
             // Build endpoint
-           /*   String endpoint = String.format(
-                    "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
-                    siteId, listId, listItemId);
-                    */
-                       String endpoint = String.format(
+            /*
+             * String endpoint = String.format(
+             * "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
+             * siteId, listId, listItemId);
+             */
+            String endpoint = String.format(
                     "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
                     SiteID, ListId, listItemId);
-            
+
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
                     .header("Authorization", "Bearer " + AccessToken)
@@ -115,11 +119,11 @@ public class GraphService {
         }
     }
 
-        private static String GetUUID() {
+    private static String GetUUID() {
         // Generate a random UUID
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
         // Print the UUID
-        //System.out.println("Generated UUID: " + uuid.toString());
+        // System.out.println("Generated UUID: " + uuid.toString());
     }
 }
