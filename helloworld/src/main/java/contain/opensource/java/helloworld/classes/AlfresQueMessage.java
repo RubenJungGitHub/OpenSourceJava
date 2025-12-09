@@ -4,6 +4,8 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import contain.opensource.java.helloworld.constants.NodeType;
+
 @JsonIgnoreProperties(ignoreUnknown = true) 
 public class AlfresQueMessage {
        private String id;

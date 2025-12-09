@@ -13,6 +13,8 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import contain.opensource.java.helloworld.constants.NodeType;
+
 public class MessageBrowserPoll {
 
     public static void ReadMessages(String[] args) {
@@ -95,8 +97,10 @@ public class MessageBrowserPoll {
                             System.out.println("Username: " + QMessage.getUsername());
                             System.out.println("Type: " + QMessage.getType());
                             System.out.println("Timestamp: " + QMessage.getTimestamp());
-                            if (QMessage.getType() != null && !QMessage.getType().isEmpty()) 
-                            {
+                            String type = QMessage.getType();
+                            NodeType nodeType = NodeType.fromString(type);
+                            String a = "";
+                            if (nodeType != null) {
                                 System.out.println("NodeType : " + QMessage.getType());
                                 System.out.println("NodeId : " + QMessage.getNodeId());
                             }

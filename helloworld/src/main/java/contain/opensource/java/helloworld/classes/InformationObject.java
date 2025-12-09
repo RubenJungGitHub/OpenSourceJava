@@ -1,10 +1,11 @@
 package contain.opensource.java.helloworld.classes;
-
+import contain.opensource.java.helloworld.constants.NodeType;
 public class InformationObject {
     private String Title;
     private String UUID;
     private String id;
     private String Content;
+    private NodeType nodeType;
         // getters and setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
