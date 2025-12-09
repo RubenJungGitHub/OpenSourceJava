@@ -1,17 +1,17 @@
 package contain.opensource.java.helloworld.classes;
 
-import javax.jms.*;
-/*import javax.jms.Connection;
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.MessageConsumer;
+import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import java.util.Enumeration;
-import javax.jms.QueueBrowser;
-*/
+
 import org.apache.activemq.ActiveMQConnectionFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MessageBrowserPoll {
 
@@ -35,10 +35,9 @@ public class MessageBrowserPoll {
             // Create a QueueBrowser (does NOT consume)
             // QueueBrowser browser = session.createBrowser(queue);
 
-   
             while (true) {
                 try {
-                    //To be replaced with logger
+                    // To be replaced with logger
                     System.out.println("Sleeping 5 seconds...");
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
@@ -83,11 +82,29 @@ public class MessageBrowserPoll {
             Message msg;
             while ((msg = consumer.receiveNoWait()) != null) {
                 try {
+                    String json = "";
                     final String RED = "\u001B[31m";
                     final String RESET = "\u001B[0m";
                     if (msg instanceof TextMessage) {
                         TextMessage text = (TextMessage) msg;
-                        System.out.println(RED + "Processing message: " + text.getText() + RESET);
+                        json = text.getText();
+                        ObjectMapper mapper = new ObjectMapper();
+                        try {
+                            AlfresQueMessage QMessage = mapper.readValue(json, AlfresQueMessage.class);
+                            System.out.println("ID: " + QMessage.getId());
+                            System.out.println("Username: " + QMessage.getUsername());
+                            System.out.println("Type: " + QMessage.getType());
+                            System.out.println("Timestamp: " + QMessage.getTimestamp());
+                            if (QMessage.getType() != null && !QMessage.getType().isEmpty()) 
+                            {
+                                System.out.println("NodeType : " + QMessage.getType());
+                                System.out.println("NodeId : " + QMessage.getNodeId());
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println(RED + "Processing message: " + json + RESET);
                     } else {
                         System.out.println(RED + "Processing non-text message: " + msg + RESET);
                     }
@@ -105,6 +122,6 @@ public class MessageBrowserPoll {
             e.printStackTrace();
         }
         System.out.println("No remaining messages on queue");
-  
+
     }
 }
