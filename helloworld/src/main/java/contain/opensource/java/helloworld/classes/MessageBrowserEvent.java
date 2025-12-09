@@ -1,6 +1,5 @@
 package contain.opensource.java.helloworld.classes;
 
-//import jakarta.jms.*;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -9,7 +8,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-public class MessageBrowser {
+public class MessageBrowserEvent {
     public static void ReadMessages(String[] args) {
         try {
 
