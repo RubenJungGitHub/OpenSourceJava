@@ -99,10 +99,13 @@ public class MessageBrowserPoll {
                             System.out.println("Timestamp: " + QMessage.getTimestamp());
                             String type = QMessage.getType();
                             NodeType nodeType = NodeType.fromString(type);
-                            String a = "";
                             if (nodeType != null) {
                                 System.out.println("NodeType : " + QMessage.getType());
                                 System.out.println("NodeId : " + QMessage.getNodeId());
+                                //Call Alfresco object controller 
+
+                                
+
                             }
 
                         } catch (Exception e) {
