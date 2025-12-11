@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -21,12 +27,18 @@ import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 
+import contain.opensource.java.ils.bs.receiver.classes.AlfrescoNodeResponse;
 import io.swagger.v3.oas.annotations.Parameter;
 
 @Service
 public class GraphService {
 
     // Use your own tenant, clientId, clientSecret
+    // ====================================================================
+    // ====================================================================
+    // This obviously should be stored secure soewhere in the future!!!!
+    // ====================================================================
+    // ====================================================================
     private final String tenantId = "9a1b5f77-1f1a-40ac-b1a1-38617300f02a";
     private final String clientId = "f590b477-5bd7-47d6-8bda-36f77fa10afd";
     private final String clientSecret = "pE.8Q~ZQRGngJ1YliTP4EDC5bejaEl72LlBAzb50";
@@ -125,5 +137,33 @@ public class GraphService {
         return uuid.toString();
         // Print the UUID
         // System.out.println("Generated UUID: " + uuid.toString());
+    }
+
+    public void uploadAlfrescoNodeToSP(AlfrescoNodeResponse node) {
+        try {
+            // First obtain new UUID and accesstoken
+            String AccessToken = getGraphToken();
+            // String endpoint =
+            // "https://{tenant}.sharepoint.com/sites/{site}/_api/web/lists(guid'{listId}')/items({itemId})";
+            String endPoint = "https://" + this.tenantId+ ".sharepoint.com/sites/"+ this.SiteID + "/_api/web/GetFolderByServerRelativeUrl('Shared Documents')/Files/add(url='"+  node.entry.name + "',overwrite=true)";
+            HttpPost post = new HttpPost(endPoint);
+            post.setHeader("Authorization", "Bearer " + accessToken);
+            post.setHeader("Accept", "application/json;odata=verbose");
+            post.setHeader("Content-Type", "application/json;odata=verbose");
+            post.setHeader("IF-MATCH", "*");
+            post.setHeader("X-HTTP-Method", "MERGE");
+
+            String jsonBody = "{ \"UUID\": \"" + node.entry.properties.otherProperties.get("RJTM:UUID") + "\", " +
+                    "\"Title\": \"" + node.entry.name + "\" }";
+
+            post.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
+
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
+                var response = client.execute(post);
+                System.out.println(EntityUtils.toString(response.getEntity()));
+            }
+        }
+         catch (Exception e) {
+        }
     }
 }

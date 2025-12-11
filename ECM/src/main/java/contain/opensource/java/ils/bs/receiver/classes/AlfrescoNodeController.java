@@ -48,11 +48,30 @@ public class AlfrescoNodeController {
           try {
             alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
             // Check if UUID present
-            //Get node content 
+            // Get node content
             
-            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:UUID").toString();
+            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:UUID")
+                .toString();
+            alfresconNodeResponse.MoveTo = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:MoveTo")
+                .toString();
+            //Get node content 
             GetNodeContent();
-            alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null);
+            try {
+              alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null);
+            } catch (java.lang.NullPointerException e) {
+              // No action. UUID not present
+            } catch (Exception e) {
+              System.err.println("Exception UUID : " + e);
+              e.printStackTrace();
+            }
+            try {
+              alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NOMOVE>")); // IMPROVE!! SHOULD ALSO CHECK IF NOT FROM ALFRESCO TO ALFRESCO!!!! (Unless different instance)
+            } catch (java.lang.NullPointerException e) {
+              // No action. UUID not present
+            } catch (Exception e) {
+              System.err.println("Exceptionsetting moveto : " + e);
+              e.printStackTrace();
+            }
           } catch (java.lang.NullPointerException e) {
             // No action. UUID not present
           } catch (Exception e) {
@@ -91,7 +110,8 @@ public class AlfrescoNodeController {
   }
 
   private void GetNodeContent() {
-    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "/content";
+    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId
+        + "/content";
     // var response = ProcessGetRequest(endpoint); SocketException
     String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
 
@@ -108,6 +128,8 @@ public class AlfrescoNodeController {
 
         try {
           this.alfresconNodeResponse.Content = json;
+          this.alfresconNodeResponse.file = response.getEntity().getContent().readAllBytes();
+
         } catch (java.lang.NullPointerException e) {
           // No action. UUID not present
         } catch (Exception e) {
@@ -115,7 +137,8 @@ public class AlfrescoNodeController {
           e.printStackTrace();
         }
         System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.CYAN
-            + "NodeUUID : " + this.alfresconNodeResponse.UUID + " ->" + this.alfresconNodeResponse.entry.name +  "--> Content " + this.alfresconNodeResponse.Content
+            + "NodeUUID : " + this.alfresconNodeResponse.UUID + " ->" + this.alfresconNodeResponse.entry.name
+            + "--> Content " + this.alfresconNodeResponse.Content
             + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
       } else {
         throw new RuntimeException("Unexpected status: " + status);
@@ -181,5 +204,15 @@ public class AlfrescoNodeController {
       System.err.println("Exception updating field:");
       e.printStackTrace();
     }
+  }
+
+  public void MoveNode() {
+    ///==================================================    
+    /// NOTE> NO VERSIONING AND COPY CONTROLS INCLUDED!!!
+    ///==================================================
+
+
+
+
   }
 }

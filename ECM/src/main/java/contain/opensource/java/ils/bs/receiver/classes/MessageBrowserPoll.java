@@ -38,6 +38,9 @@ public class MessageBrowserPoll {
 
             // The queue you want to inspect
             Queue queue = session.createQueue("Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes");
+            ///================================================================================================================================
+            /// TODO. HANGS ON CINSUMER CLOSED IF ALFRESCO SSERVER IS BROUGHT DOWN. CHECK MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
+            ///================================================================================================================================
             final MessageConsumer consumer = session.createConsumer(queue); // ✅ Create a consumer
             // Create a QueueBrowser (does NOT consume)
             // QueueBrowser browser = session.createBrowser(queue);
@@ -55,24 +58,6 @@ public class MessageBrowserPoll {
                 e.printStackTrace();
             }
 
-            /*
-             * /
-             * while (true) {
-             * try {
-             * // To be replaced with logger
-             * System.out.println("Sleeping 5 seconds...");
-             * Thread.sleep(5000);
-             * } catch (InterruptedException e) {
-             * System.err.println("Sleep was interrupted");
-             * e.printStackTrace();
-             * // optional: break the loop if interrupted
-             * break;
-             * }
-             * // Message msg = consumer.receiveNoWait();
-             * System.out.println("Browsing messages in queue: " + queue.getQueueName());
-             * StartPoll(consumer);
-             * }
-             */
             // Cleanup
             // browser.close();
             session.close();
@@ -110,8 +95,10 @@ public class MessageBrowserPoll {
                         ObjectMapper mapper = new ObjectMapper();
                         try {
                             AlfresQueMessage QMessage = mapper.readValue(json, AlfresQueMessage.class);
-
                             String type = QMessage.getType();
+                            //===========================================================================================
+                            //TO BE MANAGED BY RULE-ENGINE AND GENERATOR
+                            //===========================================================================================
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
                                 System.out.println("ID: " + QMessage.getId());
@@ -130,6 +117,12 @@ public class MessageBrowserPoll {
                                     if (!aController.alfresconNodeResponse.HasUUID) {
                                         // Set UUID
                                         aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.empty());
+                                    }
+                                    if(aController.alfresconNodeResponse.MustMove)
+                                    {
+                                        
+                                        // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
+
                                     }
                                 }
                             }

@@ -58,6 +58,6 @@ public class ILSController {
                 .reset());
 
         // Return a string to the REST client
-        return "Hello worl staticd, " + to + " from " + from + "!";
+        return "Hello world static, " + to + " from " + from + "!";
     }
 }

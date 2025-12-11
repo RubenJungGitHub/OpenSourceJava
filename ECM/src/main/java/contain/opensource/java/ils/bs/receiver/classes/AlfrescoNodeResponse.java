@@ -9,9 +9,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AlfrescoNodeResponse {
     public boolean HasUUID = false;
+    public boolean MustMove = false;
     public String  UUID;
+    public  String MoveTo;
     public String  Content;
     public Entry entry;
+    public byte[] file;
 
     public static class Entry {
         public boolean isFile;
