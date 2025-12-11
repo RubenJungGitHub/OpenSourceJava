@@ -32,8 +32,7 @@ public class AlfrescoNodeController {
   public void GetNode() {
     try {
       String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
-      String auth = Base64.getEncoder()
-          .encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+      String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
 
       try (CloseableHttpClient client = HttpClients.createDefault()) {
 
@@ -49,8 +48,10 @@ public class AlfrescoNodeController {
           try {
             alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
             // Check if UUID present
-            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:UUID")
-                .toString();
+            //Get node content 
+            
+            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:UUID").toString();
+            GetNodeContent();
             alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null);
           } catch (java.lang.NullPointerException e) {
             // No action. UUID not present
@@ -90,8 +91,7 @@ public class AlfrescoNodeController {
   }
 
   private void GetNodeContent() {
-    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId
-        + "/content";
+    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "/content";
     // var response = ProcessGetRequest(endpoint); SocketException
     String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
 
@@ -115,7 +115,7 @@ public class AlfrescoNodeController {
           e.printStackTrace();
         }
         System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.CYAN
-            + "Node" + this.nodeId + " Content " + json
+            + "NodeUUID : " + this.alfresconNodeResponse.UUID + " ->" + this.alfresconNodeResponse.entry.name +  "--> Content " + this.alfresconNodeResponse.Content
             + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
       } else {
         throw new RuntimeException("Unexpected status: " + status);

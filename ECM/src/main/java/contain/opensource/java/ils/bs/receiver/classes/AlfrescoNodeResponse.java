@@ -1,11 +1,11 @@
 package contain.opensource.java.ils.bs.receiver.classes;
 
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AlfrescoNodeResponse {
     public boolean HasUUID = false;
@@ -64,8 +64,6 @@ public class AlfrescoNodeResponse {
     public void setOtherProperty(String key, Object value) {
         otherProperties.put(key, value);
     }
-
-
         public String actionContext;
     }
 }

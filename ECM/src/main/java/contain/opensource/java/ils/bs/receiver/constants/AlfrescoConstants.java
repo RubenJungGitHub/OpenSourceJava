@@ -16,7 +16,7 @@ public class AlfrescoConstants {
     public enum NodeType {
         NODEADDED,
         NODEUPDATED, // unsure if this is correct
-        NODEDELETED;
+        NODEREMOVED;
 
         public static NodeType fromString(String value) {
             if (value == null)

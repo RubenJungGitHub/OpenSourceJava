@@ -104,28 +104,33 @@ public class MessageBrowserPoll {
             while ((msg = consumer.receiveNoWait()) != null) {
                 try {
                     String json = "";
-
                     if (msg instanceof TextMessage) {
                         TextMessage text = (TextMessage) msg;
                         json = text.getText();
                         ObjectMapper mapper = new ObjectMapper();
                         try {
                             AlfresQueMessage QMessage = mapper.readValue(json, AlfresQueMessage.class);
-                            System.out.println("ID: " + QMessage.getId());
-                            System.out.println("Username: " + QMessage.getUsername());
-                            System.out.println("Type: " + QMessage.getType());
-                            System.out.println("Timestamp: " + QMessage.getTimestamp());
+
                             String type = QMessage.getType();
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
+                                System.out.println("ID: " + QMessage.getId());
+                                System.out.println("Username: " + QMessage.getUsername());
+                                System.out.println("Type: " + QMessage.getType());
+                                System.out.println("Timestamp: " + QMessage.getTimestamp());
                                 System.out.println("NodeType : " + QMessage.getType());
                                 System.out.println("NodeId : " + QMessage.getNodeId());
                                 // Call Alfresco object controller
                                 AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
-                                aController.GetNode();
-                                if (!aController.alfresconNodeResponse.HasUUID) {
-                                    // Set UUID
-                                    aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.empty());
+                                if (nodeType.equals(NodeType.NODEREMOVED)) {
+                                    // Only for ballenbak
+
+                                } else {
+                                    aController.GetNode();
+                                    if (!aController.alfresconNodeResponse.HasUUID) {
+                                        // Set UUID
+                                        aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.empty());
+                                    }
                                 }
                             }
 
