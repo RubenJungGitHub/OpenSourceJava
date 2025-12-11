@@ -4,7 +4,6 @@ import org.fusesource.jansi.AnsiConsole;
 import static org.fusesource.jansi.Ansi.*;
 
 public class ILS {
-        public static final String RED = "\u001B[31m";
 
         public static void SayHello(String[] args) {
                 if (args == null || args.length == 0) {

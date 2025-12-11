@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -70,10 +71,64 @@ public class AlfrescoNodeController {
     }
   }
 
+  private CloseableHttpResponse ProcessGetRequest(String endpoint) {
+    CloseableHttpResponse response = null;
+    String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+
+    try (CloseableHttpClient client = HttpClients.createDefault()) {
+
+      HttpGet request = new HttpGet(endpoint);
+      request.setHeader("Authorization", "Basic " + auth);
+
+      response = client.execute(request);
+
+    } catch (Exception e) {
+      System.err.println("Exception getting node : " + e);
+      e.printStackTrace();
+    }
+    return response;
+  }
+
+  private void GetNodeContent() {
+    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId
+        + "/content";
+    // var response = ProcessGetRequest(endpoint); SocketException
+    String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+
+    try (CloseableHttpClient client = HttpClients.createDefault()) {
+
+      HttpGet request = new HttpGet(endpoint);
+      request.setHeader("Authorization", "Basic " + auth);
+
+      var response = client.execute(request);
+
+      int status = response.getCode();
+      if (status == 200 && response != null) {
+        String json = EntityUtils.toString(response.getEntity());
+
+        try {
+          this.alfresconNodeResponse.Content = json;
+        } catch (java.lang.NullPointerException e) {
+          // No action. UUID not present
+        } catch (Exception e) {
+          System.err.println("Exception getting node : " + e);
+          e.printStackTrace();
+        }
+        System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.CYAN
+            + "Node" + this.nodeId + " Content " + json
+            + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+      } else {
+        throw new RuntimeException("Unexpected status: " + status);
+      }
+    } catch (Exception e) {
+      System.err.println("Exception getting node : " + e);
+      e.printStackTrace();
+    }
+  }
+
   public void UpdateNode(NodeTypeFields field, Optional<String> fieldValue) {
     try {
       String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
-
       // Map enum to Alfresco property
       String propertyName;
       String propertyValue = fieldValue.orElse("Dummy");
@@ -127,5 +182,4 @@ public class AlfrescoNodeController {
       e.printStackTrace();
     }
   }
-
 }
