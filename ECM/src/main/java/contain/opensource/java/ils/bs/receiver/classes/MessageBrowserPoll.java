@@ -122,6 +122,7 @@ public class MessageBrowserPoll {
                                     {
                                         
                                         // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
+                                        aController.MoveNode();
 
                                     }
                                 }

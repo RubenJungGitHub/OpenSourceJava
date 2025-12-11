@@ -16,6 +16,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
+import contain.opensource.java.ils.bs.receiver.services.GraphService;
 
 public class AlfrescoNodeController {
   String nodeId;
@@ -121,14 +122,14 @@ public class AlfrescoNodeController {
       request.setHeader("Authorization", "Basic " + auth);
 
       var response = client.execute(request);
-
+      this.alfresconNodeResponse.file = response.getEntity().getContent().readAllBytes();
       int status = response.getCode();
       if (status == 200 && response != null) {
         String json = EntityUtils.toString(response.getEntity());
 
         try {
           this.alfresconNodeResponse.Content = json;
-          this.alfresconNodeResponse.file = response.getEntity().getContent().readAllBytes();
+
 
         } catch (java.lang.NullPointerException e) {
           // No action. UUID not present
@@ -210,7 +211,8 @@ public class AlfrescoNodeController {
     ///==================================================    
     /// NOTE> NO VERSIONING AND COPY CONTROLS INCLUDED!!!
     ///==================================================
-
+    GraphService GService = new GraphService();
+    GService.uploadAlfrescoNodeToSP(alfresconNodeResponse);
 
 
 
