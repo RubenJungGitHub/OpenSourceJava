@@ -1,6 +1,10 @@
 package contain.opensource.java.ils.bs.receiver.classes;
 
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -14,19 +18,14 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
-
-import contain.opensource.java.ils.bs.receiver.classes.AlfrescoNodeController;
 import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants;
-
-
+import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
 
 public class MessageBrowserPoll {
 
     public static void ReadMessages(String[] args) {
         Connection connection = null;
         Session session = null;
-        MessageConsumer consumer = null;
         try {
             // Connect to ActiveMQ
             ConnectionFactory factory = new ActiveMQConnectionFactory("tcp://localhost:61616");
@@ -39,26 +38,41 @@ public class MessageBrowserPoll {
 
             // The queue you want to inspect
             Queue queue = session.createQueue("Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes");
-            consumer = session.createConsumer(queue); // ✅ Create a consumer
+            final MessageConsumer consumer = session.createConsumer(queue); // ✅ Create a consumer
             // Create a QueueBrowser (does NOT consume)
             // QueueBrowser browser = session.createBrowser(queue);
 
-            while (true) {
-                try {
-                    // To be replaced with logger
-                    System.out.println("Sleeping 5 seconds...");
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    System.err.println("Sleep was interrupted");
-                    e.printStackTrace();
-                    // optional: break the loop if interrupted
-                    break;
-                }
-                // Message msg = consumer.receiveNoWait();
-                System.out.println("Browsing messages in queue: " + queue.getQueueName());
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.scheduleAtFixedRate(() -> {
+                System.out.println("Polling messages...");
                 StartPoll(consumer);
+            }, 0, 5, TimeUnit.SECONDS);
+
+            // Keep the main thread alive indefinitely
+            try {
+                Thread.currentThread().join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
+            /*
+             * /
+             * while (true) {
+             * try {
+             * // To be replaced with logger
+             * System.out.println("Sleeping 5 seconds...");
+             * Thread.sleep(5000);
+             * } catch (InterruptedException e) {
+             * System.err.println("Sleep was interrupted");
+             * e.printStackTrace();
+             * // optional: break the loop if interrupted
+             * break;
+             * }
+             * // Message msg = consumer.receiveNoWait();
+             * System.out.println("Browsing messages in queue: " + queue.getQueueName());
+             * StartPoll(consumer);
+             * }
+             */
             // Cleanup
             // browser.close();
             session.close();
@@ -67,11 +81,7 @@ public class MessageBrowserPoll {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (consumer != null)
-                    consumer.close();
-            } catch (Exception ignored) {
-            }
+
             try {
                 if (session != null)
                     session.close();
@@ -87,12 +97,14 @@ public class MessageBrowserPoll {
 
     public static void StartPoll(MessageConsumer consumer) {
         try {
+            System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.YELLOW
+                    + "New poll loop Processing"
+                    + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
             Message msg;
             while ((msg = consumer.receiveNoWait()) != null) {
                 try {
                     String json = "";
-                    final String RED = "\u001B[31m";
-                    final String RESET = "\u001B[0m";
+
                     if (msg instanceof TextMessage) {
                         TextMessage text = (TextMessage) msg;
                         json = text.getText();
@@ -108,25 +120,28 @@ public class MessageBrowserPoll {
                             if (nodeType != null) {
                                 System.out.println("NodeType : " + QMessage.getType());
                                 System.out.println("NodeId : " + QMessage.getNodeId());
-                                //Call Alfresco object controller 
+                                // Call Alfresco object controller
                                 AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
                                 aController.GetNode();
-                                if(!aController.alfresconNodeResponse.HasUUID)
-                                {
-                                    aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,Optional.empty());
-                                    //Set UUID
+                                if (!aController.alfresconNodeResponse.HasUUID) {
+                                    // Set UUID
+                                    aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.empty());
                                 }
                             }
 
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        System.out.println(RED + "Processing message: " + json + RESET);
+                        System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RED
+                                + "Processing message: " + json
+                                + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                     } else {
-                        System.out.println(RED + "Processing non-text message: " + msg + RESET);
+                        System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RED
+                                + "Processing non-text message: " + msg
+                                + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                     }
 
-                  //  msg.acknowledge(); // only removes message after successful processing
+                    msg.acknowledge(); // only removes message after successful processing
                     System.out.println("Message acknowledged (removed from queue).");
 
                 } catch (JMSException processingError) {
