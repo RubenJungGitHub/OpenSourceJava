@@ -1,5 +1,6 @@
 package contain.opensource.java.ils.bs.receiver.classes;
 
+import java.util.Optional;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -13,7 +14,12 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.java.ils.bs.receiver.constants.NodeType;
+import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
+
+import contain.opensource.java.ils.bs.receiver.classes.AlfrescoNodeController;
+import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants;
+
+
 
 public class MessageBrowserPoll {
 
@@ -103,9 +109,13 @@ public class MessageBrowserPoll {
                                 System.out.println("NodeType : " + QMessage.getType());
                                 System.out.println("NodeId : " + QMessage.getNodeId());
                                 //Call Alfresco object controller 
-
-                                
-
+                                AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
+                                aController.GetNode();
+                                if(!aController.alfresconNodeResponse.HasUUID)
+                                {
+                                    aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,Optional.empty());
+                                    //Set UUID
+                                }
                             }
 
                         } catch (Exception e) {
@@ -116,7 +126,7 @@ public class MessageBrowserPoll {
                         System.out.println(RED + "Processing non-text message: " + msg + RESET);
                     }
 
-                    msg.acknowledge(); // only removes message after successful processing
+                  //  msg.acknowledge(); // only removes message after successful processing
                     System.out.println("Message acknowledged (removed from queue).");
 
                 } catch (JMSException processingError) {

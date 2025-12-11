@@ -1,6 +1,6 @@
 package contain.opensource.java.ils.bs.receiver.classes;
 
-import contain.opensource.java.ils.bs.receiver.constants.NodeType;
+import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
 
 public class InformationObject {
     private String Title;
