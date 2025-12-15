@@ -15,6 +15,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
@@ -48,8 +49,17 @@ public class AlfrescoNodeController {
           String json = EntityUtils.toString(response.getEntity());
 
           ObjectMapper mapper = new ObjectMapper();
+          JsonNode rootNode = mapper.readTree(json);
+
+
           try {
             alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
+
+            // Navigate to the title
+            alfresconNodeResponse.Title =  rootNode.path("entry")
+              .path("properties")
+              .path("cm:title")
+              .asText(); 
             // Check if UUID present
             // Get node content
 
@@ -116,9 +126,11 @@ public class AlfrescoNodeController {
     }
     return response;
   }
-private void GetNodeContent() throws IOException {
 
-    String endpoint =  "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "/content";
+  private void GetNodeContent() throws IOException {
+
+    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId
+        + "/content";
 
     String auth = Base64.getEncoder()
         .encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
@@ -127,17 +139,16 @@ private void GetNodeContent() throws IOException {
     request.setHeader("Authorization", "Basic " + auth);
 
     try (CloseableHttpClient client = HttpClients.createDefault();
-         CloseableHttpResponse response = client.execute(request);
-         InputStream in = response.getEntity().getContent()) {
+        CloseableHttpResponse response = client.execute(request);
+        InputStream in = response.getEntity().getContent()) {
 
-        if (response.getCode() != 200) {
-            throw new IOException("HTTP error " + response.getCode());
-        }
+      if (response.getCode() != 200) {
+        throw new IOException("HTTP error " + response.getCode());
+      }
 
-        this.alfresconNodeResponse.file = in.readAllBytes();
+      this.alfresconNodeResponse.file = in.readAllBytes();
     }
-}
-
+  }
 
   public void UpdateNode(NodeTypeFields field, Optional<String> fieldValue) {
     try {

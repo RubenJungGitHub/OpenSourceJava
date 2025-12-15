@@ -6,7 +6,7 @@ public class AlfrescoConstants {
     public final static String  RESET = "\u001B[0m";
     public final static String YELLOW = "\u001B[33m";
     public static final String CYAN    = "\u001B[36m";
-    public static final String MAGENTA  = "\u001B[35m";  
+    public static final String MAGENTA  = "\u001B[35m";
 
     public enum NodeTypeFields {
         UUID,

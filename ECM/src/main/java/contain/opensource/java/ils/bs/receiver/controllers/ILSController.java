@@ -31,10 +31,10 @@ public class ILSController {
         }
     }
 
-    @PostMapping("/UpdateItemUUIDGraphAPI/{listItemId}")
+    @PostMapping("/UpdateSharepointItemGraphAPI/{listItemId}")
     public String UpdateItemUUIDGraphAPI(@PathVariable("listItemId") String listItemId) {
         try {
-            String retval = graphService.updateItemUUIDGraphAPI(listItemId); // now works
+            String retval = graphService.updateSharepointItemGraphAPI(listItemId); // now works
             return retval;
         } catch (Exception e) {
             e.printStackTrace();
