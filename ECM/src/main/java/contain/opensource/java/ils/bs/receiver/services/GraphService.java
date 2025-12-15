@@ -117,7 +117,6 @@ public class GraphService {
         }
     }
 
-    
     public String updateSharepointItemGraphAPI(AlfrescoNodeResponse node, String listItemId) {
         try {
             // First obtain new UUID and accesstoken
@@ -204,46 +203,15 @@ public class GraphService {
             // Step 1 : Get new listitemid
             String listItemId = getListItemId(driveId, driveItemId);
             String retval = updateSharepointItemGraphAPI(node, listItemId);
-            //Nothing yet implemented if failed. Should be in transaction/Persistance
-
-
-            // Step 2: Update metadata (UUID, Title, etc.)
-            
-
-            /*String metaUrl = "https://" + tenantDomain +
-                    "/sites/" + SiteName +
-                    "/_api/web/lists(guid'" + ListId + "')/items(" + listItemId + ")";
-            HttpPost metaPost = new HttpPost(metaUrl);
-            metaPost.setHeader("Authorization", "Bearer " + accessToken);
-            metaPost.setHeader("Accept", "application/json;odata=verbose");
-            metaPost.setHeader("Content-Type", "application/json;odata=verbose");
-            metaPost.setHeader("IF-MATCH", "*");
-            metaPost.setHeader("X-HTTP-Method", "MERGE");
-
-            String uuid = (String) node.entry.properties.otherProperties.get("RJTM:UUID");
-            String jsonBody = "{ \"ContAInUUID\": \"" + uuid + "\", " +
-                    "\"Title\": \"" + node.Title + "\" }";
-            // metaPost.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
-            // HttpClient 5 – correct entity
-            metaPost.setEntity(new StringEntity(
-                    jsonBody,
-                    ContentType.APPLICATION_JSON));
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                var metaResponse = client.execute(metaPost);
-                System.out.println("File uploaded and metadata set for item: " + listItemId);
-            } catch (Exception e) {
-                System.err.println("Failed to move Alfresco node: " + e);
-                e.printStackTrace();
-            }
-            */
-            // To do Remove from Alfresco
+            // Function should return something in the future for transaction purposes
 
         } catch (Exception e) {
             System.err.println("Failed to move Alfresco node: " + e);
             e.printStackTrace();
         }
     }
+
+
 
     private String getDriveID() {
         try {
@@ -286,7 +254,8 @@ public class GraphService {
         try {
             // Give SP time to process
             String listItemId = "";
-
+            int retryCount  = 10;
+            int retryCounter = 0;
             // Now get lisitemID to also update metadatafields To do check null
             String endPoint = String.format("https://graph.microsoft.com/v1.0/drives/%s/items/%s/listItem", driveId,
                     driveItemId);
@@ -296,10 +265,11 @@ public class GraphService {
                     .header("Accept", "application/json")
                     .GET()
                     .build();
-            while (listItemId.equals("")) {
+            while (listItemId.equals("") && retryCounter <= retryCount) {
+                retryCounter++;
                 Thread.sleep(2000);
                 System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.MAGENTA
-                        + "Get new listitemId for driveitemID " + driveItemId
+                        + "Try "+ retryCounter + " ->  Get new listitemId for driveitemID " + driveItemId
                         + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
 
                 HttpResponse<String> response = HttpClient.newHttpClient().send(lirequest,

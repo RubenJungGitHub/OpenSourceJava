@@ -2,11 +2,13 @@ package contain.opensource.java.ils.bs.receiver.classes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -51,21 +53,20 @@ public class AlfrescoNodeController {
           ObjectMapper mapper = new ObjectMapper();
           JsonNode rootNode = mapper.readTree(json);
 
-
           try {
             alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
 
             // Navigate to the title
-            alfresconNodeResponse.Title =  rootNode.path("entry")
-              .path("properties")
-              .path("cm:title")
-              .asText(); 
+            alfresconNodeResponse.Title = rootNode.path("entry")
+                .path("properties")
+                .path("cm:title")
+                .asText();
             // Check if UUID present
             // Get node content
 
-            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:UUID")
+            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("contain:UUID")
                 .toString();
-            alfresconNodeResponse.MoveTo = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:MoveTo")
+            alfresconNodeResponse.MoveTo = alfresconNodeResponse.entry.properties.otherProperties.get("contain:Move")
                 .toString();
             // Get node content
             GetNodeContent();
@@ -78,7 +79,7 @@ public class AlfrescoNodeController {
               e.printStackTrace();
             }
             try {
-              alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NOMOVE>")); // IMPROVE!! SHOULD
+              alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO MOVE>")); // IMPROVE!! SHOULD
                                                                                                    // ALSO CHECK IF NOT
                                                                                                    // FROM ALFRESCO TO
                                                                                                    // ALFRESCO!!!!
@@ -158,7 +159,7 @@ public class AlfrescoNodeController {
       String propertyValue = fieldValue.orElse("Dummy");
       switch (field) {
         case UUID:
-          propertyName = "RJTM:UUID"; // custom aspect property
+          propertyName = "contain:UUID"; // custom aspect property
           propertyValue = UUID.randomUUID().toString();
           break;
         case Title:
@@ -213,6 +214,31 @@ public class AlfrescoNodeController {
     /// ==================================================
     GraphService GService = new GraphService();
     GService.uploadAlfrescoNodeToSP(alfresconNodeResponse);
+    DeleteNode();
 
+  }
+
+  private void DeleteNode() {
+    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
+    String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+
+    try (CloseableHttpClient client = HttpClients.createDefault()) {
+
+      HttpDelete request = new HttpDelete(endpoint);
+      request.setHeader("Authorization", "Basic " + auth);
+
+      var response = client.execute(request);
+      int status = response.getCode();
+      if (status == 204) {
+        System.out.println("Node deleted successfully: " + nodeId);
+      } else {
+        System.err.println("Failed to delete node. Status: " + status);
+        if (response.getEntity() != null) {
+          System.err.println(EntityUtils.toString(response.getEntity()));
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }
