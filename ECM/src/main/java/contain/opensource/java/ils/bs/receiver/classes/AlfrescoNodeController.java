@@ -1,5 +1,7 @@
 package contain.opensource.java.ils.bs.receiver.classes;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
@@ -50,12 +52,12 @@ public class AlfrescoNodeController {
             alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
             // Check if UUID present
             // Get node content
-            
+
             alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:UUID")
                 .toString();
             alfresconNodeResponse.MoveTo = alfresconNodeResponse.entry.properties.otherProperties.get("RJTM:MoveTo")
                 .toString();
-            //Get node content 
+            // Get node content
             GetNodeContent();
             try {
               alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null);
@@ -66,7 +68,12 @@ public class AlfrescoNodeController {
               e.printStackTrace();
             }
             try {
-              alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NOMOVE>")); // IMPROVE!! SHOULD ALSO CHECK IF NOT FROM ALFRESCO TO ALFRESCO!!!! (Unless different instance)
+              alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NOMOVE>")); // IMPROVE!! SHOULD
+                                                                                                   // ALSO CHECK IF NOT
+                                                                                                   // FROM ALFRESCO TO
+                                                                                                   // ALFRESCO!!!!
+                                                                                                   // (Unless different
+                                                                                                   // instance)
             } catch (java.lang.NullPointerException e) {
               // No action. UUID not present
             } catch (Exception e) {
@@ -109,46 +116,28 @@ public class AlfrescoNodeController {
     }
     return response;
   }
+private void GetNodeContent() throws IOException {
 
-  private void GetNodeContent() {
-    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId
-        + "/content";
-    // var response = ProcessGetRequest(endpoint); SocketException
-    String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+    String endpoint =  "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId + "/content";
 
-    try (CloseableHttpClient client = HttpClients.createDefault()) {
+    String auth = Base64.getEncoder()
+        .encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
 
-      HttpGet request = new HttpGet(endpoint);
-      request.setHeader("Authorization", "Basic " + auth);
+    HttpGet request = new HttpGet(endpoint);
+    request.setHeader("Authorization", "Basic " + auth);
 
-      var response = client.execute(request);
-      this.alfresconNodeResponse.file = response.getEntity().getContent().readAllBytes();
-      int status = response.getCode();
-      if (status == 200 && response != null) {
-        String json = EntityUtils.toString(response.getEntity());
+    try (CloseableHttpClient client = HttpClients.createDefault();
+         CloseableHttpResponse response = client.execute(request);
+         InputStream in = response.getEntity().getContent()) {
 
-        try {
-          this.alfresconNodeResponse.Content = json;
-
-
-        } catch (java.lang.NullPointerException e) {
-          // No action. UUID not present
-        } catch (Exception e) {
-          System.err.println("Exception getting node : " + e);
-          e.printStackTrace();
+        if (response.getCode() != 200) {
+            throw new IOException("HTTP error " + response.getCode());
         }
-        System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.CYAN
-            + "NodeUUID : " + this.alfresconNodeResponse.UUID + " ->" + this.alfresconNodeResponse.entry.name
-            + "--> Content " + this.alfresconNodeResponse.Content
-            + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
-      } else {
-        throw new RuntimeException("Unexpected status: " + status);
-      }
-    } catch (Exception e) {
-      System.err.println("Exception getting node : " + e);
-      e.printStackTrace();
+
+        this.alfresconNodeResponse.file = in.readAllBytes();
     }
-  }
+}
+
 
   public void UpdateNode(NodeTypeFields field, Optional<String> fieldValue) {
     try {
@@ -208,13 +197,11 @@ public class AlfrescoNodeController {
   }
 
   public void MoveNode() {
-    ///==================================================    
+    /// ==================================================
     /// NOTE> NO VERSIONING AND COPY CONTROLS INCLUDED!!!
-    ///==================================================
+    /// ==================================================
     GraphService GService = new GraphService();
     GService.uploadAlfrescoNodeToSP(alfresconNodeResponse);
-
-
 
   }
 }

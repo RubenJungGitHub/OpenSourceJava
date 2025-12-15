@@ -5,7 +5,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,14 +15,11 @@ import java.util.concurrent.ExecutionException;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-//import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
-import java.nio.charset.StandardCharsets;
-import org.apache.hc.core5.http.ContentType;
-import java.net.URLEncoder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +37,7 @@ public class GraphService {
     // Use your own tenant, clientId, clientSecret
     // ====================================================================
     // ====================================================================
-    // This obviously should be stored secure soewhere in the future!!!!
+    // This obviously should be stored secure somewhere in the future!!!!
     // ====================================================================
     // ====================================================================
     private final String tenantId = "9a1b5f77-1f1a-40ac-b1a1-38617300f02a";
@@ -50,6 +46,7 @@ public class GraphService {
     private final String clientSecret = "pE.8Q~ZQRGngJ1YliTP4EDC5bejaEl72LlBAzb50";
     private final Set<String> scopes = Collections.singleton("https://graph.microsoft.com/.default");
     private final String SiteID = "d155b09d-c4de-4d04-8b37-198f35e78232";
+    private final String SiteName = "SP-EventReceivers-Test";
     private final String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
     private final String ListName = "Shared Documents";
 
@@ -76,18 +73,6 @@ public class GraphService {
         return this.accessToken;
     }
 
-    /*
-     * public String updateItemUUIDGraphAPI(
-     * 
-     * @Parameter(description = "Site ID") @RequestParam String siteId,
-     * 
-     * @Parameter(description = "List ID") @RequestParam String listId,
-     * 
-     * @Parameter(description = "List Item ID") @RequestParam String listItemId,
-     * 
-     * @Parameter(description = "Term Label") @RequestParam String termLabel
-     * )
-     */
     public String updateItemUUIDGraphAPI(
             @Parameter(description = "List Item ID") @RequestParam String listItemId) {
         try {
@@ -104,12 +89,6 @@ public class GraphService {
 
             String json = objectMapper.writeValueAsString(body);
 
-            // Build endpoint
-            /*
-             * String endpoint = String.format(
-             * "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
-             * siteId, listId, listItemId);
-             */
             String endpoint = String.format(
                     "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
                     SiteID, ListId, listItemId);
@@ -151,93 +130,149 @@ public class GraphService {
             String accessToken = getGraphToken();
             byte[] fileBytes = node.file;
             String fileName = node.entry.name;
+            String driveItemId = "";
+            // to do check null
+            String driveId = GetDriveID();
+            String endPoint = String.format(
+                    "https://graph.microsoft.com/v1.0/drives/%s/root:/%s:/content",
+                    driveId, fileName);
 
-            // Encode folder and filename
-            //String folderUrl = URLEncoder.encode("Shared Documents", StandardCharsets.UTF_8.name());
-            //String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.name());
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endPoint))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Content-Type", "application/octet-stream")
+                    .PUT(HttpRequest.BodyPublishers.ofByteArray(fileBytes))
+                    .build();
 
-            // Step 1: Upload file content
-            String encodedFolder = URLEncoder.encode(this.ListName, StandardCharsets.UTF_8.toString());
-            String encodedFile = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
 
-            String endPoint = "https://" + this.tenantDomain + ".sharepoint.com/sites/" + this.SiteID
-                    + "/_api/web/GetFolderByServerRelativeUrl('" + encodedFolder + "')/Files/add(url='" +encodedFile
-                    + "',overwrite=true)";
-
-            HttpPost uploadPost = new HttpPost(endPoint);
-            uploadPost.setHeader("Authorization", "Bearer " + accessToken);
-            uploadPost.setHeader("Accept", "application/json;odata=verbose");
-             ByteArrayEntity fileEntity = new ByteArrayEntity(fileBytes, ContentType.create(node.entry.content.mimeType));
-            uploadPost.setEntity(fileEntity);
-
-            int itemId;
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                var uploadResponse = client.execute(uploadPost);
-                String jsonResponse = EntityUtils.toString(uploadResponse.getEntity());
-
-                // Parse response to get ListItem ID
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 ObjectMapper mapper = new ObjectMapper();
-                JsonNode root = mapper.readTree(jsonResponse);
-                itemId = root.path("d").path("ListItemAllFields").path("Id").asInt();
+                JsonNode rootNode = mapper.readTree(response.body());
+                driveItemId = rootNode.path("id").asText(); // DriveItem ID
+                System.out.println("Uploaded file DiveItemID: " + driveItemId);
+            } else {
+                System.err.println("Failed to upload file: " + response.statusCode());
+                System.err.println(response.body());
             }
 
-            /*/
-            // Step 2: Update metadata (UUID, Title, etc.)
-            String metaUrl = "https://" + tenantId +
-                    "/sites/" + siteId +
-                    "/_api/web/lists(guid'" + listId + "')/items(" + itemId + ")";
-            HttpPost metaPost = new HttpPost(metaUrl);
-            metaPost.setHeader("Authorization", "Bearer " + accessToken);
-            metaPost.setHeader("Accept", "application/json;odata=verbose");
-            metaPost.setHeader("Content-Type", "application/json;odata=verbose");
-            metaPost.setHeader("IF-MATCH", "*");
-            metaPost.setHeader("X-HTTP-Method", "MERGE");
+            String listItemId = getListItemId(driveId, driveItemId);
 
-            String uuid = (String) node.entry.properties.otherProperties.get("RJTM:UUID");
-            String jsonBody = "{ \"UUID\": \"" + uuid + "\", " +
-                    "\"Title\": \"" + fileName + "\" }";
-            metaPost.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
-
-            
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                var metaResponse = client.execute(metaPost);
-                System.out.println("File uploaded and metadata set for item: " + itemId);
-            }
-                */
+            // Update metadata
+            // Remove from Alfresco
+            /*
+             * int itemId;
+             * try (CloseableHttpClient client = HttpClients.createDefault()) {
+             * var uploadResponse = client.execute(uploadPost);
+             * String jsonResponse = EntityUtils.toString(uploadResponse.getEntity());
+             * 
+             * // Parse response to get ListItem ID
+             * ObjectMapper mapper = new ObjectMapper();
+             * JsonNode root = mapper.readTree(jsonResponse);
+             * itemId = root.path("d").path("ListItemAllFields").path("Id").asInt();
+             * }
+             * 
+             * /*
+             * /
+             * // Step 2: Update metadata (UUID, Title, etc.)
+             * String metaUrl = "https://" + tenantId +
+             * "/sites/" + siteId +
+             * "/_api/web/lists(guid'" + listId + "')/items(" + itemId + ")";
+             * HttpPost metaPost = new HttpPost(metaUrl);
+             * metaPost.setHeader("Authorization", "Bearer " + accessToken);
+             * metaPost.setHeader("Accept", "application/json;odata=verbose");
+             * metaPost.setHeader("Content-Type", "application/json;odata=verbose");
+             * metaPost.setHeader("IF-MATCH", "*");
+             * metaPost.setHeader("X-HTTP-Method", "MERGE");
+             * 
+             * String uuid = (String)
+             * node.entry.properties.otherProperties.get("RJTM:UUID");
+             * String jsonBody = "{ \"UUID\": \"" + uuid + "\", " +
+             * "\"Title\": \"" + fileName + "\" }";
+             * metaPost.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
+             * 
+             * 
+             * try (CloseableHttpClient client = HttpClients.createDefault()) {
+             * var metaResponse = client.execute(metaPost);
+             * System.out.println("File uploaded and metadata set for item: " + itemId);
+             * }
+             */
 
         } catch (Exception e) {
             System.err.println("Failed to move Alfresco node: " + e);
             e.printStackTrace();
         }
     }
-/*
-    public void uploadAlfrescoNodeToSPObsolete(AlfrescoNodeResponse node) {
+
+    private String GetDriveID() {
         try {
-            // First obtain new UUID and accesstoken
-            String AccessToken = getGraphToken();
-            // String endpoint =
-            // "https://{tenant}.sharepoint.com/sites/{site}/_api/web/lists(guid'{listId}')/items({itemId})";
-            String endPoint = "https://" + this.tenantDomain + ".sharepoint.com/sites/" + this.SiteID
-                    + "/_api/web/GetFolderByServerRelativeUrl(" + this.ListId + ")/Files/add(url='" + node.entry.name
-                    + "',overwrite=true)";
+            String ListNameCorrected = this.ListName.replace(" ", "%20");
+            String ListWebUrl = "https://" + this.tenantDomain + "/sites/" + this.SiteName + "/" + ListNameCorrected;
+            String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s/drives", this.SiteID);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endpoint))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .GET()
+                    .build();
 
-            HttpPost uploadPost = new HttpPost(endPoint);
-            uploadPost.setHeader("Authorization", "Bearer " + accessToken);
-            uploadPost.setHeader("Accept", "application/json;odata=verbose");
-            uploadPost.setEntity(new ByteArrayEntity(node.file));
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request,
+                    HttpResponse.BodyHandlers.ofString());
+            // Suppose 'response' is your HttpResponse<String>
+            String responseBody = response.body(); // this is your JSON string
 
-            String jsonBody = "{ \"UUID\": \"" + node.entry.properties.otherProperties.get("RJTM:UUID") + "\", " +
-                    "\"Title\": \"" + node.entry.name + "\" }";
+            // Create ObjectMapper
+            ObjectMapper objectMapper = new ObjectMapper();
 
-            post.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
-
-            try (CloseableHttpClient client = HttpClients.createDefault()) {
-                var response = client.execute(post);
-                System.out.println(EntityUtils.toString(response.getEntity()));
+            // Parse JSON string into JsonNode
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+            // "value" array contains all drives
+            JsonNode drivesArray = rootNode.path("value");
+            for (JsonNode driveNode : drivesArray) {
+                String driveNameListIWebUrl = driveNode.path("webUrl").asText();
+                if (ListWebUrl.equalsIgnoreCase(driveNameListIWebUrl)) {
+                    return driveNode.path("id").asText(); // Return Drive ID
+                }
             }
         } catch (Exception e) {
-            System.out.println("Failed tomove Alfresconode: " + e);
+            System.err.println("Failed to move obtain driveID for " + this.ListName + "->" + e);
+            e.printStackTrace();
         }
+        return null;
     }
-        */
+
+    private String getListItemId(String driveId, String driveItemId) {
+
+        try {
+            // Give SP time to process
+            Thread.sleep(5000);
+            // Now get lisitemID to also update metadatafields To do check null
+            String endPoint = String.format("https://graph.microsoft.com/v1.0/drives/%s/items/%s/listItem", driveId,
+                    driveItemId);
+
+            HttpRequest lirequest = HttpRequest.newBuilder()
+                    .uri(URI.create(endPoint))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient().send(lirequest,
+                    HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode rootNode = mapper.readTree(response.body());
+                System.out.println("Uploaded file DiveItemID: " + rootNode);
+            } else {
+                System.err.println("Failed to upload file: " + response.statusCode());
+                System.err.println(response.body());
+            }
+            return "";
+        } catch (Exception e) {
+            System.err.println("Failed to move Alfresco node: " + e);
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

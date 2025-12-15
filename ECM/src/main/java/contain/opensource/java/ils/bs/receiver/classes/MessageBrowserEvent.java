@@ -18,7 +18,8 @@ public class MessageBrowserEvent {
             // Connection connection = factory.createConnection();
             connection.start();
 
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            //Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
             // Queue queue =
             // session.createQueue("http://localhost:8161/admin/browse.jsp?JMSDestination=Consumer.01212fbf-b2c3-3779-8bda-19738e300ada.VirtualTopic.alfresco.repo.events.nodes");
             Queue queue = session.createQueue(

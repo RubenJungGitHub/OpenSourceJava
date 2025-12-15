@@ -140,7 +140,7 @@ public class MessageBrowserPoll {
                                 + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                     }
 
-                    msg.acknowledge(); // only removes message after successful processing
+                  //  msg.acknowledge(); // only removes message after successful processing
                     System.out.println("Message acknowledged (removed from queue).");
 
                 } catch (JMSException processingError) {
