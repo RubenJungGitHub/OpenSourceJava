@@ -86,7 +86,12 @@
 			<artifactId>httpclient5</artifactId>
 			<version>5.3.1</version>
 		</dependency>
-	 <!--
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-identity</artifactId>
+			<version>1.16.0</version> <!-- or latest -->
+		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5</artifactId>

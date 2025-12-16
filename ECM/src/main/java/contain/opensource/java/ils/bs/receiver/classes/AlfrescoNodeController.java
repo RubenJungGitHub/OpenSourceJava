@@ -22,8 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.java.ils.bs.receiver.services.GraphService;
-import contain.opensource.java.ils.bs.receiver.classes.InformationObject;
-
 public class AlfrescoNodeController {
   String nodeId;
   String alfrescoEndPoint;

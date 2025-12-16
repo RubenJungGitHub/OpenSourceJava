@@ -5,19 +5,17 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
+
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -27,11 +25,23 @@ import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
+import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
+import com.microsoft.graph.models.Drive;
+import com.microsoft.graph.models.SharepointIds;
+import com.microsoft.graph.requests.GraphServiceClient;
+import com.microsoft.graph.serializer.AdditionalDataManager;
+import com.azure.identity.ClientSecretCredential;
+import com.azure.identity.ClientSecretCredentialBuilder;
 
-import contain.opensource.java.ils.bs.receiver.classes.AlfrescoNodeResponse;
-import io.swagger.v3.oas.annotations.Parameter;
 import contain.opensource.java.ils.bs.receiver.classes.InformationObject;
-
+import contain.opensource.java.ils.bs.receiver.classes.Notification;
+import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants;
+import io.swagger.v3.oas.annotations.Parameter;
+import contain.opensource.java.ils.bs.receiver.classes.SharePointDriveInfo;
+import contain.opensource.java.ils.bs.receiver.classes.ChangedItemsResult;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @Service
 public class GraphService {
@@ -42,27 +52,30 @@ public class GraphService {
     // This obviously should be stored secure somewhere in the future!!!!
     // ====================================================================
     // ====================================================================
-    private final String tenantId = "9a1b5f77-1f1a-40ac-b1a1-38617300f02a";
+
     private final String tenantDomain = "lls6.Sharepoint.com";
-    private final String clientId = "f590b477-5bd7-47d6-8bda-36f77fa10afd";
-    private final String clientSecret = "pE.8Q~ZQRGngJ1YliTP4EDC5bejaEl72LlBAzb50";
-    private final Set<String> scopes = Collections.singleton("https://graph.microsoft.com/.default");
+    // private final Set<String> scopes =
+    // Collections.singleton("https://graph.microsoft.com/.default");
     private final String SiteID = "d155b09d-c4de-4d04-8b37-198f35e78232";
     private final String SiteName = "SP-EventReceivers-Test";
     private final String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
     private final String ListName = "Shared Documents";
 
-    private final ClientCredentialParameters parameters = ClientCredentialParameters.builder(scopes).build();
+    private final ClientCredentialParameters parameters = ClientCredentialParameters
+            .builder(AlfrescoConstants.GraphScopes).build();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private String accessToken;
+    private GraphServiceClient<?> graphClient;
+    private AlfrescoConstants.eItemtype itemtype;
+
 
     public String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
 
         // Build confidential client application
         ConfidentialClientApplication app = ConfidentialClientApplication.builder(
-                clientId,
-                ClientCredentialFactory.createFromSecret(clientSecret))
-                .authority("https://login.microsoftonline.com/" + tenantId)
+                AlfrescoConstants.clientId,
+                ClientCredentialFactory.createFromSecret(AlfrescoConstants.clientSecret))
+                .authority("https://login.microsoftonline.com/" + AlfrescoConstants.tenantId)
                 .build();
 
         // Scopes for client credentials flow
@@ -73,6 +86,28 @@ public class GraphService {
         IAuthenticationResult result = app.acquireToken(parameters).get();
         this.accessToken = result.accessToken();
         return this.accessToken;
+    }
+
+    private static final List<String> scopes = new ArrayList<>(AlfrescoConstants.GraphScopes);
+
+    public GraphServiceClient<?> getGraphClient(String tenantId) {
+
+        // Build the credential
+        ClientSecretCredential credential = new ClientSecretCredentialBuilder()
+                .tenantId(tenantId)
+                .clientId(AlfrescoConstants.clientId)
+                .clientSecret(AlfrescoConstants.clientSecret)
+                .build();
+
+        // Wrap credential in Graph auth provider
+        TokenCredentialAuthProvider authProvider = new TokenCredentialAuthProvider(scopes, credential);
+
+        // Build Graph client
+        this.graphClient = GraphServiceClient.builder()
+                .authenticationProvider(authProvider)
+                .buildClient();
+
+        return this.graphClient;
     }
 
     public String updateSharepointItemGraphAPI(
@@ -213,7 +248,65 @@ public class GraphService {
         }
     }
 
+    public void ProcessChangedSharepointItems(Notification notification) {
+        String lastDeltaLink = null;
+        String driveId = null;
+        String siteId = null;
+        String siteGUID = null;
+        String domain = null;
+        String listId = null;
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(AlfrescoConstants.DeltaLinkFile));
+            String resourceValue = notification.getResource();
+            // Find the first line that contains the resource
+            Optional<String> match = lines.stream()
+                    .filter(line -> line.contains(resourceValue))
+                    .findFirst();
 
+            if (match.isPresent()) {
+                lastDeltaLink = match.get().split("\\|")[1]; // take the part after '|'
+            }
+            // Assume value is your Notification object
+
+            // Get Graph token (assuming graphService has a synchronous method or you wrap
+            // it in CompletableFuture)
+            String accessToken = getGraphToken();
+
+            // Extract siteId and listId from resource URL
+            String[] parts = resourceValue.split("/");
+
+            if (resourceValue.contains("drives")) {
+                driveId = parts[2];
+
+                // Get drive info (synchronously for now)
+                SharePointDriveInfo driveInfo = getListInfoFromDriveID(driveId, AlfrescoConstants.tenantId);
+                // value.getTenantId());
+
+                 siteGUID = driveInfo.getSiteId();
+                 domain = driveInfo.getSiteUrl().split("/")[2];
+                 listId = driveInfo.getListId();
+
+                // siteId = domain + "," + siteGUID + "," + driveInfo.getWebId();
+
+            } else {
+                if (parts.length >= 4) {
+                    siteId = parts[2];
+                    String[] siteParts = siteId.split(",");
+                    domain = siteParts[0];
+                    siteGUID = siteParts[1];
+                    listId = parts[4];
+                }
+            }
+            String accesstoken = getGraphToken();
+            ChangedItemsResult changeditems = getChangedItems(AlfrescoConstants.tenantId, siteId, listId, driveId, lastDeltaLink);
+            String b = "";    
+        
+        } catch (Exception ex) {
+            System.out.println("Error reading file or delta link not yet registered: " + ex.getMessage());
+            lastDeltaLink = null; // treat as first run
+        }
+
+    }
 
     private String getDriveID() {
         try {
@@ -256,7 +349,7 @@ public class GraphService {
         try {
             // Give SP time to process
             String listItemId = "";
-            int retryCount  = 10;
+            int retryCount = 10;
             int retryCounter = 0;
             // Now get lisitemID to also update metadatafields To do check null
             String endPoint = String.format("https://graph.microsoft.com/v1.0/drives/%s/items/%s/listItem", driveId,
@@ -271,7 +364,7 @@ public class GraphService {
                 retryCounter++;
                 Thread.sleep(2000);
                 System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.MAGENTA
-                        + "Try "+ retryCounter + " ->  Get new listitemId for driveitemID " + driveItemId
+                        + "Try " + retryCounter + " ->  Get new listitemId for driveitemID " + driveItemId
                         + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
 
                 HttpResponse<String> response = HttpClient.newHttpClient().send(lirequest,
@@ -297,5 +390,128 @@ public class GraphService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public SharePointDriveInfo getListInfoFromDriveID(String driveId, String tenantId) {
+        try {
+            GraphServiceClient<?> graphClient = getGraphClient(tenantId);
+            if (graphClient == null) {
+                System.out.println("Graph client is null");
+                return null;
+            }
+
+            // Get the Drive
+            Drive drive = graphClient.drives(driveId)
+                    .buildRequest()
+                    .select("id,name,driveType,sharepointIds")
+                    .get();
+
+            if (drive == null) {
+                System.out.println("Drive not found.");
+                return null;
+            }
+
+            AdditionalDataManager adm = drive.additionalDataManager();
+
+            if (adm.containsKey("sharepointIds")) {
+                Object spObj = adm.get("sharepointIds");
+                if (spObj instanceof Map) {
+                    Map<String, Object> spMap = (Map<String, Object>) spObj;
+                    System.out.println("SharePointIds: " + spMap);
+                    // Example: get siteId
+                    String siteId = (String) spMap.get("siteId");
+                    System.out.println("Site ID: " + siteId);
+                }
+            }
+            SharePointDriveInfo info = new SharePointDriveInfo();
+            info.setDriveId(drive.id);
+            info.setDriveName(drive.name);
+            info.setDriveType(drive.driveType);
+
+            /*
+             * if (sp != null) {
+             * info.setSiteUrl(sp.siteUrl);
+             * info.setTenantID(sp.tenantId);
+             * info.setSiteId(sp.siteId);
+             * info.setWebId(sp.webId);
+             * info.setListId(sp.listId);
+             * info.setListItemId(sp.listItemId);
+             * }
+             */
+            info.setListName(drive.name);
+
+            return info;
+
+        } catch (Exception ex) {
+            System.out.println("Error fetching drive ID: " + ex.getMessage());
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+ public ChangedItemsResult getChangedItems(String tenantId, String siteId, String listId, String driveId, String deltaLink) throws Exception {
+        List<String> changedItems = new ArrayList<>();
+        String newDeltaLink = null;
+
+      
+        // Determine delta URL
+        String deltaUrl;
+        if (deltaLink != null && !deltaLink.isEmpty()) {
+            deltaUrl = deltaLink;
+        } else if (driveId != null && !driveId.isEmpty()) {
+            deltaUrl = "https://graph.microsoft.com/v1.0/drives/" + driveId + "/root/delta";
+            this.itemtype = AlfrescoConstants.eItemtype.Graph;
+        } else if (listId != null && !listId.isEmpty()) {
+            deltaUrl = "https://graph.microsoft.com/v1.0/sites/" + siteId + "/lists/" + listId + "/items/delta";
+            this.itemtype = AlfrescoConstants.eItemtype.SharePoint;
+        } else {
+            throw new IllegalArgumentException("Either listId or driveId must be provided.");
+        }
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(deltaUrl))
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // Retry if deltaLink expired
+        if (response.statusCode() == 400) {
+            System.out.println("Delta link expired. Starting fresh.");
+            deltaUrl = "https://graph.microsoft.com/v1.0/sites/" + siteId + "/lists/" + listId + "/items/delta";
+            request = HttpRequest.newBuilder()
+                    .uri(URI.create(deltaUrl))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Graph delta call failed: " + response.statusCode() + " - " + response.body());
+            }
+        } else if (response.statusCode() != 200) {
+            throw new RuntimeException("Graph delta call failed: " + response.statusCode() + " - " + response.body());
+        }
+
+        // Parse JSON response
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response.body());
+
+        if (root.has("value")) {
+            for (JsonNode item : root.get("value")) {
+                if (item.has("id")) {
+                    changedItems.add(item.get("id").asText());
+                }
+            }
+        }
+
+        if (root.has("@odata.deltaLink")) {
+            newDeltaLink = root.get("@odata.deltaLink").asText();
+        }
+
+        return new ChangedItemsResult(changedItems, newDeltaLink, this.itemtype);
     }
 }
