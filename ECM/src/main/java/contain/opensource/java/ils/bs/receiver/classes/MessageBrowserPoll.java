@@ -24,31 +24,31 @@ import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeT
 public class MessageBrowserPoll {
 
     public static void ReadMessages(String[] args) {
-        Connection connection = null;
-        Session session = null;
         try {
+
+            /// ================================================================================================================================
+            /// TODO. HANGS ON CINSUMER CLOSED IF ALFRESCO SSERVER IS BROUGHT DOWN. CHECK
+            // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
+            /// ================================================================================================================================
+
             // Connect to ActiveMQ
             ConnectionFactory factory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-            connection = factory.createConnection("admin", "admin");
+            Connection connection = factory.createConnection("admin", "admin");
             connection.start();
 
             // Create a session
-            // session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
 
+            // session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             // The queue you want to inspect
             Queue queue = session.createQueue("Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes");
-            ///================================================================================================================================
-            /// TODO. HANGS ON CINSUMER CLOSED IF ALFRESCO SSERVER IS BROUGHT DOWN. CHECK MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
-            ///================================================================================================================================
-            final MessageConsumer consumer = session.createConsumer(queue); // ✅ Create a consumer
-            // Create a QueueBrowser (does NOT consume)
-            // QueueBrowser browser = session.createBrowser(queue);
+            MessageConsumer consumer = session.createConsumer(queue);
 
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleAtFixedRate(() -> {
                 System.out.println("Polling messages...");
-                StartPoll(consumer);
+
+                StartPoll(consumer, session);
             }, 0, 5, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
@@ -59,13 +59,6 @@ public class MessageBrowserPoll {
             }
 
             // Cleanup
-            // browser.close();
-            session.close();
-            connection.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
 
             try {
                 if (session != null)
@@ -77,10 +70,13 @@ public class MessageBrowserPoll {
                     connection.close();
             } catch (Exception ignored) {
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
         }
     }
 
-    public static void StartPoll(MessageConsumer consumer) {
+    public static void StartPoll(MessageConsumer consumer, Session session) {
         try {
             System.out.println(contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.YELLOW
                     + "New poll loop Processing"
@@ -141,10 +137,15 @@ public class MessageBrowserPoll {
                     }
 
                  //   msg.acknowledge(); // only removes message after successful processing
+
+                    //Debug
+                    session.commit();
+                    //session.rollback();
                     System.out.println("Message acknowledged (removed from queue).");
 
                 } catch (JMSException processingError) {
-                    System.err.println("Error while processing message, NOT acknowledging.");
+                    session.rollback();
+                    System.err.println("Error while processing message, ROLLBACK.");
                     processingError.printStackTrace();
                 }
             }

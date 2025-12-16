@@ -60,4 +60,16 @@ public class ILSController {
         // Return a string to the REST client
         return "Hello world static, " + to + " from " + from + "!";
     }
+
+    @PostMapping("/MoveIO/{ID}")
+    public String MoveIO(@PathVariable("IOID") String IOID) {
+        try {
+      //     String retval = graphService.updateSharepointItemGraphAPI(listItemId); // now works
+            return "Bla";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error acquiring token: " + e.getMessage();
+        }
+    }
+
 }

@@ -13,6 +13,12 @@ public class AlfrescoConstants {
         Title
     }
 
+
+        public enum ContainPlatforms {
+        ALFRESCO,
+        SPO
+    }
+
     public enum NodeType {
         NODEADDED,
         NODEUPDATED, // unsure if this is correct
