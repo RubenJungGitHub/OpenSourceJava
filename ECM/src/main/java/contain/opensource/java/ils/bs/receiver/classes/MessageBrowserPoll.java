@@ -1,5 +1,8 @@
 package contain.opensource.java.ils.bs.receiver.classes;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,6 +18,11 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -92,9 +100,9 @@ public class MessageBrowserPoll {
                         try {
                             AlfresQueMessage QMessage = mapper.readValue(json, AlfresQueMessage.class);
                             String type = QMessage.getType();
-                            //===========================================================================================
-                            //TO BE MANAGED BY RULE-ENGINE AND GENERATOR
-                            //===========================================================================================
+                            // ===========================================================================================
+                            // TO BE MANAGED BY RULE-ENGINE AND GENERATOR
+                            // ===========================================================================================
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
                                 System.out.println("ID: " + QMessage.getId());
@@ -114,16 +122,39 @@ public class MessageBrowserPoll {
                                         // Set UUID
                                         aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.empty());
                                     }
-                                    if(aController.alfresconNodeResponse.MustMove)
-                                    {
-                                        
-                                        // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
-                                        aController.MoveNode();
+                                    if (aController.alfresconNodeResponse.MustMove) {
 
+                                        // Create generic property mapping information object
+                                        InformationObject IOobject = new InformationObject(
+                                                aController.alfresconNodeResponse,
+                                                AlfrescoConstants.ContainPlatforms.ALFRESCO,
+                                                AlfrescoConstants.ContainPlatforms.SPO);
+                                        // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
+                                        // Could Be done from here but because it is not yet crtain from where the
+                                        // relocaiton is called we use a REST API
+                                        // aController.RelocateIO(IOobject);
+                                        String endpoint = "http://localhost:5000/RelocateIO";
+                                        String auth = Base64.getEncoder().encodeToString(
+                                                (AlfrescoConstants.username + ":" + AlfrescoConstants.password)
+                                                        .getBytes(StandardCharsets.UTF_8));
+                                        String jsonBody = mapper.writeValueAsString(IOobject);
+
+                                        // Create HttpPost
+                                        HttpPost post = new HttpPost(endpoint);
+                                        post.setHeader("Authorization", "Basic " + auth);
+                                        post.setHeader("Content-Type", "application/json");
+                                        post.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
+                                        try (CloseableHttpClient client = HttpClients.createDefault();
+                                                CloseableHttpResponse response = client.execute(post)) {
+
+                                            int statusCode = response.getCode();
+                                            if (statusCode != 200) {
+                                                throw new IOException("HTTP error " + statusCode);
+                                            }
+                                        }
                                     }
                                 }
                             }
-
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -136,11 +167,11 @@ public class MessageBrowserPoll {
                                 + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                     }
 
-                 //   msg.acknowledge(); // only removes message after successful processing
+                    // msg.acknowledge(); // only removes message after successful processing
 
-                    //Debug
+                    // Debug
                     session.commit();
-                    //session.rollback();
+                    // session.rollback();
                     System.out.println("Message acknowledged (removed from queue).");
 
                 } catch (JMSException processingError) {
@@ -154,6 +185,5 @@ public class MessageBrowserPoll {
             e.printStackTrace();
         }
         System.out.println("No remaining messages on queue");
-
     }
 }

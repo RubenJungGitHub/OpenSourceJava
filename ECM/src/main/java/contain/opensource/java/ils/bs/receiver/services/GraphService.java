@@ -30,6 +30,8 @@ import com.microsoft.aad.msal4j.IAuthenticationResult;
 
 import contain.opensource.java.ils.bs.receiver.classes.AlfrescoNodeResponse;
 import io.swagger.v3.oas.annotations.Parameter;
+import contain.opensource.java.ils.bs.receiver.classes.InformationObject;
+
 
 @Service
 public class GraphService {
@@ -117,7 +119,7 @@ public class GraphService {
         }
     }
 
-    public String updateSharepointItemGraphAPI(AlfrescoNodeResponse node, String listItemId) {
+    public String updateSharepointItemGraphAPI(InformationObject node, String listItemId) {
         try {
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
@@ -126,8 +128,8 @@ public class GraphService {
 
             // Build payload to update Title and ObjectClassificationText
             Map<String, Object> body = new HashMap<>();
-            body.put("ContAInUUID", node.UUID);
-            body.put("Title", node.Title);
+            body.put("ContAInUUID", node.getUuid());
+            body.put("Title", node.getTitle());
             body.put("ObjectClassificationText", "Changed from Java after move");
 
             String json = objectMapper.writeValueAsString(body);
@@ -168,11 +170,11 @@ public class GraphService {
         // System.out.println("Generated UUID: " + uuid.toString());
     }
 
-    public void uploadAlfrescoNodeToSP(AlfrescoNodeResponse node) {
+    public void uploadAlfrescoNodeToSP(InformationObject IOobject) {
         try {
             String accessToken = getGraphToken();
-            byte[] fileBytes = node.file;
-            String fileName = node.entry.name;
+            byte[] fileBytes = IOobject.getContent();
+            String fileName = IOobject.getFileName();
             String driveItemId = "";
             // to do check null
             String driveId = getDriveID();
@@ -202,7 +204,7 @@ public class GraphService {
 
             // Step 1 : Get new listitemid
             String listItemId = getListItemId(driveId, driveItemId);
-            String retval = updateSharepointItemGraphAPI(node, listItemId);
+            String retval = updateSharepointItemGraphAPI(IOobject, listItemId);
             // Function should return something in the future for transaction purposes
 
         } catch (Exception e) {

@@ -2,7 +2,6 @@ package contain.opensource.java.ils.bs.receiver.classes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
@@ -20,15 +19,18 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.java.ils.bs.receiver.services.GraphService;
+import contain.opensource.java.ils.bs.receiver.classes.InformationObject;
 
 public class AlfrescoNodeController {
   String nodeId;
-  String username = "admin";
-  String password = "admin";
   String alfrescoEndPoint;
   AlfrescoNodeResponse alfresconNodeResponse = null;
+
+  public AlfrescoNodeController() {
+  }
 
   public AlfrescoNodeController(String nodeId) {
     this.nodeId = nodeId;
@@ -38,7 +40,7 @@ public class AlfrescoNodeController {
   public void GetNode() {
     try {
       String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
-      String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+      String auth = Base64.getEncoder().encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
 
       try (CloseableHttpClient client = HttpClients.createDefault()) {
 
@@ -80,11 +82,12 @@ public class AlfrescoNodeController {
             }
             try {
               alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO MOVE>")); // IMPROVE!! SHOULD
-                                                                                                   // ALSO CHECK IF NOT
-                                                                                                   // FROM ALFRESCO TO
-                                                                                                   // ALFRESCO!!!!
-                                                                                                   // (Unless different
-                                                                                                   // instance)
+                                                                                                    // ALSO CHECK IF NOT
+                                                                                                    // FROM ALFRESCO TO
+                                                                                                    // ALFRESCO!!!!
+                                                                                                    // (Unless different
+                                                                                                    // instance)
+              //
             } catch (java.lang.NullPointerException e) {
               // No action. UUID not present
             } catch (Exception e) {
@@ -112,7 +115,7 @@ public class AlfrescoNodeController {
 
   private CloseableHttpResponse ProcessGetRequest(String endpoint) {
     CloseableHttpResponse response = null;
-    String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+    String auth = Base64.getEncoder().encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
 
@@ -134,7 +137,7 @@ public class AlfrescoNodeController {
         + "/content";
 
     String auth = Base64.getEncoder()
-        .encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+        .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
 
     HttpGet request = new HttpGet(endpoint);
     request.setHeader("Authorization", "Basic " + auth);
@@ -182,7 +185,7 @@ public class AlfrescoNodeController {
           + contain.opensource.java.ils.bs.receiver.constants.AlfrescoConstants.RESET);
 
       // Encode username:password for Basic Auth
-      String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+      String auth = Base64.getEncoder().encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
 
       try (CloseableHttpClient client = HttpClients.createDefault()) {
         HttpPut request = new HttpPut(endpoint);
@@ -208,19 +211,23 @@ public class AlfrescoNodeController {
     }
   }
 
-  public void MoveNode() {
+  public void RelocateIO(InformationObject IOobject) {
     /// ==================================================
     /// NOTE> NO VERSIONING AND COPY CONTROLS INCLUDED!!!
+    /// Proper returnvalue needed..
     /// ==================================================
-    GraphService GService = new GraphService();
-    GService.uploadAlfrescoNodeToSP(alfresconNodeResponse);
-    DeleteNode();
 
+    
+    // Could be done from here but because it is not sure from where relocation is performed we are using a REST API
+    GraphService GService = new GraphService();
+    this.nodeId = IOobject.getId();
+    GService.uploadAlfrescoNodeToSP(IOobject);
+    DeleteAlfrescoNode();
   }
 
-  private void DeleteNode() {
+  private void DeleteAlfrescoNode() {
     String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
-    String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
+    String auth = Base64.getEncoder().encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
 

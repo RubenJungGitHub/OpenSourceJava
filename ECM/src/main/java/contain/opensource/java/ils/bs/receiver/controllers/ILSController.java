@@ -6,10 +6,15 @@ import org.fusesource.jansi.AnsiConsole;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import contain.opensource.java.ils.bs.receiver.classes.AlfrescoNodeController;
+import contain.opensource.java.ils.bs.receiver.classes.InformationObject;
+import contain.opensource.java.ils.bs.receiver.classes.RelocateIORequest;
 import contain.opensource.java.ils.bs.receiver.services.GraphService;
+import org.springframework.http.MediaType;
 
 @RestController
 public class ILSController {
@@ -61,15 +66,10 @@ public class ILSController {
         return "Hello world static, " + to + " from " + from + "!";
     }
 
-    @PostMapping("/MoveIO/{ID}")
-    public String MoveIO(@PathVariable("IOID") String IOID) {
-        try {
-      //     String retval = graphService.updateSharepointItemGraphAPI(listItemId); // now works
-            return "Bla";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error acquiring token: " + e.getMessage();
-        }
+    @PostMapping(value = "/RelocateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public String RelocateIO(@RequestBody InformationObject IOobject) {
+        AlfrescoNodeController Acontroller = new AlfrescoNodeController();
+        Acontroller.RelocateIO(IOobject);
+        return "Success";
     }
-
 }
