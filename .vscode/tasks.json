@@ -1,15 +1,18 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "mvn-compile",
-            "type": "shell",
-            "command": "mvn compile",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": ["$maven"]
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "mvn-compile",
+      "type": "shell",
+      "command": "mvn compile",
+      "options": {
+        "cwd": "${workspaceFolder}/ECM"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$maven"]
+    }
+  ]
 }
