@@ -240,8 +240,8 @@ public class AlfrescoNodeController {
 
         // Debug because Alfrescco only returns the fields if filled in. This however
         // this should not affect Put, which it seems to do
-        String nodeid = GetNewNodeID(client, libNode, "password.txt");
-        getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
+      //  String nodeid = GetNewNodeID(client, libNode, "password.txt");
+      //  getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
         String endpoint = String.format(
             "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
             AlfrescoConstants.alfrescoBaseUrl, libNode);
@@ -293,8 +293,9 @@ public class AlfrescoNodeController {
             }
             // To do check null for transaction and persistance
             // updateMetaData(nodeId, IOobject);
-            getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
-            updateMetaData("ecb97ec6-7a68-490a-802b-52cfc5339941", IOobject);
+            //getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
+            //updateMetaData("ecb97ec6-7a68-490a-802b-52cfc5339941", IOobject);
+            updateMetaData(nodeId, IOobject);
             return "BULLSHIT";
           } else {
             throw new RuntimeException("Upload failed: " + statusCode + " - " + responseBody);
