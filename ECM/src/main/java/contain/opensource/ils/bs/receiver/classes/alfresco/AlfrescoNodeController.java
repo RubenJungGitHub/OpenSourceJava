@@ -3,6 +3,8 @@ package contain.opensource.ils.bs.receiver.classes.alfresco;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
@@ -10,7 +12,9 @@ import java.util.UUID;
 
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -38,7 +42,7 @@ public class AlfrescoNodeController {
 
   }
 
-  private String GetAlfrescoSiteNode(CloseableHttpClient client1) {
+  private String GetAlfrescoSiteNode(CloseableHttpClient client) {
 
     CloseableHttpResponse response = null;
 
@@ -52,7 +56,7 @@ public class AlfrescoNodeController {
 
       HttpGet request = new HttpGet(endpoint);
       request.setHeader("Authorization", "Basic " + auth);
-      response = client1.execute(request);
+      response = client.execute(request);
       int status = response.getCode();
       if (status == 200) {
         String json = EntityUtils.toString(response.getEntity());
@@ -74,55 +78,71 @@ public class AlfrescoNodeController {
     return "FAILED";
   }
 
-  /*
-   * public String getDocumentLibraryNodeId(String alfrescoBaseUrl, String
-   * siteNodeId, String username, String password) throws Exception {
-   * 
-   * String endpoint = String.format(
-   * "%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers",
-   * alfrescoBaseUrl, siteNodeId);
-   * 
-   * String basicAuth = Base64.getEncoder().encodeToString((username + ":" +
-   * password).getBytes());
-   * 
-   * HttpGet request = new HttpGet(endpoint);
-   * request.setHeader("Authorization", "Basic " + auth);
-   * response = client.execute(request);
-   * int status = response.getCode();
-   * 
-   * HttpGet request = HttpGet.newBuilder()
-   * .uri(URI.create(endpoint))
-   * .header("Authorization", "Basic " + basicAuth)
-   * .header("Accept", "application/json")
-   * .GET()
-   * .build();
-   * 
-   * HttpResponse<String> response = HttpClient.newHttpClient()
-   * .send(request, HttpResponse.BodyHandlers.ofString());
-   * 
-   * if (response.statusCode() != 200) {
-   * throw new RuntimeException("Failed to get containers: " + response.body());
-   * }
-   * 
-   * JsonNode root = mapper.readTree(response.body());
-   * for (JsonNode container : root.path("list").path("entries")) {
-   * if ("documentLibrary".equals(container.path("entry").path("id").asText())) {
-   * return container.path("entry").path("nodeId").asText();
-   * }
-   * }
-   * 
-   * throw new RuntimeException("DocumentLibrary container not found for site " +
-   * siteNodeId);
-   * }
-   */
-
-  // private void uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
-  public void uploadSPItemToAlfresco() {
+  private String getDocumentLibraryNodeId(CloseableHttpClient client, String siteNodeId) throws Exception {
     try {
+      // ChatGPT
+      // Thanks — I see your full method. From what you’ve written, a 404 is almost
+      // certainly because siteNodeId is not the correct Alfresco site ID (short
+      // name). In Alfresco REST API:
+      // sites/{siteId}/containers expects the site short name, e.g., "ontobind"
+      String endpoint = String.format(
+          "%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers",
+          AlfrescoConstants.alfrescoBaseUrl, AlfrescoConstants.alfrescoDemoSiteName);
+
+      String auth = Base64.getEncoder().encodeToString((AlfrescoConstants.username + ":" +
+          AlfrescoConstants.password).getBytes());
+
+      HttpGet request = new HttpGet(endpoint);
+      request.setHeader("Authorization", "Basic " + auth);
+      request.setHeader("Accept", "application/json");
+
+      // request.setHeader("Authorization", "Basic " + auth);
+      // Send request
+      try (CloseableHttpResponse response = client.execute(request)) {
+        int statusCode = response.getCode();
+
+        if (statusCode >= 200 && statusCode < 300) {
+          ObjectMapper mapper = new ObjectMapper();
+          String responseBody = EntityUtils.toString(response.getEntity()); // ✅ get
+          JsonNode root = mapper.readTree(responseBody);
+          for (JsonNode container : root.path("list").path("entries")) {
+            if ("documentLibrary".equals(container.path("entry").path("folderId").asText())) {
+              return container.path("entry").path("id").asText();
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("Exception uploading item to alfresco : " + e);
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public void  uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
+      try {
       // First get SiteNode
       try (CloseableHttpClient client = HttpClients.createDefault()) {
         String siteNode = GetAlfrescoSiteNode(client);
         System.out.println("Sitenode  " + siteNode);
+        String libNode = getDocumentLibraryNodeId(client, siteNode);
+        System.out.println("Libnode   " + libNode);
+        
+        String auth = Base64.getEncoder()
+                .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+
+        //Actual upload
+        String endpoint = String.format(
+            "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
+            AlfrescoConstants.alfrescoBaseUrl, libNode);
+           HttpPost post = new HttpPost(endpoint);
+        post.setHeader("Authorization", "Basic " + auth);
+        post.setHeader("Accept", "application/json");   
+
+        // Build multipart form: file + optional properties
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+     //   builder.addBinaryBody("filedata", content, ContentType.create(mimetype), fileName);
+
       }
     } catch (Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeResponse;
+import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 
 //Generic IO object Class for move between environments 
@@ -50,7 +51,7 @@ public class RelocateInformationObject {
     }
 
     // Constructor for SP
-    public RelocateInformationObject(String SPItem) {
+    public RelocateInformationObject(SharePointItemResponse SPItem) {
     }
 
     // getters and setters

@@ -361,7 +361,8 @@ public class GraphService {
                 }
                 if (SPItem.MustMove) {
                     AlfrescoNodeController aController = new AlfrescoNodeController();
-                    aController.uploadSPItemToAlfresco();
+                    RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
+                    aController.uploadSPItemToAlfresco(RObject);
                     //Remove from SP
                 }
             }
