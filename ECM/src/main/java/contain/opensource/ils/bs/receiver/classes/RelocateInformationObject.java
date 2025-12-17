@@ -9,7 +9,7 @@ import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 
 //Generic IO object Class for move between environments 
 //======================================================
-public class InformationObject {
+public class RelocateInformationObject {
     @JsonProperty("title")
     private String title;
 
@@ -32,12 +32,12 @@ public class InformationObject {
     @JsonProperty("platformTo")
     private AlfrescoConstants.ContainPlatforms containplatformto;
 
-    public InformationObject() {
+    public RelocateInformationObject() {
         // needed for Jackson
     }
 
     // Constructor for Alfresco
-    public InformationObject(AlfrescoNodeResponse Anode, AlfrescoConstants.ContainPlatforms containPlatformfrom,
+    public RelocateInformationObject(AlfrescoNodeResponse Anode, AlfrescoConstants.ContainPlatforms containPlatformfrom,
             AlfrescoConstants.ContainPlatforms containPlatFormTo) {
         // Map to this object
         this.content = Anode.file;
@@ -50,7 +50,7 @@ public class InformationObject {
     }
 
     // Constructor for SP
-    public InformationObject(String SPItem) {
+    public RelocateInformationObject(String SPItem) {
     }
 
     // getters and setters

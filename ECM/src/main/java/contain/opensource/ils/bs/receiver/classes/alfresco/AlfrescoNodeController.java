@@ -2,6 +2,7 @@ package contain.opensource.ils.bs.receiver.classes.alfresco;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
@@ -16,10 +17,11 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+import com.azure.core.http.HttpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.InformationObject;
+import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.ils.bs.receiver.services.GraphService;
@@ -34,6 +36,98 @@ public class AlfrescoNodeController {
   public AlfrescoNodeController(String nodeId) {
     this.nodeId = nodeId;
 
+  }
+
+  private String GetAlfrescoSiteNode(CloseableHttpClient client1) {
+
+    CloseableHttpResponse response = null;
+
+    try {
+      String endpoint = String.format(
+          "%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s",
+          AlfrescoConstants.alfrescoBaseUrl,
+          AlfrescoConstants.alfrescoDemoSiteName);
+      String auth = Base64.getEncoder().encodeToString(
+          (AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
+
+      HttpGet request = new HttpGet(endpoint);
+      request.setHeader("Authorization", "Basic " + auth);
+      response = client1.execute(request);
+      int status = response.getCode();
+      if (status == 200) {
+        String json = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(json);
+        JsonNode entryNode = root.get("entry");
+
+        if (entryNode != null && entryNode.get("guid") != null) {
+          String guid = entryNode.get("guid").asText();
+          return guid;
+        } else {
+          System.out.println("GUID not found");
+        }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Error resolving Alfresco site nodeId", e);
+    }
+    return "FAILED";
+  }
+
+  /*
+   * public String getDocumentLibraryNodeId(String alfrescoBaseUrl, String
+   * siteNodeId, String username, String password) throws Exception {
+   * 
+   * String endpoint = String.format(
+   * "%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers",
+   * alfrescoBaseUrl, siteNodeId);
+   * 
+   * String basicAuth = Base64.getEncoder().encodeToString((username + ":" +
+   * password).getBytes());
+   * 
+   * HttpGet request = new HttpGet(endpoint);
+   * request.setHeader("Authorization", "Basic " + auth);
+   * response = client.execute(request);
+   * int status = response.getCode();
+   * 
+   * HttpGet request = HttpGet.newBuilder()
+   * .uri(URI.create(endpoint))
+   * .header("Authorization", "Basic " + basicAuth)
+   * .header("Accept", "application/json")
+   * .GET()
+   * .build();
+   * 
+   * HttpResponse<String> response = HttpClient.newHttpClient()
+   * .send(request, HttpResponse.BodyHandlers.ofString());
+   * 
+   * if (response.statusCode() != 200) {
+   * throw new RuntimeException("Failed to get containers: " + response.body());
+   * }
+   * 
+   * JsonNode root = mapper.readTree(response.body());
+   * for (JsonNode container : root.path("list").path("entries")) {
+   * if ("documentLibrary".equals(container.path("entry").path("id").asText())) {
+   * return container.path("entry").path("nodeId").asText();
+   * }
+   * }
+   * 
+   * throw new RuntimeException("DocumentLibrary container not found for site " +
+   * siteNodeId);
+   * }
+   */
+
+  // private void uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
+  public void uploadSPItemToAlfresco() {
+    try {
+      // First get SiteNode
+      try (CloseableHttpClient client = HttpClients.createDefault()) {
+        String siteNode = GetAlfrescoSiteNode(client);
+        System.out.println("Sitenode  " + siteNode);
+      }
+    } catch (Exception e) {
+      System.err.println("Exception uploading item to alfresco : " + e);
+      e.printStackTrace();
+    }
   }
 
   public void GetNode() {
@@ -214,7 +308,7 @@ public class AlfrescoNodeController {
     }
   }
 
-  public void RelocateIO(InformationObject IOobject) {
+  public void RelocateIO(RelocateInformationObject IOobject) {
     /// ==================================================
     /// NOTE> NO VERSIONING AND COPY CONTROLS INCLUDED!!!
     /// Proper returnvalue needed..

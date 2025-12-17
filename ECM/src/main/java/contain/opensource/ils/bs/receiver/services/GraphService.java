@@ -22,31 +22,33 @@ import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
+import com.microsoft.graph.http.GraphServiceException;
 import com.microsoft.graph.models.Drive;
+import com.microsoft.graph.models.FieldValueSet;
+import com.microsoft.graph.models.ListItem;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
-import contain.opensource.ils.bs.receiver.classes.InformationObject;
 import contain.opensource.ils.bs.receiver.classes.Notification;
+import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
+import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.ChangedItemsResult;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
+import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
 
 @Service
 public class GraphService {
 
-    // Use your own tenant, clientId, clientSecret
-    // ====================================================================
-    // ====================================================================
-    // This obviously should be stored secure somewhere in the future!!!!
-    // ====================================================================
-    // ====================================================================
+    ObjectMapper mapper = new ObjectMapper();
 
     private final String tenantDomain = "lls6.Sharepoint.com";
     // private final Set<String> scopes =
@@ -58,10 +60,17 @@ public class GraphService {
 
     private final ClientCredentialParameters parameters = ClientCredentialParameters
             .builder(AlfrescoConstants.GraphScopes).build();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    // private final ObjectMapper objectMapper = new ObjectMapper();
     private String accessToken;
     private GraphServiceClient<?> graphClient;
     private AlfrescoConstants.eItemtype itemtype;
+    private String newDeltaLink = "";
+    
+    public GraphService() {
+        mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
 
     public String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
 
@@ -118,7 +127,7 @@ public class GraphService {
             body.put("Title", "Test Updated Document Title Ruben from JaVa");
             body.put("ObjectClassificationText", "Changed from Java");
 
-            String json = objectMapper.writeValueAsString(body);
+            String json = mapper.writeValueAsString(body);
 
             String endpoint = String.format(
                     "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
@@ -148,7 +157,7 @@ public class GraphService {
         }
     }
 
-    public String updateSharepointItemGraphAPI(InformationObject node, String listItemId) {
+    public String updateSharepointItemGraphAPI(RelocateInformationObject node, String listItemId) {
         try {
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
@@ -161,7 +170,7 @@ public class GraphService {
             body.put("Title", node.getTitle());
             body.put("ObjectClassificationText", "Changed from Java after move");
 
-            String json = objectMapper.writeValueAsString(body);
+            String json = mapper.writeValueAsString(body);
 
             String endpoint = String.format(
                     "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
@@ -199,7 +208,7 @@ public class GraphService {
         // System.out.println("Generated UUID: " + uuid.toString());
     }
 
-    public void uploadAlfrescoNodeToSP(InformationObject IOobject) {
+    public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
             String accessToken = getGraphToken();
             byte[] fileBytes = IOobject.getContent();
@@ -222,7 +231,56 @@ public class GraphService {
                     .send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                ObjectMapper mapper = new ObjectMapper();
+                // ObjectMapper mapper = new ObjectMapper();
+                JsonNode rootNode = mapper.readTree(response.body());
+                driveItemId = rootNode.path("id").asText(); // DriveItem ID
+                System.out.println("Uploaded file DiveItemID: " + driveItemId);
+            } else {
+                System.err.println("Failed to upload file: " + response.statusCode());
+                System.err.println(response.body());
+            }
+
+            // Step 1 : Get new listitemid
+            String listItemId = getListItemId(driveId, driveItemId);
+            String retval = updateSharepointItemGraphAPI(IOobject, listItemId);
+            // Function should return something in the future for transaction purposes
+
+        } catch (Exception e) {
+            System.err.println("Failed to move Alfresco node: " + e);
+            e.printStackTrace();
+        }
+    }
+
+
+    //REMOVE FROM HERE, IS ALFRESCOCONTROLLER
+    private void uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
+        try {
+            String accessToken = getGraphToken();
+            byte[] fileBytes = IOobject.getContent();
+            String fileName = IOobject.getFileName();
+            String driveItemId = "";
+            // to do check null
+            String driveId = getDriveID();
+            // String alfrescoEndpoint = String.format(
+            // "https://YOUR_ALFRESCO_SERVER/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
+            // alfrescoParentNodeId
+            // );
+            String endPoint = String.format(
+                    "https://graph.microsoft.com/v1.0/drives/%s/root:/%s:/content",
+                    driveId, fileName);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endPoint))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Content-Type", "application/octet-stream")
+                    .PUT(HttpRequest.BodyPublishers.ofByteArray(fileBytes))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                // ObjectMapper mapper = new ObjectMapper();
                 JsonNode rootNode = mapper.readTree(response.body());
                 driveItemId = rootNode.path("id").asText(); // DriveItem ID
                 System.out.println("Uploaded file DiveItemID: " + driveItemId);
@@ -292,9 +350,24 @@ public class GraphService {
                 }
             }
             String accesstoken = getGraphToken();
-            ChangedItemsResult changeditems = getChangedItems(AlfrescoConstants.tenantId, siteId, listId, driveId,
+            ChangedItemsResult changedItems = getChangedItems(AlfrescoConstants.tenantId, siteId, listId, driveId,
                     lastDeltaLink);
-            String b = "";
+            // Now get the SP items
+            List<SharePointItemResponse> items = getListItemsByIds(siteId, listId, changedItems.changedItems);
+            for (SharePointItemResponse SPItem : items) {
+                if (!SPItem.HasUUID) {
+                    // AssignUUID
+                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id);
+                }
+                if (SPItem.MustMove) {
+                    AlfrescoNodeController aController = new AlfrescoNodeController();
+                    aController.uploadSPItemToAlfresco();
+                    //Remove from SP
+                }
+            }
+
+            //If no exeptions, update NewDeltaLink
+
 
         } catch (Exception ex) {
             System.out.println("Error reading file or delta link not yet registered: " + ex.getMessage());
@@ -320,10 +393,10 @@ public class GraphService {
             String responseBody = response.body(); // this is your JSON string
 
             // Create ObjectMapper
-            ObjectMapper objectMapper = new ObjectMapper();
+            // ObjectMapper objectMapper = new ObjectMapper();
 
             // Parse JSON string into JsonNode
-            JsonNode rootNode = objectMapper.readTree(responseBody);
+            JsonNode rootNode = mapper.readTree(responseBody);
             // "value" array contains all drives
             JsonNode drivesArray = rootNode.path("value");
             for (JsonNode driveNode : drivesArray) {
@@ -366,7 +439,7 @@ public class GraphService {
                         HttpResponse.BodyHandlers.ofString());
 
                 if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                    ObjectMapper mapper = new ObjectMapper();
+                    // ObjectMapper mapper = new ObjectMapper();
                     JsonNode rootNode = mapper.readTree(response.body());
                     listItemId = rootNode.path("id").asText();
                     if (!listItemId.equals("")) {
@@ -493,7 +566,7 @@ public class GraphService {
         }
 
         // Parse JSON response
-        ObjectMapper mapper = new ObjectMapper();
+        // ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(response.body());
 
         if (root.has("value")) {
@@ -505,9 +578,89 @@ public class GraphService {
         }
 
         if (root.has("@odata.deltaLink")) {
-            newDeltaLink = root.get("@odata.deltaLink").asText();
+            this.newDeltaLink = root.get("@odata.deltaLink").asText();
         }
 
         return new ChangedItemsResult(changedItems, newDeltaLink, this.itemtype);
+    }
+
+    /**
+     * Fetch specific SharePoint list items by IDs
+     *
+     * @param siteId  SharePoint Site ID
+     * @param listId  SharePoint List ID
+     * @param itemIds List of item IDs to fetch
+     * @return List of ListItem objects
+     */
+    public List<SharePointItemResponse> getListItemsByIds(String siteId, String listId, List<String> changedItemsIds) {
+        List<ListItem> items = new ArrayList<>();
+        List<SharePointItemResponse> SPResponseItems = new ArrayList<>();
+        boolean hasUUID = false;
+        boolean mustMove = false;
+        GraphServiceClient<?> graphClient = getGraphClient(AlfrescoConstants.tenantId);
+        for (String itemId : changedItemsIds) {
+            try {
+                ListItem item = graphClient.sites(siteId)
+                        .lists(listId)
+                        .items(itemId)
+                        .buildRequest()
+                        .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
+                        .expand("fields") // <-- Important
+                        .get();
+                items.add(item);
+            } catch (GraphServiceException gse) {
+                if (gse.getResponseCode() == 404) {
+                    // ✅ Item not found – handle separately
+                    System.err.println("Item NOT FOUND: " + itemId);
+                    // e.g. mark for deletion, skip, log, etc.
+                    continue;
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to fetch item ID: " + itemId + " -> " + e.getMessage());
+            }
+        }
+        if (!items.isEmpty()) {
+            try {
+                for (ListItem li : items) {
+                    FieldValueSet fields = li.fields;
+                    AlfrescoConstants.ContainPlatforms moveTo = null;
+                    SharePointItemResponse SPItem = null;
+                    if (fields != null) {
+                        AdditionalDataManager adm = fields.additionalDataManager();
+                        Object moveValue = adm.get("Move");
+                        String moveStr = moveValue != null ? moveValue.toString().replace("\"", "") : "";
+                        String uuidValue = adm.get("ContAInUUID") != null ? adm.get("ContAInUUID").toString() : "";
+                        hasUUID = uuidValue != null && !uuidValue.isEmpty();
+
+                        for (AlfrescoConstants.ContainPlatforms type : AlfrescoConstants.ContainPlatforms.values()) {
+                            // System.out.println("Check if " + type + " matches" + moveStr + " for itemid "
+                            // + li.id);
+                            if (type.name().equalsIgnoreCase(moveStr)) {
+                                System.out.println("Found matching platform: " + type);
+                                moveTo = type;
+                                mustMove = true;
+                            }
+                        }
+                        // Now create only the objects that require actions
+                        if (!hasUUID || mustMove) {
+                            // Convert SDK object to JSON string
+                            try {
+                                String json = mapper.writeValueAsString(li);
+                                SPItem = mapper.readValue(json, SharePointItemResponse.class);
+                                SPItem.HasUUID = hasUUID;
+                                SPItem.MustMove = mustMove;
+                                SPResponseItems.add(SPItem);
+                                SPItem.MoveTo = moveTo;
+                            } catch (Exception e) {
+                                System.err.println("Failed to fetch item ID: " + li + " -> " + e.getMessage());
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
+        }
+        return SPResponseItems;
     }
 }

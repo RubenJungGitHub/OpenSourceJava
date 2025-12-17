@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import contain.opensource.ils.bs.receiver.classes.InformationObject;
+import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 
@@ -66,7 +66,7 @@ public class ILSController {
     }
 
     @PostMapping(value = "/RelocateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String RelocateIO(@RequestBody InformationObject IOobject) {
+    public String RelocateIO(@RequestBody RelocateInformationObject IOobject) {
         AlfrescoNodeController Acontroller = new AlfrescoNodeController();
         Acontroller.RelocateIO(IOobject);
         return "Success";

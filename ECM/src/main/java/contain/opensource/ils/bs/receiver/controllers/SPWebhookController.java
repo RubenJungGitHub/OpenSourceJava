@@ -47,7 +47,7 @@ public class SPWebhookController {
             Notification notification = notificationRoot.getValue().get(0);
             GService.ProcessChangedSharepointItems(notification);
         }
-
+        System.out.println("EXIT LISTENER: ");
         // Always return quickly
         return ResponseEntity.ok().build();
     }

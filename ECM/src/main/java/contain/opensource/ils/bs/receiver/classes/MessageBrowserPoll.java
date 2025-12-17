@@ -37,7 +37,7 @@ public class MessageBrowserPoll {
         try {
 
             /// ================================================================================================================================
-            /// TODO. HANGS ON CINSUMER CLOSED IF ALFRESCO SSERVER IS BROUGHT DOWN. CHECK
+            /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
             // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
             /// ================================================================================================================================
 
@@ -127,7 +127,7 @@ public class MessageBrowserPoll {
                                     if (aController.alfresconNodeResponse.MustMove) {
 
                                         // Create generic property mapping information object
-                                        InformationObject IOobject = new InformationObject(
+                                        RelocateInformationObject IOobject = new RelocateInformationObject(
                                                 aController.alfresconNodeResponse,
                                                 AlfrescoConstants.ContainPlatforms.ALFRESCO,
                                                 AlfrescoConstants.ContainPlatforms.SPO);

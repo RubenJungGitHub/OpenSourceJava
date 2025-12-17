@@ -14,6 +14,6 @@ public class ILSApplication {
 		SpringApplication.run(ILSApplication.class, args);
 		ILS.SayHello(args);
 		// MessageBrowserEvent.ReadMessages(args);
-		MessageBrowserPoll.ReadMessages(args);
+		//MessageBrowserPoll.ReadMessages(args);
 	}
 }
