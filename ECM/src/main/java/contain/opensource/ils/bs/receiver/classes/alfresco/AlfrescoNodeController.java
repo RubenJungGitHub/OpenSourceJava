@@ -340,10 +340,7 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
               e.printStackTrace();
             }
             // To do check null for transaction and persistance
-            // updateMetaData(nodeId, IOobject);
-            //getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
-            //updateMetaData("ecb97ec6-7a68-490a-802b-52cfc5339941", IOobject);
-            //String retval = waitForUUID(nodeId, 1000, 1000); 
+            //Upload content + set cm:title/cm:description in one go” is NOT supported reliably Checked relentlessly with ChatGPT 17-12-2025
             updateMetaData(nodeId, IOobject);
             return "BULLSHIT";
           } else {
