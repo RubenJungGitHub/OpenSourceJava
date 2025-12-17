@@ -136,7 +136,6 @@ public class AlfrescoNodeController {
         String auth = Base64.getEncoder()
             .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
 
-        // Actual upload
         String endpoint = String.format(
             "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
             AlfrescoConstants.alfrescoBaseUrl, libNode);
@@ -144,76 +143,77 @@ public class AlfrescoNodeController {
         post.setHeader("Authorization", "Basic " + auth);
         post.setHeader("Accept", "application/json");
 
-        // Build multipart form: file + optional properties
-        // MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        // builder.addBinaryBody("filedata", IOobject.getContent(),
-        // ContentType.create(IOobject.getMimeType()),
-        // IOobject.getFileName());
-
-        // builder.addBinaryBody(
-        // "filedata",
-        // IOobject.getContent(), // byte[] content
-        // ContentType.create(IOobject.getMimeType()),
-        // IOobject.getFileName());
-
-        // ObjectMapper mapper = new ObjectMapper();
-        // ObjectNode properties = mapper.createObjectNode();
-        // properties.put("type", "cm:content"); // mandatory
-        // if (IOobject.getTitle() != null)
-        // properties.put("cm:title", IOobject.getTitle());
-        // if (IOobject.getDescription() != null)
-        // properties.put("cm:description", IOobject.getDescription());
-        // properties.put("type", "cm:content");
-
-        // builder.addTextBody(
-        // "properties",
-        // mapper.writeValueAsString(properties),
-        // ContentType.create("application/json", StandardCharsets.UTF_8));
-
-        // builder.addTextBody(
-        // "properties",
-        // mapper.writeValueAsString(properties),
-        // ContentType.create("application/json", StandardCharsets.UTF_8));
-        //
+        // ==========================================================================================================
+        // Actual upload format
+        // Build properties JSON
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode properties = mapper.createObjectNode();
-        properties.put("type", "cm:content");
-        properties.put("name", IOobject.getFileName());
-        if (IOobject.getTitle() != null)
+        properties.put("type", "cm:content"); // mandatory
+        properties.put("name", IOobject.getFileName()); // mandatory
+
+        if (IOobject.getTitle() != null) {
           properties.put("cm:title", IOobject.getTitle());
-        if (IOobject.getDescription() != null)
+        }
+        if (IOobject.getDescription() != null) {
           properties.put("cm:description", IOobject.getDescription());
+        }
+        if (IOobject.getUuid() != null && !IOobject.getUuid().isEmpty()) {
+          properties.put("contain:UUID", IOobject.getUuid()); // custom property
+        }
 
+        // Build multipart entity
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.setMode(HttpMultipartMode.STRICT);
-
-        // Use APPLICATION_JSON explicitly
+        builder.setMode(HttpMultipartMode.STRICT); // ensures proper boundaries
         builder.addTextBody(
             "properties",
             mapper.writeValueAsString(properties),
             ContentType.APPLICATION_JSON);
-
-        // File content
         builder.addBinaryBody(
             "filedata",
             IOobject.getContent(),
-            ContentType.create(IOobject.getMimeType()), // could try "application/octet-stream" or "text/plain" for
-                                                        // scripts
+            ContentType.create(IOobject.getMimeType()),
             IOobject.getFileName());
 
         post.setEntity(builder.build());
+
+        // ==========================================================================================================
 
         try (CloseableHttpResponse response = client.execute(post)) {
           int statusCode = response.getCode();
           String responseBody = EntityUtils.toString(response.getEntity());
 
           if (statusCode >= 200 && statusCode < 300) {
+            // debug GetNode to check why fields are not set
             JsonNode root = mapper.readTree(responseBody);
+            String nodeId = root.path("entry").path("id").asText();
+            // endpoint =
+            // String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",AlfrescoConstants.alfrescoBaseUrl,
+            // libNode);
+            String updateEndpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
+                AlfrescoConstants.alfrescoBaseUrl, nodeId);
+            HttpPut put = new HttpPut(updateEndpoint);
+            put.setHeader("Authorization", "Basic " + auth);
+            put.setHeader("Content-Type", "application/json");
+            ObjectNode updateProps = mapper.createObjectNode();
+            updateProps.put("cm:title", IOobject.getTitle());
+            updateProps.put("cm:description", IOobject.getDescription());
+            updateProps.put("contain:UUID", IOobject.getUuid());
+            put.setEntity(new StringEntity(updateProps.toString(), ContentType.APPLICATION_JSON));
+            CloseableHttpResponse updateResp = client.execute(put);
+            statusCode = updateResp.getCode();
+            String UresponseBody = EntityUtils.toString(updateResp.getEntity());
+            root = mapper.readTree(UresponseBody);
+            JsonNode nodeproperties = root.path("entry").path("properties");
+            System.out.println("=== Node Properties ===");
+            nodeproperties.fields().forEachRemaining(entry -> {
+              System.out.println(entry.getKey() + " = " + entry.getValue().asText());
+            });
             return root.path("entry").path("id").asText(); // uploaded nodeId
           } else {
             throw new RuntimeException("Upload failed: " + statusCode + " - " + responseBody);
           }
         }
+
       }
     } catch (Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);
