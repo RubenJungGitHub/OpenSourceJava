@@ -103,6 +103,11 @@ public class RelocateInformationObject {
         this.content = content;
     }
 
+    @JsonGetter("description")
+    public String getDescription() {
+        return description;
+    }
+
     public String getTitle() {
         return title;
     }

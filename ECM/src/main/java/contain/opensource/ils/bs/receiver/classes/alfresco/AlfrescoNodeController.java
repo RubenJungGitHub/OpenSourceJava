@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.apache.hc.client5.http.entity.mime.HttpMultipartMode;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.core5.http.ContentType;
 
@@ -26,6 +28,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import com.azure.core.http.HttpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
@@ -121,35 +124,102 @@ public class AlfrescoNodeController {
     return null;
   }
 
-  public void  uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
-      try {
+  public String uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
+    try {
       // First get SiteNode
       try (CloseableHttpClient client = HttpClients.createDefault()) {
         String siteNode = GetAlfrescoSiteNode(client);
         System.out.println("Sitenode  " + siteNode);
         String libNode = getDocumentLibraryNodeId(client, siteNode);
         System.out.println("Libnode   " + libNode);
-        
-        String auth = Base64.getEncoder()
-                .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
 
-        //Actual upload
+        String auth = Base64.getEncoder()
+            .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+
+        // Actual upload
         String endpoint = String.format(
             "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
             AlfrescoConstants.alfrescoBaseUrl, libNode);
-           HttpPost post = new HttpPost(endpoint);
+        HttpPost post = new HttpPost(endpoint);
         post.setHeader("Authorization", "Basic " + auth);
-        post.setHeader("Accept", "application/json");   
+        post.setHeader("Accept", "application/json");
 
         // Build multipart form: file + optional properties
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.addBinaryBody("filedata", IOobject.getContent(), ContentType.create(IOobject.getMimeType()), IOobject.getFileName());
+        // MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        // builder.addBinaryBody("filedata", IOobject.getContent(),
+        // ContentType.create(IOobject.getMimeType()),
+        // IOobject.getFileName());
 
+        // builder.addBinaryBody(
+        // "filedata",
+        // IOobject.getContent(), // byte[] content
+        // ContentType.create(IOobject.getMimeType()),
+        // IOobject.getFileName());
+
+        // ObjectMapper mapper = new ObjectMapper();
+        // ObjectNode properties = mapper.createObjectNode();
+        // properties.put("type", "cm:content"); // mandatory
+        // if (IOobject.getTitle() != null)
+        // properties.put("cm:title", IOobject.getTitle());
+        // if (IOobject.getDescription() != null)
+        // properties.put("cm:description", IOobject.getDescription());
+        // properties.put("type", "cm:content");
+
+        // builder.addTextBody(
+        // "properties",
+        // mapper.writeValueAsString(properties),
+        // ContentType.create("application/json", StandardCharsets.UTF_8));
+
+        // builder.addTextBody(
+        // "properties",
+        // mapper.writeValueAsString(properties),
+        // ContentType.create("application/json", StandardCharsets.UTF_8));
+        //
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode properties = mapper.createObjectNode();
+        properties.put("type", "cm:content");
+        properties.put("name", IOobject.getFileName());
+        if (IOobject.getTitle() != null)
+          properties.put("cm:title", IOobject.getTitle());
+        if (IOobject.getDescription() != null)
+          properties.put("cm:description", IOobject.getDescription());
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.STRICT);
+
+        // Use APPLICATION_JSON explicitly
+        builder.addTextBody(
+            "properties",
+            mapper.writeValueAsString(properties),
+            ContentType.APPLICATION_JSON);
+
+        // File content
+        builder.addBinaryBody(
+            "filedata",
+            IOobject.getContent(),
+            ContentType.create(IOobject.getMimeType()), // could try "application/octet-stream" or "text/plain" for
+                                                        // scripts
+            IOobject.getFileName());
+
+        post.setEntity(builder.build());
+
+        try (CloseableHttpResponse response = client.execute(post)) {
+          int statusCode = response.getCode();
+          String responseBody = EntityUtils.toString(response.getEntity());
+
+          if (statusCode >= 200 && statusCode < 300) {
+            JsonNode root = mapper.readTree(responseBody);
+            return root.path("entry").path("id").asText(); // uploaded nodeId
+          } else {
+            throw new RuntimeException("Upload failed: " + statusCode + " - " + responseBody);
+          }
+        }
       }
     } catch (Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();
     }
+    return "Failed";
   }
 
   public void GetNode() {

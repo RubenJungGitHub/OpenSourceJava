@@ -34,6 +34,7 @@ import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.http.GraphServiceException;
 import com.microsoft.graph.models.Drive;
+import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.models.FieldValueSet;
 import com.microsoft.graph.models.ListItem;
 import com.microsoft.graph.requests.GraphServiceClient;
@@ -556,8 +557,7 @@ public class GraphService {
                         .items(itemId)
                         .buildRequest()
                         .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                        .expand("fields($select=Title,Description0,ContAInUUID,LinkFilename,Move)") // <-- add your
-                                                                                                    // fields
+                        .expand("fields($select=Title,Description0,ContAInUUID,LinkFilename,Move),driveItem")
                         .get();
                 items.add(item);
             } catch (GraphServiceException gse) {
@@ -587,7 +587,7 @@ public class GraphService {
                             if (value != null && !value.isJsonNull()) {
                                 try {
                                     String valueStr = value.getAsString();
-                                    // System.out.println(key + " = " + valueStr);
+                                    //System.out.println(key + " = " + valueStr);
                                 } catch (Exception e) {
                                     // System.err.println("Failed to fetch SP field value" + e.getMessage());
                                 }
@@ -596,6 +596,9 @@ public class GraphService {
                         Object moveValue = adm.get("Move");
                         String moveStr = moveValue != null ? moveValue.toString().replace("\"", "") : "";
                         String uuidValue = adm.get("ContAInUUID") != null ? adm.get("ContAInUUID").toString() : "";
+                        DriveItem driveItem = li.driveItem;
+                        String mimeType = (driveItem != null && driveItem.file != null) ? driveItem.file.mimeType : null;
+
                         hasUUID = uuidValue != null && !uuidValue.isEmpty();
 
                         for (AlfrescoConstants.ContainPlatforms type : AlfrescoConstants.ContainPlatforms.values()) {
@@ -618,11 +621,11 @@ public class GraphService {
                                 Object description = adm.get("Description0");
                                 String titleStr = title != null ? title.toString().replace("\"", "") : "";
                                 String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
-                                String descriptionStr = description != null ? description.toString().replace("\"", "")
-                                        : "";
+                                String descriptionStr = description != null ? description.toString().replace("\"", ""): "";
                                 SPItem.title = titleStr;
                                 SPItem.filename = filenameStr;
                                 SPItem.description = descriptionStr;
+                                SPItem.mimetype = mimeType;
                                 // SPItem.HasUUID = hasUUID;
                                 SPItem.UUID = uuidValue;
                                 // String description = (String) fields.get("Description");
