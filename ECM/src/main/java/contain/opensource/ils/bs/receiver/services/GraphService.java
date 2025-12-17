@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.gson.JsonElement;
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
@@ -65,7 +66,7 @@ public class GraphService {
     private GraphServiceClient<?> graphClient;
     private AlfrescoConstants.eItemtype itemtype;
     private String newDeltaLink = "";
-    
+
     public GraphService() {
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -251,8 +252,7 @@ public class GraphService {
         }
     }
 
-
-    //REMOVE FROM HERE, IS ALFRESCOCONTROLLER
+    // REMOVE FROM HERE, IS ALFRESCOCONTROLLER
     private void uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
         try {
             String accessToken = getGraphToken();
@@ -363,12 +363,11 @@ public class GraphService {
                     AlfrescoNodeController aController = new AlfrescoNodeController();
                     RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
                     aController.uploadSPItemToAlfresco(RObject);
-                    //Remove from SP
+                    // To do Remove from SP
                 }
             }
 
-            //If no exeptions, update NewDeltaLink
-
+            // To do If no exeptions, update NewDeltaLink
 
         } catch (Exception ex) {
             System.out.println("Error reading file or delta link not yet registered: " + ex.getMessage());
@@ -606,8 +605,8 @@ public class GraphService {
                         .items(itemId)
                         .buildRequest()
                         .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                        .expand("fields") // <-- Important
-                        .get();
+                         .expand("fields($select=Title,Description0,ContAInUUID,LinkFilename,Move)") // <-- add your fields
+                         .get();
                 items.add(item);
             } catch (GraphServiceException gse) {
                 if (gse.getResponseCode() == 404) {
@@ -628,14 +627,27 @@ public class GraphService {
                     SharePointItemResponse SPItem = null;
                     if (fields != null) {
                         AdditionalDataManager adm = fields.additionalDataManager();
+                        for (Map.Entry<String, JsonElement> entry : adm.entrySet()) {
+                            String key = entry.getKey();
+                            JsonElement value = entry.getValue();
+
+                            // Example: convert to String
+                            if (value != null && !value.isJsonNull()) {
+                                try {
+                                    String valueStr = value.getAsString();
+                                    //System.out.println(key + " = " + valueStr);
+                                } catch (Exception e) {
+                             //       System.err.println("Failed to fetch SP field value" + e.getMessage());
+                                }
+                            }
+                        }
                         Object moveValue = adm.get("Move");
                         String moveStr = moveValue != null ? moveValue.toString().replace("\"", "") : "";
                         String uuidValue = adm.get("ContAInUUID") != null ? adm.get("ContAInUUID").toString() : "";
                         hasUUID = uuidValue != null && !uuidValue.isEmpty();
 
                         for (AlfrescoConstants.ContainPlatforms type : AlfrescoConstants.ContainPlatforms.values()) {
-                            // System.out.println("Check if " + type + " matches" + moveStr + " for itemid "
-                            // + li.id);
+                        //     System.out.println("Check if " + type + " matches" + moveStr + " for itemid "+ li.id);
                             if (type.name().equalsIgnoreCase(moveStr)) {
                                 System.out.println("Found matching platform: " + type);
                                 moveTo = type;
@@ -648,10 +660,23 @@ public class GraphService {
                             try {
                                 String json = mapper.writeValueAsString(li);
                                 SPItem = mapper.readValue(json, SharePointItemResponse.class);
+                                Object title = adm.get("Title");
+                                Object filename = adm.get("LinkFilename");
+                                Object description = adm.get("Description0");
+                                String titleStr = title != null ? title.toString().replace("\"", "") : "";
+                                String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
+                                String descriptionStr = description != null ? description.toString().replace("\"", "") : "";
+                                SPItem.title = titleStr;
+                                SPItem.filename = filenameStr;
+                                SPItem.description = descriptionStr;
+                                //SPItem.HasUUID = hasUUID;
+                                SPItem.UUID = uuidValue;
+                                // String description = (String) fields.get("Description");
+                                // To do get file content
                                 SPItem.HasUUID = hasUUID;
                                 SPItem.MustMove = mustMove;
-                                SPResponseItems.add(SPItem);
                                 SPItem.MoveTo = moveTo;
+                                SPResponseItems.add(SPItem);
                             } catch (Exception e) {
                                 System.err.println("Failed to fetch item ID: " + li + " -> " + e.getMessage());
                             }

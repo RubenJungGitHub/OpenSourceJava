@@ -13,6 +13,20 @@ public class SharePointItemResponse {
     @JsonProperty("id")
     public String id;
 
+   
+    @JsonProperty("title")           // <-- map directly
+    public String title;
+
+   
+    @JsonProperty("filename")           // <-- map directly
+    public String filename;
+
+    @JsonProperty("description")     // <-- map directly
+    public String description;
+
+    @JsonProperty("file")     // <-- map directly
+    public byte[] file;
+
     @JsonProperty("fields")
     public Map<String, Object> fields;
 

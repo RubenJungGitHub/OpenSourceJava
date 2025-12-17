@@ -20,6 +20,10 @@ public class RelocateInformationObject {
     @JsonProperty("fileName")
     private String filename;
 
+   @JsonProperty("description")
+    private String description;
+
+
     @JsonProperty("id")
     private String id;
 
@@ -52,6 +56,17 @@ public class RelocateInformationObject {
 
     // Constructor for SP
     public RelocateInformationObject(SharePointItemResponse SPItem) {
+      // Map to this object
+        //this.content = SPItem.cont;
+        this.uuid = SPItem.UUID;
+        this.id = SPItem.id;
+        this.title = SPItem.title;
+        this.filename = SPItem.filename;
+        this.description  = SPItem.description;
+        //this.filename = Anode.entry.name;
+        this.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
+        this.containplatformto = SPItem.MoveTo;
+
     }
 
     // getters and setters
