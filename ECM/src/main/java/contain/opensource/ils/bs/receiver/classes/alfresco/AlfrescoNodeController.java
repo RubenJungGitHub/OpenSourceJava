@@ -179,8 +179,54 @@ public class AlfrescoNodeController {
     }
   }
 
+public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exception {
+    String auth = Base64.getEncoder()
+        .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+
+    String endpoint = String.format(
+        "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s?include=properties,aspectNames",
+        AlfrescoConstants.alfrescoBaseUrl, nodeId);
+
+    try (CloseableHttpClient client = HttpClients.createDefault()) {
+        ObjectMapper mapper = new ObjectMapper();
+        for (int attempt = 0; attempt < maxRetries; attempt++) {
+            HttpGet get = new HttpGet(endpoint);
+            get.setHeader("Authorization", "Basic " + auth);
+            get.setHeader("Accept", "application/json");
+
+            try (CloseableHttpResponse response = client.execute(get)) {
+                int statusCode = response.getCode();
+                String responseBody = EntityUtils.toString(response.getEntity());
+
+                if (statusCode >= 200 && statusCode < 300) {
+                    JsonNode root = mapper.readTree(responseBody);
+                    JsonNode props = root.path("entry").path("properties");
+                    JsonNode uuidNode = props.path("contain:UUID");
+                    if (!uuidNode.isMissingNode() && !uuidNode.asText().isEmpty()) {
+                        return uuidNode.asText();
+                    }
+                } else {
+                    throw new RuntimeException("Failed to get node: " + statusCode + " - " + responseBody);
+                }
+            }
+
+            // wait before next retry
+           System.out.println("UUID not yet detected   : sleeping " + sleepMs+"ms before retry "+ (attempt + 1)+ " of "+ maxRetries);
+
+            Thread.sleep(sleepMs);
+        }
+    }
+
+    throw new RuntimeException("UUID not assigned after waiting for " + (maxRetries * sleepMs) + "ms");
+}
+
+
   public void updateMetaData(String nodeId, RelocateInformationObject IOobject) {
     try {
+      //===========================================================================================
+      // Now it is working in separate methid but in my perception it should be possible in one run updating the node.
+      //===========================================================================================
+
       String updateEndpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
           AlfrescoConstants.alfrescoBaseUrl, nodeId);
@@ -201,6 +247,8 @@ public class AlfrescoNodeController {
         propertiesNode.put("cm:title", IOobject.getTitle());
       if (IOobject.getDescription() != null)
         propertiesNode.put("cm:description", IOobject.getDescription());
+    //  if (IOobject.getUuid() != null)
+    //    propertiesNode.put("contain:UUID", IOobject.getUuid());
       // UUID is an aspect, skip it here
 
       ObjectNode rootNode = mapper.createObjectNode();
@@ -295,6 +343,7 @@ public class AlfrescoNodeController {
             // updateMetaData(nodeId, IOobject);
             //getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
             //updateMetaData("ecb97ec6-7a68-490a-802b-52cfc5339941", IOobject);
+            //String retval = waitForUUID(nodeId, 1000, 1000); 
             updateMetaData(nodeId, IOobject);
             return "BULLSHIT";
           } else {
