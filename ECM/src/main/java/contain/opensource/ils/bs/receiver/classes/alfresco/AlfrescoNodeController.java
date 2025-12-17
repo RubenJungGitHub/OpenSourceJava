@@ -124,6 +124,108 @@ public class AlfrescoNodeController {
     return null;
   }
 
+  private String GetNewNodeID(CloseableHttpClient client, String libNode, String fileId) throws Exception {
+    String nodeId = null;
+    String auth = Base64.getEncoder()
+        .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+    String childrenEndpoint = String.format(
+
+        "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
+        AlfrescoConstants.alfrescoBaseUrl, libNode);
+    HttpGet get = new HttpGet(childrenEndpoint);
+    get.setHeader("Authorization", "Basic " + auth);
+    get.setHeader("Accept", "application/json");
+
+    try (CloseableHttpResponse response = client.execute(get)) {
+      String respBody = EntityUtils.toString(response.getEntity());
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode root = mapper.readTree(respBody);
+      for (JsonNode entry : root.path("list").path("entries")) {
+        JsonNode node = entry.path("entry");
+        if (fileId.equals(node.path("name").asText())) {
+          nodeId = node.path("id").asText();
+          break;
+        }
+      }
+    }
+    if (nodeId == null) {
+      throw new RuntimeException("Uploaded file not found in library");
+    }
+    try {
+      getNodeFields(nodeId, client, auth);
+
+    } catch (Exception e) {
+      System.err.println("Exception uploading item to alfresco : " + e);
+      e.printStackTrace();
+    }
+    return nodeId;
+  }
+
+  private void getNodeFields(String nodeId, CloseableHttpClient client, String auth) throws Exception {
+
+    String nodeEndpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
+        AlfrescoConstants.alfrescoBaseUrl, nodeId);
+    HttpGet get = new HttpGet(nodeEndpoint);
+    get.setHeader("Authorization", "Basic " + auth);
+    get.setHeader("Accept", "application/json");
+    try (CloseableHttpResponse response = client.execute(get)) {
+      String json = EntityUtils.toString(response.getEntity());
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode root = mapper.readTree(json);
+      JsonNode properties = root.path("entry").path("properties");
+      String title = properties.path("cm:title").asText();
+      String description = properties.path("cm:description").asText();
+      System.out.println("Title: " + title + ", Description: " + description);
+    }
+  }
+
+  public void updateMetaData(String nodeId, RelocateInformationObject IOobject) {
+    try {
+      String updateEndpoint = String.format(
+          "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
+          AlfrescoConstants.alfrescoBaseUrl, nodeId);
+      ObjectMapper mapper = new ObjectMapper();
+      String auth = Base64.getEncoder()
+          .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+      String.format(
+          "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
+          AlfrescoConstants.alfrescoBaseUrl, nodeId);
+      HttpPut put = new HttpPut(updateEndpoint);
+      put.setHeader("Authorization", "Basic " + auth);
+      put.setHeader("Content-Type", "application/json");
+      CloseableHttpClient client = HttpClients.createDefault();
+
+      // Wrap all model properties inside a "properties" object
+      ObjectNode propertiesNode = mapper.createObjectNode();
+      if (IOobject.getTitle() != null)
+        propertiesNode.put("cm:title", IOobject.getTitle());
+      if (IOobject.getDescription() != null)
+        propertiesNode.put("cm:description", IOobject.getDescription());
+      // UUID is an aspect, skip it here
+
+      ObjectNode rootNode = mapper.createObjectNode();
+      rootNode.set("properties", propertiesNode); // <--- key fix
+
+      put.setEntity(new StringEntity(rootNode.toString(), ContentType.APPLICATION_JSON));
+      // if (IOobject.getUuid() != null && !IOobject.getUuid().isEmpty())
+      // updateProps.put("contain:UUID", IOobject.getUuid());
+
+      // put.setEntity(new StringEntity(updateProps.toString(),
+      // ContentType.APPLICATION_JSON));
+
+      try (CloseableHttpResponse response = client.execute(put)) {
+        int statusCode = response.getCode();
+        if (statusCode < 200 || statusCode >= 300) {
+          String resp = EntityUtils.toString(response.getEntity());
+          throw new RuntimeException("Updating metadata failed: " + statusCode + " - " + resp);
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("Exception uploading item to alfresco : " + e);
+      e.printStackTrace();
+    }
+  }
+
   public String uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
     try {
       // First get SiteNode
@@ -136,6 +238,10 @@ public class AlfrescoNodeController {
         String auth = Base64.getEncoder()
             .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
 
+        // Debug because Alfrescco only returns the fields if filled in. This however
+        // this should not affect Put, which it seems to do
+        String nodeid = GetNewNodeID(client, libNode, "password.txt");
+        getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
         String endpoint = String.format(
             "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
             AlfrescoConstants.alfrescoBaseUrl, libNode);
@@ -147,27 +253,16 @@ public class AlfrescoNodeController {
         // Actual upload format
         // Build properties JSON
         ObjectMapper mapper = new ObjectMapper();
-        ObjectNode properties = mapper.createObjectNode();
-        properties.put("type", "cm:content"); // mandatory
-        properties.put("name", IOobject.getFileName()); // mandatory
+        ObjectNode props = mapper.createObjectNode();
+        props.put("type", "cm:content"); // mandatory
+        props.put("name", IOobject.getFileName()); // mandatory
 
-        if (IOobject.getTitle() != null) {
-          properties.put("cm:title", IOobject.getTitle());
-        }
-        if (IOobject.getDescription() != null) {
-          properties.put("cm:description", IOobject.getDescription());
-        }
-        if (IOobject.getUuid() != null && !IOobject.getUuid().isEmpty()) {
-          properties.put("contain:UUID", IOobject.getUuid()); // custom property
-        }
-
-        // Build multipart entity
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        builder.setMode(HttpMultipartMode.STRICT); // ensures proper boundaries
+        builder.setMode(HttpMultipartMode.STRICT);
         builder.addTextBody(
             "properties",
-            mapper.writeValueAsString(properties),
-            ContentType.APPLICATION_JSON);
+            mapper.writeValueAsString(props),
+            ContentType.create("application/json", StandardCharsets.UTF_8));
         builder.addBinaryBody(
             "filedata",
             IOobject.getContent(),
@@ -184,38 +279,31 @@ public class AlfrescoNodeController {
 
           if (statusCode >= 200 && statusCode < 300) {
             // debug GetNode to check why fields are not set
-            JsonNode root = mapper.readTree(responseBody);
-            String nodeId = root.path("entry").path("id").asText();
-            // endpoint =
-            // String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",AlfrescoConstants.alfrescoBaseUrl,
-            // libNode);
-            String updateEndpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
-                AlfrescoConstants.alfrescoBaseUrl, nodeId);
-            HttpPut put = new HttpPut(updateEndpoint);
-            put.setHeader("Authorization", "Basic " + auth);
-            put.setHeader("Content-Type", "application/json");
-            ObjectNode updateProps = mapper.createObjectNode();
-            updateProps.put("cm:title", IOobject.getTitle());
-            updateProps.put("cm:description", IOobject.getDescription());
-            updateProps.put("contain:UUID", IOobject.getUuid());
-            put.setEntity(new StringEntity(updateProps.toString(), ContentType.APPLICATION_JSON));
-            CloseableHttpResponse updateResp = client.execute(put);
-            statusCode = updateResp.getCode();
-            String UresponseBody = EntityUtils.toString(updateResp.getEntity());
-            root = mapper.readTree(UresponseBody);
-            JsonNode nodeproperties = root.path("entry").path("properties");
-            System.out.println("=== Node Properties ===");
-            nodeproperties.fields().forEachRemaining(entry -> {
-              System.out.println(entry.getKey() + " = " + entry.getValue().asText());
-            });
-            return root.path("entry").path("id").asText(); // uploaded nodeId
+            // get the new nodeID. THIS IS THE ONLY ABSURD WAY!!!
+            // According to ChatGPT it is not possible to update all in one go but needs to
+            // be separated.
+            String nodeId = null;
+            try {
+
+              Thread.sleep(2000); // Give Lafresco time to create nodeid
+              nodeId = GetNewNodeID(client, libNode, IOobject.getFileName());
+            } catch (Exception e) {
+              System.err.println("Exception uploading item to alfresco : " + e);
+              e.printStackTrace();
+            }
+            // To do check null for transaction and persistance
+            // updateMetaData(nodeId, IOobject);
+            getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
+            updateMetaData("ecb97ec6-7a68-490a-802b-52cfc5339941", IOobject);
+            return "BULLSHIT";
           } else {
             throw new RuntimeException("Upload failed: " + statusCode + " - " + responseBody);
           }
         }
-
       }
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();
     }
