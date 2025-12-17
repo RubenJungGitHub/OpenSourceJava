@@ -17,6 +17,9 @@ public class SharePointItemResponse {
     @JsonProperty("title")           // <-- map directly
     public String title;
 
+    @JsonProperty("mimetype")           // <-- map directly
+    public String mimetype;
+
    
     @JsonProperty("filename")           // <-- map directly
     public String filename;

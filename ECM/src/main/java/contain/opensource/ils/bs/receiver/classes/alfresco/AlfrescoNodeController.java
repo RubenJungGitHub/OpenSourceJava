@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.core5.http.ContentType;
 
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -141,7 +143,7 @@ public class AlfrescoNodeController {
 
         // Build multipart form: file + optional properties
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-     //   builder.addBinaryBody("filedata", content, ContentType.create(mimetype), fileName);
+        builder.addBinaryBody("filedata", IOobject.getContent(), ContentType.create(IOobject.getMimeType()), IOobject.getFileName());
 
       }
     } catch (Exception e) {

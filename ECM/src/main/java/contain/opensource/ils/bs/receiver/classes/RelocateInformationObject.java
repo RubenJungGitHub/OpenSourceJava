@@ -23,6 +23,8 @@ public class RelocateInformationObject {
    @JsonProperty("description")
     private String description;
 
+    @JsonProperty("mimetype")
+    private String mimetype;
 
     @JsonProperty("id")
     private String id;
@@ -63,7 +65,8 @@ public class RelocateInformationObject {
         this.title = SPItem.title;
         this.filename = SPItem.filename;
         this.description  = SPItem.description;
-        //this.filename = Anode.entry.name;
+        this.mimetype = SPItem.mimetype;
+        this.content = SPItem.file;
         this.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
         this.containplatformto = SPItem.MoveTo;
 
@@ -84,6 +87,10 @@ public class RelocateInformationObject {
 
     public void setFileName(String fileName) {
         this.filename = fileName;
+    }
+
+    public String getMimeType() {
+        return mimetype;
     }
 
     @JsonGetter("content")
