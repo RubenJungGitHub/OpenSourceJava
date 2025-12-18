@@ -7,15 +7,20 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -152,7 +157,7 @@ public class GraphService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                System.out.println("Field updated successfully!");
+                System.out.println("UUID assigned updated successfully!");
                 return uuid;
             } else {
                 System.out.println("Failed to update field: " + response.body());
@@ -195,7 +200,7 @@ public class GraphService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                System.out.println("Field updated successfully!");
+                System.out.println("Item  : " + node.getFileName() +  " moved to SharePoint succesfully" );
                 return uuid;
             } else {
                 System.out.println("Failed to update field: " + response.body());
@@ -281,8 +286,8 @@ public class GraphService {
 
             // Get Graph token (assuming graphService has a synchronous method or you wrap
             // it in CompletableFuture)
+            // String accessToken = getGraphToken();
             String accessToken = getGraphToken();
-
             // Extract siteId and listId from resource URL
             String[] parts = resourceValue.split("/");
 
@@ -310,9 +315,18 @@ public class GraphService {
             }
             ChangedItemsResult changedItems = getChangedItems(AlfrescoConstants.tenantId, siteId, listId, driveId,
                     lastDeltaLink);
+            if (changedItems.changedItems == null || changedItems.changedItems.isEmpty()) {
+                System.out.println("No changed items detected.");
+                LogNewDeltaLinkToFile();
+                return;
+            }
             // Now get the SP items
             List<SharePointItemResponse> items = getListItemsByIds(siteId, listId, changedItems.changedItems);
             for (SharePointItemResponse SPItem : items) {
+                if(!SPItem.MustMove && SPItem.HasUUID)
+                {
+                     System.out.println("Changes detected on item : " + SPItem.id +  " but no action required.");
+                }
                 if (!SPItem.HasUUID) {
                     // AssignUUID
                     SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id);
@@ -325,17 +339,18 @@ public class GraphService {
                     aController.uploadSPItemToAlfresco(RObject);
                     try {
                         deleteSPItemById(SPItem.id);
-                    } 
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         System.out.println("Failed to delete SP item after move: " + e.getMessage());
                     }
                 }
             }
+            LogNewDeltaLinkToFile();
 
             // To do If no exeptions, update NewDeltaLink
 
         } catch (Exception ex) {
-            System.out.println("Error reading file or delta link not yet registered: " + ex.getMessage());
+            // // System.out.println("Error reading file or delta link not yet registered: "
+            // + ex.getMessage());
             lastDeltaLink = null; // treat as first run
         }
 
@@ -551,7 +566,7 @@ public class GraphService {
          * @return List of ListItem objects
          */
 
-         List<ListItem> items = new ArrayList<>();
+        List<ListItem> items = new ArrayList<>();
         List<SharePointItemResponse> SPResponseItems = new ArrayList<>();
         boolean hasUUID = false;
         boolean mustMove = false;
@@ -571,7 +586,7 @@ public class GraphService {
                     // ✅ Item not found – handle separately
                     System.err.println("Item NOT FOUND: " + itemId);
                     // e.g. mark for deletion, skip, log, etc.
-                    continue;
+                    // continue;
                 }
             } catch (Exception e) {
                 System.err.println("Failed to fetch item ID: " + itemId + " -> " + e.getMessage());
@@ -586,13 +601,13 @@ public class GraphService {
                     if (fields != null) {
                         AdditionalDataManager adm = fields.additionalDataManager();
                         for (Map.Entry<String, JsonElement> entry : adm.entrySet()) {
-                            String key = entry.getKey();
+                            // String key = entry.getKey();
                             JsonElement value = entry.getValue();
 
                             // Example: convert to String
                             if (value != null && !value.isJsonNull()) {
                                 try {
-                                    String valueStr = value.getAsString();
+                                    // String valueStr = value.getAsString();
                                     // System.out.println(key + " = " + valueStr);
                                 } catch (Exception e) {
                                     // System.err.println("Failed to fetch SP field value" + e.getMessage());
@@ -618,7 +633,7 @@ public class GraphService {
                             }
                         }
 
-                        if(mustMove) {
+                        if (mustMove) {
                             System.out.println("Item " + li.id + " marked for move to " + moveTo);
                         }
 
@@ -664,7 +679,7 @@ public class GraphService {
         // First obtain SiteCollectionID
         String sitecollectionid = "";
         try {
-            sitecollectionid = getSitecolectionID();
+            sitecollectionid = getSitecollectionID();
         } catch (Exception ex) {
             System.out.println("Error retrieving sitecollectionID " + ex.getMessage());
         }
@@ -702,7 +717,7 @@ public class GraphService {
         }
     }
 
-    private String getSitecolectionID() throws IOException, InterruptedException {
+    private String getSitecollectionID() throws IOException, InterruptedException {
         String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s:/sites/%s",
                 this.tenantDomain.toLowerCase(), this.SiteName);
 
@@ -750,6 +765,48 @@ public class GraphService {
             throw new RuntimeException(
                     "Failed to delete document. HTTP "
                             + response.statusCode() + " - " + response.body());
+        }
+    }
+
+    private void LogNewDeltaLinkToFile() {
+        try {
+            // Split delta link
+            String[] dlParts = newDeltaLink.split("\\?");
+
+            Path path = Paths.get(AlfrescoConstants.DeltaLinkFile);
+
+            // Read all lines
+            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+            // Filter out lines containing the old delta link base
+            List<String> filteredLines = lines.stream()
+                    .filter(line -> !line.contains(dlParts[0]))
+                    .collect(Collectors.toList());
+
+            // Overwrite file with remaining lines
+            Files.write(
+                    path,
+                    filteredLines,
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
+
+            // Append corrected content
+            String correctedContent = dlParts[0] + "|" + newDeltaLink;
+            Files.write(
+                    path,
+                    Collections.singletonList(correctedContent),
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.APPEND);
+
+            // Console output with color (ANSI)
+            System.out.println("\u001B[36mFile " + AlfrescoConstants.DeltaLinkFile + " updated with latest deltalink");
+            System.out.println("______________________________________________________________________\u001B[0m");
+
+            // return ResponseEntity.ok().build(); // Spring
+            // return Response.ok().build(); // JAX-RS
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 }

@@ -1,5 +1,7 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
+import java.time.LocalDate;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -30,7 +32,7 @@ public class SPWebhookController {
 
         // Validation handshake
 
-        System.out.println("IN JAVA SHAREPOINT WEBHOOKLISTENER : ");
+        System.out.println( LocalDate.now() + ": IN JAVA SHAREPOINT WEBHOOKLISTENER : ");
         if (validationToken != null && !validationToken.isEmpty()) {
             return ResponseEntity
                     .ok()

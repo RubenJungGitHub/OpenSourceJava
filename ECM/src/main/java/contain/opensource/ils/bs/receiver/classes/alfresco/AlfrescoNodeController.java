@@ -2,30 +2,24 @@ package contain.opensource.ils.bs.receiver.classes.alfresco;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.apache.hc.client5.http.entity.mime.HttpMultipartMode;
-import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
-import org.apache.hc.core5.http.ContentType;
-
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.entity.mime.HttpMultipartMode;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
-import com.azure.core.http.HttpClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -343,7 +337,8 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
             // To do check null for transaction and persistance
             //Upload content + set cm:title/cm:description in one go” is NOT supported reliably Checked relentlessly with ChatGPT 17-12-2025
             updateMetaData(nodeId, IOobject);
-            return "BULLSHIT";
+            System.out.println("Item  : " + IOobject.getFileName() +  " moved to Alfresco succesfully" );
+            return "";
           } else {
             throw new RuntimeException("Upload failed: " + statusCode + " - " + responseBody);
           }
