@@ -308,7 +308,6 @@ public class GraphService {
                     listId = parts[4];
                 }
             }
-            // String accesstoken = getGraphToken();
             ChangedItemsResult changedItems = getChangedItems(AlfrescoConstants.tenantId, siteId, listId, driveId,
                     lastDeltaLink);
             // Now get the SP items
@@ -319,11 +318,17 @@ public class GraphService {
                     SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id);
                 }
                 if (SPItem.MustMove) {
+                    // Relocate item
                     SPItem.file = getSPItemContentById(SPItem.id);
                     AlfrescoNodeController aController = new AlfrescoNodeController();
                     RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
                     aController.uploadSPItemToAlfresco(RObject);
-                    // To do Remove from SP
+                    try {
+                        deleteSPItemById(SPItem.id);
+                    } 
+                    catch (Exception e) {
+                        System.out.println("Failed to delete SP item after move: " + e.getMessage());
+                    }
                 }
             }
 
@@ -545,7 +550,8 @@ public class GraphService {
          * @param itemIds List of item IDs to fetch
          * @return List of ListItem objects
          */
-        List<ListItem> items = new ArrayList<>();
+
+         List<ListItem> items = new ArrayList<>();
         List<SharePointItemResponse> SPResponseItems = new ArrayList<>();
         boolean hasUUID = false;
         boolean mustMove = false;
@@ -587,7 +593,7 @@ public class GraphService {
                             if (value != null && !value.isJsonNull()) {
                                 try {
                                     String valueStr = value.getAsString();
-                                    //System.out.println(key + " = " + valueStr);
+                                    // System.out.println(key + " = " + valueStr);
                                 } catch (Exception e) {
                                     // System.err.println("Failed to fetch SP field value" + e.getMessage());
                                 }
@@ -597,19 +603,25 @@ public class GraphService {
                         String moveStr = moveValue != null ? moveValue.toString().replace("\"", "") : "";
                         String uuidValue = adm.get("ContAInUUID") != null ? adm.get("ContAInUUID").toString() : "";
                         DriveItem driveItem = li.driveItem;
-                        String mimeType = (driveItem != null && driveItem.file != null) ? driveItem.file.mimeType : null;
+                        String mimeType = (driveItem != null && driveItem.file != null) ? driveItem.file.mimeType
+                                : null;
 
                         hasUUID = uuidValue != null && !uuidValue.isEmpty();
-
+                        mustMove = false;
                         for (AlfrescoConstants.ContainPlatforms type : AlfrescoConstants.ContainPlatforms.values()) {
                             // System.out.println("Check if " + type + " matches" + moveStr + " for itemid
                             // "+ li.id);
                             if (type.name().equalsIgnoreCase(moveStr)) {
-                                System.out.println("Found matching platform: " + type);
+                                System.out.println("Found matching platform: " + type + " for itemid " + li.id);
                                 moveTo = type;
                                 mustMove = true;
                             }
                         }
+
+                        if(mustMove) {
+                            System.out.println("Item " + li.id + " marked for move to " + moveTo);
+                        }
+
                         // Now create only the objects that require actions
                         if (!hasUUID || mustMove) {
                             // Convert SDK object to JSON string
@@ -621,7 +633,8 @@ public class GraphService {
                                 Object description = adm.get("Description0");
                                 String titleStr = title != null ? title.toString().replace("\"", "") : "";
                                 String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
-                                String descriptionStr = description != null ? description.toString().replace("\"", ""): "";
+                                String descriptionStr = description != null ? description.toString().replace("\"", "")
+                                        : "";
                                 SPItem.title = titleStr;
                                 SPItem.filename = filenameStr;
                                 SPItem.description = descriptionStr;
@@ -712,6 +725,31 @@ public class GraphService {
             }
         } else {
             throw new IOException("Failed to fetch SharePoint item. Status: " + response.statusCode());
+        }
+    }
+
+    private void deleteSPItemById(String itemId) throws Exception {
+        String endpoint = String.format(
+                "https://graph.microsoft.com/v1.0/sites/%s:/sites/%s:/lists/%s/items/%s",
+                this.tenantDomain, this.SiteName, this.ListId, itemId);
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Accept", "application/json")
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 204) {
+            System.out.println("Document deleted successfully.");
+        } else {
+            throw new RuntimeException(
+                    "Failed to delete document. HTTP "
+                            + response.statusCode() + " - " + response.body());
         }
     }
 }

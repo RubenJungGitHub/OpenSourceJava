@@ -152,7 +152,8 @@ public class AlfrescoNodeController {
       throw new RuntimeException("Uploaded file not found in library");
     }
     try {
-      getNodeFields(nodeId, client, auth);
+      //For POC purposes
+     // getNodeFields(nodeId, client, auth);
 
     } catch (Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);
