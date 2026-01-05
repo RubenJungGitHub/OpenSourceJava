@@ -51,6 +51,7 @@ public class RelocateInformationObject {
         this.uuid = Anode.UUID;
         this.id = Anode.entry.id;
         this.title = Anode.Title;
+        this.description  = Anode.Description;    
         this.filename = Anode.entry.name;
         this.containplatformfrom = containPlatformfrom;
         this.containplatformto = containPlatFormTo;

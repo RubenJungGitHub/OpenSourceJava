@@ -16,6 +16,8 @@ public class AlfrescoNodeResponse {
     public Entry entry;
     public byte[] file;
     public String Title;
+    public String Description;
+
 
     public static class Entry {
         public boolean isFile;

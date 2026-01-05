@@ -215,7 +215,6 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
     throw new RuntimeException("UUID not assigned after waiting for " + (maxRetries * sleepMs) + "ms");
 }
 
-
   public void updateMetaData(String nodeId, RelocateInformationObject IOobject) {
     try {
       //===========================================================================================
@@ -264,7 +263,7 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
         }
       }
     } catch (Exception e) {
-      System.err.println("Exception uploading item to alfresco : " + e);
+      // System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();
     }
   }
@@ -276,7 +275,7 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
         String siteNode = GetAlfrescoSiteNode(client);
         System.out.println("Sitenode  " + siteNode);
         String libNode = getDocumentLibraryNodeId(client, siteNode);
-        System.out.println("Libnode   " + libNode);
+        // System.out.println("Libnode   " + libNode);
 
         String auth = Base64.getEncoder()
             .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
@@ -375,10 +374,15 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
           try {
             alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
 
-            // Navigate to the title
+            // Navigate to the title and description
             alfresconNodeResponse.Title = rootNode.path("entry")
                 .path("properties")
                 .path("cm:title")
+                .asText();
+
+            alfresconNodeResponse.Description = rootNode.path("entry")
+                .path("properties")
+                .path("cm:description")
                 .asText();
             // Check if UUID present
             // Get node content
@@ -411,7 +415,6 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
               System.err.println("Exceptionsetting moveto : " + e);
               e.printStackTrace();
             }
-          } catch (java.lang.NullPointerException e) {
             // No action. UUID not present
           } catch (Exception e) {
             System.err.println("Exception getting node : " + e);

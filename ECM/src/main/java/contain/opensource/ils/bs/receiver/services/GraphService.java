@@ -53,6 +53,7 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
+import contain.opensource.ils.bs.receiver.Globals.Globals;
 
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
@@ -129,6 +130,13 @@ public class GraphService {
     public String updateSharepointItemGraphAPI(
             @Parameter(description = "List Item ID") @RequestParam String listItemId) {
         try {
+            // Initially check if SP item is added because of reloaction
+            String UID = this.SiteID + this.ListId + listItemId;
+            if (Globals.AlfrescoRelocationItems.contains(UID)) {
+                System.out.println("Relocated item, no update required");
+                return "Relocated item, no update required";
+            }
+
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
             String uuid = GetUUID();
@@ -172,6 +180,7 @@ public class GraphService {
 
     public String updateSharepointItemGraphAPI(RelocateInformationObject node, String listItemId) {
         try {
+
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
             String uuid = GetUUID();
@@ -181,6 +190,42 @@ public class GraphService {
             Map<String, Object> body = new HashMap<>();
             body.put("ContAInUUID", node.getUuid());
             body.put("Title", node.getTitle());
+
+            // Graph API will not allow description field to be a[dated. Even wordso./ If
+            // this field is added the entire update fails!
+            //Presumably it will work using  SP RestAPI but then the Graph token will not work. 
+            //I tried using the SP token in the past but i did not get it to work.
+
+            /*
+             * 
+             * CHATHGPT 05-01-2026 RuJu
+             * /*
+             * 1 Why Graph cannot update Description
+             * 
+             * In document libraries, Description is a system-managed field.
+             * 
+             * Graph treats it as read-only:
+             * 
+             * You can read it with GET /items/{id}/fields
+             * 
+             * You cannot change it with PATCH /items/{id}/fields
+             * 
+             * Graph does not return an error when you try; it just silently ignores your
+             * update.
+             * 
+             * This is a limitation of SharePoint’s internal schema, not Graph itself.
+             * 
+             * 2️⃣ Options if you want similar behavior
+             * ✅ Option A — Use a custom text column
+             * 
+             * Go to your library → Settings → Add column → Single line of text
+             * 
+             * Name it something like CustomDescription
+             * 
+             * Update this field instead of Description:
+             */
+
+            // body.put("Description", node.getDescription());
             body.put("ObjectClassificationText", "Changed from Java after move");
 
             String json = mapper.writeValueAsString(body);
@@ -200,7 +245,7 @@ public class GraphService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                System.out.println("Item  : " + node.getFileName() +  " moved to SharePoint succesfully" );
+                System.out.println("Item  : " + node.getFileName() + " moved to SharePoint succesfully");
                 return uuid;
             } else {
                 System.out.println("Failed to update field: " + response.body());
@@ -254,8 +299,15 @@ public class GraphService {
             }
 
             // Step 1 : Get new listitemid
+            // Prevent webhooklistener to update UUID and other fields prior to completion.
+            // In future the webhooklistener should place messages on the queue and this
+            // should become obsolete.ILSApplication
             String listItemId = getListItemId(driveId, driveItemId);
+            // UniqueIdentifier
+            String UID = this.SiteID + this.ListId + listItemId;
+            Globals.AlfrescoRelocationItems.add(UID);
             String retval = updateSharepointItemGraphAPI(IOobject, listItemId);
+            Globals.AlfrescoRelocationItems.remove(UID);
             // Function should return something in the future for transaction purposes
 
         } catch (Exception e) {
@@ -323,9 +375,8 @@ public class GraphService {
             // Now get the SP items
             List<SharePointItemResponse> items = getListItemsByIds(siteId, listId, changedItems.changedItems);
             for (SharePointItemResponse SPItem : items) {
-                if(!SPItem.MustMove && SPItem.HasUUID)
-                {
-                     System.out.println("Changes detected on item : " + SPItem.id +  " but no action required.");
+                if (!SPItem.MustMove && SPItem.HasUUID) {
+                    System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
                 }
                 if (!SPItem.HasUUID) {
                     // AssignUUID
