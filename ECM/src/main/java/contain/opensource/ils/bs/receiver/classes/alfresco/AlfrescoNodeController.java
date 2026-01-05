@@ -146,8 +146,8 @@ public class AlfrescoNodeController {
       throw new RuntimeException("Uploaded file not found in library");
     }
     try {
-      //For POC purposes
-     // getNodeFields(nodeId, client, auth);
+      // For POC purposes
+      // getNodeFields(nodeId, client, auth);
 
     } catch (Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);
@@ -174,7 +174,7 @@ public class AlfrescoNodeController {
     }
   }
 
-public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exception {
+  public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exception {
     String auth = Base64.getEncoder()
         .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
 
@@ -183,43 +183,45 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
         AlfrescoConstants.alfrescoBaseUrl, nodeId);
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
-        ObjectMapper mapper = new ObjectMapper();
-        for (int attempt = 0; attempt < maxRetries; attempt++) {
-            HttpGet get = new HttpGet(endpoint);
-            get.setHeader("Authorization", "Basic " + auth);
-            get.setHeader("Accept", "application/json");
+      ObjectMapper mapper = new ObjectMapper();
+      for (int attempt = 0; attempt < maxRetries; attempt++) {
+        HttpGet get = new HttpGet(endpoint);
+        get.setHeader("Authorization", "Basic " + auth);
+        get.setHeader("Accept", "application/json");
 
-            try (CloseableHttpResponse response = client.execute(get)) {
-                int statusCode = response.getCode();
-                String responseBody = EntityUtils.toString(response.getEntity());
+        try (CloseableHttpResponse response = client.execute(get)) {
+          int statusCode = response.getCode();
+          String responseBody = EntityUtils.toString(response.getEntity());
 
-                if (statusCode >= 200 && statusCode < 300) {
-                    JsonNode root = mapper.readTree(responseBody);
-                    JsonNode props = root.path("entry").path("properties");
-                    JsonNode uuidNode = props.path("contain:UUID");
-                    if (!uuidNode.isMissingNode() && !uuidNode.asText().isEmpty()) {
-                        return uuidNode.asText();
-                    }
-                } else {
-                    throw new RuntimeException("Failed to get node: " + statusCode + " - " + responseBody);
-                }
+          if (statusCode >= 200 && statusCode < 300) {
+            JsonNode root = mapper.readTree(responseBody);
+            JsonNode props = root.path("entry").path("properties");
+            JsonNode uuidNode = props.path("contain:UUID");
+            if (!uuidNode.isMissingNode() && !uuidNode.asText().isEmpty()) {
+              return uuidNode.asText();
             }
-
-            // wait before next retry
-           System.out.println("UUID not yet detected   : sleeping " + sleepMs+"ms before retry "+ (attempt + 1)+ " of "+ maxRetries);
-
-            Thread.sleep(sleepMs);
+          } else {
+            throw new RuntimeException("Failed to get node: " + statusCode + " - " + responseBody);
+          }
         }
+
+        // wait before next retry
+        System.out.println(
+            "UUID not yet detected   : sleeping " + sleepMs + "ms before retry " + (attempt + 1) + " of " + maxRetries);
+
+        Thread.sleep(sleepMs);
+      }
     }
 
     throw new RuntimeException("UUID not assigned after waiting for " + (maxRetries * sleepMs) + "ms");
-}
+  }
 
   public void updateMetaData(String nodeId, RelocateInformationObject IOobject) {
     try {
-      //===========================================================================================
-      // Now it is working in separate methid but in my perception it should be possible in one run updating the node.
-      //===========================================================================================
+      // ===========================================================================================
+      // Now it is working in separate methid but in my perception it should be
+      // possible in one run updating the node.
+      // ===========================================================================================
 
       String updateEndpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
@@ -241,8 +243,14 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
         propertiesNode.put("cm:title", IOobject.getTitle());
       if (IOobject.getDescription() != null)
         propertiesNode.put("cm:description", IOobject.getDescription());
-    //  if (IOobject.getUuid() != null)
-    //    propertiesNode.put("contain:UUID", IOobject.getUuid());
+      if (IOobject.getUuid() != null) {
+        String rawUuid = IOobject.getUuid();
+        // Remove leading/trailing quotes if they exist
+        rawUuid = rawUuid.replaceAll("^\"|\"$", "");
+        propertiesNode.put("contain:IOUUID", rawUuid);
+      }
+      // if (IOobject.getUuid() != null)
+      // propertiesNode.put("contain:UUID", IOobject.getUuid());
       // UUID is an aspect, skip it here
 
       ObjectNode rootNode = mapper.createObjectNode();
@@ -275,15 +283,15 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
         String siteNode = GetAlfrescoSiteNode(client);
         System.out.println("Sitenode  " + siteNode);
         String libNode = getDocumentLibraryNodeId(client, siteNode);
-        // System.out.println("Libnode   " + libNode);
+        // System.out.println("Libnode " + libNode);
 
         String auth = Base64.getEncoder()
             .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
 
         // Debug because Alfrescco only returns the fields if filled in. This however
         // this should not affect Put, which it seems to do
-      //  String nodeid = GetNewNodeID(client, libNode, "password.txt");
-      //  getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
+        // String nodeid = GetNewNodeID(client, libNode, "password.txt");
+        // getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
         String endpoint = String.format(
             "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
             AlfrescoConstants.alfrescoBaseUrl, libNode);
@@ -296,7 +304,7 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
         // Build properties JSON
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode props = mapper.createObjectNode();
-        props.put("type", "cm:content"); // mandatory
+        props.put("type", "contain:containdocument"); // mandatory
         props.put("name", IOobject.getFileName()); // mandatory
 
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -334,9 +342,10 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
               e.printStackTrace();
             }
             // To do check null for transaction and persistance
-            //Upload content + set cm:title/cm:description in one go” is NOT supported reliably Checked relentlessly with ChatGPT 17-12-2025
+            // Upload content + set cm:title/cm:description in one go” is NOT supported
+            // reliably Checked relentlessly with ChatGPT 17-12-2025
             updateMetaData(nodeId, IOobject);
-            System.out.println("Item  : " + IOobject.getFileName() +  " moved to Alfresco succesfully" );
+            System.out.println("Item  : " + IOobject.getFileName() + " moved to Alfresco succesfully");
             return "";
           } else {
             throw new RuntimeException("Upload failed: " + statusCode + " - " + responseBody);
@@ -387,9 +396,9 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
             // Check if UUID present
             // Get node content
 
-            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("contain:UUID")
+            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID")
                 .toString();
-            alfresconNodeResponse.MoveTo = alfresconNodeResponse.entry.properties.otherProperties.get("contain:Move")
+            alfresconNodeResponse.MoveTo = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOMOVE")
                 .toString();
             // Get node content
             GetNodeContent();
@@ -484,7 +493,7 @@ public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exc
       String propertyValue = fieldValue.orElse("Dummy");
       switch (field) {
         case UUID:
-          propertyName = "contain:UUID"; // custom aspect property
+          propertyName = "contain:IOUUID"; // custom aspect property
           propertyValue = UUID.randomUUID().toString();
           break;
         case Title:
