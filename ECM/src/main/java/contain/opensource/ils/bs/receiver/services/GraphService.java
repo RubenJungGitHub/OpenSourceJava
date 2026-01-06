@@ -226,6 +226,7 @@ public class GraphService {
              */
 
             // body.put("Description", node.getDescription());
+            body.put("containIODescription", node.getDescription());
             body.put("ObjectClassificationText", "Changed from Java after move");
 
             String json = mapper.writeValueAsString(body);
@@ -629,7 +630,7 @@ public class GraphService {
                         .items(itemId)
                         .buildRequest()
                         .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                        .expand("fields($select=Title,Description0,ContAInUUID,LinkFilename,Move),driveItem")
+                        .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,Move),driveItem")
                         .get();
                 items.add(item);
             } catch (GraphServiceException gse) {
@@ -696,11 +697,10 @@ public class GraphService {
                                 SPItem = mapper.readValue(json, SharePointItemResponse.class);
                                 Object title = adm.get("Title");
                                 Object filename = adm.get("LinkFilename");
-                                Object description = adm.get("Description0");
+                                Object description = adm.get("containIODescription");
                                 String titleStr = title != null ? title.toString().replace("\"", "") : "";
                                 String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
-                                String descriptionStr = description != null ? description.toString().replace("\"", "")
-                                        : "";
+                                String descriptionStr = description != null ? description.toString().replace("\"", ""): "";
                                 SPItem.title = titleStr;
                                 SPItem.filename = filenameStr;
                                 SPItem.description = descriptionStr;

@@ -24,7 +24,7 @@ public class SharePointItemResponse {
     @JsonProperty("filename")           // <-- map directly
     public String filename;
 
-    @JsonProperty("description")     // <-- map directly
+    @JsonProperty("containIOdescription")     // <-- map directly
     public String description;
 
     @JsonProperty("file")     // <-- map directly
