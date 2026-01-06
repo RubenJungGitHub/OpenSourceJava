@@ -2,6 +2,9 @@ package contain.opensource.ils.bs.receiver.controllers;
 
 //import contain.opensource.ils.bs.receiver.services.GraphTokenService;
 import static org.fusesource.jansi.Ansi.ansi;
+
+import java.util.UUID;
+
 import org.fusesource.jansi.AnsiConsole;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,5 +73,12 @@ public class ILSController {
         AlfrescoNodeController Acontroller = new AlfrescoNodeController();
         Acontroller.RelocateIO(IOobject);
         return "Success";
+    }
+
+    @GetMapping(value = "/GetUUID")
+    public String GetUUID() {
+        // Generate a random UUID
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
     }
 }

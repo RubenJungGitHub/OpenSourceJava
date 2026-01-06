@@ -1,7 +1,8 @@
 package contain.opensource.ils.bs.receiver.classes;
-
 import static org.fusesource.jansi.Ansi.ansi;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ILS {
 
         public static void SayHello(String[] args) {

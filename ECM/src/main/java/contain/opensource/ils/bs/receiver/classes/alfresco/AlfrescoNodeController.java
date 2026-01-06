@@ -1,11 +1,11 @@
 package contain.opensource.ils.bs.receiver.classes.alfresco;
 
-import java.io.IOException;
+
+ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
+import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.ils.bs.receiver.services.GraphService;
@@ -491,12 +492,15 @@ public class AlfrescoNodeController {
       // Map enum to Alfresco property
       String propertyName;
       String propertyValue = fieldValue.orElse("Dummy");
+      String action = "";
       switch (field) {
         case UUID:
           propertyName = "contain:IOUUID"; // custom aspect property
-          propertyValue = UUID.randomUUID().toString();
+          propertyValue = UUIDUtil.getUUID();;
+          action = "Assign UUID "+ propertyValue + "  to new Alfresco IO " + this.alfresconNodeResponse.entry.name; 
           break;
         case Title:
+        action = "To do title update";
           propertyName = "cm:title"; // standard property
           break;
         default:
@@ -530,6 +534,22 @@ public class AlfrescoNodeController {
         String responseJson = EntityUtils.toString(response.getEntity());
 
         if (statusCode == 200) {
+          //Test ballenbak 
+          String logId = UUIDUtil.getUUID();
+          String temphash = UUIDUtil.getUUID();
+      /*     IOLogBallenbak log = new IOLogBallenbak(
+            logId,  
+            action,
+            propertyValue,
+            "Alfresco",
+            "Alfresco",
+            temphash,
+            this.alfresconNodeResponse.entry.name,        
+            jsonBody
+            );
+          //IOLogBallenbakService.logIOLog
+          */
+          
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);
         } else {

@@ -23,6 +23,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -32,9 +33,11 @@ import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
 
+
+@Component
 public class MessageBrowserPoll {
 
-    public static void ReadMessages(String[] args) {
+    public void ReadMessages(String[] args) {
         try {
 
             /// ================================================================================================================================
@@ -63,6 +66,7 @@ public class MessageBrowserPoll {
             }, 0, 5, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
+            
             try {
                 Thread.currentThread().join();
             } catch (InterruptedException e) {
@@ -108,12 +112,6 @@ public class MessageBrowserPoll {
                             // ===========================================================================================
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
-                                System.out.println("ID: " + QMessage.getId());
-                                System.out.println("Username: " + QMessage.getUsername());
-                                System.out.println("Type: " + QMessage.getType());
-                                System.out.println("Timestamp: " + QMessage.getTimestamp());
-                                System.out.println("NodeType : " + QMessage.getType());
-                                System.out.println("NodeId : " + QMessage.getNodeId());
                                 // Call Alfresco object controller
                                 AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
