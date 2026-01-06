@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import contain.opensource.ils.bs.receiver.classes.ILS;
 import contain.opensource.ils.bs.receiver.classes.MessageBrowserPoll;
+import contain.opensource.ils.bs.receiver.classes.MessageBrowserEvent;
 
 @SpringBootApplication
 public class ILSApplication {
@@ -13,7 +14,7 @@ public class ILSApplication {
 		args = new String[] { "--from", "Ruben", "--to", "ChatGPT" };
 		SpringApplication.run(ILSApplication.class, args);
 		ILS.SayHello(args);
-		// MessageBrowserEvent.ReadMessages(args);
+		//MessageBrowserEvent.ReadMessages(args);
 		MessageBrowserPoll.ReadMessages(args);
 	}
 }
