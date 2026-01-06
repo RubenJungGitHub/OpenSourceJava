@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes;
+package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -9,7 +9,7 @@ import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 
-public class MessageBrowser {
+public class MessageBrowserEvent {
     public static void ReadMessages(String[] args) {
         try {
 

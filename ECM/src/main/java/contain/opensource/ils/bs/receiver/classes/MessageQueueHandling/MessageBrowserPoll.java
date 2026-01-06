@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes;
+package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +26,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;

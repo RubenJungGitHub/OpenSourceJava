@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import contain.opensource.ils.bs.receiver.classes.ILS;
-import contain.opensource.ils.bs.receiver.classes.MessageBrowserPoll;
-import contain.opensource.ils.bs.receiver.classes.MessageBrowserEvent;
+import contain.opensource.ils.bs.receiver.classes.MessageQueueHandling.MessageBrowserEvent;
+import contain.opensource.ils.bs.receiver.classes.MessageQueueHandling.MessageBrowserPoll;
 
 @SpringBootApplication
 public class ILSApplication {
