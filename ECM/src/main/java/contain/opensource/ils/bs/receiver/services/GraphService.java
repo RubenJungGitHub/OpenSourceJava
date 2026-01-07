@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -274,7 +275,8 @@ public class GraphService {
         try {
             String accessToken = getGraphToken();
             byte[] fileBytes = IOobject.getContent();
-            String fileName = IOobject.getFileName();
+            String rawFileName = IOobject.getFileName();
+            String fileName = URLEncoder.encode(rawFileName, StandardCharsets.UTF_8).replace("+", "%20"); // IMPORTANT
             String driveItemId = "";
             // to do check null
             String driveId = getDriveID();
@@ -385,9 +387,22 @@ public class GraphService {
                 if (!SPItem.HasUUID) {
                     // AssignUUID
                     SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id);
+                    // Test ballenbak
+                    String action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+                    IOLog.log(
+                            SPItem.UUID.toString(),
+                            action,
+                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                            UUIDUtil.getUUID(),
+                            SPItem.filename,
+                            "",
+                            AlfrescoConstants.eActionPerformed.ASSIGNUUID);
+                            
                 }
                 if (SPItem.MustMove) {
                     // Relocate item
+                    Globals.AlfrescoRelocationItems.add(SPItem.UUID.toString());
                     SPItem.file = getSPItemContentById(SPItem.id);
                     AlfrescoNodeController aController = new AlfrescoNodeController();
                     RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
@@ -410,6 +425,7 @@ public class GraphService {
                             "",
                             AlfrescoConstants.eActionPerformed.MOVE);
                 }
+                Globals.AlfrescoRelocationItems.remove(SPItem.UUID.toString());
             }
             LogNewDeltaLinkToFile();
 

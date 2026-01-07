@@ -23,10 +23,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.GraphService;
@@ -270,10 +270,23 @@ public class AlfrescoNodeController {
         if (statusCode < 200 || statusCode >= 300) {
           String resp = EntityUtils.toString(response.getEntity());
           throw new RuntimeException("Updating metadata failed: " + statusCode + " - " + resp);
+        } else {
+          String action = "Overwrite new IO UUID ingenerated in Alfresco for " + IOobject.getFileName() + " with UUID "
+              + IOobject.getUuid() + "  generated in SPO ";
+          IOLog.log(
+              IOobject.getUuid(),
+              action,
+              AlfrescoConstants.ContainPlatforms.SPO.toString(),
+              AlfrescoConstants.ContainPlatforms.SPO.toString(),
+              UUIDUtil.getUUID(),
+              IOobject.getFileName(),
+              "",
+              AlfrescoConstants.eActionPerformed.COPIEDUUID);
+
         }
       }
     } catch (Exception e) {
-      // System.err.println("Exception uploading item to alfresco : " + e);
+      System.err.println("Exception updating item to alfresco : " + e);
       e.printStackTrace();
     }
   }
@@ -570,20 +583,21 @@ public class AlfrescoNodeController {
     // performed we are using a REST API
     GraphService GService = new GraphService();
     this.nodeId = IOobject.getId();
+    // For now assumed only happy path. If something goes wrong rollback in
+    // ballenbak and complete transacton
+    String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
+        + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
+    IOLog.log(
+        IOobject.getUuid(),
+        action,
+        IOobject.getPlatfrom().toString(),
+        IOobject.getPlatformTo().toString(),
+        UUIDUtil.getUUID(),
+        IOobject.getFileName(),
+        "",
+        eActionPerformed.MOVE);
     GService.uploadAlfrescoNodeToSP(IOobject);
     DeleteAlfrescoNode();
-    //For now assumed only happy path. If something goes wrong rollback in ballenbak and complete transacton
-    String  action = "Move UUID "+ IOobject.getUuid() + " : "   + IOobject.getFileName() + " from " +  IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo(); 
-              IOLog.log(
-            IOobject.getUuid(),
-            action,
-            IOobject.getPlatfrom().toString(),
-            IOobject.getPlatformTo().toString(),
-            UUIDUtil.getUUID(),
-            IOobject.getFileName(),
-            "",           
-            eActionPerformed.MOVE
-            );
   }
 
   private void DeleteAlfrescoNode() {

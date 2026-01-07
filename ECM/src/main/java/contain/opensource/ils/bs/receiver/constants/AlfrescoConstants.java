@@ -68,6 +68,7 @@ public class AlfrescoConstants {
         MOVE,
         ASSIGNUUID,
         RENAMED,
-        CLASSIIFIED
+        CLASSIIFIED,
+        COPIEDUUID
     }
 }
