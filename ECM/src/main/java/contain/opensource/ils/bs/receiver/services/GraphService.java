@@ -380,7 +380,9 @@ public class GraphService {
             }
             // Now get the SP items
             List<SharePointItemResponse> items = getListItemsByIds(siteId, listId, changedItems.changedItems);
+            String action = "";
             for (SharePointItemResponse SPItem : items) {
+
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
                 }
@@ -388,10 +390,10 @@ public class GraphService {
                     // AssignUUID
                     SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id);
                     // Test ballenbak
-                    String action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+                    action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
 
                     IOLog.log(
-                            SPItem.UUID.toString(),
+                            SPItem.UUID,
                             SPItem.id,
                             "",
                             action,
@@ -403,6 +405,27 @@ public class GraphService {
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
                             "System");
                 }
+
+                // First sign and log
+                // Only for ballenbak
+                // ==========================================================================================
+                // ALL FUNCTIONS SHOULD BE SEPARATED
+                // ==========================================================================================
+                 action = "BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+                IOLog.log(
+                        SPItem.UUID,
+                        SPItem.id,
+                        "",
+                        action,
+                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        UUIDUtil.getUUID(),
+                        SPItem.filename,
+                        "",
+                        AlfrescoConstants.eActionPerformed.IOBOUND,
+                        "System");
+                // ==========================================================================================
+
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
@@ -410,7 +433,7 @@ public class GraphService {
                         SPItem.file = getSPItemContentById(SPItem.id);
                         AlfrescoNodeController aController = new AlfrescoNodeController();
                         RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
-                        String action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
+                        action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
                                 + RObject.getPlatfrom() + " to " + RObject.getPlatformTo();
                         aController.uploadSPItemToAlfresco(RObject);
                         IOLog.log(

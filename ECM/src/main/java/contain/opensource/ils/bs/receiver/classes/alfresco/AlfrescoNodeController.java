@@ -413,11 +413,11 @@ public class AlfrescoNodeController {
                 .asText();
             // Check if UUID present
             // Get node content
-
-            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID")
-                .toString();
-            alfresconNodeResponse.MoveTo = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOMOVE")
-                .toString();
+            //alfresconNodeResponse.entry.properties.otherProperties.keySet().forEach(System.out::println);
+            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID").toString();
+            Object value = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOMOVE");
+            String MOVETO = value != null ? value.toString() : "";
+            alfresconNodeResponse.MoveTo = MOVETO;
             // Get node content
             GetNodeContent();
             try {
@@ -503,11 +503,12 @@ public class AlfrescoNodeController {
     }
   }
 
-  public void UpdateNode(NodeTypeFields field, Optional<String> fieldValue) {
+  public String UpdateNode(NodeTypeFields field, Optional<String> IOPath, Optional<String> fieldValue) {
     try {
       String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
       // Map enum to Alfresco property
       String propertyName;
+      String Path = IOPath.orElse("Unknown");
       String propertyValue = fieldValue.orElse("Dummy");
       String action = "";
       switch (field) {
@@ -556,7 +557,7 @@ public class AlfrescoNodeController {
           IOLog.log(
               propertyValue,
               this.alfresconNodeResponse.entry.id,
-              "-",
+              Path,
               action,
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
@@ -566,17 +567,20 @@ public class AlfrescoNodeController {
               eActionPerformed.ASSIGNUUID,
               alfresconNodeResponse.entry.modifiedByUser.displayName
               );
-
+          
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);
+          return  propertyValue;
         } else {
           System.err.println("Failed to update node. Status code: " + statusCode);
           System.err.println(responseJson);
+          return "Failed";
         }
       }
     } catch (Exception e) {
       System.err.println("Exception updating field:");
       e.printStackTrace();
+      return "Failed";
     }
   }
 

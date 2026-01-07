@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -106,7 +107,15 @@ public class MessageBrowserPoll {
                         json = text.getText();
                         ObjectMapper mapper = new ObjectMapper();
                         try {
+
                             AlfrescoQueMessage QMessage = mapper.readValue(json, AlfrescoQueMessage.class);
+                            Object secondPath = "";
+                            List<Object> paths = QMessage.getPaths();
+
+                            if (paths != null && paths.size() > 1) {
+                                secondPath = paths.get(1);
+                            }
+
                             String type = QMessage.getType();
                             // ===========================================================================================
                             // TO BE MANAGED BY RULE-ENGINE AND GENERATOR
@@ -117,12 +126,12 @@ public class MessageBrowserPoll {
                                 AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
                                     // Only for ballenbak
-                                    String action = QMessage.getId() + " : " + QMessage.getName()+ " deleted from Alfresco by user " + QMessage.getUsername();
-
+                                    String action = QMessage.getId() + " : " + QMessage.getName()
+                                            + " deleted from Alfresco by user " + QMessage.getUsername();
                                     IOLog.log(
                                             QMessage.getId(),
                                             "",
-                                            "",
+                                            secondPath.toString(),
                                             action,
                                             AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                                             AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
@@ -130,17 +139,40 @@ public class MessageBrowserPoll {
                                             QMessage.getName(),
                                             "",
                                             AlfrescoConstants.eActionPerformed.IODELETED,
-                                            QMessage.getUsername()
-                                            );
-
+                                            QMessage.getUsername());
                                 } else {
                                     aController.GetNode();
+                                    String IOUUID = "";
                                     if (!aController.alfresconNodeResponse.HasUUID) {
                                         // Set UUID
-                                        aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.empty());
+                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
+                                                Optional.ofNullable(secondPath.toString()), Optional.empty());
                                     }
-                                    if (aController.alfresconNodeResponse.MustMove) {
+                                    else {
+                                        IOUUID = aController.alfresconNodeResponse.UUID;
+                                    }
 
+                                    // First sign and log
+                                    // Only for ballenbak
+                                    // ==========================================================================================
+                                    // ALL FUNCTIONS SHOULD BE SEPARATED
+                                    // ==========================================================================================
+                                    String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : " + QMessage.getName();
+                                    IOLog.log(
+                                            IOUUID,
+                                            QMessage.getId(),
+                                            secondPath.toString(),
+                                            action,
+                                            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                                            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                                            UUIDUtil.getUUID(),
+                                            QMessage.getName(),
+                                            "",
+                                            AlfrescoConstants.eActionPerformed.IOBOUND,
+                                            QMessage.getUsername());
+                                    // ==========================================================================================
+
+                                    if (aController.alfresconNodeResponse.MustMove) {
                                         // Create generic property mapping information object
                                         RelocateInformationObject IOobject = new RelocateInformationObject(
                                                 aController.alfresconNodeResponse,
@@ -197,7 +229,9 @@ public class MessageBrowserPoll {
                     processingError.printStackTrace();
                 }
             }
-        } catch (JMSException e) {
+        } catch (
+
+        JMSException e) {
             System.err.println("Error polling the queue:");
             e.printStackTrace();
         }

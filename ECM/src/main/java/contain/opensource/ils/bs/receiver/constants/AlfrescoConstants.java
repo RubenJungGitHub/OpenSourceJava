@@ -70,6 +70,7 @@ public class AlfrescoConstants {
         IORENAMED,
         IOCLASSIIFIED,
         COPIEDUUID,
-        IODELETED
+        IODELETED,
+        IOBOUND
     }
 }
