@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import contain.opensource.ils.bs.receiver.Interfaces.IOLogBallenbakRepository;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbak;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 
 @Service
@@ -27,7 +28,7 @@ public class IOLogBallenbakService {
     // Optional helper method to create and save in one step
     @Transactional
     public void log(String containIOUUID, String action, String source, String destination,
-            String pkiHash, String reference, String info) {
+            String pkiHash, String reference, String info, eActionPerformed actionPerformed) {
         IOLogBallenbak log = new IOLogBallenbak(
                 UUIDUtil.getUUID(),
                 containIOUUID,
@@ -37,7 +38,7 @@ public class IOLogBallenbakService {
                 pkiHash,
                 reference,
                 info,
-                LocalDateTime.now());
+                actionPerformed);
         try {
             repository.save(log);
         } catch (Exception ex) {

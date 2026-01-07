@@ -20,7 +20,7 @@ public class RelocateInformationObject {
     @JsonProperty("fileName")
     private String filename;
 
-   @JsonProperty("description")
+    @JsonProperty("description")
     private String description;
 
     @JsonProperty("mimetype")
@@ -33,8 +33,8 @@ public class RelocateInformationObject {
     // @JsonDeserialize(using = Base64Deserializer.class)
     private byte[] content;
 
-    @JsonProperty("platformFrom")
-    private AlfrescoConstants.ContainPlatforms containplatformfrom;
+    @JsonProperty("platfrom")
+    private AlfrescoConstants.ContainPlatforms containplatfrom;
 
     @JsonProperty("platformTo")
     private AlfrescoConstants.ContainPlatforms containplatformto;
@@ -44,31 +44,31 @@ public class RelocateInformationObject {
     }
 
     // Constructor for Alfresco
-    public RelocateInformationObject(AlfrescoNodeResponse Anode, AlfrescoConstants.ContainPlatforms containPlatformfrom,
+    public RelocateInformationObject(AlfrescoNodeResponse Anode, AlfrescoConstants.ContainPlatforms containPlatfrom,
             AlfrescoConstants.ContainPlatforms containPlatFormTo) {
         // Map to this object
         this.content = Anode.file;
         this.uuid = Anode.UUID;
         this.id = Anode.entry.id;
         this.title = Anode.Title;
-        this.description  = Anode.Description;    
+        this.description = Anode.Description;
         this.filename = Anode.entry.name;
-        this.containplatformfrom = containPlatformfrom;
+        this.containplatfrom = containPlatfrom;
         this.containplatformto = containPlatFormTo;
     }
 
     // Constructor for SP
     public RelocateInformationObject(SharePointItemResponse SPItem) {
-      // Map to this object
-        //this.content = SPItem.cont;
+        // Map to this object
+        // this.content = SPItem.cont;
         this.uuid = SPItem.UUID;
         this.id = SPItem.id;
         this.title = SPItem.title;
         this.filename = SPItem.filename;
-        this.description  = SPItem.description;
+        this.description = SPItem.description;
         this.mimetype = SPItem.mimetype;
         this.content = SPItem.file;
-        this.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
+        this.containplatfrom = AlfrescoConstants.ContainPlatforms.SPO;
         this.containplatformto = SPItem.MoveTo;
 
     }
@@ -118,19 +118,21 @@ public class RelocateInformationObject {
     }
 
     public String getUuid() {
+    this.uuid = uuid.replace("\"", "").trim();
         return uuid;
     }
 
     public void setUuid(String UUID) {
-        this.uuid = UUID;
+        this.uuid = UUID.replace("\"", "").trim();
+        ;
     }
 
-    public AlfrescoConstants.ContainPlatforms getPlatformFrom() {
-        return containplatformfrom;
+    public AlfrescoConstants.ContainPlatforms getPlatfrom() {
+        return containplatfrom;
     }
 
-    public void setPlatformFrom(AlfrescoConstants.ContainPlatforms pf) {
-        this.containplatformfrom = pf;
+    public void setPlatfrom(AlfrescoConstants.ContainPlatforms pf) {
+        this.containplatfrom = pf;
     }
 
     public AlfrescoConstants.ContainPlatforms getPlatformTo() {

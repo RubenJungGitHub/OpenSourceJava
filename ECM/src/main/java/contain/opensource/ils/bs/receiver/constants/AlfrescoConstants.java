@@ -63,4 +63,11 @@ public class AlfrescoConstants {
             }
         }
     }
+
+        public enum eActionPerformed {
+        MOVE,
+        ASSIGNUUID,
+        RENAMED,
+        CLASSIIFIED
+    }
 }

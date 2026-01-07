@@ -1,6 +1,7 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 import org.springframework.stereotype.Component;
 
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.IOLogBallenbakService;
 
 @Component
@@ -19,12 +20,15 @@ public class IOLog {
             String ioDestination,
             String pkiHash,
             String ioReference,
-            String additionalInfo) {
+            String additionalInfo,
+            eActionPerformed actionPerformed
+            ) {
 
         if (delegate == null) {
             throw new IllegalStateException("IOLog not initialized yet");
         }
-
+        try
+        {
         delegate.log(
             containIOUUID,
             ioAction,
@@ -32,7 +36,13 @@ public class IOLog {
             ioDestination,
             pkiHash,
             ioReference,
-            additionalInfo
+            additionalInfo,
+            actionPerformed
         );
+        }
+        catch (Exception ex)
+        {
+            System.out.println("Failed to log IO action: " + ex.getMessage());
+        }
     }
 }

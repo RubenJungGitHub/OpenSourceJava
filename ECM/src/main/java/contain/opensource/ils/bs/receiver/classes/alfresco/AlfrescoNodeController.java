@@ -1,6 +1,6 @@
 package contain.opensource.ils.bs.receiver.classes.alfresco;
 
- import java.io.IOException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -23,12 +23,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.GraphService;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+
 public class AlfrescoNodeController {
   String nodeId;
   public AlfrescoNodeResponse alfresconNodeResponse = null;
@@ -495,11 +497,12 @@ public class AlfrescoNodeController {
       switch (field) {
         case UUID:
           propertyName = "contain:IOUUID"; // custom aspect property
-          propertyValue = UUIDUtil.getUUID();;
-          action = "Assign UUID "+ propertyValue + "  to new Alfresco IO " + this.alfresconNodeResponse.entry.name; 
+          propertyValue = UUIDUtil.getUUID();
+          ;
+          action = "Assign UUID " + propertyValue + "  to new Alfresco IO " + this.alfresconNodeResponse.entry.name;
           break;
         case Title:
-        action = "To do title update";
+          action = "To do title update for ballenbak registration";
           propertyName = "cm:title"; // standard property
           break;
         default:
@@ -533,30 +536,17 @@ public class AlfrescoNodeController {
         String responseJson = EntityUtils.toString(response.getEntity());
 
         if (statusCode == 200) {
-          //Test ballenbak 
-          String logId = UUIDUtil.getUUID();
-          String temphash = UUIDUtil.getUUID();
-          /*  IOLogBallenbak log = new IOLogBallenbak(
-            logId,  
-            action,
-            propertyValue,
-            "Alfresco",
-            "Alfresco",
-            temphash,
-            this.alfresconNodeResponse.entry.name,        
-            jsonBody
-            );
-            */
+          // Test ballenbak
           IOLog.log(
-            propertyValue,
-            action,
-            "Alfresco",
-            "Alfresco",
-            temphash,
-            this.alfresconNodeResponse.entry.name,        
-            jsonBody
-            );
-          
+              propertyValue,
+              action,
+              AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+              AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+              UUIDUtil.getUUID(),
+              this.alfresconNodeResponse.entry.name,
+              jsonBody,
+              eActionPerformed.ASSIGNUUID);
+
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);
         } else {
@@ -582,6 +572,18 @@ public class AlfrescoNodeController {
     this.nodeId = IOobject.getId();
     GService.uploadAlfrescoNodeToSP(IOobject);
     DeleteAlfrescoNode();
+    //For now assumed only happy path. If something goes wrong rollback in ballenbak and complete transacton
+    String  action = "Move UUID "+ IOobject.getUuid() + " : "   + IOobject.getFileName() + " from " +  IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo(); 
+              IOLog.log(
+            IOobject.getUuid(),
+            action,
+            IOobject.getPlatfrom().toString(),
+            IOobject.getPlatformTo().toString(),
+            UUIDUtil.getUUID(),
+            IOobject.getFileName(),
+            "",           
+            eActionPerformed.MOVE
+            );
   }
 
   private void DeleteAlfrescoNode() {

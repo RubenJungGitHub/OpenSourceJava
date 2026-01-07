@@ -45,15 +45,17 @@ import com.microsoft.graph.models.ListItem;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
+import contain.opensource.ils.bs.receiver.Globals.Globals;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Notification;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
+import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.ChangedItemsResult;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
-import contain.opensource.ils.bs.receiver.Globals.Globals;
 
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
@@ -193,8 +195,9 @@ public class GraphService {
 
             // Graph API will not allow description field to be a[dated. Even wordso./ If
             // this field is added the entire update fails!
-            //Presumably it will work using  SP RestAPI but then the Graph token will not work. 
-            //I tried using the SP token in the past but i did not get it to work.
+            // Presumably it will work using SP RestAPI but then the Graph token will not
+            // work.
+            // I tried using the SP token in the past but i did not get it to work.
 
             /*
              * 
@@ -394,6 +397,18 @@ public class GraphService {
                     } catch (Exception e) {
                         System.out.println("Failed to delete SP item after move: " + e.getMessage());
                     }
+                    // Test ballenbak
+                    String action = "Move UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
+                            + RObject.getPlatfrom() + " to " + RObject.getPlatformTo();
+                    IOLog.log(
+                            RObject.getUuid(),
+                            action,
+                            RObject.getPlatfrom().toString(),
+                            RObject.getPlatformTo().toString(),
+                            UUIDUtil.getUUID(),
+                            RObject.getFileName(),
+                            "",
+                            AlfrescoConstants.eActionPerformed.MOVE);
                 }
             }
             LogNewDeltaLinkToFile();
@@ -700,7 +715,8 @@ public class GraphService {
                                 Object description = adm.get("containIODescription");
                                 String titleStr = title != null ? title.toString().replace("\"", "") : "";
                                 String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
-                                String descriptionStr = description != null ? description.toString().replace("\"", ""): "";
+                                String descriptionStr = description != null ? description.toString().replace("\"", "")
+                                        : "";
                                 SPItem.title = titleStr;
                                 SPItem.filename = filenameStr;
                                 SPItem.description = descriptionStr;

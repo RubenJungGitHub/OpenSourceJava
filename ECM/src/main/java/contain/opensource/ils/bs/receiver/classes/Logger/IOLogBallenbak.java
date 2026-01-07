@@ -4,10 +4,12 @@ package contain.opensource.ils.bs.receiver.classes.Logger;
 import java.time.LocalDateTime;
 
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "tblIOLog", schema = "dbo")
 public class IOLogBallenbak {
@@ -40,13 +42,17 @@ public class IOLogBallenbak {
     @Column(name = "LogDateTime", nullable = false)
     private LocalDateTime logDateTime;
 
+    @Column(name = "ActionPerformed", nullable = false)
+    private String ActionPerformed;
+
+
     // Default constructor (required by JPA)
     public IOLogBallenbak() { }
 
     // Optional convenience constructor
     public IOLogBallenbak(String uuid, String containIOUUID, String ioAction, String ioSource,
                  String ioDestination, String pkiHash, String ioReference,
-                 String additionalInfo, LocalDateTime logDateTime) {
+                 String additionalInfo, eActionPerformed actionPerformed) {
         String guid = UUIDUtil.getUUID();
         System.out.println("UUID from REST API: " + guid);
         this.uuid = guid;
@@ -57,7 +63,8 @@ public class IOLogBallenbak {
         this.pkiHash = pkiHash;
         this.ioReference = ioReference;
         this.additionalInfo = additionalInfo;
-        this.logDateTime = logDateTime;
+        this.ActionPerformed = actionPerformed.name();
+        this.logDateTime = LocalDateTime.now();
     }
 
     // Getters and Setters
@@ -84,6 +91,9 @@ public class IOLogBallenbak {
 
     public String getAdditionalInfo() { return additionalInfo; }
     public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
+
+    public String getActionPerformed() { return ActionPerformed; }
+    public void setActionPerformed(String ActionPerformed) { this.ActionPerformed = ActionPerformed; }
 
     public LocalDateTime getLogDateTime() { return logDateTime; }
     public void setLogDateTime(LocalDateTime logDateTime) { this.logDateTime = logDateTime; }
