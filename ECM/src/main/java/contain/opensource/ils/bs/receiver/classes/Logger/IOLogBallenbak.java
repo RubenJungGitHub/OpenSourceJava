@@ -18,6 +18,12 @@ public class IOLogBallenbak {
     @Column(name = "UUID", length = 36, nullable = false)
     private String uuid;
 
+    @Column(name = "PlatformID", length = 36, nullable = false)
+    private String PlatformID;
+
+    @Column(name = "Path", length = 36, nullable = false)
+    private String Path;
+    
     @Column(name = "containIOUUID", length = 36, nullable = false)
     private String containIOUUID;
 
@@ -45,18 +51,22 @@ public class IOLogBallenbak {
     @Column(name = "ActionPerformed", nullable = false)
     private String ActionPerformed;
 
+    @Column(name = "ActionPerformedBy", nullable = false)
+    private String ActionPerformedBy;
 
     // Default constructor (required by JPA)
     public IOLogBallenbak() { }
 
     // Optional convenience constructor
-    public IOLogBallenbak(String uuid, String containIOUUID, String ioAction, String ioSource,
+    public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction, String ioSource,
                  String ioDestination, String pkiHash, String ioReference,
-                 String additionalInfo, eActionPerformed actionPerformed) {
+                 String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy) {
         String guid = UUIDUtil.getUUID();
         System.out.println("UUID from REST API: " + guid);
         this.uuid = guid;
         this.containIOUUID = containIOUUID;
+        this.PlatformID = PlatformID;
+        this.Path = IOpath;
         this.ioAction = ioAction;
         this.ioSource = ioSource;
         this.ioDestination = ioDestination;
@@ -64,6 +74,7 @@ public class IOLogBallenbak {
         this.ioReference = ioReference;
         this.additionalInfo = additionalInfo;
         this.ActionPerformed = actionPerformed.name();
+        this.ActionPerformedBy = ActionPerformedBy;
         this.logDateTime = LocalDateTime.now();
     }
 
@@ -91,6 +102,16 @@ public class IOLogBallenbak {
 
     public String getAdditionalInfo() { return additionalInfo; }
     public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
+
+    public String getPlatformID() { return PlatformID; }
+    public void setPlatformID(String platformId) { this.PlatformID = additionalInfo; }
+
+    public String getPath() { return Path; }
+    public void setPath(String path) { this.Path = path; }
+
+    public String getActionPerformedBy() { return ActionPerformedBy; }
+    public void setActionPerformedByh(String actionperformedby) { this.ActionPerformedBy = actionperformedby; }
+
 
     public String getActionPerformed() { return ActionPerformed; }
     public void setActionPerformed(String ActionPerformed) { this.ActionPerformed = ActionPerformed; }

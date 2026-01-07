@@ -273,16 +273,19 @@ public class AlfrescoNodeController {
         } else {
           String action = "Overwrite new IO UUID ingenerated in Alfresco for " + IOobject.getFileName() + " with UUID "
               + IOobject.getUuid() + "  generated in SPO ";
-          IOLog.log(
+          
+         IOLog.log(
               IOobject.getUuid(),
+              "",
+              "",
               action,
               AlfrescoConstants.ContainPlatforms.SPO.toString(),
               AlfrescoConstants.ContainPlatforms.SPO.toString(),
               UUIDUtil.getUUID(),
               IOobject.getFileName(),
               "",
-              AlfrescoConstants.eActionPerformed.COPIEDUUID);
-
+              AlfrescoConstants.eActionPerformed.COPIEDUUID,
+              "System");
         }
       }
     } catch (Exception e) {
@@ -552,13 +555,17 @@ public class AlfrescoNodeController {
           // Test ballenbak
           IOLog.log(
               propertyValue,
+              this.alfresconNodeResponse.entry.id,
+              "-",
               action,
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
               UUIDUtil.getUUID(),
               this.alfresconNodeResponse.entry.name,
               jsonBody,
-              eActionPerformed.ASSIGNUUID);
+              eActionPerformed.ASSIGNUUID,
+              alfresconNodeResponse.entry.modifiedByUser.displayName
+              );
 
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);
@@ -587,16 +594,20 @@ public class AlfrescoNodeController {
     // ballenbak and complete transacton
     String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
         + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
-    IOLog.log(
+     IOLog.log(
         IOobject.getUuid(),
+        "",
+        "",
         action,
         IOobject.getPlatfrom().toString(),
         IOobject.getPlatformTo().toString(),
         UUIDUtil.getUUID(),
         IOobject.getFileName(),
         "",
-        eActionPerformed.MOVE);
-    GService.uploadAlfrescoNodeToSP(IOobject);
+        eActionPerformed.IOCOPIED,
+        "System"
+        );
+         GService.uploadAlfrescoNodeToSP(IOobject);
     DeleteAlfrescoNode();
   }
 

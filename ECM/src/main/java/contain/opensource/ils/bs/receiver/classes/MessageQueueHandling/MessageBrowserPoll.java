@@ -27,12 +27,13 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
+import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
-
 
 @Component
 public class MessageBrowserPoll {
@@ -66,7 +67,7 @@ public class MessageBrowserPoll {
             }, 0, 5, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
-            
+
             try {
                 Thread.currentThread().join();
             } catch (InterruptedException e) {
@@ -116,6 +117,21 @@ public class MessageBrowserPoll {
                                 AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
                                     // Only for ballenbak
+                                    String action = QMessage.getId() + " : " + QMessage.getName()+ " deleted from Alfresco by user " + QMessage.getUsername();
+
+                                    IOLog.log(
+                                            QMessage.getId(),
+                                            "",
+                                            "",
+                                            action,
+                                            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                                            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                                            UUIDUtil.getUUID(),
+                                            QMessage.getName(),
+                                            "",
+                                            AlfrescoConstants.eActionPerformed.IODELETED,
+                                            QMessage.getUsername()
+                                            );
 
                                 } else {
                                     aController.GetNode();

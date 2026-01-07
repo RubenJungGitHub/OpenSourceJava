@@ -389,41 +389,61 @@ public class GraphService {
                     SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id);
                     // Test ballenbak
                     String action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+
                     IOLog.log(
                             SPItem.UUID.toString(),
+                            SPItem.id,
+                            "",
                             action,
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                             UUIDUtil.getUUID(),
                             SPItem.filename,
                             "",
-                            AlfrescoConstants.eActionPerformed.ASSIGNUUID);
-                            
+                            AlfrescoConstants.eActionPerformed.ASSIGNUUID,
+                            "System");
                 }
                 if (SPItem.MustMove) {
                     // Relocate item
-                    Globals.AlfrescoRelocationItems.add(SPItem.UUID.toString());
-                    SPItem.file = getSPItemContentById(SPItem.id);
-                    AlfrescoNodeController aController = new AlfrescoNodeController();
-                    RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
-                    aController.uploadSPItemToAlfresco(RObject);
                     try {
+                        Globals.AlfrescoRelocationItems.add(SPItem.UUID.toString());
+                        SPItem.file = getSPItemContentById(SPItem.id);
+                        AlfrescoNodeController aController = new AlfrescoNodeController();
+                        RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
+                        String action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
+                                + RObject.getPlatfrom() + " to " + RObject.getPlatformTo();
+                        aController.uploadSPItemToAlfresco(RObject);
+                        IOLog.log(
+                                RObject.getUuid(),
+                                SPItem.id,
+                                "",
+                                action,
+                                RObject.getPlatfrom().toString(),
+                                RObject.getPlatformTo().toString(),
+                                UUIDUtil.getUUID(),
+                                RObject.getFileName(),
+                                "",
+                                AlfrescoConstants.eActionPerformed.IOCOPIED,
+                                "System");
                         deleteSPItemById(SPItem.id);
+                        IOLog.log(
+                                RObject.getUuid(),
+                                SPItem.id,
+                                "",
+                                action,
+                                RObject.getPlatfrom().toString(),
+                                RObject.getPlatformTo().toString(),
+                                UUIDUtil.getUUID(),
+                                RObject.getFileName(),
+                                "",
+                                AlfrescoConstants.eActionPerformed.IODELETED,
+                                "System");
+
                     } catch (Exception e) {
                         System.out.println("Failed to delete SP item after move: " + e.getMessage());
                     }
                     // Test ballenbak
-                    String action = "Move UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
-                            + RObject.getPlatfrom() + " to " + RObject.getPlatformTo();
-                    IOLog.log(
-                            RObject.getUuid(),
-                            action,
-                            RObject.getPlatfrom().toString(),
-                            RObject.getPlatformTo().toString(),
-                            UUIDUtil.getUUID(),
-                            RObject.getFileName(),
-                            "",
-                            AlfrescoConstants.eActionPerformed.MOVE);
+
                 }
                 Globals.AlfrescoRelocationItems.remove(SPItem.UUID.toString());
             }

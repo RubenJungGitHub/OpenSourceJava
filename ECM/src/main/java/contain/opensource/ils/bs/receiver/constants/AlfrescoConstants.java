@@ -65,10 +65,11 @@ public class AlfrescoConstants {
     }
 
         public enum eActionPerformed {
-        MOVE,
+        IOCOPIED,
         ASSIGNUUID,
-        RENAMED,
-        CLASSIIFIED,
-        COPIEDUUID
+        IORENAMED,
+        IOCLASSIIFIED,
+        COPIEDUUID,
+        IODELETED
     }
 }

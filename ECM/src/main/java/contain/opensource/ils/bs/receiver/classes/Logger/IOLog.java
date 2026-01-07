@@ -1,4 +1,5 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
+
 import org.springframework.stereotype.Component;
 
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
@@ -14,16 +15,19 @@ public class IOLog {
     }
 
     public static void log(
-            String containIOUUID,
-            String ioAction,
-            String ioSource,
-            String ioDestination,
-            String pkiHash,
-            String ioReference,
-            String additionalInfo,
-            eActionPerformed actionPerformed
-            ) {
-
+           String containIOUUID,
+           String PlatformID,
+           String IOpath,
+           String action,
+           String source,
+           String destination,
+           String pkiHash,
+           String reference,
+           String additionalInfo,
+           eActionPerformed actionPerformed,
+           String ActionPerformedBy
+           ) {
+            
         if (delegate == null) {
             throw new IllegalStateException("IOLog not initialized yet");
         }
@@ -31,13 +35,16 @@ public class IOLog {
         {
         delegate.log(
             containIOUUID,
-            ioAction,
-            ioSource,
-            ioDestination,
+            PlatformID,
+            IOpath,
+            action,
+            source,
+            destination,
             pkiHash,
-            ioReference,
+            reference,
             additionalInfo,
-            actionPerformed
+            actionPerformed,
+            ActionPerformedBy
         );
         }
         catch (Exception ex)
