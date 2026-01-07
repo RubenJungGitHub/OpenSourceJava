@@ -27,18 +27,21 @@ public class IOLogBallenbakService {
     // Optional helper method to create and save in one step
     @Transactional
     public void log(String containIOUUID, String action, String source, String destination,
-                    String pkiHash, String reference, String info) {
+            String pkiHash, String reference, String info) {
         IOLogBallenbak log = new IOLogBallenbak(
-            UUIDUtil.getUUID(),
-            containIOUUID,
-            action,
-            source,
-            destination,
-            pkiHash,
-            reference,
-            info,
-            LocalDateTime.now()
-        );
-        repository.save(log);
+                UUIDUtil.getUUID(),
+                containIOUUID,
+                action,
+                source,
+                destination,
+                pkiHash,
+                reference,
+                info,
+                LocalDateTime.now());
+        try {
+            repository.save(log);
+        } catch (Exception ex) {
+            System.out.println("Error saving IOLogBallenbak: " + ex.getMessage());
+        }
     }
 }

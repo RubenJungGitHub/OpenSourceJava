@@ -34,7 +34,7 @@ public class IOLogBallenbak {
     @Column(name = "IOreference", length = 50, nullable = false)
     private String ioReference;
 
-    @Column(name = "AddiionalInfo", columnDefinition = "varchar(max)")
+    @Column(name = "AdditionalInfo", columnDefinition = "varchar(max)")
     private String additionalInfo;
 
     @Column(name = "LogDateTime", nullable = false)
@@ -47,10 +47,9 @@ public class IOLogBallenbak {
     public IOLogBallenbak(String uuid, String containIOUUID, String ioAction, String ioSource,
                  String ioDestination, String pkiHash, String ioReference,
                  String additionalInfo, LocalDateTime logDateTime) {
-        //UUID uuid = UUID.randomUUID();
         String guid = UUIDUtil.getUUID();
         System.out.println("UUID from REST API: " + guid);
-        this.uuid = uuid.toString();
+        this.uuid = guid;
         this.containIOUUID = containIOUUID;
         this.ioAction = ioAction;
         this.ioSource = ioSource;

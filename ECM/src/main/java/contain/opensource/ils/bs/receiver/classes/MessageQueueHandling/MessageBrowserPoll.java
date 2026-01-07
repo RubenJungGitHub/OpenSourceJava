@@ -131,7 +131,7 @@ public class MessageBrowserPoll {
                                                 AlfrescoConstants.ContainPlatforms.ALFRESCO,
                                                 AlfrescoConstants.ContainPlatforms.SPO);
                                         // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
-                                        // Could Be done from here but because it is not yet crtain from where the
+                                        // Could Be done from here but because it is not yet certain from where the
                                         // relocaiton is called we use a REST API
                                         // aController.RelocateIO(IOobject);
                                         String endpoint = "http://localhost:5000/RelocateIO";

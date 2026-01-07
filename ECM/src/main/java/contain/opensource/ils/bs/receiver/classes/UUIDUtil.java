@@ -10,7 +10,7 @@ public class UUIDUtil {
     // Application-wide static method
     public static String getUUID() {
         String uuid = null;
-        String urlString = "http://localhost:5000/api/getuuid"; // replace with your REST endpoint
+        String urlString = "http://localhost:5000/GetUUID"; // replace with your REST endpoint
 
         try {
             URL url = new URL(urlString);

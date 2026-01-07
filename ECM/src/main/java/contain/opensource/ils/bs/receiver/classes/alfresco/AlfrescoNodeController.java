@@ -1,6 +1,5 @@
 package contain.opensource.ils.bs.receiver.classes.alfresco;
 
-
  import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +28,7 @@ import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.ils.bs.receiver.services.GraphService;
-
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 public class AlfrescoNodeController {
   String nodeId;
   public AlfrescoNodeResponse alfresconNodeResponse = null;
@@ -537,7 +536,7 @@ public class AlfrescoNodeController {
           //Test ballenbak 
           String logId = UUIDUtil.getUUID();
           String temphash = UUIDUtil.getUUID();
-      /*     IOLogBallenbak log = new IOLogBallenbak(
+          /*  IOLogBallenbak log = new IOLogBallenbak(
             logId,  
             action,
             propertyValue,
@@ -547,8 +546,16 @@ public class AlfrescoNodeController {
             this.alfresconNodeResponse.entry.name,        
             jsonBody
             );
-          //IOLogBallenbakService.logIOLog
-          */
+            */
+          IOLog.log(
+            propertyValue,
+            action,
+            "Alfresco",
+            "Alfresco",
+            temphash,
+            this.alfresconNodeResponse.entry.name,        
+            jsonBody
+            );
           
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);
