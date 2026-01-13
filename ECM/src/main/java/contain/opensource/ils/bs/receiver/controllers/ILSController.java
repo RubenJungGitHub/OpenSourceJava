@@ -1,12 +1,13 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
+import java.util.Optional;
 //import contain.opensource.ils.bs.receiver.services.GraphTokenService;
-import static org.fusesource.jansi.Ansi.ansi;
-
 import java.util.UUID;
 
+import static org.fusesource.jansi.Ansi.ansi;
 import org.fusesource.jansi.AnsiConsole;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbak;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.services.GraphService;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 @RestController
 public class ILSController {
@@ -80,5 +84,26 @@ public class ILSController {
         // Generate a random UUID
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
+    }
+
+    @GetMapping(value = "/GetRedisUUID")
+    ResponseEntity<String> getRedisUUID(@RequestParam String uuid) 
+    {
+        if (RedisManager.getHashField("IOLogs", uuid) != null) {
+            String a = "1";
+            return ResponseEntity.ok("No log entry found for UUID: " + uuid);
+        } 
+        else 
+        {
+            // retrieve UUID from Datastore
+            Optional<IOLogBallenbak> Logentry = IOLog.GetLog(uuid);
+            if (Logentry.isPresent()) 
+            {
+                return ResponseEntity.ok("Found log entry for UUID: " + uuid);
+            } else 
+            {
+                return ResponseEntity.ok("No log entry found for UUID: " + uuid);
+            }
+        }
     }
 }

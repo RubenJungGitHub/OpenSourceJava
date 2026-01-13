@@ -82,8 +82,8 @@ public class IOLogBallenbak {
     public String getUuid() { return uuid; }
     public void setUuid(String uuid) { this.uuid = uuid; }
 
-    public String getcontainIOUUID() { return containIOUUID; }
-    public void setcontainIOUUID(String containIOUUID) { this.containIOUUID = containIOUUID; }
+    public String getContainIOUUID() { return containIOUUID; }
+    public void setContainIOUUID(String containIoUUID) { this.containIOUUID = containIoUUID; }
 
     public String getIoAction() { return ioAction; }
     public void setIoAction(String ioAction) { this.ioAction = ioAction; }
@@ -104,13 +104,13 @@ public class IOLogBallenbak {
     public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
 
     public String getPlatformID() { return PlatformID; }
-    public void setPlatformID(String platformId) { this.PlatformID = additionalInfo; }
+    public void setPlatformID(String platformId) { this.PlatformID = platformId; }
 
     public String getPath() { return Path; }
     public void setPath(String path) { this.Path = path; }
 
     public String getActionPerformedBy() { return ActionPerformedBy; }
-    public void setActionPerformedByh(String actionperformedby) { this.ActionPerformedBy = actionperformedby; }
+    public void setActionPerformedBy(String actionperformedby) { this.ActionPerformedBy = actionperformedby; }
 
 
     public String getActionPerformed() { return ActionPerformed; }
