@@ -86,22 +86,24 @@ public class ILSController {
         return uuid.toString();
     }
 
-    @GetMapping(value = "/GetRedisUUID")
-    ResponseEntity<String> getRedisUUID(@RequestParam String uuid) 
-    {
+    @GetMapping(value = "/GetIOUUIDLatestHash")
+    ResponseEntity<String> GetIOUUIDLatestHash(@RequestParam String uuid) {
+        long startTime = System.currentTimeMillis();
         if (RedisManager.getHashField("IOLogs", uuid) != null) {
-            String a = "1";
-            return ResponseEntity.ok("No log entry found for UUID: " + uuid);
-        } 
-        else 
-        {
-            // retrieve UUID from Datastore
+            long endTime = System.currentTimeMillis();
+            long durationMs = endTime - startTime; // duration in milliseconds
+            return ResponseEntity.ok("Hash from for IO : " + uuid + " -> " + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
+        } else {
+            // retrieve UUID from Datastore and cache in redis
             Optional<IOLogBallenbak> Logentry = IOLog.GetLog(uuid);
-            if (Logentry.isPresent()) 
-            {
-                return ResponseEntity.ok("Found log entry for UUID: " + uuid);
-            } else 
-            {
+            if (Logentry.isPresent()) {
+                String pkiHash = Logentry.get().getPkiHash();
+                RedisManager.putHash("IOLogs", uuid, pkiHash);
+                pkiHash = RedisManager.getHashField("IOLogs", uuid);
+                long endTime = System.currentTimeMillis();
+                long durationMs = endTime - startTime; // duration in milliseconds
+                return ResponseEntity.ok("Lates hash from for IO : " + uuid + " -> " + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
+            } else {
                 return ResponseEntity.ok("No log entry found for UUID: " + uuid);
             }
         }

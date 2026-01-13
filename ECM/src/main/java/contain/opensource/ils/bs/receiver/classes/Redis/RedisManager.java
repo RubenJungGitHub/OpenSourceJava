@@ -82,15 +82,16 @@ public final class RedisManager {
      * @param fallback Fallback function to load from DB if Redis is empty
      * @return value
      */
-    public static String getHashField(String hashKey, String field, java.util.function.Supplier<String> fallback) {
-        String value = getHashField(hashKey, field);
+    public static String getHashField(String hashKey, String uuid, String  Hash, java.util.function.Supplier<String> fallback) {
+        String value = getHashField(hashKey, uuid);
         if (value != null) return value;
 
         // Fallback to DB
         value = fallback.get();
 
         if (value != null) {
-            putHash(hashKey, field, value); // cache in Redis
+            putHash(hashKey, uuid, Hash); // cache in Redis
+            value = fallback.get();
         }
         return value;
     }
