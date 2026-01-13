@@ -49,6 +49,9 @@ public final class RedisManager {
     public static void putHash(String hashKey, String field, String value) {
         init();
         if (redis != null) redis.hset(hashKey, field, value);
+        // TTL to be configured
+        //Integer ttl = 30;
+        //redis.expire(hashKey,  ttl);  ..This will remove the entire key. We don't want that.
     }
 
     /** Get a field from a hash */

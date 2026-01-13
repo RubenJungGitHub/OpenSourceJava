@@ -108,4 +108,11 @@ public class ILSController {
             }
         }
     }
+
+    
+    @GetMapping("/RedisFlush")
+    public void RedisFlush()
+    {
+        RedisManager.redis.flushall();
+    }
 }
