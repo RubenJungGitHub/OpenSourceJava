@@ -41,7 +41,6 @@ public class IOLog {
             String additionalInfo,
             eActionPerformed actionPerformed,
             String ActionPerformedBy) {
-
         if (delegate == null) {
             throw new IllegalStateException("IOLog not initialized yet");
         }
@@ -58,6 +57,7 @@ public class IOLog {
                     additionalInfo,
                     actionPerformed,
                     ActionPerformedBy);
+                    
         } catch (Exception ex) {
             System.out.println("Failed to log IO action: " + ex.getMessage());
         }

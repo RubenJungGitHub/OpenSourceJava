@@ -92,7 +92,7 @@ public class ILSController {
         if (RedisManager.getHashField("IOLogs", uuid) != null) {
             long endTime = System.currentTimeMillis();
             long durationMs = endTime - startTime; // duration in milliseconds
-            return ResponseEntity.ok("Hash from for IO : " + uuid + " -> " + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
+            return ResponseEntity.ok("Hash from REDIS for IO : " + uuid + " -> " + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
         } else {
             // retrieve UUID from Datastore and cache in redis
             Optional<IOLogBallenbak> Logentry = IOLog.GetLog(uuid);
@@ -102,7 +102,7 @@ public class ILSController {
                 pkiHash = RedisManager.getHashField("IOLogs", uuid);
                 long endTime = System.currentTimeMillis();
                 long durationMs = endTime - startTime; // duration in milliseconds
-                return ResponseEntity.ok("Lates hash from for IO : " + uuid + " -> " + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
+                return ResponseEntity.ok("Lates hash from SQL for IO : " + uuid + " -> " + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
             } else {
                 return ResponseEntity.ok("No log entry found for UUID: " + uuid);
             }

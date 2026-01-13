@@ -7,50 +7,47 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import contain.opensource.ils.bs.receiver.Interfaces.IOLogBallenbakRepository;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbak;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
-import contain.opensource.ils.bs.receiver.Interfaces.IOLogBallenbakRepository;
 
 @Service
 public class IOLogBallenbakService {
 
-    //@Autowired
+    // @Autowired
     private final IOLogBallenbakRepository repository;
-
 
     @Autowired
     public IOLogBallenbakService(IOLogBallenbakRepository repository) {
         this.repository = repository;
     }
 
-
     @Transactional
     public void saveLog(IOLogBallenbak log) {
         repository.save(log);
     }
 
-
-    //@Transactional
-    //public Optional<IOLogBallenbak> GetLog(String uuid) {
-    //try {
-    //    return repository.findTopByContainIOUUIDOrderByLogDateTimeDesc(uuid);
-    //} catch (Exception ex) {
-   //     System.out.println("Failed to fetch IOLog: " + ex.getMessage());
-   //     return Optional.empty();
-   // }
-   // }
+    // @Transactional
+    // public Optional<IOLogBallenbak> GetLog(String uuid) {
+    // try {
+    // return repository.findTopByContainIOUUIDOrderByLogDateTimeDesc(uuid);
+    // } catch (Exception ex) {
+    // System.out.println("Failed to fetch IOLog: " + ex.getMessage());
+    // return Optional.empty();
+    // }
+    // }
 
     // Delegate method to get the most recent entry
     public Optional<IOLogBallenbak> GetLog(String uuid) {
         return repository.findTopByContainIOUUIDOrderByLogDateTimeDesc(uuid);
     }
 
-
-
     // Optional helper method to create and save in one step
     @Transactional
-    public void log(String containIOUUID,  String PlatformID, String IOpath,String action, String source, String destination,
+    public void log(String containIOUUID, String PlatformID, String IOpath, String action, String source,
+            String destination,
             String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy) {
         IOLogBallenbak log = new IOLogBallenbak(
                 UUIDUtil.getUUID(),
@@ -65,6 +62,11 @@ public class IOLogBallenbakService {
                 info,
                 actionPerformed,
                 ActionPerformedBy);
+        // Update Redis
+        if (actionPerformed != eActionPerformed.IODELETED) {
+            RedisManager.putHash("IOLogs", containIOUUID, pkiHash);
+        }
+
         try {
             repository.save(log);
         } catch (Exception ex) {
