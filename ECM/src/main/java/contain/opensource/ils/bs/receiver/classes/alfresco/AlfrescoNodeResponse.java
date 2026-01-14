@@ -1,5 +1,10 @@
 package contain.opensource.ils.bs.receiver.classes.alfresco;
 
+import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,14 +15,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class AlfrescoNodeResponse {
     public boolean HasUUID = false;
     public boolean MustMove = false;
-    public String  UUID;
-    public  String MoveTo;
-    public String  Content;
+    public String UUID;
+    public String MoveTo;
+    public String Content;
     public Entry entry;
     public byte[] file;
     public String Title;
     public String Description;
-
 
     public static class Entry {
         public boolean isFile;
@@ -63,13 +67,36 @@ public class AlfrescoNodeResponse {
         @JsonProperty("cm:lastThumbnailModification")
         public List<String> lastThumbnailModification;
 
-    // Store any unknown or custom properties (like RJTM:UUID)
-    public Map<String, Object> otherProperties = new HashMap<>();
+        // Store any unknown or custom properties (like RJTM:UUID)
+        public Map<String, Object> otherProperties = new HashMap<>();
 
-    @JsonAnySetter
-    public void setOtherProperty(String key, Object value) {
-        otherProperties.put(key, value);
-    }
+        @JsonAnySetter
+        public void setOtherProperty(String key, Object value) {
+            otherProperties.put(key, value);
+        }
+
         public String actionContext;
     }
+
+    public SecuredDocument ToSecuredDocument() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+        Instant createdAtInstant = OffsetDateTime.parse(this.entry.createdAt, formatter).toInstant();
+        Instant modifiedAtInstant = OffsetDateTime.parse(this.entry.modifiedAt, formatter).toInstant();
+
+        return new SecuredDocument(
+                this.file,
+                this.Description,
+                this.UUID,
+                this.entry.name,
+                this.entry.content.mimeType,
+                createdAtInstant,
+                modifiedAtInstant
+
+        // List.of(), // classifications
+        // List.of(), // labels
+        // List.of() // markings
+        );
+    }
+
 }

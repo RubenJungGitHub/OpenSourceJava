@@ -28,9 +28,10 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
+import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
@@ -59,9 +60,10 @@ public class MessageBrowserPoll {
             // The queue you want to inspect
             Queue queue = session.createQueue("Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes");
 
-            //Trial
-            //Queue queue = session.createQueue("acs-repo-transform-request");
-            //Queue queue = session.createQueue("Consumer.cfd643ac-3ca4-35a9-9818-95efc887532a.VirtualTopic.alfresco.repo.events.nodes");
+            // Trial
+            // Queue queue = session.createQueue("acs-repo-transform-request");
+            // Queue queue =
+            // session.createQueue("Consumer.cfd643ac-3ca4-35a9-9818-95efc887532a.VirtualTopic.alfresco.repo.events.nodes");
             MessageConsumer consumer = session.createConsumer(queue);
 
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -139,7 +141,7 @@ public class MessageBrowserPoll {
                                             action,
                                             AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                                             AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                            UUIDUtil.getUUID(),
+                                            "DeletedFromPlatform",
                                             QMessage.getName(),
                                             "",
                                             AlfrescoConstants.eActionPerformed.IODELETED,
@@ -151,8 +153,7 @@ public class MessageBrowserPoll {
                                         // Set UUID
                                         IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
                                                 Optional.ofNullable(secondPath.toString()), Optional.empty());
-                                    }
-                                    else {
+                                    } else {
                                         IOUUID = aController.alfresconNodeResponse.UUID;
                                     }
 
@@ -161,7 +162,19 @@ public class MessageBrowserPoll {
                                     // ==========================================================================================
                                     // ALL FUNCTIONS SHOULD BE SEPARATED
                                     // ==========================================================================================
-                                    String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : " + QMessage.getName();
+                                    String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : "
+                                            + QMessage.getName();
+                                    // RJBindAndSecureIO binder = new RJBindAndSecureIO();
+                                    byte[] HASH = RJBindAndSecureIO.sign(
+                                     aController.alfresconNodeResponse.ToSecuredDocument(), PKCS12KeyLoader.PK);
+                                     //Create function
+                                    StringBuilder hsb = new StringBuilder();
+                                    for (byte b : HASH) {
+                                        hsb.append(String.format("%02x", b));
+                                    }
+                                    String hashstring = hsb.toString();
+
+                                    // Move log to bindng function
                                     IOLog.log(
                                             IOUUID,
                                             QMessage.getId(),
@@ -169,7 +182,7 @@ public class MessageBrowserPoll {
                                             action,
                                             AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                                             AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                            UUIDUtil.getUUID(),
+                                            hashstring,
                                             QMessage.getName(),
                                             "",
                                             AlfrescoConstants.eActionPerformed.IOBOUND,
@@ -180,6 +193,7 @@ public class MessageBrowserPoll {
                                         // Create generic property mapping information object
                                         RelocateInformationObject IOobject = new RelocateInformationObject(
                                                 aController.alfresconNodeResponse,
+                                                hashstring,
                                                 AlfrescoConstants.ContainPlatforms.ALFRESCO,
                                                 AlfrescoConstants.ContainPlatforms.SPO);
                                         // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO

@@ -17,6 +17,10 @@ public class RelocateInformationObject {
     @JsonProperty("uuid")
     private String uuid;
 
+    @JsonProperty("HASH")
+    private String HASH;
+
+
     @JsonProperty("fileName")
     private String filename;
 
@@ -44,11 +48,12 @@ public class RelocateInformationObject {
     }
 
     // Constructor for Alfresco
-    public RelocateInformationObject(AlfrescoNodeResponse Anode, AlfrescoConstants.ContainPlatforms containPlatfrom,
+    public RelocateInformationObject(AlfrescoNodeResponse Anode,  String hash, AlfrescoConstants.ContainPlatforms containPlatfrom,
             AlfrescoConstants.ContainPlatforms containPlatFormTo) {
         // Map to this object
         this.content = Anode.file;
         this.uuid = Anode.UUID;
+        this.HASH = hash;
         this.id = Anode.entry.id;
         this.title = Anode.Title;
         this.description = Anode.Description;
@@ -124,7 +129,14 @@ public class RelocateInformationObject {
 
     public void setUuid(String UUID) {
         this.uuid = UUID.replace("\"", "").trim();
-        ;
+    }
+
+        public String getHash() {
+            return this.HASH;
+    }
+
+    public void setHash(String hash) {
+        this.HASH  =hash;
     }
 
     public AlfrescoConstants.ContainPlatforms getPlatfrom() {

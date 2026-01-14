@@ -94,7 +94,7 @@ public class IOLogBallenbak {
     public String getIoDestination() { return ioDestination; }
     public void setIoDestination(String ioDestination) { this.ioDestination = ioDestination; }
 
-    public String getPkiHash() { return pkiHash; }
+    public String  getPkiHash() { return pkiHash; }
     public void setPkiHash(String pkiHash) { this.pkiHash = pkiHash; }
 
     public String getIoReference() { return ioReference; }

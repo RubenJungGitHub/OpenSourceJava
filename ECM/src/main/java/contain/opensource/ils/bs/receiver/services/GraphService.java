@@ -50,7 +50,6 @@ import contain.opensource.ils.bs.receiver.Globals.Globals;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Notification;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.ChangedItemsResult;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
@@ -399,7 +398,8 @@ public class GraphService {
                             action,
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                            UUIDUtil.getUUID(),
+                           // UUIDUtil.getUUID(),
+                            null,
                             SPItem.filename,
                             "",
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
@@ -411,6 +411,8 @@ public class GraphService {
                 // ==========================================================================================
                 // ALL FUNCTIONS SHOULD BE SEPARATED
                 // ==========================================================================================
+                
+                //Move log to bindng function 
                  action = "BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
                 IOLog.log(
                         SPItem.UUID,
@@ -419,7 +421,8 @@ public class GraphService {
                         action,
                         AlfrescoConstants.ContainPlatforms.SPO.toString(),
                         AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                        UUIDUtil.getUUID(),
+                        //UUIDUtil.getUUID(),
+                        null,
                         SPItem.filename,
                         "",
                         AlfrescoConstants.eActionPerformed.IOBOUND,
@@ -443,7 +446,8 @@ public class GraphService {
                                 action,
                                 RObject.getPlatfrom().toString(),
                                 RObject.getPlatformTo().toString(),
-                                UUIDUtil.getUUID(),
+                                //UUIDUtil.getUUID(),
+                                null,
                                 RObject.getFileName(),
                                 "",
                                 AlfrescoConstants.eActionPerformed.IOCOPIED,
@@ -456,7 +460,8 @@ public class GraphService {
                                 action,
                                 RObject.getPlatfrom().toString(),
                                 RObject.getPlatformTo().toString(),
-                                UUIDUtil.getUUID(),
+                                //UUIDUtil.getUUID(),
+                                null,
                                 RObject.getFileName(),
                                 "",
                                 AlfrescoConstants.eActionPerformed.IODELETED,

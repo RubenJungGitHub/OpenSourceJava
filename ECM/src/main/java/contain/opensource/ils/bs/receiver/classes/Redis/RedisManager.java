@@ -48,7 +48,7 @@ public final class RedisManager {
     /** Store a field in a hash */
     public static void putHash(String hashKey, String field, String value) {
         init();
-        if (redis != null) redis.hset(hashKey, field, value);
+        if (redis != null) redis.hset(hashKey, field,value);
         // TTL to be configured
         //Integer ttl = 30;
         //redis.expire(hashKey,  ttl);  ..This will remove the entire key. We don't want that.
@@ -85,8 +85,9 @@ public final class RedisManager {
      * @param fallback Fallback function to load from DB if Redis is empty
      * @return value
      */
-    public static String getHashField(String hashKey, String uuid, String  Hash, java.util.function.Supplier<String> fallback) {
+    public static String getHashField(String hashKey, String uuid, String Hash, java.util.function.Supplier<String> fallback) {
         String value = getHashField(hashKey, uuid);
+        
         if (value != null) return value;
 
         // Fallback to DB
