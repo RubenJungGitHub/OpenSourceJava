@@ -3,11 +3,11 @@ package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -58,6 +58,10 @@ public class MessageBrowserPoll {
             // session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             // The queue you want to inspect
             Queue queue = session.createQueue("Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes");
+
+            //Trial
+            //Queue queue = session.createQueue("acs-repo-transform-request");
+            //Queue queue = session.createQueue("Consumer.cfd643ac-3ca4-35a9-9818-95efc887532a.VirtualTopic.alfresco.repo.events.nodes");
             MessageConsumer consumer = session.createConsumer(queue);
 
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
