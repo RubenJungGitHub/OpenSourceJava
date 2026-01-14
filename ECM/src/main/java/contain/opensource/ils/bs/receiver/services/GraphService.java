@@ -47,6 +47,8 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
 import contain.opensource.ils.bs.receiver.Globals.Globals;
+import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
+import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Notification;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -56,6 +58,7 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
+
 
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
@@ -134,7 +137,7 @@ public class GraphService {
         try {
             // Initially check if SP item is added because of reloaction
             String UID = this.SiteID + this.ListId + listItemId;
-            if (Globals.AlfrescoRelocationItems.contains(UID)) {
+            if (Globals.AlfrescoItemInProcess.contains(UID)) {
                 System.out.println("Relocated item, no update required");
                 return "Relocated item, no update required";
             }
@@ -310,9 +313,9 @@ public class GraphService {
             String listItemId = getListItemId(driveId, driveItemId);
             // UniqueIdentifier
             String UID = this.SiteID + this.ListId + listItemId;
-            Globals.AlfrescoRelocationItems.add(UID);
+            Globals.AlfrescoItemInProcess.add(UID);
             String retval = updateSharepointItemGraphAPI(IOobject, listItemId);
-            Globals.AlfrescoRelocationItems.remove(UID);
+            Globals.AlfrescoItemInProcess.remove(UID);
             // Function should return something in the future for transaction purposes
 
         } catch (Exception e) {
@@ -374,14 +377,15 @@ public class GraphService {
                     lastDeltaLink);
             if (changedItems.changedItems == null || changedItems.changedItems.isEmpty()) {
                 System.out.println("No changed items detected.");
-                LogNewDeltaLinkToFile();
+                //LogNewDeltaLinkToFile();
                 return;
             }
             // Now get the SP items
             List<SharePointItemResponse> items = getListItemsByIds(siteId, listId, changedItems.changedItems);
             String action = "";
             for (SharePointItemResponse SPItem : items) {
-
+                //One always needs to get content for binding 
+                SPItem.file = getSPItemContentById(SPItem.id);
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
                 }
@@ -398,8 +402,7 @@ public class GraphService {
                             action,
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                           // UUIDUtil.getUUID(),
-                            null,
+                            "NewOnPlatform",
                             SPItem.filename,
                             "",
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
@@ -412,8 +415,19 @@ public class GraphService {
                 // ALL FUNCTIONS SHOULD BE SEPARATED
                 // ==========================================================================================
                 
-                //Move log to bindng function 
-                 action = "BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+                //to do Move log to binding function 
+                //IN the future store as actual byte in Redis and datastore. For POC store as string
+                byte[] HASH = RJBindAndSecureIO.sign(SPItem.ToSecuredDocument(), PKCS12KeyLoader.PK);
+                //Create function for future
+                StringBuilder hsb = new StringBuilder();
+                for (byte b : HASH) {
+                    hsb.append(String.format("%02x", b));
+                }
+                String hashstring = hsb.toString();
+
+
+                
+                action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
                 IOLog.log(
                         SPItem.UUID,
                         SPItem.id,
@@ -421,8 +435,7 @@ public class GraphService {
                         action,
                         AlfrescoConstants.ContainPlatforms.SPO.toString(),
                         AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                        //UUIDUtil.getUUID(),
-                        null,
+                        hashstring,
                         SPItem.filename,
                         "",
                         AlfrescoConstants.eActionPerformed.IOBOUND,
@@ -432,8 +445,8 @@ public class GraphService {
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
-                        Globals.AlfrescoRelocationItems.add(SPItem.UUID.toString());
-                        SPItem.file = getSPItemContentById(SPItem.id);
+                        Globals.AlfrescoItemInProcess.add(SPItem.UUID.toString());
+
                         AlfrescoNodeController aController = new AlfrescoNodeController();
                         RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
                         action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
@@ -460,8 +473,7 @@ public class GraphService {
                                 action,
                                 RObject.getPlatfrom().toString(),
                                 RObject.getPlatformTo().toString(),
-                                //UUIDUtil.getUUID(),
-                                null,
+                                "DeletedFromPlatform",
                                 RObject.getFileName(),
                                 "",
                                 AlfrescoConstants.eActionPerformed.IODELETED,
@@ -473,7 +485,7 @@ public class GraphService {
                     // Test ballenbak
 
                 }
-                Globals.AlfrescoRelocationItems.remove(SPItem.UUID.toString());
+                Globals.AlfrescoItemInProcess.remove(SPItem.UUID.toString());
             }
             LogNewDeltaLinkToFile();
 
@@ -768,8 +780,8 @@ public class GraphService {
                             System.out.println("Item " + li.id + " marked for move to " + moveTo);
                         }
 
-                        // Now create only the objects that require actions
-                        if (!hasUUID || mustMove) {
+                        // Now create only the objects that require actions. reove because for binding they always should be added 
+                        //if (!hasUUID || mustMove) {
                             // Convert SDK object to JSON string
                             try {
                                 String json = mapper.writeValueAsString(li);
@@ -796,7 +808,7 @@ public class GraphService {
                             } catch (Exception e) {
                                 System.err.println("Failed to fetch item ID: " + li + " -> " + e.getMessage());
                             }
-                        }
+                     //   }
                     }
                 }
             } catch (Exception e) {

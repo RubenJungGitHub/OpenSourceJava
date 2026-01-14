@@ -164,7 +164,8 @@ public class MessageBrowserPoll {
                                     // ==========================================================================================
                                     String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : "
                                             + QMessage.getName();
-                                    // RJBindAndSecureIO binder = new RJBindAndSecureIO();
+                                    
+                                    //IN the future store as actual byte in Redis and datastore. For POC store as string
                                     byte[] HASH = RJBindAndSecureIO.sign(
                                      aController.alfresconNodeResponse.ToSecuredDocument(), PKCS12KeyLoader.PK);
                                      //Create function

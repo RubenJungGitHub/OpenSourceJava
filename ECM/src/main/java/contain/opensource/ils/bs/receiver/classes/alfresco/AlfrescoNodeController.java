@@ -562,7 +562,7 @@ public class AlfrescoNodeController {
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
               //UUIDUtil.getUUID(),
-              null,
+              "NewOnPlatform",
               this.alfresconNodeResponse.entry.name,
               jsonBody,
               eActionPerformed.ASSIGNUUID,

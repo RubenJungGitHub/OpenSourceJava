@@ -1,11 +1,15 @@
 package contain.opensource.ils.bs.receiver.classes.sharepoint;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import  contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 
 @JsonIgnoreProperties(ignoreUnknown = true) // top-level
 public class SharePointItemResponse {
@@ -71,5 +75,29 @@ public class SharePointItemResponse {
             @JsonProperty("id")
             public String id;
         }
+    }
+
+    public SecuredDocument ToSecuredDocument() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+    Instant createdAtInstant = null;
+    if (this.createdDateTime != null) {
+        createdAtInstant = this.createdDateTime.toInstant();
+    }
+        return new SecuredDocument(
+                this.file,
+
+                this.description,
+                this.UUID,
+                this.filename,
+                this.mimetype,
+                createdAtInstant,
+                null  // to be iplemented
+       //         modifiedAtInstant
+
+        // List.of(), // classifications
+        // List.of(), // labels
+        // List.of() // markings
+        );
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Globals {
     // Global list accessible anywhere
-    public static List<String> AlfrescoRelocationItems = new ArrayList<>();
+    public static List<String> AlfrescoItemInProcess = new ArrayList<>();
+    public static List<String> SPItemsInProcess = new ArrayList<>();
 }
 

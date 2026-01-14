@@ -46,7 +46,7 @@ public class IOLog {
         }
         try {
             delegate.log(
-                    containIOUUID,
+                    containIOUUID.replaceAll("^\"|\"$", ""),
                     PlatformID,
                     IOpath,
                     action,
