@@ -59,7 +59,6 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemRespo
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
 
-
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
 // Implement helper classes etc.
@@ -273,7 +272,6 @@ public class GraphService {
         // System.out.println("Generated UUID: " + uuid.toString());
     }
 
-   
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
             String accessToken = getGraphToken();
@@ -378,14 +376,14 @@ public class GraphService {
                     lastDeltaLink);
             if (changedItems.changedItems == null || changedItems.changedItems.isEmpty()) {
                 System.out.println("No changed items detected.");
-                //LogNewDeltaLinkToFile();
+                // LogNewDeltaLinkToFile();
                 return;
             }
             // Now get the SP items
             List<SharePointItemResponse> items = getListItemsByIds(siteId, listId, changedItems.changedItems);
             String action = "";
             for (SharePointItemResponse SPItem : items) {
-                //One always needs to get content for binding 
+                // One always needs to get content for binding
                 SPItem.file = getSPItemContentById(SPItem.id);
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
@@ -415,19 +413,18 @@ public class GraphService {
                 // ==========================================================================================
                 // ALL FUNCTIONS SHOULD BE SEPARATED
                 // ==========================================================================================
-                
-                //to do Move log to binding function 
-                //IN the future store as actual byte in Redis and datastore. For POC store as string
+
+                // to do Move log to binding function
+                // IN the future store as actual byte in Redis and datastore. For POC store as
+                // string
                 byte[] HASH = RJBindAndSecureIO.sign(SPItem.ToSecuredDocument(), PKCS12KeyLoader.PK);
-                //Create function for future
+                // Create function for future
                 StringBuilder hsb = new StringBuilder();
                 for (byte b : HASH) {
                     hsb.append(String.format("%02x", b));
                 }
                 String hashstring = hsb.toString();
 
-
-                
                 action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
                 IOLog.log(
                         SPItem.UUID,
@@ -450,6 +447,7 @@ public class GraphService {
 
                         AlfrescoNodeController aController = new AlfrescoNodeController();
                         RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
+                        RObject.setHash(hashstring);
                         action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
                                 + RObject.getPlatfrom() + " to " + RObject.getPlatformTo();
                         aController.uploadSPItemToAlfresco(RObject);
@@ -460,13 +458,15 @@ public class GraphService {
                                 action,
                                 RObject.getPlatfrom().toString(),
                                 RObject.getPlatformTo().toString(),
-                                //UUIDUtil.getUUID(),
-                                null,
+                                // UUIDUtil.getUUID(),
+                                hashstring,
                                 RObject.getFileName(),
                                 "",
                                 AlfrescoConstants.eActionPerformed.IOCOPIED,
                                 "System");
                         deleteSPItemById(SPItem.id);
+                        action = "Deleted  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
+                                + RObject.getPlatfrom();
                         IOLog.log(
                                 RObject.getUuid(),
                                 SPItem.id,
@@ -781,35 +781,36 @@ public class GraphService {
                             System.out.println("Item " + li.id + " marked for move to " + moveTo);
                         }
 
-                        // Now create only the objects that require actions. reove because for binding they always should be added 
-                        //if (!hasUUID || mustMove) {
-                            // Convert SDK object to JSON string
-                            try {
-                                String json = mapper.writeValueAsString(li);
-                                SPItem = mapper.readValue(json, SharePointItemResponse.class);
-                                Object title = adm.get("Title");
-                                Object filename = adm.get("LinkFilename");
-                                Object description = adm.get("containIODescription");
-                                String titleStr = title != null ? title.toString().replace("\"", "") : "";
-                                String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
-                                String descriptionStr = description != null ? description.toString().replace("\"", "")
-                                        : "";
-                                SPItem.title = titleStr;
-                                SPItem.filename = filenameStr;
-                                SPItem.description = descriptionStr;
-                                SPItem.mimetype = mimeType;
-                                // SPItem.HasUUID = hasUUID;
-                                SPItem.UUID = uuidValue;
-                                // String description = (String) fields.get("Description");
-                                // To do get file content
-                                SPItem.HasUUID = hasUUID;
-                                SPItem.MustMove = mustMove;
-                                SPItem.MoveTo = moveTo;
-                                SPResponseItems.add(SPItem);
-                            } catch (Exception e) {
-                                System.err.println("Failed to fetch item ID: " + li + " -> " + e.getMessage());
-                            }
-                     //   }
+                        // Now create only the objects that require actions. reove because for binding
+                        // they always should be added
+                        // if (!hasUUID || mustMove) {
+                        // Convert SDK object to JSON string
+                        try {
+                            String json = mapper.writeValueAsString(li);
+                            SPItem = mapper.readValue(json, SharePointItemResponse.class);
+                            Object title = adm.get("Title");
+                            Object filename = adm.get("LinkFilename");
+                            Object description = adm.get("containIODescription");
+                            String titleStr = title != null ? title.toString().replace("\"", "") : "";
+                            String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
+                            String descriptionStr = description != null ? description.toString().replace("\"", "")
+                                    : "";
+                            SPItem.title = titleStr;
+                            SPItem.filename = filenameStr;
+                            SPItem.description = descriptionStr;
+                            SPItem.mimetype = mimeType;
+                            // SPItem.HasUUID = hasUUID;
+                            SPItem.UUID = uuidValue;
+                            // String description = (String) fields.get("Description");
+                            // To do get file content
+                            SPItem.HasUUID = hasUUID;
+                            SPItem.MustMove = mustMove;
+                            SPItem.MoveTo = moveTo;
+                            SPResponseItems.add(SPItem);
+                        } catch (Exception e) {
+                            System.err.println("Failed to fetch item ID: " + li + " -> " + e.getMessage());
+                        }
+                        // }
                     }
                 }
             } catch (Exception e) {

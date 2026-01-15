@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
@@ -134,6 +135,10 @@ public class MessageBrowserPoll {
                                     // Only for ballenbak
                                     String action = QMessage.getId() + " : " + QMessage.getName()
                                             + " deleted from Alfresco by user " + QMessage.getUsername();
+                                    //Remove from Redis. For SPO this is going to be a challenge 
+                                    //RedisManager.deleteHashField("IOLogs", type);
+                                    
+
                                     IOLog.log(
                                             QMessage.getId(),
                                             "",
