@@ -22,15 +22,31 @@ public final class RedisManager {
     public static RedisCommands<String, String> redis;
 
     // Private constructor to prevent instantiation
-    private RedisManager() {}
+    private RedisManager() {
+    }
 
     /**
      * Lazy initialization
      */
     public static synchronized void init() {
-        if (redis != null) return; // already initialized
+        if (redis != null)
+            return; // already initialized
         try {
-            client = RedisClient.create(REDIS_URI);
+            String host = System.getenv("SPRING_REDIS_HOST");
+            if (host == null || host.isBlank()) {
+                host = "localhost";
+            }
+
+            String portStr = System.getenv("SPRING_REDIS_PORT");
+            int port = 6379; // container default
+            if (portStr != null && !portStr.isBlank()) {
+                port = Integer.parseInt(portStr);
+            }
+
+            String redisUri = "redis://" + host + ":" + port;
+            System.out.println("[RedisManager] Connecting to " + redisUri);
+
+            client = RedisClient.create(redisUri);
             connection = client.connect();
             redis = connection.sync();
             System.out.println(">>> RedisManager initialized");
@@ -48,30 +64,35 @@ public final class RedisManager {
     /** Store a field in a hash */
     public static void putHash(String hashKey, String field, String value) {
         init();
-        if (redis != null) redis.hset(hashKey, field,value);
+        if (redis != null)
+            redis.hset(hashKey, field, value);
         // TTL to be configured
-        //Integer ttl = 30;
-        //redis.expire(hashKey,  ttl);  ..This will remove the entire key. We don't want that.
+        // Integer ttl = 30;
+        // redis.expire(hashKey, ttl); ..This will remove the entire key. We don't want
+        // that.
     }
 
     /** Get a field from a hash */
     public static String getHashField(String hashKey, String field) {
         init();
-        if (redis != null) return redis.hget(hashKey, field);
+        if (redis != null)
+            return redis.hget(hashKey, field);
         return null;
     }
 
     /** Get all fields from a hash */
     public static Map<String, String> getAllHash(String hashKey) {
         init();
-        if (redis != null) return redis.hgetall(hashKey);
+        if (redis != null)
+            return redis.hgetall(hashKey);
         return new HashMap<>();
     }
 
     /** Delete a field from a hash */
     public static void deleteHashField(String hashKey, String field) {
         init();
-        if (redis != null) redis.hdel(hashKey, field);
+        if (redis != null)
+            redis.hdel(hashKey, field);
     }
 
     // ===============================
@@ -80,15 +101,18 @@ public final class RedisManager {
 
     /**
      * Retrieve a hash field with optional fallback
-     * @param hashKey Redis hash key
-     * @param field Redis field
+     * 
+     * @param hashKey  Redis hash key
+     * @param field    Redis field
      * @param fallback Fallback function to load from DB if Redis is empty
      * @return value
      */
-    public static String getHashField(String hashKey, String uuid, String Hash, java.util.function.Supplier<String> fallback) {
+    public static String getHashField(String hashKey, String uuid, String Hash,
+            java.util.function.Supplier<String> fallback) {
         String value = getHashField(hashKey, uuid);
-        
-        if (value != null) return value;
+
+        if (value != null)
+            return value;
 
         // Fallback to DB
         value = fallback.get();
@@ -100,13 +124,13 @@ public final class RedisManager {
         return value;
     }
 
-    
-
     // ===============================
     // Shutdown
     // ===============================
     public static void shutdown() {
-        if (connection != null) connection.close();
-        if (client != null) client.shutdown();
+        if (connection != null)
+            connection.close();
+        if (client != null)
+            client.shutdown();
     }
 }

@@ -24,7 +24,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 #The underpinned line is to build the docker IMAGE. 
 #RUN FROM  terminal
 #cd C:\ContainOpenSource\Java\OpenSourceJava\ECM> 
-#docker build -t ils-app:java21 .
+#docker build -t ils-app:latest .
 
 #The next lines are for creating the container and run the config.
 #docker network create ils-network

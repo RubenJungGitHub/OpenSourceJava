@@ -2,20 +2,36 @@ package contain.opensource.ils.bs.receiver.classes.Redis;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
+
 public class redisLogger {
 
     public static void main(String[] args) {
-        RedisClient client = RedisClient.create("redis://localhost:8001");
+        // Get Redis host/port from environment variables
+        String redisHost = System.getenv("SPRING_REDIS_HOST");
+        if (redisHost == null || redisHost.isEmpty()) {
+            redisHost = "localhost"; // default for dev
+        }
 
-        StatefulRedisConnection<String, String> connection = client.connect();
-        RedisCommands<String, String> redis = connection.sync();
+        String redisPortStr = System.getenv("SPRING_REDIS_PORT");
+        int redisPort = 8001; // default
+        if (redisPortStr != null && !redisPortStr.isEmpty()) {
+            redisPort = Integer.parseInt(redisPortStr);
+        }
 
-        redis.set("key", "value");
-        String value = redis.get("key");
+        String redisUri = String.format("redis://%s:%d", redisHost, redisPort);
+        System.out.println("Connecting to Redis at: " + redisUri);
 
-        System.out.println(value);
+        RedisClient client = RedisClient.create(redisUri);
 
-        connection.close();
+        try (StatefulRedisConnection<String, String> connection = client.connect()) {
+            RedisCommands<String, String> redis = connection.sync();
+
+            redis.set("key", "value");
+            String value = redis.get("key");
+
+            System.out.println("Redis GET key = " + value);
+        }
+
         client.shutdown();
     }
 }
