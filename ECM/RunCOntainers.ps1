@@ -13,12 +13,14 @@ $saPassword = "contAIn123!"
 $dbName = "contAInBallenbak"
 $networkName = "ils-network"
 $containers = @("Redis-service", "Contain-ILS", "sql-express")
+$containers = @("Contain-ILS", "sql-express")
 foreach ($c in $containers) {
     if (docker ps -a --format "{{.Names}}" | Select-String "^$c$") {
         docker stop $c
         docker rm $c
     }
 }
+
 # Remove old network if it exists
 $existingNetwork = docker network ls --format "{{.Name}}" | Where-Object { $_ -eq $networkName }
 
@@ -30,8 +32,12 @@ if (-not $existingNetwork) {
     Write-Host "Network $networkName already exists."
 }
 
+#recreate sql-express-data
+#docker volume rm sql-express-data
 docker volume create sql-express-data
-docker run -d --name Redis-service --network ils-network -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+
+#Disable for now. Redis is running and does not need rerun each time
+#docker run -d --name Redis-service --network ils-network -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
 
 
 #Run Redis Stack container
@@ -110,6 +116,9 @@ do {
 
 if ($attempt -eq $maxAttempts) {throw "SQL Server did not become ready in time."}
 
+
+
+
 # Connect SQL Express to ils-network for container access
 #docker network connect ils-network sql-express
 Write-Host "SQL Express connected to ils-network."
@@ -146,6 +155,19 @@ END;
 "@
 
 
+docker run --rm `
+  --network ils-network `
+  -v "C:\ContainOpenSource\Java\OpenSourceJava\ECM\src\main\resources\db\migration:/scripts" `
+  mcr.microsoft.com/mssql-tools `
+  /opt/mssql-tools/bin/sqlcmd `
+    -S sql-express `
+    -U sa `
+    -P $saPassword `
+    -d contAInBallenbak `
+    -i /scripts/V1__create_tblIOLog.sql `
+    -b
+
+
 docker run -it --rm --network ils-network redis/redis-stack redis-cli -h Redis-service -p 6379 ping
 
 docker run -d `
@@ -160,6 +182,16 @@ docker run -d `
   -e SPRING_DATASOURCE_USERNAME=$saUser `
   -e SPRING_DATASOURCE_PASSWORD=$saPassword `
   ils-app
+
+
+
+#Start-Sleep -Seconds 30
+
+#Write-Host "Triggering Flyway migrations manually..."
+#docker exec -i Contain-ILS java -jar /app/app.jar flyway:clean
+#docker exec -i Contain-ILS java -jar /app/app.jar flyway:migrate
+
+
 
 
 # Check if Contain-ILS is already on the network
