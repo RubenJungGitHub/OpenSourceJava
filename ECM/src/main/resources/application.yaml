@@ -6,16 +6,25 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    baseline-on-migrate: true
-    url: jdbc:sqlserver://localhost:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
-    user: contAIn
-    password: contAIn
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    # Force the database type to SQL Server
+    baseline-on-migrate: false
+    #Force the database type to SQL Server
     database: sqlserver
 
-  data:
+
+
+  #flyway:
+  #  enabled: true
+  #  locations: classpath:db/migration
+  #  baseline-on-migrate: true
+  #  url: jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
+  #  user: sa
+  #  password: contAIn123!
+  #  driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  # Force the database type to SQL Server
+  #  database: sqlserver
+
   #For debugging on dev machine.
+  data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
       port: ${SPRING_REDIS_PORT:8001}
@@ -27,20 +36,18 @@ spring:
     password: contAIn
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
+  #For container
+  #data:
+  #  redis:
+  #    host: ${SPRING_REDIS_HOST:Redis-service}
+  #    port: ${SPRING_REDIS_PORT:6379}
+  #    password: ""
 
-#For container 
-#    redis:
-#      host: ${SPRING_REDIS_HOST:Redis-service}
-#      port: ${SPRING_REDIS_PORT:6379}
-#      password: ""
-
-
-
-#datasource:
-#    url: jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
-#    username: contAIn
-#    password: contAIn123!
-#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  #datasource:
+  #  url: jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
+  #  username: contAIn
+  #  password: contAIn123!
+  #  driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
   jpa:
     hibernate:

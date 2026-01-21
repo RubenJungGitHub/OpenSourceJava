@@ -1,7 +1,9 @@
 
 cd C:\ContainOpenSource\Java\OpenSourceJava\ECM
 ##recreate image!
+#mvn clean package
 #docker build -t ils-app:latest .
+
 
 $User = "contAIn"
 $UserPassword = "contAIn123"
@@ -19,6 +21,7 @@ foreach ($c in $containers) {
 }
 # Remove old network if it exists
 $existingNetwork = docker network ls --format "{{.Name}}" | Where-Object { $_ -eq $networkName }
+
 
 if (-not $existingNetwork) {
     Write-Host "Creating network $networkName..."
@@ -53,7 +56,6 @@ do {
     -p 14330:1433 `
     mcr.microsoft.com/mssql/server:2019-latest
     #>
-
     docker run -d --name sql-express `
     --name sql-express `
     --network ils-network `
@@ -68,6 +70,17 @@ do {
     --health-timeout=3s `
     --health-retries=10 `
     mcr.microsoft.com/mssql/server:2019-latest
+
+    <#docker run -d --name sql-express `
+  -e "ACCEPT_EULA=Y" `
+  -e "SA_PASSWORD=contAIn123!" `
+  -e "MSSQL_PID=Express" `
+  -v sql-express-data:/var/opt/mssql `
+  -p 14330:1433 `
+  mcr.microsoft.com/mssql/server:2019-latest
+  #>
+
+#docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=contAIn123!" -p 14331:1433 --name sql-test -d mcr.microsoft.com/mssql/server:2019-latest
 
 Write-Host "Waiting for SQL Server to accept connections..."
 
