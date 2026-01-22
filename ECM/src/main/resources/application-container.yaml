@@ -12,16 +12,9 @@ spring:
     baseline-on-migrate: true
     clean-on-validation-error: true
 
-  # ---------- Redis ----------
-  data:
-    redis:
-      host: ${SPRING_REDIS_HOST:Redis-service}
-      port: ${SPRING_REDIS_PORT:8001}
-      password: ""
-
   # ---------- DataSource ----------
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
+    url: jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
     username: sa
     password: contAIn123!
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
@@ -36,6 +29,13 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.SQLServerDialect
+
+  # ---------- Redis ----------
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:Redis-service}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ""
 
   # ---------- ActiveMQ ----------
 activemq:

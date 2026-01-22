@@ -54,14 +54,6 @@ do {
 
 
 ##Run SQL Express in a container 
-<#docker run -d --name sql-express `
-    -e "ACCEPT_EULA=Y" `
-    -e "SA_PASSWORD=$saPassword" `
-    -e "MSSQL_PID=Express" `
-    -e "MSSQL_TCP_PORT=1433" `
-    -p 14330:1433 `
-    mcr.microsoft.com/mssql/server:2019-latest
-    #>
     docker run -d --name sql-express `
     --name sql-express `
     --network ils-network `
@@ -77,14 +69,6 @@ do {
     --health-retries=10 `
     mcr.microsoft.com/mssql/server:2019-latest
 
-    <#docker run -d --name sql-express `
-  -e "ACCEPT_EULA=Y" `
-  -e "SA_PASSWORD=contAIn123!" `
-  -e "MSSQL_PID=Express" `
-  -v sql-express-data:/var/opt/mssql `
-  -p 14330:1433 `
-  mcr.microsoft.com/mssql/server:2019-latest
-  #>
 
 #docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=contAIn123!" -p 14331:1433 --name sql-test -d mcr.microsoft.com/mssql/server:2019-latest
 
@@ -183,7 +167,8 @@ docker run -d `
   -e SPRING_DATASOURCE_PASSWORD=$saPassword `
   ils-app
 
-
+  #Run this when end-user container is recreated to add ActiveMQ to the internal container network.
+  docker network connect ils-network end-user-activemq-1
 
 #Start-Sleep -Seconds 30
 
@@ -213,11 +198,11 @@ if ($connected -eq $null) {
 } else {
     Write-Host "Redis-service is already connected to $networkName"
 }
-docker ps
-docker logs -f Redis-service
+#docker ps
+#docker logs -f Redis-service
 
  #>
 
 
 #Attach to docker terminal real time
-docker logs -f Contain-ILS
+#docker logs -f Contain-ILS

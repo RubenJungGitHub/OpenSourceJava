@@ -8,8 +8,16 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-
+import org.springframework.stereotype.Component;
+@Component
 public class MessageBrowser {
+    
+    private final ConnectionFactory connectionFactory;
+
+     public MessageBrowser(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+
     public static void ReadMessages(String[] args) {
         try {
 

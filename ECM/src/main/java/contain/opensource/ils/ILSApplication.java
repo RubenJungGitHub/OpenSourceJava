@@ -2,13 +2,17 @@ package contain.opensource.ils;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.TestCreateSelfGeneratedCertificate;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 @SpringBootApplication
+@EnableConfigurationProperties(contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties.class)
+
 public class ILSApplication {
+	
 
 	public static void main(String[] args) {
 		//GenerateKeyPair();

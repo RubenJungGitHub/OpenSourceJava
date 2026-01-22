@@ -1,13 +1,15 @@
-package contain.opensource.ils.bs.receiver.classes;
+package contain.opensource.ils.bs.receiver.classes.ConfigurationBeans;
 
 
 import javax.sql.DataSource;
 
 import org.flywaydb.core.Flyway;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConfigurationProperties(prefix = "flyway")
 public class FlywayConfig {
 
     @Bean
