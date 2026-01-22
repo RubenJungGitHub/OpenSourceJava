@@ -18,11 +18,14 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
@@ -31,16 +34,31 @@ import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFi
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 
+@Component
 public class AlfrescoNodeController {
-  String nodeId;
+  public String nodeId;
+  private String username;
+  private String password;
+  private String endpoint;
+
   public AlfrescoNodeResponse alfresconNodeResponse = null;
 
+  private AlfrescoProperties alfrescoProperties;
+
+  @Autowired
+  public AlfrescoNodeController(AlfrescoProperties alfrescoProperties) {
+    this.alfrescoProperties = alfrescoProperties;
+    this.endpoint = alfrescoProperties.getBaseUrl();
+    this.username = alfrescoProperties.getUsername();
+    this.password = alfrescoProperties.getPassword();
+  }
+
   public AlfrescoNodeController() {
+    String a = "1";
   }
 
   public AlfrescoNodeController(String nodeId) {
     this.nodeId = nodeId;
-
   }
 
   private String GetAlfrescoSiteNode(CloseableHttpClient client) {
@@ -50,10 +68,10 @@ public class AlfrescoNodeController {
     try {
       String endpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s",
-          AlfrescoConstants.alfrescoBaseUrl,
+          this.endpoint,
           AlfrescoConstants.alfrescoDemoSiteName);
       String auth = Base64.getEncoder().encodeToString(
-          (AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
+          (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
       HttpGet request = new HttpGet(endpoint);
       request.setHeader("Authorization", "Basic " + auth);
@@ -88,10 +106,10 @@ public class AlfrescoNodeController {
       // sites/{siteId}/containers expects the site short name, e.g., "ontobind"
       String endpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers",
-          AlfrescoConstants.alfrescoBaseUrl, AlfrescoConstants.alfrescoDemoSiteName);
+          this.endpoint, AlfrescoConstants.alfrescoDemoSiteName);
 
-      String auth = Base64.getEncoder().encodeToString((AlfrescoConstants.username + ":" +
-          AlfrescoConstants.password).getBytes());
+      String auth = Base64.getEncoder().encodeToString((this.username + ":" +
+          this.password).getBytes());
 
       HttpGet request = new HttpGet(endpoint);
       request.setHeader("Authorization", "Basic " + auth);
@@ -123,11 +141,11 @@ public class AlfrescoNodeController {
   private String GetNewNodeID(CloseableHttpClient client, String libNode, String fileId) throws Exception {
     String nodeId = null;
     String auth = Base64.getEncoder()
-        .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+        .encodeToString((this.username + ":" + this.password).getBytes());
     String childrenEndpoint = String.format(
 
         "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
-        AlfrescoConstants.alfrescoBaseUrl, libNode);
+        this.endpoint, libNode);
     HttpGet get = new HttpGet(childrenEndpoint);
     get.setHeader("Authorization", "Basic " + auth);
     get.setHeader("Accept", "application/json");
@@ -161,7 +179,7 @@ public class AlfrescoNodeController {
   private void getNodeFields(String nodeId, CloseableHttpClient client, String auth) throws Exception {
 
     String nodeEndpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
-        AlfrescoConstants.alfrescoBaseUrl, nodeId);
+        this.endpoint, nodeId);
     HttpGet get = new HttpGet(nodeEndpoint);
     get.setHeader("Authorization", "Basic " + auth);
     get.setHeader("Accept", "application/json");
@@ -178,11 +196,11 @@ public class AlfrescoNodeController {
 
   public String waitForUUID(String nodeId, int maxRetries, int sleepMs) throws Exception {
     String auth = Base64.getEncoder()
-        .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+        .encodeToString((this.username + ":" + this.password).getBytes());
 
     String endpoint = String.format(
         "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s?include=properties,aspectNames",
-        AlfrescoConstants.alfrescoBaseUrl, nodeId);
+        this.endpoint, nodeId);
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
       ObjectMapper mapper = new ObjectMapper();
@@ -227,13 +245,13 @@ public class AlfrescoNodeController {
 
       String updateEndpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
-          AlfrescoConstants.alfrescoBaseUrl, nodeId);
+          this.endpoint, nodeId);
       ObjectMapper mapper = new ObjectMapper();
       String auth = Base64.getEncoder()
-          .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+          .encodeToString((this.username + ":" + this.password).getBytes());
       String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
-          AlfrescoConstants.alfrescoBaseUrl, nodeId);
+          this.endpoint, nodeId);
       HttpPut put = new HttpPut(updateEndpoint);
       put.setHeader("Authorization", "Basic " + auth);
       put.setHeader("Content-Type", "application/json");
@@ -273,8 +291,8 @@ public class AlfrescoNodeController {
         } else {
           String action = "Overwrite new IO UUID ingenerated in Alfresco for " + IOobject.getFileName() + " with UUID "
               + IOobject.getUuid() + "  generated in SPO ";
-          
-         IOLog.log(
+
+          IOLog.log(
               IOobject.getUuid(),
               "",
               "",
@@ -304,7 +322,7 @@ public class AlfrescoNodeController {
         // System.out.println("Libnode " + libNode);
 
         String auth = Base64.getEncoder()
-            .encodeToString((AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes());
+            .encodeToString((this.username + ":" + this.password).getBytes());
 
         // Debug because Alfrescco only returns the fields if filled in. This however
         // this should not affect Put, which it seems to do
@@ -312,7 +330,7 @@ public class AlfrescoNodeController {
         // getNodeFields("ecb97ec6-7a68-490a-802b-52cfc5339941", client, auth);
         String endpoint = String.format(
             "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
-            AlfrescoConstants.alfrescoBaseUrl, libNode);
+            this.endpoint, libNode);
         HttpPost post = new HttpPost(endpoint);
         post.setHeader("Authorization", "Basic " + auth);
         post.setHeader("Accept", "application/json");
@@ -383,7 +401,7 @@ public class AlfrescoNodeController {
     try {
       String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
       String auth = Base64.getEncoder().encodeToString(
-          (AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
+          (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
       try (CloseableHttpClient client = HttpClients.createDefault()) {
 
@@ -413,8 +431,9 @@ public class AlfrescoNodeController {
                 .asText();
             // Check if UUID present
             // Get node content
-            //alfresconNodeResponse.entry.properties.otherProperties.keySet().forEach(System.out::println);
-            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID").toString();
+            // alfresconNodeResponse.entry.properties.otherProperties.keySet().forEach(System.out::println);
+            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID")
+                .toString();
             Object value = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOMOVE");
             String MOVETO = value != null ? value.toString() : "";
             alfresconNodeResponse.MoveTo = MOVETO;
@@ -463,7 +482,7 @@ public class AlfrescoNodeController {
   private CloseableHttpResponse ProcessGetRequest(String endpoint) {
     CloseableHttpResponse response = null;
     String auth = Base64.getEncoder().encodeToString(
-        (AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
+        (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
 
@@ -486,7 +505,7 @@ public class AlfrescoNodeController {
 
     String auth = Base64.getEncoder()
         .encodeToString(
-            (AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
+            (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
     HttpGet request = new HttpGet(endpoint);
     request.setHeader("Authorization", "Basic " + auth);
@@ -540,7 +559,7 @@ public class AlfrescoNodeController {
 
       // Encode username:password for Basic Auth
       String auth = Base64.getEncoder().encodeToString(
-          (AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
+          (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
       try (CloseableHttpClient client = HttpClients.createDefault()) {
         HttpPut request = new HttpPut(endpoint);
@@ -561,17 +580,16 @@ public class AlfrescoNodeController {
               action,
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-              //UUIDUtil.getUUID(),
+              // UUIDUtil.getUUID(),
               "NewOnPlatform",
               this.alfresconNodeResponse.entry.name,
               jsonBody,
               eActionPerformed.ASSIGNUUID,
-              alfresconNodeResponse.entry.modifiedByUser.displayName
-              );
-          
+              alfresconNodeResponse.entry.modifiedByUser.displayName);
+
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);
-          return  propertyValue;
+          return propertyValue;
         } else {
           System.err.println("Failed to update node. Status code: " + statusCode);
           System.err.println(responseJson);
@@ -599,7 +617,7 @@ public class AlfrescoNodeController {
     // ballenbak and complete transacton
     String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
         + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
-     IOLog.log(
+    IOLog.log(
         IOobject.getUuid(),
         "",
         "",
@@ -610,16 +628,15 @@ public class AlfrescoNodeController {
         IOobject.getFileName(),
         "",
         eActionPerformed.IOCOPIED,
-        "System"
-        );
-         GService.uploadAlfrescoNodeToSP(IOobject);
+        "System");
+    GService.uploadAlfrescoNodeToSP(IOobject);
     DeleteAlfrescoNode();
   }
 
   private void DeleteAlfrescoNode() {
     String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
     String auth = Base64.getEncoder().encodeToString(
-        (AlfrescoConstants.username + ":" + AlfrescoConstants.password).getBytes(StandardCharsets.UTF_8));
+        (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
 

@@ -24,6 +24,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
+import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties;
+import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
@@ -49,6 +52,20 @@ public class MessageBrowserPoll {
 
     @Value("${activemq.password}")
     private String password;
+
+    private final ActiveMQProperties activeMQProps;
+    private final AlfrescoProperties alfrescoProps;
+
+    @Autowired
+    private AlfrescoNodeController aController;
+
+    @Autowired
+    public MessageBrowserPoll(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps) {
+        this.activeMQProps = activeMQProps;
+        this.alfrescoProps = alfrescoProps;
+    }
+
+    
 
     public void ReadMessages(String[] args) {
         try {
@@ -112,7 +129,7 @@ public class MessageBrowserPoll {
         }
     }
 
-    public static void StartPoll(MessageConsumer consumer, Session session) {
+    public void StartPoll(MessageConsumer consumer, Session session) {
         try {
             System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.YELLOW
                     + "New poll loop Processing"
@@ -142,7 +159,9 @@ public class MessageBrowserPoll {
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
                                 // Call Alfresco object controller
-                                AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
+                                 aController.nodeId=QMessage.getNodeId();
+                                 //alfrescoNodeController.GetNode(QMessage.getNodeId());
+                                //AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
                                     // Only for ballenbak
                                     String action = QMessage.getId() + " : " + QMessage.getName()

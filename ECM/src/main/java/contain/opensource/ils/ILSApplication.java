@@ -9,7 +9,8 @@ import contain.opensource.ils.bs.receiver.classes.Binding.TestCreateSelfGenerate
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 @SpringBootApplication
-@EnableConfigurationProperties(contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties.class)
+//@EnableConfigurationProperties({contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties.class, contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties.class})
+@EnableConfigurationProperties({contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties.class})
 
 public class ILSApplication {
 	

@@ -58,3 +58,9 @@ logging:
 app:
   keystore:
     path: /app/config/Containselfsigned_cert.p12
+
+
+alfresco:
+  username: admin
+  password: admin
+  baseUrl: http://localhost:8080
