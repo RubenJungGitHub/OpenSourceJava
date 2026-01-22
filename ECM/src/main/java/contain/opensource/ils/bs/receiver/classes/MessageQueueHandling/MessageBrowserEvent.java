@@ -8,16 +8,28 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MessageBrowserEvent {
-    public static void ReadMessages(String[] args) {
+
+    @Value("${activemq.brokerUrl}")
+    private String brokerUrl;
+
+    @Value("${activemq.user}")
+    private String user;
+
+    @Value("${activemq.password}")
+    private String password;
+
+    public void ReadMessages(String[] args) {
         try {
 
-            ConnectionFactory factory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-            Connection connection = factory.createConnection("admin", "admin");
-            // Connection connection = factory.createConnection();
+            //ConnectionFactory factory = new ActiveMQConnectionFactory("tcp://localhost:61616");
+            //Connection connection = factory.createConnection("admin", "admin");
+            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+            Connection connection = factory.createConnection();
             connection.start();
 
             // Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

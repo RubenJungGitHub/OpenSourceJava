@@ -39,7 +39,7 @@ spring:
 
   # ---------- ActiveMQ ----------
 activemq:
-  brokerUrl: tcp://end-user-activemq-1:61616
+  brokerUrl: tcp://localhost:61616
   user: admin
   password: admin
 

@@ -154,18 +154,32 @@ docker run --rm `
 
 docker run -it --rm --network ils-network redis/redis-stack redis-cli -h Redis-service -p 6379 ping
 
-docker run -d `
+#docker run -d `
+#  --name Contain-ILS `
+#  --network ils-network `
+#  -p 5000:5000 `
+#  -v "C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/application-container.yaml:/app/config/application.yaml" `
+#  -v "C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/Containselfsigned_cert.p12:/app/config/Containselfsigned_cert.p12" `
+#  -e SPRING_REDIS_HOST=Redis-service `
+#  -e SPRING_PROFILES_ACTIVE=container `
+#  -e APP_KEYSTORE_PATH=/app/config/Containselfsigned_cert.p12 `
+#  -e SPRING_DATASOURCE_URL="jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false" `
+#  -e SPRING_DATASOURCE_USERNAME=$saUser `
+#  -e SPRING_DATASOURCE_PASSWORD=$saPassword `
+ # ils-app
+
+ docker run -d `
   --name Contain-ILS `
   --network ils-network `
   -p 5000:5000 `
-  -v "C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/application.yaml:/app/config/application.yaml" `
-  -v "C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/Containselfsigned_cert.p12:/app/config/Containselfsigned_cert.p12" `
-  -e SPRING_REDIS_HOST=Redis-service `
+  -v C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/application-container.yaml:/app/config/application-container.yaml `
+  -v C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/Containselfsigned_cert.p12:/app/config/Containselfsigned_cert.p12 `
+  -e SPRING_CONFIG_LOCATION=/app/config/application-container.yaml `
+  -e SPRING_PROFILES_ACTIVE=container `
   -e APP_KEYSTORE_PATH=/app/config/Containselfsigned_cert.p12 `
-  -e SPRING_DATASOURCE_URL="jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false" `
-  -e SPRING_DATASOURCE_USERNAME=$saUser `
-  -e SPRING_DATASOURCE_PASSWORD=$saPassword `
+  -e SPRING_REDIS_HOST=Redis-service `
   ils-app
+
 
   #Run this when end-user container is recreated to add ActiveMQ to the internal container network.
   docker network connect ils-network end-user-activemq-1

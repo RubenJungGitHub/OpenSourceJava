@@ -24,6 +24,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
@@ -40,6 +40,15 @@ import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
 
 @Component
 public class MessageBrowserPoll {
+
+    @Value("${activemq.brokerUrl}")
+    private String brokerUrl;
+
+    @Value("${activemq.user}")
+    private String user;
+
+    @Value("${activemq.password}")
+    private String password;
 
     public void ReadMessages(String[] args) {
         try {
@@ -50,8 +59,11 @@ public class MessageBrowserPoll {
             /// ================================================================================================================================
 
             // Connect to ActiveMQ
-            ConnectionFactory factory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-            Connection connection = factory.createConnection("admin", "admin");
+            // ConnectionFactory factory = new
+            // ActiveMQConnectionFactory("tcp://localhost:61616");
+
+            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+            Connection connection = factory.createConnection();
             connection.start();
 
             // Create a session
@@ -135,9 +147,8 @@ public class MessageBrowserPoll {
                                     // Only for ballenbak
                                     String action = QMessage.getId() + " : " + QMessage.getName()
                                             + " deleted from Alfresco by user " + QMessage.getUsername();
-                                    //Remove from Redis. For SPO this is going to be a challenge 
-                                    //RedisManager.deleteHashField("IOLogs", type);
-                                    
+                                    // Remove from Redis. For SPO this is going to be a challenge
+                                    // RedisManager.deleteHashField("IOLogs", type);
 
                                     IOLog.log(
                                             QMessage.getId(),
@@ -169,11 +180,12 @@ public class MessageBrowserPoll {
                                     // ==========================================================================================
                                     String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : "
                                             + QMessage.getName();
-                                    
-                                    //IN the future store as actual byte in Redis and datastore. For POC store as string
+
+                                    // IN the future store as actual byte in Redis and datastore. For POC store as
+                                    // string
                                     byte[] HASH = RJBindAndSecureIO.sign(
-                                     aController.alfresconNodeResponse.ToSecuredDocument(), PKCS12KeyLoader.PK);
-                                     //Create function
+                                            aController.alfresconNodeResponse.ToSecuredDocument(), PKCS12KeyLoader.PK);
+                                    // Create function
                                     StringBuilder hsb = new StringBuilder();
                                     for (byte b : HASH) {
                                         hsb.append(String.format("%02x", b));
