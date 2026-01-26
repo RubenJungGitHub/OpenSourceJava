@@ -62,7 +62,6 @@ public class IOLogBallenbak {
                  String ioDestination, String pkiHash, String ioReference,
                  String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy) {
         String guid = UUIDUtil.getUUID();
-        System.out.println("UUID from REST API: " + guid);
         this.uuid = guid;
         this.containIOUUID = containIOUUID;
         this.PlatformID = PlatformID;

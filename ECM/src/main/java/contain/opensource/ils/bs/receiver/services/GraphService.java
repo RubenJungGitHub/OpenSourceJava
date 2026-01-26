@@ -274,6 +274,7 @@ public class GraphService {
 
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
+            
             String accessToken = getGraphToken();
             byte[] fileBytes = IOobject.getContent();
             String rawFileName = IOobject.getFileName();

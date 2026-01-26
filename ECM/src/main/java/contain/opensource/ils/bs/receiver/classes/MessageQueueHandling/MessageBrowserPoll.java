@@ -235,29 +235,45 @@ public class MessageBrowserPoll {
                                         // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
                                         // Could Be done from here but because it is not yet certain from where the
                                         // relocaiton is called we use a REST API
-                                        // aController.RelocateIO(IOobject);
-                                        // String endpoint = "http://localhost:5000/RelocateIO";
-                                        String endpoint = String.format(
-                                                "%s/RelocateIO",
-                                                this.ILSProperties.getBaseUrl());
-                                        String auth = Base64.getEncoder().encodeToString(
-                                                (AlfrescoConstants.username + ":" + AlfrescoConstants.password)
-                                                        .getBytes(StandardCharsets.UTF_8));
-                                        String jsonBody = mapper.writeValueAsString(IOobject);
+                                        aController.RelocateIO(IOobject);
 
-                                        // Create HttpPost
-                                        HttpPost post = new HttpPost(endpoint);
-                                        post.setHeader("Authorization", "Basic " + auth);
-                                        post.setHeader("Content-Type", "application/json");
-                                        post.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
-                                        try (CloseableHttpClient client = HttpClients.createDefault();
-                                                CloseableHttpResponse response = client.execute(post)) {
-
-                                            int statusCode = response.getCode();
-                                            if (statusCode != 200) {
-                                                throw new IOException("HTTP error " + statusCode);
-                                            }
-                                        }
+                                        // ===================================================================================================================================================
+                                        // Inside a container calling a method over http from within the container is a
+                                        // bad pattern.
+                                        // When in future a relocate over HTTP is to be realized, which it is, it should
+                                        // be a separate microservice runnning in a separate container.
+                                        // This poses challenges concernig shared oobjects and serialization
+                                        // Now this rus fine in development on the host but once processed to the
+                                        // contain-Ils container having this endpoint inside the same container, the
+                                        // next axception is logged:
+                                        // Get UUID endpoint : http://host.docker.internal:5000/GetUUID⁠ (This is by
+                                        // design and in the app log.
+                                        // Bit this throws an exception: REST call failed with exception :
+                                        // java.net.SocketException: Unexpected end of file from server
+                                        // ===================================================================================================================================================
+                                        /*
+                                         * String endpoint = String.format(
+                                         * "%s/RelocateIO",
+                                         * this.ILSProperties.getBaseUrl());
+                                         * String auth = Base64.getEncoder().encodeToString(
+                                         * (AlfrescoConstants.username + ":" + AlfrescoConstants.password)
+                                         * .getBytes(StandardCharsets.UTF_8));
+                                         * String jsonBody = mapper.writeValueAsString(IOobject);
+                                         * 
+                                         * // Create HttpPost
+                                         * HttpPost post = new HttpPost(endpoint);
+                                         * post.setHeader("Authorization", "Basic " + auth);
+                                         * post.setHeader("Content-Type", "application/json");
+                                         * post.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
+                                         * try (CloseableHttpClient client = HttpClients.createDefault();
+                                         * CloseableHttpResponse response = client.execute(post)) {
+                                         * 
+                                         * int statusCode = response.getCode();
+                                         * if (statusCode != 200) {
+                                         * throw new IOException("HTTP error " + statusCode);
+                                         * }
+                                         * }
+                                         */
                                     }
                                 }
                             }

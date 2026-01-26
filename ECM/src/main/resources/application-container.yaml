@@ -67,4 +67,4 @@ alfresco:
 ils:
   #username: admin
   #password: admin
-  base-url: http://localhost:5000
+  base-url: http://host.docker.internal:5000
