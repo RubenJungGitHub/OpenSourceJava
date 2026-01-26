@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
+import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
@@ -42,19 +43,19 @@ public class AlfrescoNodeController {
   private String endpoint;
 
   public AlfrescoNodeResponse alfresconNodeResponse = null;
-
+  private ILSRestProperties ilsRestProperties = null;
   private AlfrescoProperties alfrescoProperties;
 
   @Autowired
-  public AlfrescoNodeController(AlfrescoProperties alfrescoProperties) {
+  public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsProperties) {
     this.alfrescoProperties = alfrescoProperties;
+    this.ilsRestProperties = ilsProperties;
     this.endpoint = alfrescoProperties.getBaseUrl();
     this.username = alfrescoProperties.getUsername();
     this.password = alfrescoProperties.getPassword();
   }
 
   public AlfrescoNodeController() {
-    String a = "1";
   }
 
   public AlfrescoNodeController(String nodeId) {
@@ -399,7 +400,11 @@ public class AlfrescoNodeController {
 
   public void GetNode() {
     try {
-      String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
+      String endpoint = String.format(
+          "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
+          this.endpoint, this.nodeId);
+      System.out.println("Alfresco endpoint applied : " + endpoint);
+
       String auth = Base64.getEncoder().encodeToString(
           (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
@@ -500,9 +505,9 @@ public class AlfrescoNodeController {
 
   private void GetNodeContent() throws IOException {
 
-    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId
-        + "/content";
-
+    String endpoint = String.format(
+        "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/content",
+        this.endpoint, this.nodeId);
     String auth = Base64.getEncoder()
         .encodeToString(
             (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
@@ -524,7 +529,9 @@ public class AlfrescoNodeController {
 
   public String UpdateNode(NodeTypeFields field, Optional<String> IOPath, Optional<String> fieldValue) {
     try {
-      String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
+      String endpoint = String.format(
+          "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
+          this.endpoint, this.nodeId);
       // Map enum to Alfresco property
       String propertyName;
       String Path = IOPath.orElse("Unknown");
@@ -614,7 +621,7 @@ public class AlfrescoNodeController {
     GraphService GService = new GraphService();
     this.nodeId = IOobject.getId();
     // For now assumed only happy path. If something goes wrong rollback in
-    // ballenbak and complete transacton
+    // ballenbak and complete transacton`
     String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
         + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
     IOLog.log(
@@ -634,7 +641,9 @@ public class AlfrescoNodeController {
   }
 
   private void DeleteAlfrescoNode() {
-    String endpoint = "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/" + nodeId;
+    String endpoint = String.format(
+        "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
+        this.endpoint, this.nodeId);
     String auth = Base64.getEncoder().encodeToString(
         (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 

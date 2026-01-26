@@ -34,6 +34,7 @@ import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
+import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
@@ -55,17 +56,18 @@ public class MessageBrowserPoll {
 
     private final ActiveMQProperties activeMQProps;
     private final AlfrescoProperties alfrescoProps;
+    private final ILSRestProperties ILSProperties;
 
     @Autowired
     private AlfrescoNodeController aController;
 
     @Autowired
-    public MessageBrowserPoll(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps) {
+    public MessageBrowserPoll(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
+            ILSRestProperties ilsProperties) {
         this.activeMQProps = activeMQProps;
         this.alfrescoProps = alfrescoProps;
+        this.ILSProperties = ilsProperties;
     }
-
-    
 
     public void ReadMessages(String[] args) {
         try {
@@ -74,10 +76,6 @@ public class MessageBrowserPoll {
             /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
             // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
             /// ================================================================================================================================
-
-            // Connect to ActiveMQ
-            // ConnectionFactory factory = new
-            // ActiveMQConnectionFactory("tcp://localhost:61616");
 
             ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
             Connection connection = factory.createConnection();
@@ -159,9 +157,10 @@ public class MessageBrowserPoll {
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
                                 // Call Alfresco object controller
-                                 aController.nodeId=QMessage.getNodeId();
-                                 //alfrescoNodeController.GetNode(QMessage.getNodeId());
-                                //AlfrescoNodeController aController = new AlfrescoNodeController(QMessage.getNodeId());
+                                aController.nodeId = QMessage.getNodeId();
+                                // alfrescoNodeController.GetNode(QMessage.getNodeId());
+                                // AlfrescoNodeController aController = new
+                                // AlfrescoNodeController(QMessage.getNodeId());
                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
                                     // Only for ballenbak
                                     String action = QMessage.getId() + " : " + QMessage.getName()
@@ -237,7 +236,10 @@ public class MessageBrowserPoll {
                                         // Could Be done from here but because it is not yet certain from where the
                                         // relocaiton is called we use a REST API
                                         // aController.RelocateIO(IOobject);
-                                        String endpoint = "http://localhost:5000/RelocateIO";
+                                        // String endpoint = "http://localhost:5000/RelocateIO";
+                                        String endpoint = String.format(
+                                                "%s/RelocateIO",
+                                                this.ILSProperties.getBaseUrl());
                                         String auth = Base64.getEncoder().encodeToString(
                                                 (AlfrescoConstants.username + ":" + AlfrescoConstants.password)
                                                         .getBytes(StandardCharsets.UTF_8));

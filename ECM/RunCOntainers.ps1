@@ -5,6 +5,14 @@ cd C:\ContainOpenSource\Java\OpenSourceJava\ECM
 #docker build -t ils-app:latest .
 
 
+
+#Command to check inside conainer
+#docker exec -it Contain-ILS sh
+#ls 
+#ls /app
+#ls config/
+#cat /app/config/application.yaml
+
 $User = "contAIn"
 $UserPassword = "contAIn123"
 
@@ -172,10 +180,9 @@ docker run -it --rm --network ils-network redis/redis-stack redis-cli -h Redis-s
   --name Contain-ILS `
   --network ils-network `
   -p 5000:5000 `
-  -v C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/application-container.yaml:/app/config/application-container.yaml `
+  -v C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/application-container.yaml:/app/config/application.yaml `
   -v C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/Containselfsigned_cert.p12:/app/config/Containselfsigned_cert.p12 `
-  -e SPRING_CONFIG_LOCATION=/app/config/application-container.yaml `
-  -e SPRING_PROFILES_ACTIVE=container `
+  -e SPRING_CONFIG_LOCATION=/app/config/application.yaml `
   -e APP_KEYSTORE_PATH=/app/config/Containselfsigned_cert.p12 `
   -e SPRING_REDIS_HOST=Redis-service `
   ils-app
@@ -190,7 +197,8 @@ docker run -it --rm --network ils-network redis/redis-stack redis-cli -h Redis-s
 #docker exec -i Contain-ILS java -jar /app/app.jar flyway:clean
 #docker exec -i Contain-ILS java -jar /app/app.jar flyway:migrate
 
-
+#NOw also connect Contain-ILS to the alfresco network otherwise communication wll not be possible 
+docker network connect end-user_default Contain-ILS
 
 
 # Check if Contain-ILS is already on the network

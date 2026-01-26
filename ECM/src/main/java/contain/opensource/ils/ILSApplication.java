@@ -2,15 +2,17 @@ package contain.opensource.ils;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.TestCreateSelfGeneratedCertificate;
+import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 @SpringBootApplication
-//@EnableConfigurationProperties({contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties.class, contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties.class})
-@EnableConfigurationProperties({contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties.class})
+//@EnableConfigurationProperties({contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties.class,contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties.class})
+@ConfigurationPropertiesScan
 
 public class ILSApplication {
 	

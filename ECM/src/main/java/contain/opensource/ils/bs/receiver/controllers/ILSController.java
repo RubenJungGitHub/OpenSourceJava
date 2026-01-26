@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import static org.fusesource.jansi.Ansi.ansi;
 import org.fusesource.jansi.AnsiConsole;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,11 +26,18 @@ import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 @RestController
 public class ILSController {
     private final GraphService graphService;
+    private final AlfrescoNodeController alfrescoNodeController;
 
-    public ILSController(GraphService graphService) {
+    @Autowired
+    public ILSController(GraphService graphService, AlfrescoNodeController alfrescoNodeController) {
         this.graphService = graphService;
-        AnsiConsole.systemInstall();
+        this.alfrescoNodeController = alfrescoNodeController;
     }
+
+   // public ILSController(GraphService graphService) {
+   //     this.graphService = graphService;
+   //     AnsiConsole.systemInstall();
+   // }
 
     @GetMapping("/GetGraphToken")
     public String getGraphToken() {
@@ -74,8 +82,8 @@ public class ILSController {
 
     @PostMapping(value = "/RelocateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
     public String RelocateIO(@RequestBody RelocateInformationObject IOobject) {
-        AlfrescoNodeController Acontroller = new AlfrescoNodeController();
-        Acontroller.RelocateIO(IOobject);
+        //AlfrescoNodeController Acontroller = new AlfrescoNodeController();
+        this.alfrescoNodeController.RelocateIO(IOobject);
         return "Success";
     }
 
@@ -92,7 +100,8 @@ public class ILSController {
         if (RedisManager.getHashField("IOLogs", uuid) != null) {
             long endTime = System.currentTimeMillis();
             long durationMs = endTime - startTime; // duration in milliseconds
-            return ResponseEntity.ok("Hash from REDIS for IO : " + uuid + " -> " + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
+            return ResponseEntity.ok("Hash from REDIS for IO : " + uuid + " -> "
+                    + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
         } else {
             // retrieve UUID from Datastore and cache in redis
             Optional<IOLogBallenbak> Logentry = IOLog.GetLog(uuid);
@@ -102,17 +111,16 @@ public class ILSController {
                 pkiHash = RedisManager.getHashField("IOLogs", uuid);
                 long endTime = System.currentTimeMillis();
                 long durationMs = endTime - startTime; // duration in milliseconds
-                return ResponseEntity.ok("Lates hash from SQL for IO : " + uuid + " -> " + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
+                return ResponseEntity.ok("Lates hash from SQL for IO : " + uuid + " -> "
+                        + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
             } else {
                 return ResponseEntity.ok("No log entry found for UUID: " + uuid);
             }
         }
     }
 
-    
     @GetMapping("/RedisFlush")
-    public void RedisFlush()
-    {
+    public void RedisFlush() {
         RedisManager.redis.flushall();
     }
 }
