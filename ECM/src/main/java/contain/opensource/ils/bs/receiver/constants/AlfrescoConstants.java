@@ -15,7 +15,6 @@ public class AlfrescoConstants {
     public final static String YELLOW = "\u001B[33m";
     public static final String CYAN = "\u001B[36m";
     public static final String MAGENTA = "\u001B[35m";
-    public static final String DeltaLinkFile = "C:\\Temp\\storeddeltalinks.csv";
     public static final String clientId = "f590b477-5bd7-47d6-8bda-36f77fa10afd";
     public static final String clientSecret = "pE.8Q~ZQRGngJ1YliTP4EDC5bejaEl72LlBAzb50";
 

@@ -68,3 +68,4 @@ ils:
   #username: admin
   #password: admin
   base-url: http://localhost:5000
+  DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"

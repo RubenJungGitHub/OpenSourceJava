@@ -36,7 +36,7 @@ public class UUIDUtil {
     // contain-Ils container having this endpoint inside the same container, the
     // next axception is logged:
     // Get UUID endpoint : http://host.docker.internal:5000/GetUUID⁠ (This is by
-    // design and in the app log.
+    // design and in the app log.)
     // Bit this throws an exception: REST call failed with exception :
     // java.net.SocketException: Unexpected end of file from server
     // ===================================================================================================================================================

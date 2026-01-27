@@ -179,13 +179,15 @@ docker run -it --rm --network ils-network redis/redis-stack redis-cli -h Redis-s
  docker run -d `
   --name Contain-ILS `
   --network ils-network `
-  -p 5000:5000 `
+  -p 5000:8080 `
   -v C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/application-container.yaml:/app/config/application.yaml `
   -v C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/Containselfsigned_cert.p12:/app/config/Containselfsigned_cert.p12 `
+  -v C:/ContainOpenSource/Java/OpenSourceJava/ECM/data:/app/data `
   -e SPRING_CONFIG_LOCATION=/app/config/application.yaml `
   -e APP_KEYSTORE_PATH=/app/config/Containselfsigned_cert.p12 `
   -e SPRING_REDIS_HOST=Redis-service `
-  ils-app
+    ils-app 
+  
 
 
   #Run this when end-user container is recreated to add ActiveMQ to the internal container network.

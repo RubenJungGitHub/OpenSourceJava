@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -49,6 +50,8 @@ import com.microsoft.graph.serializer.AdditionalDataManager;
 import contain.opensource.ils.bs.receiver.Globals.Globals;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
+//import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
+import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Notification;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -86,8 +89,19 @@ public class GraphService {
     private GraphServiceClient<?> graphClient;
     private AlfrescoConstants.eItemtype itemtype;
     private String newDeltaLink = "";
+    private ILSRestProperties ILSProperties = null;
+    private String DeltaLinkFile = null;
 
     public GraphService() {
+        mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
+
+    @Autowired
+    public GraphService(ILSRestProperties ilsProperties) {
+        this.ILSProperties = ilsProperties;
+        this.DeltaLinkFile = ILSProperties.getDeltaLinkFile();
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -274,7 +288,7 @@ public class GraphService {
 
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
-            
+
             String accessToken = getGraphToken();
             byte[] fileBytes = IOobject.getContent();
             String rawFileName = IOobject.getFileName();
@@ -332,7 +346,9 @@ public class GraphService {
         String domain = null;
         String listId = null;
         try {
-            List<String> lines = Files.readAllLines(Paths.get(AlfrescoConstants.DeltaLinkFile));
+
+            // OK.. this is to be transferred to SQL DB for container purposes
+            List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
             String resourceValue = notification.getResource();
             // Find the first line that contains the resource
             Optional<String> match = lines.stream()
@@ -494,8 +510,7 @@ public class GraphService {
             // To do If no exeptions, update NewDeltaLink
 
         } catch (Exception ex) {
-            // // System.out.println("Error reading file or delta link not yet registered: "
-            // + ex.getMessage());
+            System.out.println("Error reading file or delta link not yet registered: " +             ex.getMessage());
             lastDeltaLink = null; // treat as first run
         }
 
@@ -914,12 +929,20 @@ public class GraphService {
         }
     }
 
+    private void LogNewDeltaLinkDB() {
+        try {
+            int a = 1;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private void LogNewDeltaLinkToFile() {
         try {
             // Split delta link
             String[] dlParts = newDeltaLink.split("\\?");
 
-            Path path = Paths.get(AlfrescoConstants.DeltaLinkFile);
+            Path path = Paths.get(this.DeltaLinkFile);
 
             // Read all lines
             List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
@@ -946,7 +969,7 @@ public class GraphService {
                     StandardOpenOption.APPEND);
 
             // Console output with color (ANSI)
-            System.out.println("\u001B[36mFile " + AlfrescoConstants.DeltaLinkFile + " updated with latest deltalink");
+            System.out.println("\u001B[36mFile " + this.DeltaLinkFile + " updated with latest deltalink");
             System.out.println("______________________________________________________________________\u001B[0m");
 
             // return ResponseEntity.ok().build(); // Spring
