@@ -29,15 +29,6 @@ public class IOLogBallenbakService {
         repository.save(log);
     }
 
-    // @Transactional
-    // public Optional<IOLogBallenbak> GetLog(String uuid) {
-    // try {
-    // return repository.findTopByContainIOUUIDOrderByLogDateTimeDesc(uuid);
-    // } catch (Exception ex) {
-    // System.out.println("Failed to fetch IOLog: " + ex.getMessage());
-    // return Optional.empty();
-    // }
-    // }
 
     // Delegate method to get the most recent entry
     public Optional<IOLogBallenbak> GetLog(String uuid) {

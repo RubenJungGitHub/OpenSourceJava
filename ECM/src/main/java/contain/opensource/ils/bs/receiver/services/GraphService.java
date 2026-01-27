@@ -46,12 +46,13 @@ import com.microsoft.graph.models.FieldValueSet;
 import com.microsoft.graph.models.ListItem;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
-
+import contain.opensource.ils.bs.receiver.classes.Logger.IODeltaLinkLog;
 import contain.opensource.ils.bs.receiver.Globals.Globals;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLogDeltaLink;
 import contain.opensource.ils.bs.receiver.classes.Notification;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
@@ -347,10 +348,8 @@ public class GraphService {
         String domain = null;
         String listId = null;
         try {
-
-            
-            // OK.. this is to be transferred to SQL DB 
-            //first ensure file exists
+            // OK.. this is to be transferred to SQL DB
+            // first ensure file exists
             ensureDeltaLinkFileExists();
             List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
             String resourceValue = notification.getResource();
@@ -466,7 +465,7 @@ public class GraphService {
                     try {
                         Globals.AlfrescoItemInProcess.add(SPItem.UUID.toString());
 
-                        //AlfrescoNodeController aController = new AlfrescoNodeController();
+                        // AlfrescoNodeController aController = new AlfrescoNodeController();
                         RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
                         RObject.setHash(hashstring);
                         action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
@@ -514,7 +513,7 @@ public class GraphService {
             // To do If no exeptions, update NewDeltaLink
 
         } catch (Exception ex) {
-            System.out.println("Error reading file or delta link not yet registered: " +             ex.getMessage());
+            System.out.println("Error reading file or delta link not yet registered: " + ex.getMessage());
             lastDeltaLink = null; // treat as first run
         }
 
@@ -941,29 +940,38 @@ public class GraphService {
         }
     }
 
-private void ensureDeltaLinkFileExists() throws IOException {
-    Path path = Paths.get(this.DeltaLinkFile);
+    private void ensureDeltaLinkFileExists() throws IOException {
+        Path path = Paths.get(this.DeltaLinkFile);
 
-    // 1. Ensure parent directory exists (/app/data)
-    Files.createDirectories(path.getParent());
+        // 1. Ensure parent directory exists (/app/data)
+        Files.createDirectories(path.getParent());
 
-    // 2. Create file if it does not exist
-    if (Files.notExists(path)) {
-        Files.createFile(path);
+        // 2. Create file if it does not exist
+        if (Files.notExists(path)) {
+            Files.createFile(path);
+        }
     }
-}
 
-    
     private void LogNewDeltaLinkToFile() {
         try {
 
-
-  
-
-
             // Split delta link
             String[] dlParts = newDeltaLink.split("\\?");
+            String SourceID = dlParts[0];
+            String TokenID = dlParts[1].replace("token=", "");
+            // Check if exists, if so overwrite, else add
+            Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(SourceID);
 
+            if (existingLog.isPresent()) {
+                // Overwrite token
+                IOLogDeltaLink log = existingLog.get();
+                log.setTokenId(TokenID);
+                IODeltaLinkLog.log(SourceID, TokenID); // save updated record
+            } else {
+                // Add new record
+                  IODeltaLinkLog.log(SourceID, TokenID); // save new record
+            }
+            
             Path path = Paths.get(this.DeltaLinkFile);
 
             // Read all lines
