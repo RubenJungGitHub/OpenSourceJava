@@ -50,7 +50,6 @@ import com.microsoft.graph.serializer.AdditionalDataManager;
 import contain.opensource.ils.bs.receiver.Globals.Globals;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
-//import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Notification;
@@ -347,7 +346,10 @@ public class GraphService {
         String listId = null;
         try {
 
-            // OK.. this is to be transferred to SQL DB for container purposes
+            
+            // OK.. this is to be transferred to SQL DB 
+            //first ensure file exists
+            ensureDeltaLinkFileExists();
             List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
             String resourceValue = notification.getResource();
             // Find the first line that contains the resource
@@ -937,8 +939,26 @@ public class GraphService {
         }
     }
 
+private void ensureDeltaLinkFileExists() throws IOException {
+    Path path = Paths.get(this.DeltaLinkFile);
+
+    // 1. Ensure parent directory exists (/app/data)
+    Files.createDirectories(path.getParent());
+
+    // 2. Create file if it does not exist
+    if (Files.notExists(path)) {
+        Files.createFile(path);
+    }
+}
+
+    
     private void LogNewDeltaLinkToFile() {
         try {
+
+
+  
+
+
             // Split delta link
             String[] dlParts = newDeltaLink.split("\\?");
 
