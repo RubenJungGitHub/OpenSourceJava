@@ -28,15 +28,16 @@ public class IODeltalinkService {
 
     // Delegate method to get the most recent entry
     public Optional<IOLogDeltaLink> GetLog(String SourceID) {
-        return repository.findBySourceId(SourceID);
+        return repository.findBySourceIdContaining(SourceID);
     }
 
     // Optional helper method to create and save in one step
     @Transactional
-    public void log(String SourceID, String TokenID) {
+    public void log(String SourceID, String TokenID, String LastDeltaLink) {
         IOLogDeltaLink log = new IOLogDeltaLink(
                 SourceID,
-                TokenID
+                TokenID,
+                LastDeltaLink
         );
         try {
             repository.save(log);
@@ -48,7 +49,7 @@ public class IODeltalinkService {
     // Fetch log by SourceId
     // -------------------------
     public Optional<IOLogDeltaLink> getLog(String sourceId) {
-        return repository.findBySourceId(sourceId);
+        return repository.findBySourceIdContaining(sourceId);
     }
 
     // -------------------------
@@ -56,7 +57,7 @@ public class IODeltalinkService {
     // -------------------------
     @Transactional
     public boolean updateTokenForSourceId(String sourceId, String newTokenId) {
-        Optional<IOLogDeltaLink> recordOpt = repository.findBySourceId(sourceId);
+        Optional<IOLogDeltaLink> recordOpt = repository.findBySourceIdContaining(sourceId);
 
         if (recordOpt.isPresent()) {
             IOLogDeltaLink record = recordOpt.get();

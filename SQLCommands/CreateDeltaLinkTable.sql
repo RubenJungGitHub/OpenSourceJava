@@ -16,6 +16,7 @@ GO
 
 CREATE TABLE [dbo].[tblSPDeltalinkRepository](
 	[LogDateTime] [datetime] NOT NULL,
+	[LastDeltaLink] [varchar](max) NOT NULL,
 	[SourceID] [varchar](256) NOT NULL,
 	[TokenID] [varchar](max) NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]

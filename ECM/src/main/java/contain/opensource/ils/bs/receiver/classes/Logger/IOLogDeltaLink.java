@@ -16,18 +16,25 @@ public class IOLogDeltaLink {
     @Column(name = "TokenID")
     private String tokenId;    // lowercase t
 
+    @Column(name = "LastDeltaLink")
+    private String LastDeltaLink;    // lowercase t
+
    @Column(name = "LogDateTime", nullable = false)
     private LocalDateTime logDateTime;
     public IOLogDeltaLink() { }
 
-    public IOLogDeltaLink(String sourceId, String tokenId) {
+    public IOLogDeltaLink(String sourceId, String tokenId, String LastDeltaLink) {
         this.sourceId = sourceId;
         this.tokenId = tokenId;
+        this.LastDeltaLink = LastDeltaLink;
         this.logDateTime = LocalDateTime.now();
     }
 
     public String getSourceId() { return sourceId; }
     public void setSourceId(String sourceId) { this.sourceId = sourceId; }
+
+    public String getLastDeltaLink() { return LastDeltaLink; }
+    public void setLastDeltaLink(String LastDeltaLink) { this.LastDeltaLink = LastDeltaLink; }
 
     public String getTokenId() { return tokenId; }
     public void setTokenId(String tokenId) { this.tokenId = tokenId; }

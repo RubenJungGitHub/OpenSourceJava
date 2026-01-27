@@ -30,7 +30,8 @@ public class IODeltaLinkLog {
 
     public static void log(
             String SourceID,
-            String TokenID
+            String TokenID,
+            String LastDeltaLink
             ) {
         if (delegate == null) {
             throw new IllegalStateException("IODeltaLinkLog not initialized yet");
@@ -38,7 +39,8 @@ public class IODeltaLinkLog {
         try {
             delegate.log(
                     SourceID,
-                    TokenID
+                    TokenID,
+                    LastDeltaLink
 );
                     
         } catch (Exception ex) {

@@ -353,8 +353,9 @@ public class GraphService {
             
             //OLD  first ensure file exists
             ensureDeltaLinkFileExists();
-            String resourceValue = notification.getResource();
-            /*
+           String resourceValue = notification.getResource();
+
+           /*
             List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
 
             // Find the first line that contains the resource
@@ -371,7 +372,7 @@ public class GraphService {
             if (existingLog.isPresent()) {
                 // Get latest token v
                 IOLogDeltaLink log = existingLog.get();
-                lastDeltaLink = log.getTokenId();
+                lastDeltaLink = log.getLastDeltaLink();
             }
             // Assume value is your Notification object
 
@@ -961,7 +962,7 @@ public class GraphService {
 
             // Split delta link
             String[] dlParts = newDeltaLink.split("\\?");
-            String SourceID = dlParts[0];
+            String SourceID = "/sites" + (dlParts[0].split("sites")[1]);
             String TokenID = dlParts[1].replace("token=", "");
             // Check if exists, if so overwrite, else add
             Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(SourceID);
@@ -970,10 +971,11 @@ public class GraphService {
                 // Overwrite token
                 IOLogDeltaLink log = existingLog.get();
                 log.setTokenId(TokenID);
-                IODeltaLinkLog.log(SourceID, TokenID); // save updated record
+                log.setLastDeltaLink(newDeltaLink);
+                IODeltaLinkLog.log(SourceID, TokenID, newDeltaLink); // save updated record
             } else {
                 // Add new record
-                  IODeltaLinkLog.log(SourceID, TokenID); // save new record
+                  IODeltaLinkLog.log(SourceID, TokenID,newDeltaLink); // save new record
             }
             
             Path path = Paths.get(this.DeltaLinkFile);

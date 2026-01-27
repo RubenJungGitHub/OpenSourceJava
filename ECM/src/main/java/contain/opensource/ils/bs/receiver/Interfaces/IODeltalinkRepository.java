@@ -10,5 +10,5 @@ import contain.opensource.ils.bs.receiver.classes.Logger.IOLogDeltaLink;
 public interface IODeltalinkRepository extends JpaRepository<IOLogDeltaLink, String> {
 
     // Fetch by SourceID
-    Optional<IOLogDeltaLink> findBySourceId(String sourceId);  // matches entity field
+    Optional<IOLogDeltaLink> findBySourceIdContaining(String sourceId);  
 }
