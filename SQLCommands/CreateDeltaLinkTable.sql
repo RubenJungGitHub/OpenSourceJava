@@ -15,6 +15,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[tblSPDeltalinkRepository](
+	[LogDateTime] [datetime] NOT NULL,
 	[SourceID] [varchar](256) NOT NULL,
 	[TokenID] [varchar](max) NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]

@@ -53,7 +53,7 @@ public class ILSController {
     @PostMapping("/UpdateSharepointItemGraphAPI/{listItemId}")
     public String UpdateItemUUIDGraphAPI(@PathVariable("listItemId") String listItemId) {
         try {
-            String retval = graphService.updateSharepointItemGraphAPI(listItemId); // now works
+            String retval = graphService.updateSharepointItemGraphAPI(listItemId, "PLACEHOLDERFORFUTUREIMPLEMENTATION"); // now works
             return retval;
         } catch (Exception e) {
             e.printStackTrace();

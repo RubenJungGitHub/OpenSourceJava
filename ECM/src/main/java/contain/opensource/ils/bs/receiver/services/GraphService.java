@@ -148,7 +148,9 @@ public class GraphService {
     }
 
     public String updateSharepointItemGraphAPI(
-            @Parameter(description = "List Item ID") @RequestParam String listItemId) {
+            @Parameter(description = "List Item ID") @RequestParam String listItemId,
+            @Parameter(description = "List ID") @RequestParam String ListId
+            ) {
         try {
             // Initially check if SP item is added because of reloaction
             String UID = this.SiteID + this.ListId + listItemId;
@@ -348,11 +350,13 @@ public class GraphService {
         String domain = null;
         String listId = null;
         try {
-            // OK.. this is to be transferred to SQL DB
-            // first ensure file exists
+            
+            //OLD  first ensure file exists
             ensureDeltaLinkFileExists();
-            List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
             String resourceValue = notification.getResource();
+            /*
+            List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
+
             // Find the first line that contains the resource
             Optional<String> match = lines.stream()
                     .filter(line -> line.contains(resourceValue))
@@ -360,6 +364,14 @@ public class GraphService {
 
             if (match.isPresent()) {
                 lastDeltaLink = match.get().split("\\|")[1]; // take the part after '|'
+            }
+            */
+            //NEW Read from SQL DB
+            Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(resourceValue);
+            if (existingLog.isPresent()) {
+                // Get latest token v
+                IOLogDeltaLink log = existingLog.get();
+                lastDeltaLink = log.getTokenId();
             }
             // Assume value is your Notification object
 
@@ -404,13 +416,13 @@ public class GraphService {
             String action = "";
             for (SharePointItemResponse SPItem : items) {
                 // One always needs to get content for binding
-                SPItem.file = getSPItemContentById(SPItem.id);
+                SPItem.file = getSPItemContentById(SPItem.id, listId);
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
                 }
                 if (!SPItem.HasUUID) {
                     // AssignUUID
-                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id);
+                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, listId);
                     // Test ballenbak
                     action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
 
@@ -839,7 +851,7 @@ public class GraphService {
         return SPResponseItems;
     }
 
-    public byte[] getSPItemContentById(String itemId) throws IOException, InterruptedException {
+    public byte[] getSPItemContentById(String itemId, String ListId) throws IOException, InterruptedException {
         // First obtain SiteCollectionID
         String sitecollectionid = "";
         try {
@@ -849,7 +861,7 @@ public class GraphService {
         }
 
         String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/driveItem/content",
-                sitecollectionid, this.ListId, itemId);
+                sitecollectionid, ListId, itemId);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(endpoint))
@@ -932,14 +944,6 @@ public class GraphService {
         }
     }
 
-    private void LogNewDeltaLinkDB() {
-        try {
-            int a = 1;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
     private void ensureDeltaLinkFileExists() throws IOException {
         Path path = Paths.get(this.DeltaLinkFile);
 
@@ -999,7 +1003,8 @@ public class GraphService {
                     StandardOpenOption.APPEND);
 
             // Console output with color (ANSI)
-            System.out.println("\u001B[36mFile " + this.DeltaLinkFile + " updated with latest deltalink");
+            //System.out.println("\u001B[36mFile " + this.DeltaLinkFile + " updated with latest deltalink");
+            System.out.println("DB updated with latest deltalink");
             System.out.println("______________________________________________________________________\u001B[0m");
 
             // return ResponseEntity.ok().build(); // Spring
