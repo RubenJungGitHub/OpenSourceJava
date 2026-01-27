@@ -90,6 +90,8 @@ public class GraphService {
     private String newDeltaLink = "";
     private ILSRestProperties ILSProperties = null;
     private String DeltaLinkFile = null;
+    @Autowired
+    private AlfrescoNodeController aController;// = new AlfrescoNodeController();
 
     public GraphService() {
         mapper = new ObjectMapper();
@@ -464,7 +466,7 @@ public class GraphService {
                     try {
                         Globals.AlfrescoItemInProcess.add(SPItem.UUID.toString());
 
-                        AlfrescoNodeController aController = new AlfrescoNodeController();
+                        //AlfrescoNodeController aController = new AlfrescoNodeController();
                         RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
                         RObject.setHash(hashstring);
                         action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
