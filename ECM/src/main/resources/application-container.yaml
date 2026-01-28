@@ -13,10 +13,14 @@ spring:
  #   driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
  #------------PostGress datasource -------------
-    url: jdbc:postgresql://postgres:5432/ecmdb
+    url: jdbc:postgresql://postgres:5432/contAInBallenbak
     username: contain
     password: contain
     driver-class-name: org.postgresql.Driver
+    idle-timeout: 30000          # 30 seconds
+    max-lifetime: 1800000        # 30 minutes
+    connection-timeout: 30000    # 30 seconds
+    leak-detection-threshold: 20000  # 20 seconds
 
 
     # ---------- Redis ----------

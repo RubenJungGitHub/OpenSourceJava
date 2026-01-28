@@ -34,7 +34,7 @@ services:
     depends_on:
       - postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ontobind
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/contAInBallenbak
       SPRING_DATASOURCE_USERNAME: contain
       SPRING_DATASOURCE_PASSWORD: contain
       SPRING_CONFIG_LOCATION: /app/data/application.yaml

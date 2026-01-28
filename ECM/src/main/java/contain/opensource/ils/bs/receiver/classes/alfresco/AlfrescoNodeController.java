@@ -436,9 +436,10 @@ public class AlfrescoNodeController {
                 .asText();
             // Check if UUID present
             // Get node content
-            // alfresconNodeResponse.entry.properties.otherProperties.keySet().forEach(System.out::println);
-            alfresconNodeResponse.UUID = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID")
-                .toString();
+            Object ioUUIDValue = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
+            if (ioUUIDValue != null && !ioUUIDValue.toString().isBlank()) {
+              alfresconNodeResponse.UUID = ioUUIDValue.toString();
+            }
             Object value = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOMOVE");
             String MOVETO = value != null ? value.toString() : "";
             alfresconNodeResponse.MoveTo = MOVETO;
