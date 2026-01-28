@@ -1,5 +1,4 @@
 services:
-
   redis:
     image: redis/redis-stack:latest
     container_name: Redis-service
@@ -44,6 +43,8 @@ services:
       - "5000:8080"
     networks:
       - ils-network
+      - end-user_default
+
 
 volumes:
   pgdata:
@@ -51,3 +52,7 @@ volumes:
 networks:
   ils-network:
     driver: bridge
+
+  end-user_default:
+    external: true
+
