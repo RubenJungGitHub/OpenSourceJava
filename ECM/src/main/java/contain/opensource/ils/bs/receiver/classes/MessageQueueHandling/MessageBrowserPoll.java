@@ -58,8 +58,8 @@ public class MessageBrowserPoll {
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
 
-    @Autowired
-    private AlfrescoNodeController aController;
+   @Autowired
+   private AlfrescoNodeController aController;
 
     @Autowired
     public MessageBrowserPoll(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,

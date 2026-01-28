@@ -9,7 +9,7 @@ import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbak;
 public interface IOLogBallenbakRepository extends JpaRepository<IOLogBallenbak, String> {
 
     // Fetch the most recent log entry for a given containIOUUID
-    Optional<IOLogBallenbak> findTopByContainIOUUIDOrderByLogDateTimeDesc(String containIOUUID);
+    Optional<IOLogBallenbak> findTopByContainIoUuidOrderByLogDateTimeDesc(String containIoUuid);
 }
 
 

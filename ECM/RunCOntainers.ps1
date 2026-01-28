@@ -1,9 +1,7 @@
 
 cd C:\ContainOpenSource\Java\OpenSourceJava\ECM
 ##recreate image!
-#mvn clean package
-#docker build -t ils-app:latest .
-
+cls
 
 
 #Command to check inside conainer
@@ -15,7 +13,7 @@ cd C:\ContainOpenSource\Java\OpenSourceJava\ECM
 
 $User = "contAIn"
 $UserPassword = "contAIn123"
-
+$dbName = "contAInBallenbak"
 $saUser = "SA"
 $saPassword = "contAIn123!"
 $dbName = "contAInBallenbak"
@@ -28,6 +26,8 @@ foreach ($c in $containers) {
         docker rm $c
     }
 }
+#Rebuild image 
+#docker build -t ils-app:latest .
 
 # Remove old network if it exists
 $existingNetwork = docker network ls --format "{{.Name}}" | Where-Object { $_ -eq $networkName }
@@ -57,11 +57,7 @@ do {
 
 } until ($redisReady.TcpTestSucceeded)
 
-
-
-
-
-##Run SQL Express in a container 
+#Run SQL Express in a container 
     docker run -d --name sql-express `
     --name sql-express `
     --network ils-network `
@@ -85,8 +81,6 @@ Write-Host "Waiting for SQL Server to accept connections..."
 $maxAttempts = 30
 $attempt = 0
 
-
-
 do {
     try {
         docker exec sql-express /opt/mssql-tools/bin/sqlcmd `
@@ -95,7 +89,6 @@ do {
             -P $saPassword `
             -d master `
             -Q "SELECT 1" | Out-Null
-
         Write-Host "SQL Server is ready."
         break
     }
@@ -108,16 +101,14 @@ do {
 
 if ($attempt -eq $maxAttempts) {throw "SQL Server did not become ready in time."}
 
-
-
-
-# Connect SQL Express to ils-network for container access
-#docker network connect ils-network sql-express
 Write-Host "SQL Express connected to ils-network."
+
 
 Write-Host "Initializing database and SQL user..."
 
-# Create database
+# Create contain login and DB
+Write-Host "Create login and DB if non existant"
+
 docker run -i --rm --network ils-network mcr.microsoft.com/mssql-tools `
     /opt/mssql-tools/bin/sqlcmd `
     -S sql-express `
@@ -126,25 +117,72 @@ docker run -i --rm --network ils-network mcr.microsoft.com/mssql-tools `
     -d master `
     -Q "IF DB_ID('$dbName') IS NULL CREATE DATABASE [$dbName];"
 
+
+Write-Host "Create contAIn user"
 # Create Contain user
 docker run -i --rm --network ils-network mcr.microsoft.com/mssql-tools `
-    /opt/mssql-tools/bin/sqlcmd `
-    -S sql-express `
-    -U "$saUser" `
-    -P "$saPassword" `
-    -d master `
-    -Q @"
-IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = '$User')
+/opt/mssql-tools/bin/sqlcmd `
+-S sql-express `
+-U "$saUser" `
+-P "$saPassword" `
+-d master `
+-Q @"
+IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = '$saUser')
 BEGIN
-    CREATE LOGIN [$User] WITH PASSWORD = '$UserPassword', CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF;
+    CREATE LOGIN [$saUser]
+    WITH PASSWORD = '$saPassword',
+         CHECK_POLICY = OFF,
+         CHECK_EXPIRATION = OFF;
 END;
+
 USE [$dbName];
-IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '$User')
+
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '$saUser')
 BEGIN
-    CREATE USER [$User] FOR LOGIN [$User];
-    EXEC sp_addrolemember 'db_owner', '$User';
+    CREATE saUser [$saUser] FOR LOGIN [$saUser];
+    EXEC sp_addrolemember 'db_owner', '$saUser';
+END;
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'tblIOLog')
+BEGIN
+    CREATE TABLE [dbo].[tblIOLog] (
+        [UUID] varchar(36) NOT NULL,
+        [containIOUUID] varchar(36) NOT NULL,
+        [PlatformID] varchar(36) NULL,
+        [Path] varchar(max) NULL,
+        [IOAction] varchar(max) NOT NULL,
+        [IOSource] varchar(50) NOT NULL,
+        [IODestination] varchar(50) NOT NULL,
+        [PKIHash] varchar(max) NULL,
+        [IOreference] varchar(50) NOT NULL,
+        [AdditionalInfo] varchar(max) NULL,
+        [LogDateTime] datetime NOT NULL,
+        [ActionPerformed] varchar(20) NOT NULL,
+        [ActionPerformedBy] varchar(50) NOT NULL,
+        CONSTRAINT chk_AP CHECK (
+            [ActionPerformed] IN (
+                'IOMOVED','ASSIGNUUID','IORENAMED','IOCLASSIFIED',
+                'COPIEDUUID','IODELETED','IOCOPIED','IOBOUND'
+            )
+        ),
+        CONSTRAINT PK_tblIOLog PRIMARY KEY ([UUID])
+    );
+END;
+
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'tblSPDeltalinkRepository')
+BEGIN
+    CREATE TABLE [dbo].[tblSPDeltalinkRepository] (
+        [LogDateTime] DATETIME NOT NULL,
+        [LastDeltaLink] VARCHAR(MAX) NOT NULL,
+        [SourceID] VARCHAR(256) NOT NULL,
+        [TokenID] VARCHAR(MAX) NOT NULL
+    );
 END;
 "@
+
+
+
 
 
 docker run --rm `
@@ -162,19 +200,6 @@ docker run --rm `
 
 docker run -it --rm --network ils-network redis/redis-stack redis-cli -h Redis-service -p 6379 ping
 
-#docker run -d `
-#  --name Contain-ILS `
-#  --network ils-network `
-#  -p 5000:5000 `
-#  -v "C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/application-container.yaml:/app/config/application.yaml" `
-#  -v "C:/ContainOpenSource/Java/OpenSourceJava/ECM/src/main/resources/Containselfsigned_cert.p12:/app/config/Containselfsigned_cert.p12" `
-#  -e SPRING_REDIS_HOST=Redis-service `
-#  -e SPRING_PROFILES_ACTIVE=container `
-#  -e APP_KEYSTORE_PATH=/app/config/Containselfsigned_cert.p12 `
-#  -e SPRING_DATASOURCE_URL="jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false" `
-#  -e SPRING_DATASOURCE_USERNAME=$saUser `
-#  -e SPRING_DATASOURCE_PASSWORD=$saPassword `
- # ils-app
 
  docker run -d `
   --name Contain-ILS `

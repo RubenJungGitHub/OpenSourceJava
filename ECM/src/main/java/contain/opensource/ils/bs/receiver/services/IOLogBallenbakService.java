@@ -32,7 +32,7 @@ public class IOLogBallenbakService {
 
     // Delegate method to get the most recent entry
     public Optional<IOLogBallenbak> GetLog(String uuid) {
-        return repository.findTopByContainIOUUIDOrderByLogDateTimeDesc(uuid);
+        return repository.findTopByContainIoUuidOrderByLogDateTimeDesc(uuid);
     }
 
     // Optional helper method to create and save in one step

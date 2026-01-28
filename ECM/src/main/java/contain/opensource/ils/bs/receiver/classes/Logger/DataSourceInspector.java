@@ -18,8 +18,10 @@ public class DataSourceInspector implements CommandLineRunner {
     @Autowired
     private DataSource dataSource;
 
-    private static final String HOST = "192.168.178.210";
-    private static final int PORT = 14330;
+    //Hardcoded for now
+    
+    //private static final String HOST = "192.168.178.210";
+    //private static final int PORT = 14330;
 
 
 
@@ -36,15 +38,6 @@ public class DataSourceInspector implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("======================================");
-        // 1️⃣ Test TCP port reachability
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(HOST, PORT), 3000); // 3s timeout
-            System.out.println("TCP check passed: " + HOST + ":" + PORT + " is reachable");
-        } catch (Exception e) {
-            System.err.println("TCP check failed: Cannot reach " + HOST + ":" + PORT);
-            e.printStackTrace();
-        }
-
         // 2️⃣ Test JDBC connection
         try (Connection conn = dataSource.getConnection()) {
             System.out.println("JDBC URL: " + conn.getMetaData().getURL());

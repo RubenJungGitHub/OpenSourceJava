@@ -1,40 +1,40 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
+
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 @Entity
-@Table(name = "tblSPDeltalinkRepository", schema = "dbo")
+@Table(name = "tbl_sp_deltalink_repository")
 public class IOLogDeltaLink {
 
     @Id
-    @Column(name = "SourceID")
-    private String sourceId;   // lowercase s, camelCase
+    @Column(name = "source_id", columnDefinition = "TEXT")
+    private String sourceId;
 
-    @Column(name = "TokenID")
-    private String tokenId;    // lowercase t
+    @Column(name = "token_id", columnDefinition = "TEXT")
+    private String tokenId;
 
-    @Column(name = "LastDeltaLink")
-    private String LastDeltaLink;    // lowercase t
+    @Column(name = "last_delta_link", columnDefinition = "TEXT")
+    private String lastDeltaLink;
 
-   @Column(name = "LogDateTime", nullable = false)
+    @Column(name = "log_datetime", nullable = false)
     private LocalDateTime logDateTime;
-    public IOLogDeltaLink() { }
 
-    public IOLogDeltaLink(String sourceId, String tokenId, String LastDeltaLink) {
+    protected IOLogDeltaLink() {}
+
+    public IOLogDeltaLink(String sourceId, String tokenId, String lastDeltaLink) {
         this.sourceId = sourceId;
         this.tokenId = tokenId;
-        this.LastDeltaLink = LastDeltaLink;
+        this.lastDeltaLink = lastDeltaLink;
         this.logDateTime = LocalDateTime.now();
     }
 
     public String getSourceId() { return sourceId; }
     public void setSourceId(String sourceId) { this.sourceId = sourceId; }
 
-    public String getLastDeltaLink() { return LastDeltaLink; }
-    public void setLastDeltaLink(String LastDeltaLink) { this.LastDeltaLink = LastDeltaLink; }
+    public String getLastDeltaLink() { return lastDeltaLink; }
+    public void setLastDeltaLink(String lastDeltaLink) { this.lastDeltaLink = lastDeltaLink; }
 
     public String getTokenId() { return tokenId; }
     public void setTokenId(String tokenId) { this.tokenId = tokenId; }

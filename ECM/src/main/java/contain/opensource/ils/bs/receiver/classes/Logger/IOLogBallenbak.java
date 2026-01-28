@@ -1,4 +1,3 @@
-
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
 import java.time.LocalDateTime;
@@ -9,71 +8,75 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import java.util.UUID;
 
 @Entity
-@Table(name = "tblIOLog", schema = "dbo")
+@Table(name = "tbl_iolog")
 public class IOLogBallenbak {
 
     @Id
-    @Column(name = "UUID", length = 36, nullable = false)
+    @Column(name = "uuid", nullable = false)
     private String uuid;
 
-    @Column(name = "PlatformID", length = 36, nullable = false)
-    private String PlatformID;
+    @Column(name = "platform_id", nullable = false)
+    private String platformId;
 
-    @Column(name = "Path", length = 36, nullable = false)
-    private String Path;
-    
-    @Column(name = "containIOUUID", length = 36, nullable = false)
-    private String containIOUUID;
+    @Column(name = "path", nullable = false)
+    private String path;
 
-    @Column(name = "IOAction", columnDefinition = "varchar(max)", nullable = false)
+    @Column(name = "contain_io_uuid", nullable = false)
+    private String containIoUuid;
+
+    @Column(name = "io_action", nullable = false)
     private String ioAction;
 
-    @Column(name = "IOSource", length = 50, nullable = false)
+    @Column(name = "io_source", columnDefinition = "TEXT", nullable = false)
     private String ioSource;
 
-    @Column(name = "IODestination", length = 50, nullable = false)
+    @Column(name = "io_destination", columnDefinition = "TEXT", nullable = false)
     private String ioDestination;
 
-    @Column(name = "PKIHash", length = 50, nullable = false)
+    @Column(name = "pki_hash", columnDefinition = "TEXT", nullable = false)
     private String pkiHash;
 
-    @Column(name = "IOreference", length = 50, nullable = false)
+    @Column(name = "io_reference", columnDefinition = "TEXT", nullable = false)
     private String ioReference;
 
-    @Column(name = "AdditionalInfo", columnDefinition = "varchar(max)")
+    @Column(name = "additional_info", columnDefinition = "TEXT")
     private String additionalInfo;
 
-    @Column(name = "LogDateTime", nullable = false)
+    @Column(name = "log_datetime", nullable = false)
     private LocalDateTime logDateTime;
 
-    @Column(name = "ActionPerformed", nullable = false)
-    private String ActionPerformed;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "action_performed", nullable = false)
+    private eActionPerformed actionPerformed;
 
-    @Column(name = "ActionPerformedBy", nullable = false)
-    private String ActionPerformedBy;
+    @Column(name = "action_performed_by", nullable = false)
+    private String actionPerformedBy;
 
-    // Default constructor (required by JPA)
-    public IOLogBallenbak() { }
-
+    // Required by JPA
+    protected IOLogBallenbak() {}
+    
     // Optional convenience constructor
     public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction, String ioSource,
                  String ioDestination, String pkiHash, String ioReference,
                  String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy) {
         String guid = UUIDUtil.getUUID();
         this.uuid = guid;
-        this.containIOUUID = containIOUUID;
-        this.PlatformID = PlatformID;
-        this.Path = IOpath;
+        this.containIoUuid = containIOUUID;
+        this.platformId = PlatformID;
+        this.path = IOpath;
         this.ioAction = ioAction;
         this.ioSource = ioSource;
         this.ioDestination = ioDestination;
         this.pkiHash = pkiHash;
         this.ioReference = ioReference;
         this.additionalInfo = additionalInfo;
-        this.ActionPerformed = actionPerformed.name();
-        this.ActionPerformedBy = ActionPerformedBy;
+        this.actionPerformed = actionPerformed;
+        this.actionPerformedBy = ActionPerformedBy;
         this.logDateTime = LocalDateTime.now();
     }
 
@@ -81,8 +84,8 @@ public class IOLogBallenbak {
     public String getUuid() { return uuid; }
     public void setUuid(String uuid) { this.uuid = uuid; }
 
-    public String getContainIOUUID() { return containIOUUID; }
-    public void setContainIOUUID(String containIoUUID) { this.containIOUUID = containIoUUID; }
+    public String getContainIOUUID() { return containIoUuid; }
+    public void setContainIOUUID(String containIoUuid) { this.containIoUuid = containIoUuid; }
 
     public String getIoAction() { return ioAction; }
     public void setIoAction(String ioAction) { this.ioAction = ioAction; }
@@ -102,18 +105,18 @@ public class IOLogBallenbak {
     public String getAdditionalInfo() { return additionalInfo; }
     public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
 
-    public String getPlatformID() { return PlatformID; }
-    public void setPlatformID(String platformId) { this.PlatformID = platformId; }
+    public String getPlatformID() { return platformId; }
+    public void setPlatformID(String platformId) { this.platformId = platformId; }
 
-    public String getPath() { return Path; }
-    public void setPath(String path) { this.Path = path; }
+    public String getPath() { return path; }
+    public void setPath(String path) { this.path = path; }
 
-    public String getActionPerformedBy() { return ActionPerformedBy; }
-    public void setActionPerformedBy(String actionperformedby) { this.ActionPerformedBy = actionperformedby; }
+    public String getActionPerformedBy() { return actionPerformedBy; }
+    public void setActionPerformedBy(String actionperformedby) { this.actionPerformedBy = actionperformedby; }
 
 
-    public String getActionPerformed() { return ActionPerformed; }
-    public void setActionPerformed(String ActionPerformed) { this.ActionPerformed = ActionPerformed; }
+    public eActionPerformed getActionPerformed() { return actionPerformed; }
+    public void setActionPerformed(eActionPerformed actionPerformed) { this.actionPerformed = actionPerformed; }
 
     public LocalDateTime getLogDateTime() { return logDateTime; }
     public void setLogDateTime(LocalDateTime logDateTime) { this.logDateTime = logDateTime; }
