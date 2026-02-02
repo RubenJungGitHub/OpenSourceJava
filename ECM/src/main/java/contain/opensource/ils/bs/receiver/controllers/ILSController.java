@@ -97,22 +97,25 @@ public class ILSController {
     @GetMapping(value = "/GetIOUUIDLatestHash")
     ResponseEntity<String> GetIOUUIDLatestHash(@RequestParam String uuid) {
         long startTime = System.currentTimeMillis();
-        if (RedisManager.getHashField("IOLogs", uuid) != null) {
+        //if (RedisManager.getHashField("IOLogs", uuid) != null) { this is from KVP
+        String hash = RedisManager.getHashField(uuid); //From keyvalue
+        if (hash  != null) { 
             long endTime = System.currentTimeMillis();
             long durationMs = endTime - startTime; // duration in milliseconds
-            return ResponseEntity.ok("Hash from REDIS for IO : " + uuid + " -> "
-                    + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
+            return ResponseEntity.ok("Hash from REDIS for IO : " + uuid + " -> " + hash + " timespan in MS : " + durationMs);
         } else {
             // retrieve UUID from Datastore and cache in redis
             Optional<IOLogBallenbak> Logentry = IOLog.GetLog(uuid);
             if (Logentry.isPresent()) {
-                String pkiHash = Logentry.get().getPkiHash();
-                RedisManager.putHash("IOLogs", uuid, pkiHash);
-                pkiHash = RedisManager.getHashField("IOLogs", uuid);
+                hash = Logentry.get().getPkiHash();
+                RedisManager.putHash("IOLogs", uuid, hash);
+                //From KVP 
+                //pkiHash = RedisManager.getHashField("IOLogs", uuid);
+                //from key          
+                hash = RedisManager.getHashField(uuid); //From keyvalue
                 long endTime = System.currentTimeMillis();
                 long durationMs = endTime - startTime; // duration in milliseconds
-                return ResponseEntity.ok("Lates hash from SQL for IO : " + uuid + " -> "
-                        + RedisManager.getHashField("IOLogs", uuid) + " timespan in MS : " + durationMs);
+                return ResponseEntity.ok("Latest hash from datastore for IO : " + uuid + " -> " + hash + " timespan in MS : " + durationMs);
             } else {
                 return ResponseEntity.ok("No log entry found for UUID: " + uuid);
             }

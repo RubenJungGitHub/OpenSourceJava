@@ -64,8 +64,7 @@ public class IOLogBallenbak {
     public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction, String ioSource,
                  String ioDestination, String pkiHash, String ioReference,
                  String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy) {
-        String guid = UUIDUtil.getUUID();
-        this.uuid = guid;
+        this.uuid = uuid != null ? uuid : UUIDUtil.getUUID(); // use passed uuid if not null
         this.containIoUuid = containIOUUID;
         this.platformId = PlatformID;
         this.path = IOpath;
