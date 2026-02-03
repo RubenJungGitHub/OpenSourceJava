@@ -207,7 +207,7 @@ public class GraphService {
 
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
-            String uuid = GetUUID();
+            //String uuid = GetUUID();
             HttpClient client = HttpClient.newHttpClient();
 
             // Build payload to update Title and ObjectClassificationText
@@ -272,7 +272,7 @@ public class GraphService {
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 System.out.println("Item  : " + node.getFileName() + " moved to SharePoint succesfully");
-                return uuid;
+                return "Success";
             } else {
                 System.out.println("Failed to update field: " + response.body());
                 return "Failed";
@@ -284,13 +284,15 @@ public class GraphService {
         }
     }
 
-    private static String GetUUID() {
+    /*
+       //private static String GetUUIDCheck() {
         // Generate a random UUID
-        UUID uuid = UUID.randomUUID();
-        return uuid.toString();
-        // Print the UUID
+   //     UUID uuid = UUID.randomUUID();
+     //   return uuid.toString();
+       // Print the UUID
         // System.out.println("Generated UUID: " + uuid.toString());
-    }
+   // }
+  */ 
 
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
@@ -493,7 +495,6 @@ public class GraphService {
                                 action,
                                 RObject.getPlatfrom().toString(),
                                 RObject.getPlatformTo().toString(),
-                                // UUIDUtil.getUUID(),
                                 hashstring,
                                 RObject.getFileName(),
                                 "",

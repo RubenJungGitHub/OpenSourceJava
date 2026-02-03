@@ -41,7 +41,7 @@ public class IOLogBallenbakService {
             String destination,
             String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy) {
         IOLogBallenbak log = new IOLogBallenbak(
-                UUIDUtil.getUUID(),
+                UUIDUtil.getUUIDOverHTTP(),
                 containIOUUID,
                 PlatformID,
                 IOpath,
@@ -55,7 +55,7 @@ public class IOLogBallenbakService {
                 ActionPerformedBy);
         // Update Redis
         if (actionPerformed != eActionPerformed.IODELETED) {
-            RedisManager.putHash("IOLogs", containIOUUID, pkiHash);
+            RedisManager.putHash("IOLogs", containIOUUID, pkiHash, 120);
         }
 
         try {

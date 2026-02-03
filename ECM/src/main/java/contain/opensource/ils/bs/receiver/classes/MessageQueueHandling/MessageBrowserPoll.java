@@ -1,5 +1,8 @@
 package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.PrivateKey;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -19,11 +22,16 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpEntity;
+import java.util.Base64;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
-import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
@@ -33,6 +41,8 @@ import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeControlle
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
+import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 @Component
 public class MessageBrowserPoll {
@@ -50,8 +60,8 @@ public class MessageBrowserPoll {
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
 
-   @Autowired
-   private AlfrescoNodeController aController;
+    @Autowired
+    private AlfrescoNodeController aController;
 
     @Autowired
     public MessageBrowserPoll(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
@@ -133,25 +143,18 @@ public class MessageBrowserPoll {
                         json = text.getText();
                         ObjectMapper mapper = new ObjectMapper();
                         try {
-
                             AlfrescoQueMessage QMessage = mapper.readValue(json, AlfrescoQueMessage.class);
                             Object secondPath = "";
                             List<Object> paths = QMessage.getPaths();
-
                             if (paths != null && paths.size() > 1) {
                                 secondPath = paths.get(1);
                             }
-
                             String type = QMessage.getType();
                             // ===========================================================================================
                             // TO BE MANAGED BY RULE-ENGINE AND GENERATOR
                             // ===========================================================================================
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
-                                
-                                //Add to Redis cache to prevent double binding.
-                                    
-
                                 // Call Alfresco object controller
                                 aController.nodeId = QMessage.getNodeId();
                                 // alfrescoNodeController.GetNode(QMessage.getNodeId());
@@ -163,7 +166,6 @@ public class MessageBrowserPoll {
                                             + " deleted from Alfresco by user " + QMessage.getUsername();
                                     // Remove from Redis. For SPO this is going to be a challenge
                                     // RedisManager.deleteHashField("IOLogs", type);
-
                                     IOLog.log(
                                             QMessage.getId(),
                                             "",
@@ -186,46 +188,86 @@ public class MessageBrowserPoll {
                                     } else {
                                         IOUUID = aController.alfresconNodeResponse.UUID;
                                     }
+                                    
+                                    // Add to Redis cache to avoid double binding.
+                                    String redisentry = "IOinProcess-" +  IOUUID;
+
+                                    if(RedisManager.getHashField(redisentry) == null)
+                                    {
+                                        RedisManager.putHash("IOinProcess",redisentry, "InProcess", 120);
+                                    }
+                                    else
+                                    {
+                                        RedisManager.deleteEntry(redisentry);
+                                        return;
+                                    }
 
                                     // First sign and log
-                                    // Only for ballenbak
                                     // ==========================================================================================
                                     // ALL FUNCTIONS SHOULD BE SEPARATED
                                     // ==========================================================================================
-                                    String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : "
-                                            + QMessage.getName();
 
                                     // IN the future store as actual byte in Redis and datastore. For POC store as
-                                    // string
-                                    byte[] HASH = RJBindAndSecureIO.sign(
-                                            aController.alfresconNodeResponse.ToSecuredDocument(), PKCS12KeyLoader.PK);
+                                    PrivateKey key = PKCS12KeyLoader.PK;
+                                    String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
+
+                                    BindRequest request = new BindRequest(aController.alfresconNodeResponse.ToSecuredDocument(), privateKeyBase64);
+                                    String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
+                                    System.out
+                                            .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                                                    + "Binding endpoint  : "
+                                                    + endPoint
+                                                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+
+                                    URL url = new URL(endPoint);
+                                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                    conn.setRequestMethod("POST");
+
+                                    int status = conn.getResponseCode();
+                                    System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
+
+                                    RestTemplate restTemplate = new RestTemplate();
+                                    HttpHeaders headers = new HttpHeaders();
+                                    headers.setContentType(MediaType.APPLICATION_JSON);
+
+                                    HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
+                                    ResponseEntity<String> response = restTemplate.postForEntity(endPoint, entity,
+                                            String.class);
+
+                                    // Local processing. Moved to endpoint
+                                    // byte[] HASH =
+                                    // RJBindAndSecureIO.sign(aController.alfresconNodeResponse.ToSecuredDocument(),
+                                    // PKCS12KeyLoader.PK);
                                     // Create function
-                                    StringBuilder hsb = new StringBuilder();
-                                    for (byte b : HASH) {
-                                        hsb.append(String.format("%02x", b));
+                                    // StringBuilder hsb = new StringBuilder();
+                                    // for (byte b : HASH) {
+                                    // hsb.append(String.format("%02x", b));
+                                    // }
+                                    // String hashstring = hsb.toString();
+
+                                    // Move log to binding function
+                                    String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : " + QMessage.getName();
+                                    if (response.getStatusCode().value() == 200) 
+                                    {
+                                        IOLog.log(
+                                                IOUUID,
+                                                QMessage.getId(),
+                                                secondPath.toString(),
+                                                action,
+                                                AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                                                AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                                                response.getBody(),
+                                                QMessage.getName(),
+                                                "",
+                                                AlfrescoConstants.eActionPerformed.IOBOUND,
+                                                QMessage.getUsername());
+                                        // ==========================================================================================
                                     }
-                                    String hashstring = hsb.toString();
-
-                                    // Move log to bindng function
-                                    IOLog.log(
-                                            IOUUID,
-                                            QMessage.getId(),
-                                            secondPath.toString(),
-                                            action,
-                                            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                            hashstring,
-                                            QMessage.getName(),
-                                            "",
-                                            AlfrescoConstants.eActionPerformed.IOBOUND,
-                                            QMessage.getUsername());
-                                    // ==========================================================================================
-
                                     if (aController.alfresconNodeResponse.MustMove) {
                                         // Create generic property mapping information object
                                         RelocateInformationObject IOobject = new RelocateInformationObject(
                                                 aController.alfresconNodeResponse,
-                                                hashstring,
+                                                "hashstring",
                                                 AlfrescoConstants.ContainPlatforms.ALFRESCO,
                                                 AlfrescoConstants.ContainPlatforms.SPO);
                                         // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
@@ -237,7 +279,8 @@ public class MessageBrowserPoll {
                                         // Inside a container calling a method over http from within the container is a
                                         // bad pattern.
                                         // When in future a relocate over HTTP is to be realized, which it is, it should
-                                        // be a separate microservice runnning in a separate controller and possibly container.
+                                        // be a separate microservice runnning in a separate controller and possibly
+                                        // container.
                                         // This poses challenges concernig shared objects and serialization
                                         // Now this runs fine in development on the host but once processed to the
                                         // contain-Ils container having this endpoint inside the same container, the

@@ -2,17 +2,10 @@ package contain.opensource.ils.bs.receiver.classes.Redis;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 
-/**
- * Static RedisManager
- * - Lazily initialized
- * - Stores hashes persistently (requires Redis AOF or RDB)
- * - Provides static access from anywhere
- */
 public final class RedisManager {
 
     private static final String REDIS_URI = "redis://localhost:6379"; // Redis protocol port
@@ -62,7 +55,7 @@ public final class RedisManager {
     // ===============================
 
     /** Store a field in a hash */
-    public static void putHash(String hashKey, String field, String value) {
+    public static void putHash(String hashKey, String field, String value, Integer TimeSpanSecs) {
         init();
         // As hashjey TTL will delete entire hashkey .
         // This is undesired because we want to keep the essential info in cache..
@@ -72,16 +65,8 @@ public final class RedisManager {
             // Store as KVP. No ttl
             // redis.hset(hashKey, field, value);
             // Store as jey. Has ttl
-            redis.setex(field, 60, value); // TTL 10 minutes
+            redis.setex(field, TimeSpanSecs, value);
         }
-
-        // Also add to redis with TTL. This is less efficetn but IO;s that are not
-        // references frequetly or get deleted will eventuaklly go out of scip no longer
-        // consuming memory.
-        // TTL to be configured
-        // Integer ttl = 30;
-        // redis.expire(hashKey, ttl); ..This will remove the entire key. We don't want
-        // that.
     }
 
     /** Get a field from a hash */
@@ -120,7 +105,7 @@ public final class RedisManager {
     }
 
     // ===============================
-    // Optional database fallback
+    // Database fallback
     // ===============================
 
     /**
@@ -146,11 +131,15 @@ public final class RedisManager {
         value = fallback.get();
 
         if (value != null) {
-            putHash(hashKey, uuid, Hash); // cache in Redis
-            redis.setex(uuid, 60, value); // TTL 10 minutes
+            putHash(hashKey, uuid, Hash, 120); // cache in Redis
+            redis.setex(uuid, 120, value); // TTL 10 minutes
             value = fallback.get();
         }
         return value;
+    }
+
+    public static void deleteEntry(String uuid) {
+        redis.del(uuid);
     }
 
     // ===============================

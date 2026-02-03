@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
-import java.util.UUID;
 
 @Entity
 @Table(name = "tbl_iolog")
@@ -64,7 +63,7 @@ public class IOLogBallenbak {
     public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction, String ioSource,
                  String ioDestination, String pkiHash, String ioReference,
                  String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy) {
-        this.uuid = uuid != null ? uuid : UUIDUtil.getUUID(); // use passed uuid if not null
+        this.uuid = uuid != null ? uuid : UUIDUtil.getUUIDOverHTTP(); // use passed uuid if not null
         this.containIoUuid = containIOUUID;
         this.platformId = PlatformID;
         this.path = IOpath;
@@ -112,7 +111,6 @@ public class IOLogBallenbak {
 
     public String getActionPerformedBy() { return actionPerformedBy; }
     public void setActionPerformedBy(String actionperformedby) { this.actionPerformedBy = actionperformedby; }
-
 
     public eActionPerformed getActionPerformed() { return actionPerformed; }
     public void setActionPerformed(eActionPerformed actionPerformed) { this.actionPerformed = actionPerformed; }
