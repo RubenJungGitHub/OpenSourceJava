@@ -87,12 +87,7 @@ public class ILSController {
         return "Success";
     }
 
-    @GetMapping(value = "/GetUUID")
-    public String GetUUID() {
-        // Generate a random UUID
-        UUID uuid = UUID.randomUUID();
-        return uuid.toString();
-    }
+
 
     @GetMapping(value = "/GetIOUUIDLatestHash")
     ResponseEntity<String> GetIOUUIDLatestHash(@RequestParam String uuid) {
@@ -120,10 +115,5 @@ public class ILSController {
                 return ResponseEntity.ok("No log entry found for UUID: " + uuid);
             }
         }
-    }
-
-    @GetMapping("/RedisFlush")
-    public void RedisFlush() {
-        RedisManager.redis.flushall();
     }
 }

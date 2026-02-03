@@ -541,7 +541,7 @@ public class AlfrescoNodeController {
       switch (field) {
         case UUID:
           propertyName = "contain:IOUUID"; // custom aspect property
-          propertyValue = UUIDUtil.getUUID();
+          propertyValue =  AlfrescoConstants.ContainPlatforms.ALFRESCO.toString() + "-" + UUIDUtil.getUUIDOverHTTP();
           ;
           action = "Assign UUID " + propertyValue + "  to new Alfresco IO " + this.alfresconNodeResponse.entry.name;
           break;

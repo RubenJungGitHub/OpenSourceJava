@@ -10,7 +10,7 @@ import java.util.UUID;
 //import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import org.springframework.stereotype.Component;
 
-import com.azure.core.annotation.Get;
+//import com.azure.core.annotation.Get;
 
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 
@@ -46,7 +46,7 @@ public class UUIDUtil {
             // Fetch Spring-managed bean
             UUIDUtil uuidUtil = SpringContext.getApplicationContext().getBean(UUIDUtil.class);
 
-            String urlString = uuidUtil.iLSRestProperties.getBaseUrl() + "/GetUUID";
+            String urlString = uuidUtil.iLSRestProperties.getBaseUrl() + "/api/GetUUID";
 
             System.out.println(
                     contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED + "Get UUID endpoint  : "

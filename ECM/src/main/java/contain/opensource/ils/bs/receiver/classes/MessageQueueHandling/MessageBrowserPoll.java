@@ -1,8 +1,5 @@
 package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -19,11 +16,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -156,6 +148,10 @@ public class MessageBrowserPoll {
                             // ===========================================================================================
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
+                                
+                                //Add to Redis cache to prevent double binding.
+                                    
+
                                 // Call Alfresco object controller
                                 aController.nodeId = QMessage.getNodeId();
                                 // alfrescoNodeController.GetNode(QMessage.getNodeId());
@@ -241,14 +237,14 @@ public class MessageBrowserPoll {
                                         // Inside a container calling a method over http from within the container is a
                                         // bad pattern.
                                         // When in future a relocate over HTTP is to be realized, which it is, it should
-                                        // be a separate microservice runnning in a separate container.
-                                        // This poses challenges concernig shared oobjects and serialization
-                                        // Now this rus fine in development on the host but once processed to the
+                                        // be a separate microservice runnning in a separate controller and possibly container.
+                                        // This poses challenges concernig shared objects and serialization
+                                        // Now this runs fine in development on the host but once processed to the
                                         // contain-Ils container having this endpoint inside the same container, the
                                         // next axception is logged:
                                         // Get UUID endpoint : http://host.docker.internal:5000/GetUUID⁠ (This is by
                                         // design and in the app log.
-                                        // Bit this throws an exception: REST call failed with exception :
+                                        // But this throws an exception: REST call failed with exception :
                                         // java.net.SocketException: Unexpected end of file from server
                                         // ===================================================================================================================================================
                                         /*

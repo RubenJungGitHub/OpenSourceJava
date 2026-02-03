@@ -47,7 +47,6 @@ import com.microsoft.graph.models.ListItem;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 import contain.opensource.ils.bs.receiver.classes.Logger.IODeltaLinkLog;
-import contain.opensource.ils.bs.receiver.Globals.Globals;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
@@ -60,6 +59,7 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.ChangedItemsResult;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import io.swagger.v3.oas.annotations.Parameter;
 
 //========================================================================
@@ -154,14 +154,16 @@ public class GraphService {
         try {
             // Initially check if SP item is added because of reloaction
             String UID = this.SiteID + this.ListId + listItemId;
-            if (Globals.AlfrescoItemInProcess.contains(UID)) {
-                System.out.println("Relocated item, no update required");
-                return "Relocated item, no update required";
-            }
+          //  if (Globals.AlfrescoItemInProcess.contains(UID)) {
+          //      System.out.println("Relocated item, no update required");
+          //      return "Relocated item, no update required";
+          //  }
 
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
-            String uuid = GetUUID();
+            ///String uuid = GetUUID();
+            String uuid = AlfrescoConstants.ContainPlatforms.SPO.toString() + "-" +  UUIDUtil.getUUIDOverHTTP();
+
             HttpClient client = HttpClient.newHttpClient();
 
             // Build payload to update Title and ObjectClassificationText
@@ -331,9 +333,9 @@ public class GraphService {
             String listItemId = getListItemId(driveId, driveItemId);
             // UniqueIdentifier
             String UID = this.SiteID + this.ListId + listItemId;
-            Globals.AlfrescoItemInProcess.add(UID);
+         //   Globals.AlfrescoItemInProcess.add(UID);
             String retval = updateSharepointItemGraphAPI(IOobject, listItemId);
-            Globals.AlfrescoItemInProcess.remove(UID);
+         //   Globals.AlfrescoItemInProcess.remove(UID);
             // Function should return something in the future for transaction purposes
 
         } catch (Exception e) {
@@ -476,7 +478,7 @@ public class GraphService {
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
-                        Globals.AlfrescoItemInProcess.add(SPItem.UUID.toString());
+                    //    Globals.AlfrescoItemInProcess.add(SPItem.UUID.toString());
 
                         // AlfrescoNodeController aController = new AlfrescoNodeController();
                         RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
@@ -519,7 +521,7 @@ public class GraphService {
                     // Test ballenbak
 
                 }
-                Globals.AlfrescoItemInProcess.remove(SPItem.UUID.toString());
+            //    Globals.AlfrescoItemInProcess.remove(SPItem.UUID.toString());
             }
             LogNewDeltaLinkToFile();
 
