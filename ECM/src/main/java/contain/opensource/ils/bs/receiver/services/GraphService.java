@@ -2,8 +2,10 @@ package contain.opensource.ils.bs.receiver.services;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,7 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.security.PrivateKey;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +28,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
@@ -47,8 +56,6 @@ import com.microsoft.graph.models.ListItem;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 import contain.opensource.ils.bs.receiver.classes.Logger.IODeltaLinkLog;
-import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
-import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLogDeltaLink;
@@ -60,7 +67,10 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
+import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
+import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import io.swagger.v3.oas.annotations.Parameter;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
@@ -149,20 +159,19 @@ public class GraphService {
 
     public String updateSharepointItemGraphAPI(
             @Parameter(description = "List Item ID") @RequestParam String listItemId,
-            @Parameter(description = "List ID") @RequestParam String ListId
-            ) {
+            @Parameter(description = "List ID") @RequestParam String ListId) {
         try {
             // Initially check if SP item is added because of reloaction
             String UID = this.SiteID + this.ListId + listItemId;
-          //  if (Globals.AlfrescoItemInProcess.contains(UID)) {
-          //      System.out.println("Relocated item, no update required");
-          //      return "Relocated item, no update required";
-          //  }
+            // if (Globals.AlfrescoItemInProcess.contains(UID)) {
+            // System.out.println("Relocated item, no update required");
+            // return "Relocated item, no update required";
+            // }
 
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
-            ///String uuid = GetUUID();
-            String uuid = AlfrescoConstants.ContainPlatforms.SPO.toString() + "-" +  UUIDUtil.getUUIDOverHTTP();
+            /// String uuid = GetUUID();
+            String uuid = AlfrescoConstants.ContainPlatforms.SPO.toString() + "-" + UUIDUtil.getUUIDOverHTTP();
 
             HttpClient client = HttpClient.newHttpClient();
 
@@ -207,7 +216,7 @@ public class GraphService {
 
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
-            //String uuid = GetUUID();
+            // String uuid = GetUUID();
             HttpClient client = HttpClient.newHttpClient();
 
             // Build payload to update Title and ObjectClassificationText
@@ -285,14 +294,14 @@ public class GraphService {
     }
 
     /*
-       //private static String GetUUIDCheck() {
-        // Generate a random UUID
-   //     UUID uuid = UUID.randomUUID();
-     //   return uuid.toString();
-       // Print the UUID
-        // System.out.println("Generated UUID: " + uuid.toString());
-   // }
-  */ 
+     * //private static String GetUUIDCheck() {
+     * // Generate a random UUID
+     * // UUID uuid = UUID.randomUUID();
+     * // return uuid.toString();
+     * // Print the UUID
+     * // System.out.println("Generated UUID: " + uuid.toString());
+     * // }
+     */
 
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
@@ -335,9 +344,9 @@ public class GraphService {
             String listItemId = getListItemId(driveId, driveItemId);
             // UniqueIdentifier
             String UID = this.SiteID + this.ListId + listItemId;
-         //   Globals.AlfrescoItemInProcess.add(UID);
+            // Globals.AlfrescoItemInProcess.add(UID);
             String retval = updateSharepointItemGraphAPI(IOobject, listItemId);
-         //   Globals.AlfrescoItemInProcess.remove(UID);
+            // Globals.AlfrescoItemInProcess.remove(UID);
             // Function should return something in the future for transaction purposes
 
         } catch (Exception e) {
@@ -354,24 +363,24 @@ public class GraphService {
         String domain = null;
         String listId = null;
         try {
-            
-            //OLD  first ensure file exists
+
+            // OLD first ensure file exists
             ensureDeltaLinkFileExists();
-           String resourceValue = notification.getResource();
+            String resourceValue = notification.getResource();
 
-           /*
-            List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
-
-            // Find the first line that contains the resource
-            Optional<String> match = lines.stream()
-                    .filter(line -> line.contains(resourceValue))
-                    .findFirst();
-
-            if (match.isPresent()) {
-                lastDeltaLink = match.get().split("\\|")[1]; // take the part after '|'
-            }
-            */
-            //NEW Read from SQL DB
+            /*
+             * List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
+             * 
+             * // Find the first line that contains the resource
+             * Optional<String> match = lines.stream()
+             * .filter(line -> line.contains(resourceValue))
+             * .findFirst();
+             * 
+             * if (match.isPresent()) {
+             * lastDeltaLink = match.get().split("\\|")[1]; // take the part after '|'
+             * }
+             */
+            // NEW Read from SQL DB
             Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(resourceValue);
             if (existingLog.isPresent()) {
                 // Get latest token v
@@ -451,40 +460,94 @@ public class GraphService {
                 // ALL FUNCTIONS SHOULD BE SEPARATED
                 // ==========================================================================================
 
-                // to do Move log to binding function
-                // IN the future store as actual byte in Redis and datastore. For POC store as
-                // string
-                byte[] HASH = RJBindAndSecureIO.sign(SPItem.ToSecuredDocument(), PKCS12KeyLoader.PK);
-                // Create function for future
-                StringBuilder hsb = new StringBuilder();
-                for (byte b : HASH) {
-                    hsb.append(String.format("%02x", b));
+                /*
+                 * // to do Move log to binding function
+                 * // IN the future store as actual byte in Redis and datastore. For POC store
+                 * as
+                 * byte[] HASH = RJBindAndSecureIO.sign(SPItem.ToSecuredDocument(),
+                 * PKCS12KeyLoader.PK);
+                 * //Create function for future
+                 * StringBuilder hsb = new StringBuilder();
+                 * for (byte b : HASH) {
+                 * hsb.append(String.format("%02x", b));
+                 * }
+                 * String hashstring = hsb.toString();
+                 */
+
+
+                // Add to Redis cache to avoid double binding.
+                String redisentry = "IOinProcess-" + SPItem.UUID.replaceAll("^\"|\"$", "");
+
+                if (RedisManager.getHashField(redisentry) == null) {
+                    RedisManager.putHash("IOinProcess", redisentry, "InProcess", 240);
+                } else {
+                    RedisManager.deleteEntry(redisentry);
+                    break;
                 }
-                String hashstring = hsb.toString();
 
+                PrivateKey key = PKCS12KeyLoader.PK;
+                String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
+
+                BindRequest request = new BindRequest(SPItem.ToSecuredDocument(),
+                        privateKeyBase64);
+                String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
+                System.out
+                        .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                                + "Binding endpoint  : "
+                                + endPoint
+                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+
+                URL url = new URL(endPoint);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+
+                int status = conn.getResponseCode();
+                System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
+
+                RestTemplate restTemplate = new RestTemplate();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+
+                HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
+                ResponseEntity<String> response = restTemplate.postForEntity(endPoint, entity,
+                        String.class);
+
+                // Local processing. Moved to endpoint
+                // byte[] HASH =
+                // RJBindAndSecureIO.sign(aController.alfresconNodeResponse.ToSecuredDocument(),
+                // PKCS12KeyLoader.PK);
+                // Create function
+                // StringBuilder hsb = new StringBuilder();
+                // for (byte b : HASH) {
+                // hsb.append(String.format("%02x", b));
+                // }
+                // String hashstring = hsb.toString();
+
+                // Move log to binding function
                 action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
-                IOLog.log(
-                        SPItem.UUID,
-                        SPItem.id,
-                        "",
-                        action,
-                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                        hashstring,
-                        SPItem.filename,
-                        "",
-                        AlfrescoConstants.eActionPerformed.IOBOUND,
-                        "System");
-                // ==========================================================================================
-
+                if (response.getStatusCode().value() == 200) {
+                    IOLog.log(
+                            SPItem.UUID,
+                            SPItem.id,
+                            "",
+                            action,
+                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                            response.getBody(),
+                            SPItem.filename,
+                            "",
+                            AlfrescoConstants.eActionPerformed.IOBOUND,
+                            "System");
+                    // ==========================================================================================
+                }
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
-                    //    Globals.AlfrescoItemInProcess.add(SPItem.UUID.toString());
+                        // Globals.AlfrescoItemInProcess.add(SPItem.UUID.toString());
 
                         // AlfrescoNodeController aController = new AlfrescoNodeController();
                         RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
-                        RObject.setHash(hashstring);
+                        RObject.setHash(response.getBody());
                         action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
                                 + RObject.getPlatfrom() + " to " + RObject.getPlatformTo();
                         aController.uploadSPItemToAlfresco(RObject);
@@ -495,7 +558,7 @@ public class GraphService {
                                 action,
                                 RObject.getPlatfrom().toString(),
                                 RObject.getPlatformTo().toString(),
-                                hashstring,
+                                response.getBody(),
                                 RObject.getFileName(),
                                 "",
                                 AlfrescoConstants.eActionPerformed.IOCOPIED,
@@ -522,7 +585,7 @@ public class GraphService {
                     // Test ballenbak
 
                 }
-            //    Globals.AlfrescoItemInProcess.remove(SPItem.UUID.toString());
+                // Globals.AlfrescoItemInProcess.remove(SPItem.UUID.toString());
             }
             LogNewDeltaLinkToFile();
 
@@ -978,9 +1041,9 @@ public class GraphService {
                 IODeltaLinkLog.log(SourceID, TokenID, newDeltaLink); // save updated record
             } else {
                 // Add new record
-                  IODeltaLinkLog.log(SourceID, TokenID,newDeltaLink); // save new record
+                IODeltaLinkLog.log(SourceID, TokenID, newDeltaLink); // save new record
             }
-            
+
             Path path = Paths.get(this.DeltaLinkFile);
 
             // Read all lines
@@ -1008,7 +1071,8 @@ public class GraphService {
                     StandardOpenOption.APPEND);
 
             // Console output with color (ANSI)
-            //System.out.println("\u001B[36mFile " + this.DeltaLinkFile + " updated with latest deltalink");
+            // System.out.println("\u001B[36mFile " + this.DeltaLinkFile + " updated with
+            // latest deltalink");
             System.out.println("DB updated with latest deltalink");
             System.out.println("______________________________________________________________________\u001B[0m");
 
