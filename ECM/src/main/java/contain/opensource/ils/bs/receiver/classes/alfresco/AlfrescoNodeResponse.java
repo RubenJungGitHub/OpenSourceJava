@@ -1,7 +1,5 @@
 package contain.opensource.ils.bs.receiver.classes.alfresco;
 
-import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
-
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,6 +9,8 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
 
 public class AlfrescoNodeResponse {
     public boolean HasUUID = false;
@@ -22,6 +22,9 @@ public class AlfrescoNodeResponse {
     public byte[] file;
     public String Title;
     public String Description;
+    public String version;
+    public String marking;
+    public String label;
 
     public static class Entry {
         public boolean isFile;
@@ -37,6 +40,9 @@ public class AlfrescoNodeResponse {
         public String name;
         public String id;
         public Properties properties;
+        public String version;
+        public String marking;
+        public String label;
     }
 
     public static class CreatedByUser {

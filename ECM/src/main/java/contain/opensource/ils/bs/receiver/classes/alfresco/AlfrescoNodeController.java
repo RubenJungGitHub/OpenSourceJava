@@ -439,6 +439,22 @@ public class AlfrescoNodeController {
                 .path("properties")
                 .path("cm:description")
                 .asText();
+
+            alfresconNodeResponse.version = rootNode.path("entry")
+                .path("properties")
+                .path("cm:versionLabel")
+                .asText();
+
+            alfresconNodeResponse.marking = rootNode.path("entry")
+                .path("properties")
+                .path("contain:MARKING")
+                .asText();
+
+            alfresconNodeResponse.label = rootNode.path("entry")
+                .path("properties")
+                .path("contain:LABEL")
+                .asText();
+
             // Check if UUID present
             // Get node content
             Object ioUUIDValue = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
@@ -599,9 +615,9 @@ public class AlfrescoNodeController {
               jsonBody,
               eActionPerformed.ASSIGNUUID,
               alfresconNodeResponse.entry.modifiedByUser.displayName,
-              "markingdummy",
-              "labeldummy",
-              "versiondummy");
+              this.alfresconNodeResponse.marking,
+              this.alfresconNodeResponse.label,
+              this.alfresconNodeResponse.version);
 
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);

@@ -179,9 +179,9 @@ public class MessageBrowserPoll {
                                             "",
                                             AlfrescoConstants.eActionPerformed.IODELETED,
                                             QMessage.getUsername(),
-                                            "markingdummy",
-                                            "labeldummy",
-                                            "versiondummy");
+                                            aController.alfresconNodeResponse.marking,
+                                            aController.alfresconNodeResponse.label,
+                                            aController.alfresconNodeResponse.version);
                                 } else {
                                     aController.GetNode();
                                     String IOUUID = "";
@@ -253,9 +253,9 @@ public class MessageBrowserPoll {
                                                 "",
                                                 AlfrescoConstants.eActionPerformed.IOBOUND,
                                                 QMessage.getUsername(),
-                                                "markingdummy",
-                                                "labeldummy",
-                                                "versiondummy");
+                                                aController.alfresconNodeResponse.marking,
+                                                aController.alfresconNodeResponse.label,
+                                                aController.alfresconNodeResponse.version);
                                         // ==========================================================================================
                                     }
 
