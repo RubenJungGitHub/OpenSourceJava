@@ -1,64 +1,65 @@
 package contain.opensource.ils.bs.receiver.classes;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
+//import com.fasterxml.jackson.annotation.JsonGetter;
+//import com.fasterxml.jackson.annotation.JsonProperty;
+//import com.fasterxml.jackson.annotation.JsonSetter;
 
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeResponse;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+//import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
 
 //Generic IO object Class for move between environments 
 //======================================================
-public class RelocateInformationObject {
-    @JsonProperty("title")
-    private String title;
+public class RelocateInformationObject  extends IOObjectProperies  {
+    //@JsonProperty("title")
+    //private String title;
 
-    @JsonProperty("uuid")
-    private String uuid;
+    //@JsonProperty("uuid")
+    //private String uuid;
 
-    @JsonProperty("HASH")
-    private String HASH;
+    //@JsonProperty("HASH")
+    //private String HASH;
 
 
-    @JsonProperty("fileName")
-    private String filename;
+    //@JsonProperty("fileName")
+    //private String filename;
 
-    @JsonProperty("description")
-    private String description;
+    //@JsonProperty("description")
+   // private String description;
 
-    @JsonProperty("mimetype")
-    private String mimetype;
+    //@JsonProperty("mimetype")
+    //private String mimetype;
 
-    @JsonProperty("id")
-    private String id;
+    //@JsonProperty("id")
+    //private String id;
 
-    @JsonProperty("content")
+    //@JsonProperty("content")
     // @JsonDeserialize(using = Base64Deserializer.class)
-    private byte[] content;
+    //private byte[] content;
 
-    @JsonProperty("platfrom")
-    private AlfrescoConstants.ContainPlatforms containplatfrom;
+    //@JsonProperty("platfrom")
+    //private AlfrescoConstants.ContainPlatforms containplatformfrom;
 
-    @JsonProperty("platformTo")
-    private AlfrescoConstants.ContainPlatforms containplatformto;
+    //@JsonProperty("platformTo")
+    //private AlfrescoConstants.ContainPlatforms containplatformto;
 
     public RelocateInformationObject() {
         // needed for Jackson
     }
 
     // Constructor for Alfresco
-    public RelocateInformationObject(AlfrescoNodeResponse Anode,  String hash, AlfrescoConstants.ContainPlatforms containPlatfrom,
+    public RelocateInformationObject(AlfrescoNodeResponse Anode,  String hash, AlfrescoConstants.ContainPlatforms containplatformfrom,
             AlfrescoConstants.ContainPlatforms containPlatFormTo) {
         // Map to this object
-        this.content = Anode.file;
-        this.uuid = Anode.UUID;
+        this.filename = Anode.filename;
+        this.UUID = Anode.UUID;
         this.HASH = hash;
         this.id = Anode.entry.id;
-        this.title = Anode.Title;
-        this.description = Anode.Description;
-        this.filename = Anode.entry.name;
-        this.containplatfrom = containPlatfrom;
+        this.Title = Anode.Title;
+        this.Description = Anode.Description;
+        this.filename = Anode.entry.filename;
+        this.containplatformfrom = containplatformfrom;
         this.containplatformto = containPlatFormTo;
     }
 
@@ -66,18 +67,19 @@ public class RelocateInformationObject {
     public RelocateInformationObject(SharePointItemResponse SPItem) {
         // Map to this object
         // this.content = SPItem.cont;
-        this.uuid = SPItem.UUID;
+        this.UUID = SPItem.UUID;
         this.id = SPItem.id;
-        this.title = SPItem.title;
+        this.Title = SPItem.title;
         this.filename = SPItem.filename;
-        this.description = SPItem.description;
-        this.mimetype = SPItem.mimetype;
+        this.Description = SPItem.description;
+        this.mimeType = SPItem.mimetype;
         this.content = SPItem.file;
-        this.containplatfrom = AlfrescoConstants.ContainPlatforms.SPO;
+        this.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
         this.containplatformto = SPItem.MoveTo;
 
     }
 
+    /*
     // getters and setters
     public String getId() {
         return id;
@@ -111,24 +113,24 @@ public class RelocateInformationObject {
 
     @JsonGetter("description")
     public String getDescription() {
-        return description;
-    }
+        return Description;
+   }
 
     public String getTitle() {
-        return title;
+        return Title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+   public void setTitle(String title) {
+      this.Title = title;
     }
 
     public String getUuid() {
-    this.uuid = uuid.replace("\"", "").trim();
-        return uuid;
+    this.UUID = UUID.replace("\"", "").trim();
+        return UUID;
     }
 
     public void setUuid(String UUID) {
-        this.uuid = UUID.replace("\"", "").trim();
+        this.UUID = UUID.replace("\"", "").trim();
     }
 
         public String getHash() {
@@ -140,11 +142,11 @@ public class RelocateInformationObject {
     }
 
     public AlfrescoConstants.ContainPlatforms getPlatfrom() {
-        return containplatfrom;
+        return containplatformfrom;
     }
 
     public void setPlatfrom(AlfrescoConstants.ContainPlatforms pf) {
-        this.containplatfrom = pf;
+        this.containplatformfrom = pf;
     }
 
     public AlfrescoConstants.ContainPlatforms getPlatformTo() {
@@ -154,4 +156,6 @@ public class RelocateInformationObject {
     public void setPlatformTo(AlfrescoConstants.ContainPlatforms pt) {
         this.containplatformto = pt;
     }
+}
+    */
 }

@@ -545,7 +545,7 @@ public class AlfrescoNodeController {
         throw new IOException("HTTP error " + response.getCode());
       }
 
-      this.alfresconNodeResponse.file = in.readAllBytes();
+      this.alfresconNodeResponse.content = in.readAllBytes();
     }
   }
 
@@ -564,7 +564,7 @@ public class AlfrescoNodeController {
           propertyName = "contain:IOUUID"; // custom aspect property
           propertyValue = AlfrescoConstants.ContainPlatforms.ALFRESCO.toString() + "-" + UUIDUtil.getUUIDOverHTTP();
           ;
-          action = "Assign UUID " + propertyValue + "  to new Alfresco IO " + this.alfresconNodeResponse.entry.name;
+          action = "Assign UUID " + propertyValue + "  to new Alfresco IO " + this.alfresconNodeResponse.entry.filename;
           break;
         case Title:
           action = "To do title update for ballenbak registration";
@@ -583,7 +583,7 @@ public class AlfrescoNodeController {
           """.formatted(propertyName, propertyValue);
 
       System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.MAGENTA + "Updating "
-          + this.alfresconNodeResponse.entry.name + " " + jsonBody
+          + this.alfresconNodeResponse.entry.filename + " " + jsonBody
           + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
 
       // Encode username:password for Basic Auth
@@ -611,7 +611,7 @@ public class AlfrescoNodeController {
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
               // UUIDUtil.getUUID(),
               "NewOnPlatform",
-              this.alfresconNodeResponse.entry.name,
+              this.alfresconNodeResponse.entry.filename,
               jsonBody,
               eActionPerformed.ASSIGNUUID,
               alfresconNodeResponse.entry.modifiedByUser.displayName,

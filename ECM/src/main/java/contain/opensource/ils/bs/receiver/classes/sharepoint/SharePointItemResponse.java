@@ -95,18 +95,17 @@ public class SharePointItemResponse {
     }
         return new SecuredDocument(
                 this.file,
-
-                this.description,
+                "objectid",
                 this.UUID,
+                this.title,
                 this.filename,
+                this.description,
                 this.mimetype,
                 createdAtInstant,
-                null  // to be iplemented
-       //         modifiedAtInstant
-
-        // List.of(), // classifications
-        // List.of(), // labels
-        // List.of() // markings
+                null,  // to be iplemented modifiedAtInstant
+                this.marking,
+                this.label,
+                this.version
         );
     }
 }

@@ -9,22 +9,11 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
+import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
 
-public class AlfrescoNodeResponse {
-    public boolean HasUUID = false;
-    public boolean MustMove = false;
-    public String UUID;
-    public String MoveTo;
-    public String Content;
-    public Entry entry;
-    public byte[] file;
-    public String Title;
-    public String Description;
-    public String version;
-    public String marking;
-    public String label;
+public class AlfrescoNodeResponse  extends IOObjectProperies{
+     public Entry entry;
 
     public static class Entry {
         public boolean isFile;
@@ -37,7 +26,8 @@ public class AlfrescoNodeResponse {
         public String createdAt;
         public boolean isFolder;
         public ModifiedByUser modifiedByUser;
-        public String name;
+        @JsonProperty("name")
+        public String filename;  // <- map JSON "name" here
         public String id;
         public Properties properties;
         public String version;
@@ -89,20 +79,21 @@ public class AlfrescoNodeResponse {
 
         Instant createdAtInstant = OffsetDateTime.parse(this.entry.createdAt, formatter).toInstant();
         Instant modifiedAtInstant = OffsetDateTime.parse(this.entry.modifiedAt, formatter).toInstant();
-
-        return new SecuredDocument(
-                this.file,
-                this.Description,
+        SecuredDocument secdoc = new  SecuredDocument(
+                this.content,
+                this.entry.id,
                 this.UUID,
-                this.entry.name,
+                this.Title,
+                this.entry.filename,
+                this.Description,
                 this.entry.content.mimeType,
                 createdAtInstant,
-                modifiedAtInstant
-
-        // List.of(), // classifications
-        // List.of(), // labels
-        // List.of() // markings
+                modifiedAtInstant,
+                this.marking,
+                this.label,
+                this.version
         );
+        return secdoc;
     }
 
 }
