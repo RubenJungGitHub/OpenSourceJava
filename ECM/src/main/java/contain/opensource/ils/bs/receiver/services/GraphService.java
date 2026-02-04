@@ -481,19 +481,6 @@ public class GraphService {
                     try {
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
                         ROobject.setHash(bindresponse.getBody());
-                        /// action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName()
-                        /// + " from "
-                        // + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
-                        // RelocateInformationObject IOobject = new RelocateInformationObject(
-                        // aController.alfresconNodeResponse,
-                        // "ToBeRetrieved",
-                        // AlfrescoConstants.ContainPlatforms.ALFRESCO,
-                        // AlfrescoConstants.ContainPlatforms.SPO);
-                        // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
-                        // Could Be done from here but because it is not yet certain from where the
-                        // relocaiton is called we use a REST API
-                        // aController.RelocateIO(IOobject);
-
                         String endpoint = String.format(
                                 "%s/RelocateIO",
                                 this.ILSProperties.getBaseUrl());
@@ -567,7 +554,7 @@ public class GraphService {
                     "",
                     action,
                     ROobject.getPlatfrom().toString(),
-                    ROobject.getPlatformTo().toString(),
+                    ROobject.getPlatfrom().toString(),
                     "DeletedFromPlatform",
                     ROobject.getFileName(),
                     "",
