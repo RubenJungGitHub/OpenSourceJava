@@ -1,5 +1,6 @@
 package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.PrivateKey;
@@ -17,7 +18,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpEntity;
 import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -188,16 +189,13 @@ public class MessageBrowserPoll {
                                     } else {
                                         IOUUID = aController.alfresconNodeResponse.UUID;
                                     }
-                                    
-                                    // Add to Redis cache to avoid double binding.
-                                    String redisentry = "IOinProcess-" +  IOUUID;
 
-                                    if(RedisManager.getHashField(redisentry) == null)
-                                    {
-                                        RedisManager.putHash("IOinProcess",redisentry, "InProcess", 120);
-                                    }
-                                    else
-                                    {
+                                    // Add to Redis cache to avoid double binding.
+                                    String redisentry = "IOinProcess-" + IOUUID;
+
+                                    if (RedisManager.getHashField(redisentry) == null) {
+                                        RedisManager.putHash("IOinProcess", redisentry, "InProcess", 120);
+                                    } else {
                                         RedisManager.deleteEntry(redisentry);
                                         return;
                                     }
@@ -211,7 +209,8 @@ public class MessageBrowserPoll {
                                     PrivateKey key = PKCS12KeyLoader.PK;
                                     String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
-                                    BindRequest request = new BindRequest(aController.alfresconNodeResponse.ToSecuredDocument(), privateKeyBase64);
+                                    BindRequest request = new BindRequest(
+                                            aController.alfresconNodeResponse.ToSecuredDocument(), privateKeyBase64);
                                     String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
                                     System.out
                                             .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
@@ -224,7 +223,8 @@ public class MessageBrowserPoll {
                                     conn.setRequestMethod("POST");
 
                                     int status = conn.getResponseCode();
-                                    System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
+                                    System.out.println(
+                                            "Accessing uuid rest url on " + endPoint + " return code -> " + status);
 
                                     RestTemplate restTemplate = new RestTemplate();
                                     HttpHeaders headers = new HttpHeaders();
@@ -234,21 +234,10 @@ public class MessageBrowserPoll {
                                     ResponseEntity<String> response = restTemplate.postForEntity(endPoint, entity,
                                             String.class);
 
-                                    // Local processing. Moved to endpoint
-                                    // byte[] HASH =
-                                    // RJBindAndSecureIO.sign(aController.alfresconNodeResponse.ToSecuredDocument(),
-                                    // PKCS12KeyLoader.PK);
-                                    // Create function
-                                    // StringBuilder hsb = new StringBuilder();
-                                    // for (byte b : HASH) {
-                                    // hsb.append(String.format("%02x", b));
-                                    // }
-                                    // String hashstring = hsb.toString();
-
                                     // Move log to binding function
-                                    String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : " + QMessage.getName();
-                                    if (response.getStatusCode().value() == 200) 
-                                    {
+                                    String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : "
+                                            + QMessage.getName();
+                                    if (response.getStatusCode().value() == 200) {
                                         IOLog.log(
                                                 IOUUID,
                                                 QMessage.getId(),
@@ -263,56 +252,43 @@ public class MessageBrowserPoll {
                                                 QMessage.getUsername());
                                         // ==========================================================================================
                                     }
+
+                                    //Moveobject
                                     if (aController.alfresconNodeResponse.MustMove) {
                                         // Create generic property mapping information object
                                         RelocateInformationObject IOobject = new RelocateInformationObject(
                                                 aController.alfresconNodeResponse,
-                                                "hashstring",
+                                                response.getBody(),
                                                 AlfrescoConstants.ContainPlatforms.ALFRESCO,
                                                 AlfrescoConstants.ContainPlatforms.SPO);
                                         // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
                                         // Could Be done from here but because it is not yet certain from where the
                                         // relocaiton is called we use a REST API
-                                        aController.RelocateIO(IOobject);
+                                        // aController.RelocateIO(IOobject);
 
-                                        // ===================================================================================================================================================
-                                        // Inside a container calling a method over http from within the container is a
-                                        // bad pattern.
-                                        // When in future a relocate over HTTP is to be realized, which it is, it should
-                                        // be a separate microservice runnning in a separate controller and possibly
-                                        // container.
-                                        // This poses challenges concernig shared objects and serialization
-                                        // Now this runs fine in development on the host but once processed to the
-                                        // contain-Ils container having this endpoint inside the same container, the
-                                        // next axception is logged:
-                                        // Get UUID endpoint : http://host.docker.internal:5000/GetUUID⁠ (This is by
-                                        // design and in the app log.
-                                        // But this throws an exception: REST call failed with exception :
-                                        // java.net.SocketException: Unexpected end of file from server
-                                        // ===================================================================================================================================================
-                                        /*
-                                         * String endpoint = String.format(
-                                         * "%s/RelocateIO",
-                                         * this.ILSProperties.getBaseUrl());
-                                         * String auth = Base64.getEncoder().encodeToString(
-                                         * (AlfrescoConstants.username + ":" + AlfrescoConstants.password)
-                                         * .getBytes(StandardCharsets.UTF_8));
-                                         * String jsonBody = mapper.writeValueAsString(IOobject);
-                                         * 
-                                         * // Create HttpPost
-                                         * HttpPost post = new HttpPost(endpoint);
-                                         * post.setHeader("Authorization", "Basic " + auth);
-                                         * post.setHeader("Content-Type", "application/json");
-                                         * post.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
-                                         * try (CloseableHttpClient client = HttpClients.createDefault();
-                                         * CloseableHttpResponse response = client.execute(post)) {
-                                         * 
-                                         * int statusCode = response.getCode();
-                                         * if (statusCode != 200) {
-                                         * throw new IOException("HTTP error " + statusCode);
-                                         * }
-                                         * }
-                                         */
+                                        String endpoint = String.format(
+                                                "%s/RelocateIO",
+                                                this.ILSProperties.getBaseUrl());
+                                        headers = new HttpHeaders();
+                                        headers.setContentType(MediaType.APPLICATION_JSON);
+                                        headers.setBasicAuth(
+                                                AlfrescoConstants.username,
+                                                AlfrescoConstants.password,
+                                                StandardCharsets.UTF_8);
+
+                                        HttpEntity<RelocateInformationObject> entity2 = new HttpEntity<>(IOobject,
+                                                headers);
+
+                                        ResponseEntity<String> response2 = restTemplate.postForEntity(endpoint, entity2,
+                                                String.class);
+
+                                        System.out.println("Status: " + response2.getStatusCodeValue());
+                                        System.out.println("Body: " + response2.getBody());
+
+                                        status = response.getStatusCode().value();
+                                        if (status != 200) {
+                                            throw new IOException("HTTP error " + status);
+                                        }
                                     }
                                 }
                             }

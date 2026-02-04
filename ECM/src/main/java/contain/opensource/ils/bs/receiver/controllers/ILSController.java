@@ -1,6 +1,5 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,11 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.services.GraphService;
-
 
 @RestController
 public class ILSController {
@@ -40,7 +38,8 @@ public class ILSController {
     @PostMapping("/UpdateSharepointItemGraphAPI/{listItemId}")
     public String UpdateItemUUIDGraphAPI(@PathVariable("listItemId") String listItemId) {
         try {
-            String retval = graphService.updateSharepointItemGraphAPI(listItemId, "PLACEHOLDERFORFUTUREIMPLEMENTATION"); // now works
+            String retval = graphService.updateSharepointItemGraphAPI(listItemId, "PLACEHOLDERFORFUTUREIMPLEMENTATION"); // now
+                                                                                                                         // works
             return retval;
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,8 +49,16 @@ public class ILSController {
 
     @PostMapping(value = "/RelocateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
     public String RelocateIO(@RequestBody RelocateInformationObject IOobject) {
-        //AlfrescoNodeController Acontroller = new AlfrescoNodeController();
-        this.alfrescoNodeController.RelocateIO(IOobject);
+        switch (IOobject.getPlatfrom()) {
+            case AlfrescoConstants.ContainPlatforms.ALFRESCO:
+                if(IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.SPO)
+                {
+                this.alfrescoNodeController.RelocateIO(IOobject);
+                }
+            case AlfrescoConstants.ContainPlatforms.SPO:
+                if(IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.ALFRESCO)
+                this.graphService.RelocateIO(IOobject);
+        }
         return "Success";
     }
 }

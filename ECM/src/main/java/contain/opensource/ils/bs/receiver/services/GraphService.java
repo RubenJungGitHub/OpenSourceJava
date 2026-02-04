@@ -23,11 +23,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.graph.Graph;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Description;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -53,24 +55,26 @@ import com.microsoft.graph.models.Drive;
 import com.microsoft.graph.models.DriveItem;
 import com.microsoft.graph.models.FieldValueSet;
 import com.microsoft.graph.models.ListItem;
+import com.microsoft.graph.models.Site;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
-import contain.opensource.ils.bs.receiver.classes.Logger.IODeltaLinkLog;
+
+import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
+import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
+import contain.opensource.ils.bs.receiver.classes.Logger.IODeltaLinkLog;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLogDeltaLink;
 import contain.opensource.ils.bs.receiver.classes.Notification;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
+import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.ChangedItemsResult;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
-import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
-import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
-import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import io.swagger.v3.oas.annotations.Parameter;
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
@@ -230,35 +234,7 @@ public class GraphService {
             // work.
             // I tried using the SP token in the past but i did not get it to work.
 
-            /*
-             * 
-             * CHATHGPT 05-01-2026 RuJu
-             * /*
-             * 1 Why Graph cannot update Description
-             * 
-             * In document libraries, Description is a system-managed field.
-             * 
-             * Graph treats it as read-only:
-             * 
-             * You can read it with GET /items/{id}/fields
-             * 
-             * You cannot change it with PATCH /items/{id}/fields
-             * 
-             * Graph does not return an error when you try; it just silently ignores your
-             * update.
-             * 
-             * This is a limitation of SharePoint’s internal schema, not Graph itself.
-             * 
-             * 2️⃣ Options if you want similar behavior
-             * ✅ Option A — Use a custom text column
-             * 
-             * Go to your library → Settings → Add column → Single line of text
-             * 
-             * Name it something like CustomDescription
-             * 
-             * Update this field instead of Description:
-             */
-
+             
             // body.put("Description", node.getDescription());
             body.put("containIODescription", node.getDescription());
             body.put("ObjectClassificationText", "Changed from Java after move");
@@ -293,19 +269,16 @@ public class GraphService {
         }
     }
 
-    /*
-     * //private static String GetUUIDCheck() {
-     * // Generate a random UUID
-     * // UUID uuid = UUID.randomUUID();
-     * // return uuid.toString();
-     * // Print the UUID
-     * // System.out.println("Generated UUID: " + uuid.toString());
-     * // }
-     */
+    // private static String GetUUIDCheck() {
+    // Generate a random UUID
+    // UUID uuid = UUID.randomUUID();
+    // return uuid.toString();
+    // Print the UUID
+    // System.out.println("Generated UUID: " + uuid.toString());
+    
 
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
-
             String accessToken = getGraphToken();
             byte[] fileBytes = IOobject.getContent();
             String rawFileName = IOobject.getFileName();
@@ -368,19 +341,7 @@ public class GraphService {
             ensureDeltaLinkFileExists();
             String resourceValue = notification.getResource();
 
-            /*
-             * List<String> lines = Files.readAllLines(Paths.get(this.DeltaLinkFile));
-             * 
-             * // Find the first line that contains the resource
-             * Optional<String> match = lines.stream()
-             * .filter(line -> line.contains(resourceValue))
-             * .findFirst();
-             * 
-             * if (match.isPresent()) {
-             * lastDeltaLink = match.get().split("\\|")[1]; // take the part after '|'
-             * }
-             */
-            // NEW Read from SQL DB
+            // NEW Read from datastore
             Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(resourceValue);
             if (existingLog.isPresent()) {
                 // Get latest token v
@@ -460,21 +421,6 @@ public class GraphService {
                 // ALL FUNCTIONS SHOULD BE SEPARATED
                 // ==========================================================================================
 
-                /*
-                 * // to do Move log to binding function
-                 * // IN the future store as actual byte in Redis and datastore. For POC store
-                 * as
-                 * byte[] HASH = RJBindAndSecureIO.sign(SPItem.ToSecuredDocument(),
-                 * PKCS12KeyLoader.PK);
-                 * //Create function for future
-                 * StringBuilder hsb = new StringBuilder();
-                 * for (byte b : HASH) {
-                 * hsb.append(String.format("%02x", b));
-                 * }
-                 * String hashstring = hsb.toString();
-                 */
-
-
                 // Add to Redis cache to avoid double binding.
                 String redisentry = "IOinProcess-" + SPItem.UUID.replaceAll("^\"|\"$", "");
 
@@ -485,6 +431,7 @@ public class GraphService {
                     break;
                 }
 
+                // Hash IO (Separate?)
                 PrivateKey key = PKCS12KeyLoader.PK;
                 String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
@@ -509,23 +456,12 @@ public class GraphService {
                 headers.setContentType(MediaType.APPLICATION_JSON);
 
                 HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
-                ResponseEntity<String> response = restTemplate.postForEntity(endPoint, entity,
+                ResponseEntity<String> bindresponse = restTemplate.postForEntity(endPoint, entity,
                         String.class);
-
-                // Local processing. Moved to endpoint
-                // byte[] HASH =
-                // RJBindAndSecureIO.sign(aController.alfresconNodeResponse.ToSecuredDocument(),
-                // PKCS12KeyLoader.PK);
-                // Create function
-                // StringBuilder hsb = new StringBuilder();
-                // for (byte b : HASH) {
-                // hsb.append(String.format("%02x", b));
-                // }
-                // String hashstring = hsb.toString();
 
                 // Move log to binding function
                 action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
-                if (response.getStatusCode().value() == 200) {
+                if (bindresponse.getStatusCode().value() == 200) {
                     IOLog.log(
                             SPItem.UUID,
                             SPItem.id,
@@ -533,7 +469,7 @@ public class GraphService {
                             action,
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                            response.getBody(),
+                            bindresponse.getBody(),
                             SPItem.filename,
                             "",
                             AlfrescoConstants.eActionPerformed.IOBOUND,
@@ -543,59 +479,102 @@ public class GraphService {
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
-                        // Globals.AlfrescoItemInProcess.add(SPItem.UUID.toString());
+                        RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+                        ROobject.setHash(bindresponse.getBody());
+                        /// action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName()
+                        /// + " from "
+                        // + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
+                        // RelocateInformationObject IOobject = new RelocateInformationObject(
+                        // aController.alfresconNodeResponse,
+                        // "ToBeRetrieved",
+                        // AlfrescoConstants.ContainPlatforms.ALFRESCO,
+                        // AlfrescoConstants.ContainPlatforms.SPO);
+                        // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
+                        // Could Be done from here but because it is not yet certain from where the
+                        // relocaiton is called we use a REST API
+                        // aController.RelocateIO(IOobject);
 
-                        // AlfrescoNodeController aController = new AlfrescoNodeController();
-                        RelocateInformationObject RObject = new RelocateInformationObject(SPItem);
-                        RObject.setHash(response.getBody());
-                        action = "Copy  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
-                                + RObject.getPlatfrom() + " to " + RObject.getPlatformTo();
-                        aController.uploadSPItemToAlfresco(RObject);
-                        IOLog.log(
-                                RObject.getUuid(),
-                                SPItem.id,
-                                "",
-                                action,
-                                RObject.getPlatfrom().toString(),
-                                RObject.getPlatformTo().toString(),
-                                response.getBody(),
-                                RObject.getFileName(),
-                                "",
-                                AlfrescoConstants.eActionPerformed.IOCOPIED,
-                                "System");
-                        deleteSPItemById(SPItem.id);
-                        action = "Deleted  UUID " + RObject.getUuid() + " : " + RObject.getFileName() + " from "
-                                + RObject.getPlatfrom();
-                        IOLog.log(
-                                RObject.getUuid(),
-                                SPItem.id,
-                                "",
-                                action,
-                                RObject.getPlatfrom().toString(),
-                                RObject.getPlatformTo().toString(),
-                                "DeletedFromPlatform",
-                                RObject.getFileName(),
-                                "",
-                                AlfrescoConstants.eActionPerformed.IODELETED,
-                                "System");
+                        String endpoint = String.format(
+                                "%s/RelocateIO",
+                                this.ILSProperties.getBaseUrl());
+                        headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        headers.setBasicAuth(
+                                AlfrescoConstants.username,
+                                AlfrescoConstants.password,
+                                StandardCharsets.UTF_8);
+
+                        HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
+                                headers);
+
+                        ResponseEntity<String> response = restTemplate.postForEntity(endpoint, entitymove,
+                                String.class);
+
+                        System.out.println("Status: " + response.getStatusCodeValue());
+                        System.out.println("Body: " + response.getBody());
+
+                        status = response.getStatusCode().value();
+                        if (status != 200) {
+                            throw new IOException("HTTP error " + status);
+                        }
 
                     } catch (Exception e) {
                         System.out.println("Failed to delete SP item after move: " + e.getMessage());
                     }
-                    // Test ballenbak
-
                 }
-                // Globals.AlfrescoItemInProcess.remove(SPItem.UUID.toString());
             }
-            LogNewDeltaLinkToFile();
-
-            // To do If no exeptions, update NewDeltaLink
+            LogNewDeltaLinkToFile(); // to do only if success
 
         } catch (Exception ex) {
             System.out.println("Error reading file or delta link not yet registered: " + ex.getMessage());
             lastDeltaLink = null; // treat as first run
         }
+    }
 
+    public void RelocateIO(RelocateInformationObject ROobject) {
+        try {
+            String action = "Copy  UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() +
+                    " from "
+                    + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
+
+            // Upload to Alfrewsco
+            aController.uploadSPItemToAlfresco(ROobject);
+
+            // log
+            IOLog.log(
+                    ROobject.getUuid(),
+                    ROobject.getId(),
+                    "",
+                    action,
+                    ROobject.getPlatfrom().toString(),
+                    ROobject.getPlatformTo().toString(),
+                    ROobject.getHash(),
+                    ROobject.getFileName(),
+                    "",
+                    AlfrescoConstants.eActionPerformed.IOCOPIED,
+                    "System");
+
+            // Delete from SP
+            deleteSPItemById(ROobject.getId());
+
+            // Log
+            action = "Deleted  UUID " + ROobject.getUuid() + " : " + ROobject.getFileName()
+                    + " from "
+                    + ROobject.getPlatfrom();
+            IOLog.log(
+                    ROobject.getUuid(),
+                    ROobject.getId(),
+                    "",
+                    action,
+                    ROobject.getPlatfrom().toString(),
+                    ROobject.getPlatformTo().toString(),
+                    "DeletedFromPlatform",
+                    ROobject.getFileName(),
+                    "",
+                    AlfrescoConstants.eActionPerformed.IODELETED,
+                    "System");
+        } catch (Exception ex) {
+        }
     }
 
     private String getDriveID() {
@@ -719,15 +698,16 @@ public class GraphService {
             info.setDriveType(drive.driveType);
 
             /*
-             * if (sp != null) {
-             * info.setSiteUrl(sp.siteUrl);
-             * info.setTenantID(sp.tenantId);
-             * info.setSiteId(sp.siteId);
-             * info.setWebId(sp.webId);
-             * info.setListId(sp.listId);
-             * info.setListItemId(sp.listItemId);
-             * }
+              if (sp != null) {
+              info.setSiteUrl(sp.siteUrl);
+              info.setTenantID(sp.tenantId);
+              info.setSiteId(sp.siteId);
+              info.setWebId(sp.webId);
+              info.setListId(sp.listId);
+              info.setListItemId(sp.listItemId);
+              }
              */
+
             info.setListName(drive.name);
 
             return info;
@@ -799,13 +779,13 @@ public class GraphService {
     }
 
     public List<SharePointItemResponse> getListItemsByIds(String siteId, String listId, List<String> changedItemsIds) {
-        /**
-         * Fetch specific SharePoint list items by IDs
-         *
-         * @param siteId  SharePoint Site ID
-         * @param listId  SharePoint List ID
-         * @param itemIds List of item IDs to fetch
-         * @return List of ListItem objects
+        /* 
+          Fetch specific SharePoint list items by IDs
+         
+          @param siteId  SharePoint Site ID
+          @param listId  SharePoint List ID
+          @param itemIds List of item IDs to fetch
+          @return List of ListItem objects
          */
 
         List<ListItem> items = new ArrayList<>();
