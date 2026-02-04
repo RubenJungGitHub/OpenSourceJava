@@ -168,7 +168,7 @@ public class MessageBrowserPoll {
                                     // Remove from Redis. For SPO this is going to be a challenge
                                     // RedisManager.deleteHashField("IOLogs", type);
                                     IOLog.log(
-                                            QMessage.getId(),
+                                            "DeletedFromPlatform",
                                             "",
                                             secondPath.toString(),
                                             action,

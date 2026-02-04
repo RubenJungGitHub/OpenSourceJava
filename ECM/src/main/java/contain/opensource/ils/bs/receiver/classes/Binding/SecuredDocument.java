@@ -10,7 +10,7 @@ public final class SecuredDocument extends IOObjectProperies {
     // private final byte[] content;
 
     // Identity
-    private final String objectId;
+
 
     // File metadata
     // private final String filename;
@@ -27,6 +27,7 @@ public final class SecuredDocument extends IOObjectProperies {
     public SecuredDocument(
             byte[] content,
             String objectId,
+            String id,
             String UUID,
             String Title,
             String filename,
@@ -43,6 +44,7 @@ public final class SecuredDocument extends IOObjectProperies {
     ) {
         this.content = content;
         this.objectId = objectId;
+        this.id= id;
         this.UUID = UUID;
         this.Title = Title;
         this.filename = filename;

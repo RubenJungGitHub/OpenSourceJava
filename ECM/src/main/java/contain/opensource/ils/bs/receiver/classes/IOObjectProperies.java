@@ -4,7 +4,6 @@ package contain.opensource.ils.bs.receiver.classes;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-//import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
@@ -14,7 +13,7 @@ public abstract class IOObjectProperies {
     public boolean HasUUID = false;
     public boolean MustMove = false;
     public String UUID;
-    public String MoveTo;
+    public AlfrescoConstants.ContainPlatforms MoveTo;
 
     @JsonProperty("name")
     public String filename;
@@ -45,6 +44,8 @@ public abstract class IOObjectProperies {
 
     @JsonProperty("id")
     public String id;
+
+    public String objectId;
 
     @JsonProperty("containplatformfrom")
     public AlfrescoConstants.ContainPlatforms containplatformfrom;

@@ -13,7 +13,6 @@ import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 public class ILSApplication {
 	
-
 	public static void main(String[] args) {
 		//GenerateKeyPair();
 		RedisManager.init();

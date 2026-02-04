@@ -224,6 +224,8 @@ public class GraphService {
             Map<String, Object> body = new HashMap<>();
             body.put("ContAInUUID", node.getUuid());
             body.put("Title", node.getTitle());
+            body.put("Marking", node.getMarking());
+            body.put("Label", node.getLabel());
 
             // Graph API will not allow description field to be a[dated. Even wordso./ If
             // this field is added the entire update fails!
@@ -380,7 +382,7 @@ public class GraphService {
             for (SharePointItemResponse SPItem : items) {
                 // One always needs to get content for binding
 
-                SPItem.file = getSPItemContentById(SPItem.id, listId);
+                SPItem.filecontent = getSPItemContentById(SPItem.id, listId);
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
                 }
@@ -538,9 +540,9 @@ public class GraphService {
                     "",
                     AlfrescoConstants.eActionPerformed.IOCOPIED,
                     "System",
-                    "markingdummy",
-                    "labeldummy",
-                    "versiondummy");
+                    ROobject.marking,
+                    ROobject.label,
+                    ROobject.version);
             // Delete from SP
             deleteSPItemById(ROobject.getId());
 
@@ -549,7 +551,7 @@ public class GraphService {
                     + " from "
                     + ROobject.getPlatfrom();
             IOLog.log(
-                    ROobject.getUuid(),
+                    "DeletedFromPlatform",
                     ROobject.getId(),
                     "",
                     action,
@@ -560,9 +562,9 @@ public class GraphService {
                     "",
                     AlfrescoConstants.eActionPerformed.IODELETED,
                     "System",
-                    "markingdummy",
-                    "labeldummy",
-                    "versiondummy");
+                    ROobject.marking,
+                    ROobject.label,
+                    ROobject.version);
         } catch (Exception ex) {
         }
     }

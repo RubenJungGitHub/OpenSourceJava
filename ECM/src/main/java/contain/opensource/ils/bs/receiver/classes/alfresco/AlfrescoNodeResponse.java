@@ -82,6 +82,7 @@ public class AlfrescoNodeResponse  extends IOObjectProperies{
         SecuredDocument secdoc = new  SecuredDocument(
                 this.content,
                 this.entry.id,
+                this.entry.id,
                 this.UUID,
                 this.Title,
                 this.entry.filename,

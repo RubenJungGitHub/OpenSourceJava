@@ -9,47 +9,24 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import  contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
-
+import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
 @JsonIgnoreProperties(ignoreUnknown = true) // top-level
-public class SharePointItemResponse {
+public class SharePointItemResponse extends IOObjectProperies {
 
-    @JsonProperty("id")
-    public String id;
-
-   
     @JsonProperty("title")           // <-- map directly
     public String title;
 
     @JsonProperty("mimetype")           // <-- map directly
     public String mimetype;
-
    
-    @JsonProperty("filename")           // <-- map directly
-    public String filename;
-
-    @JsonProperty("version")           // <-- map directly
-    public String version;
-
-     @JsonProperty("marking")           // <-- map directly
-    public String marking;
-
-     @JsonProperty("label")           // <-- map directly
-    public String label;
-
     @JsonProperty("containIOdescription")     // <-- map directly
     public String description;
 
     @JsonProperty("file")     // <-- map directly
-    public byte[] file;
+    public byte[] filecontent;
 
     @JsonProperty("fields")
     public Map<String, Object> fields;
-
-    public boolean HasUUID = false;
-    public boolean MustMove = false;
-    public String UUID;
-    public AlfrescoConstants.ContainPlatforms MoveTo;
 
     @JsonProperty("contentType")
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -93,9 +70,10 @@ public class SharePointItemResponse {
     if (this.createdDateTime != null) {
         createdAtInstant = this.createdDateTime.toInstant();
     }
-        return new SecuredDocument(
-                this.file,
-                "objectid",
+         SecuredDocument secdoc =  new SecuredDocument(
+                this.filecontent,
+                this.id,
+                this.id,
                 this.UUID,
                 this.title,
                 this.filename,
@@ -107,5 +85,6 @@ public class SharePointItemResponse {
                 this.label,
                 this.version
         );
+        return secdoc;
     }
 }

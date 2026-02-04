@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.Objects;
 
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -31,6 +32,7 @@ import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.GraphService;
@@ -270,9 +272,31 @@ public class AlfrescoNodeController {
         rawUuid = rawUuid.replaceAll("^\"|\"$", "");
         propertiesNode.put("contain:IOUUID", rawUuid);
       }
-      // if (IOobject.getUuid() != null)
-      // propertiesNode.put("contain:UUID", IOobject.getUuid());
-      // UUID is an aspect, skip it here
+      if (IOobject.getMarking() != null) {
+        String rawMarking = IOobject.getMarking();
+        // Remove leading/trailing quotes if they exist
+        rawMarking = rawMarking.replaceAll("^\"|\"$", "");
+        propertiesNode.put("contain:MARKING", rawMarking);
+      }
+      if (IOobject.getLabel() != null) {
+        String rawlabel = IOobject.getLabel();
+        // Remove leading/trailing quotes if they exist
+        rawlabel = rawlabel.replaceAll("^\"|\"$", "");
+        propertiesNode.put("contain:LABEL", rawlabel);
+      }
+      /*
+       * chatgpt
+       * Alfresco does not allow you to set an arbitrary version number. The version
+       * is always managed internally (1.0, 1.1, etc.), and the only thing you can
+       * control via REST is whether the next update is a major or minor version.
+       * 
+       * So instead of:
+       * 
+       * propertiesNode.put("cm:versionLabel", "1.5"); // ❌ won't work
+       * 
+       * 
+       * You need to send a versioning hint when updating the content:
+       */
 
       ObjectNode rootNode = mapper.createObjectNode();
       rootNode.set("properties", propertiesNode); // <--- key fix
@@ -307,9 +331,9 @@ public class AlfrescoNodeController {
               "",
               AlfrescoConstants.eActionPerformed.COPIEDUUID,
               "System",
-              "markingdummy",
-              "labeldummy",
-              "versiondummy");
+              IOobject.marking,
+              IOobject.label,
+              IOobject.version);
         }
       }
     } catch (Exception e) {
@@ -462,8 +486,10 @@ public class AlfrescoNodeController {
               alfresconNodeResponse.UUID = ioUUIDValue.toString();
             }
             Object value = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOMOVE");
-            String MOVETO = value != null ? value.toString() : "";
-            alfresconNodeResponse.MoveTo = MOVETO;
+            if (!Objects.equals(value, "<NO MOVE>")) {
+              alfresconNodeResponse.MoveTo = ContainPlatforms.valueOf(value.toString().toUpperCase());
+              ;
+            }
             // Get node content
             GetNodeContent();
             try {
@@ -601,6 +627,7 @@ public class AlfrescoNodeController {
         String responseJson = EntityUtils.toString(response.getEntity());
 
         if (statusCode == 200) {
+          this.alfresconNodeResponse.UUID = propertyValue;
           // Test ballenbak
           IOLog.log(
               propertyValue,
@@ -661,9 +688,9 @@ public class AlfrescoNodeController {
         "",
         eActionPerformed.IOCOPIED,
         "System",
-        "markingdummy",
-        "labeldummy",
-        "versiondummy");
+        IOobject.marking,
+        IOobject.label,
+        IOobject.version);
     GService.uploadAlfrescoNodeToSP(IOobject);
     DeleteAlfrescoNode();
   }

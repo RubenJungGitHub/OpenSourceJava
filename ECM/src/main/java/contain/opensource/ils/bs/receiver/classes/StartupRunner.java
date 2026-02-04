@@ -18,6 +18,6 @@ public class StartupRunner implements CommandLineRunner {
         System.out.println("StartupRunner: launching message polling...");
 
         // Run polling in a background thread to avoid blocking Spring
-        new Thread(() -> poll.ReadMessages(args)).start();
+       new Thread(() -> poll.ReadMessages(args)).start();
     }
 }
