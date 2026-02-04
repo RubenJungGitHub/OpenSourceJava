@@ -178,7 +178,10 @@ public class MessageBrowserPoll {
                                             QMessage.getName(),
                                             "",
                                             AlfrescoConstants.eActionPerformed.IODELETED,
-                                            QMessage.getUsername());
+                                            QMessage.getUsername(),
+                                            "markingdummy",
+                                            "labeldummy",
+                                            "versiondummy");
                                 } else {
                                     aController.GetNode();
                                     String IOUUID = "";
@@ -249,11 +252,14 @@ public class MessageBrowserPoll {
                                                 QMessage.getName(),
                                                 "",
                                                 AlfrescoConstants.eActionPerformed.IOBOUND,
-                                                QMessage.getUsername());
+                                                QMessage.getUsername(),
+                                                "markingdummy",
+                                                "labeldummy",
+                                                "versiondummy");
                                         // ==========================================================================================
                                     }
 
-                                    //Moveobject
+                                    // Moveobject
                                     if (aController.alfresconNodeResponse.MustMove) {
                                         // Create generic property mapping information object
                                         RelocateInformationObject IOobject = new RelocateInformationObject(

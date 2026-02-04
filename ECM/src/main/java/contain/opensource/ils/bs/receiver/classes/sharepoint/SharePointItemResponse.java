@@ -28,6 +28,15 @@ public class SharePointItemResponse {
     @JsonProperty("filename")           // <-- map directly
     public String filename;
 
+    @JsonProperty("version")           // <-- map directly
+    public String version;
+
+     @JsonProperty("marking")           // <-- map directly
+    public String marking;
+
+     @JsonProperty("label")           // <-- map directly
+    public String label;
+
     @JsonProperty("containIOdescription")     // <-- map directly
     public String description;
 
@@ -50,7 +59,7 @@ public class SharePointItemResponse {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public IdentitySet createdBy;
 
-    @JsonProperty("createdDateTime")
+        @JsonProperty("createdDateTime")
     public OffsetDateTime createdDateTime;
 
     @JsonIgnoreProperties(ignoreUnknown = true)

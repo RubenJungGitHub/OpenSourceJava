@@ -11,7 +11,3 @@ public interface IOLogBallenbakRepository extends JpaRepository<IOLogBallenbak, 
     // Fetch the most recent log entry for a given containIOUUID
     Optional<IOLogBallenbak> findTopByContainIoUuidOrderByLogDateTimeDesc(String containIoUuid);
 }
-
-
-
-

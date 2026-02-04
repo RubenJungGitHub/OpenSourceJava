@@ -26,10 +26,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.graph.Graph;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Description;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -53,9 +50,9 @@ import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.http.GraphServiceException;
 import com.microsoft.graph.models.Drive;
 import com.microsoft.graph.models.DriveItem;
+import com.microsoft.graph.models.DriveItemVersion;
 import com.microsoft.graph.models.FieldValueSet;
 import com.microsoft.graph.models.ListItem;
-import com.microsoft.graph.models.Site;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
@@ -234,7 +231,6 @@ public class GraphService {
             // work.
             // I tried using the SP token in the past but i did not get it to work.
 
-             
             // body.put("Description", node.getDescription());
             body.put("containIODescription", node.getDescription());
             body.put("ObjectClassificationText", "Changed from Java after move");
@@ -268,14 +264,6 @@ public class GraphService {
             return "Failed";
         }
     }
-
-    // private static String GetUUIDCheck() {
-    // Generate a random UUID
-    // UUID uuid = UUID.randomUUID();
-    // return uuid.toString();
-    // Print the UUID
-    // System.out.println("Generated UUID: " + uuid.toString());
-    
 
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
@@ -391,6 +379,7 @@ public class GraphService {
             String action = "";
             for (SharePointItemResponse SPItem : items) {
                 // One always needs to get content for binding
+
                 SPItem.file = getSPItemContentById(SPItem.id, listId);
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
@@ -412,7 +401,10 @@ public class GraphService {
                             SPItem.filename,
                             "",
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
-                            "System");
+                            "System",
+                            SPItem.marking,
+                            SPItem.label,
+                            SPItem.version);
                 }
 
                 // First sign and log
@@ -473,10 +465,15 @@ public class GraphService {
                             SPItem.filename,
                             "",
                             AlfrescoConstants.eActionPerformed.IOBOUND,
-                            "System");
+                            "System",
+                            SPItem.marking,
+                            SPItem.label,
+                            SPItem.version);
                     // ==========================================================================================
                 }
-                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.CYAN + "SPItem mustmove?" + SPItem.MustMove + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.CYAN
+                        + "SPItem mustmove?" + SPItem.MustMove
+                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
@@ -540,8 +537,10 @@ public class GraphService {
                     ROobject.getFileName(),
                     "",
                     AlfrescoConstants.eActionPerformed.IOCOPIED,
-                    "System");
-
+                    "System",
+                    "markingdummy",
+                    "labeldummy",
+                    "versiondummy");
             // Delete from SP
             deleteSPItemById(ROobject.getId());
 
@@ -560,7 +559,10 @@ public class GraphService {
                     ROobject.getFileName(),
                     "",
                     AlfrescoConstants.eActionPerformed.IODELETED,
-                    "System");
+                    "System",
+                    "markingdummy",
+                    "labeldummy",
+                    "versiondummy");
         } catch (Exception ex) {
         }
     }
@@ -684,18 +686,6 @@ public class GraphService {
             info.setDriveId(drive.id);
             info.setDriveName(drive.name);
             info.setDriveType(drive.driveType);
-
-            /*
-              if (sp != null) {
-              info.setSiteUrl(sp.siteUrl);
-              info.setTenantID(sp.tenantId);
-              info.setSiteId(sp.siteId);
-              info.setWebId(sp.webId);
-              info.setListId(sp.listId);
-              info.setListItemId(sp.listItemId);
-              }
-             */
-
             info.setListName(drive.name);
 
             return info;
@@ -767,15 +757,6 @@ public class GraphService {
     }
 
     public List<SharePointItemResponse> getListItemsByIds(String siteId, String listId, List<String> changedItemsIds) {
-        /* 
-          Fetch specific SharePoint list items by IDs
-         
-          @param siteId  SharePoint Site ID
-          @param listId  SharePoint List ID
-          @param itemIds List of item IDs to fetch
-          @return List of ListItem objects
-         */
-
         List<ListItem> items = new ArrayList<>();
         List<SharePointItemResponse> SPResponseItems = new ArrayList<>();
         boolean hasUUID = false;
@@ -788,7 +769,7 @@ public class GraphService {
                         .items(itemId)
                         .buildRequest()
                         .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                        .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,Move),driveItem")
+                        .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,Move, OData__UIVersionString, Marking, Label),driveItem")
                         .get();
                 items.add(item);
             } catch (GraphServiceException gse) {
@@ -811,16 +792,16 @@ public class GraphService {
                     if (fields != null) {
                         AdditionalDataManager adm = fields.additionalDataManager();
                         for (Map.Entry<String, JsonElement> entry : adm.entrySet()) {
-                            // String key = entry.getKey();
+                            String key = entry.getKey();
                             JsonElement value = entry.getValue();
 
                             // Example: convert to String
                             if (value != null && !value.isJsonNull()) {
                                 try {
-                                    // String valueStr = value.getAsString();
-                                    // System.out.println(key + " = " + valueStr);
+                                    String valueStr = value.getAsString();
+                                    System.out.println(key + " = " + valueStr);
                                 } catch (Exception e) {
-                                    // System.err.println("Failed to fetch SP field value" + e.getMessage());
+                                    System.err.println("Failed to fetch SP field value" + e.getMessage());
                                 }
                             }
                         }
@@ -847,6 +828,18 @@ public class GraphService {
                             System.out.println("Item " + li.id + " marked for move to " + moveTo);
                         }
 
+                        // Get latest version
+                        DriveItemVersion latestVersion = graphClient.sites(siteId)
+                                .lists(listId)
+                                .items(li.id)
+                                .driveItem()
+                                .versions()
+                                .buildRequest()
+                                .top(1) // newest version first
+                                .get()
+                                .getCurrentPage()
+                                .get(0);
+
                         // Now create only the objects that require actions. reove because for binding
                         // they always should be added
                         // if (!hasUUID || mustMove) {
@@ -857,19 +850,22 @@ public class GraphService {
                             Object title = adm.get("Title");
                             Object filename = adm.get("LinkFilename");
                             Object description = adm.get("containIODescription");
+                            String label = adm.get("Label").toString();
+                            String marking = adm.get("Marking").toString();
                             String titleStr = title != null ? title.toString().replace("\"", "") : "";
                             String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
-                            String descriptionStr = description != null ? description.toString().replace("\"", "")
-                                    : "";
+                            String descriptionStr = description != null ? description.toString().replace("\"", "") : "";
                             SPItem.title = titleStr;
                             SPItem.filename = filenameStr;
                             SPItem.description = descriptionStr;
                             SPItem.mimetype = mimeType;
-                            // SPItem.HasUUID = hasUUID;
                             SPItem.UUID = uuidValue;
                             // String description = (String) fields.get("Description");
                             // To do get file content
                             SPItem.HasUUID = hasUUID;
+                            SPItem.version = latestVersion.id;
+                            SPItem.marking = marking;
+                            SPItem.label = label;
                             SPItem.MustMove = mustMove;
                             SPItem.MoveTo = moveTo;
                             SPResponseItems.add(SPItem);

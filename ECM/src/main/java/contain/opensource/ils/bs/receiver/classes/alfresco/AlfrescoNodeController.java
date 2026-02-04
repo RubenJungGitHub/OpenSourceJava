@@ -306,7 +306,10 @@ public class AlfrescoNodeController {
               IOobject.getFileName(),
               "",
               AlfrescoConstants.eActionPerformed.COPIEDUUID,
-              "System");
+              "System",
+              "markingdummy",
+              "labeldummy",
+              "versiondummy");
         }
       }
     } catch (Exception e) {
@@ -595,7 +598,10 @@ public class AlfrescoNodeController {
               this.alfresconNodeResponse.entry.name,
               jsonBody,
               eActionPerformed.ASSIGNUUID,
-              alfresconNodeResponse.entry.modifiedByUser.displayName);
+              alfresconNodeResponse.entry.modifiedByUser.displayName,
+              "markingdummy",
+              "labeldummy",
+              "versiondummy");
 
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);
@@ -638,7 +644,10 @@ public class AlfrescoNodeController {
         IOobject.getFileName(),
         "",
         eActionPerformed.IOCOPIED,
-        "System");
+        "System",
+        "markingdummy",
+        "labeldummy",
+        "versiondummy");
     GService.uploadAlfrescoNodeToSP(IOobject);
     DeleteAlfrescoNode();
   }
