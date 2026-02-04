@@ -476,6 +476,7 @@ public class GraphService {
                             "System");
                     // ==========================================================================================
                 }
+                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.CYAN + "SPItem mustmove?" + SPItem.MustMove + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {

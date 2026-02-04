@@ -49,15 +49,18 @@ public class ILSController {
 
     @PostMapping(value = "/RelocateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
     public String RelocateIO(@RequestBody RelocateInformationObject IOobject) {
+        System.out.println("in relocateIO endpoint");
         switch (IOobject.getPlatfrom()) {
             case AlfrescoConstants.ContainPlatforms.ALFRESCO:
-                if(IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.SPO)
-                {
-                this.alfrescoNodeController.RelocateIO(IOobject);
+                if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.SPO) {
+                    System.out.println("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  " + IOobject.getPlatformTo().toString());
+                    this.alfrescoNodeController.RelocateIO(IOobject);
                 }
             case AlfrescoConstants.ContainPlatforms.SPO:
-                if(IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.ALFRESCO)
-                this.graphService.RelocateIO(IOobject);
+                if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.ALFRESCO) {
+                    System.out.println("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  " + IOobject.getPlatformTo().toString());
+                    this.graphService.RelocateIO(IOobject);
+                }
         }
         return "Success";
     }
