@@ -179,9 +179,9 @@ public class MessageBrowserPoll {
                                             "",
                                             AlfrescoConstants.eActionPerformed.IODELETED,
                                             QMessage.getUsername(),
-                                            aController.alfresconNodeResponse.marking,
-                                            aController.alfresconNodeResponse.label,
-                                            aController.alfresconNodeResponse.version);
+                                            aController.alfresconNodeResponse.marking != null  ? aController.alfresconNodeResponse.marking : "DeletedFromPlatform",
+                                            aController.alfresconNodeResponse.label != null  ? aController.alfresconNodeResponse.label : "DeletedFromPlatform",
+                                            aController.alfresconNodeResponse.version != null  ? aController.alfresconNodeResponse.version : "DeletedFromPlatform");
                                 } else {
                                     aController.GetNode();
                                     String IOUUID = "";
@@ -222,12 +222,6 @@ public class MessageBrowserPoll {
                                                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
 
                                     URL url = new URL(endPoint);
-                                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                                    conn.setRequestMethod("POST");
-
-                                    int status = conn.getResponseCode();
-                                    System.out.println(
-                                            "Accessing uuid rest url on " + endPoint + " return code -> " + status);
 
                                     RestTemplate restTemplate = new RestTemplate();
                                     HttpHeaders headers = new HttpHeaders();
@@ -291,7 +285,7 @@ public class MessageBrowserPoll {
                                         System.out.println("Status: " + response2.getStatusCodeValue());
                                         System.out.println("Body: " + response2.getBody());
 
-                                        status = response.getStatusCode().value();
+                                        Integer status = response.getStatusCode().value();
                                         if (status != 200) {
                                             throw new IOException("HTTP error " + status);
                                         }
