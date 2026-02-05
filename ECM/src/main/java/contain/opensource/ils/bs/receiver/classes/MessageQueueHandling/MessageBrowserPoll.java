@@ -123,6 +123,8 @@ public class MessageBrowserPoll {
     @Value("${activemq.password}")
     private String password;
 
+    private Integer PollInterval = 60;
+
     private final ActiveMQProperties activeMQProps;
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
@@ -189,7 +191,7 @@ public class MessageBrowserPoll {
                 System.out.println("Polling messages...");
 
                 StartPoll(consumer, session);
-            }, 0, 5, TimeUnit.SECONDS);
+            }, 0, PollInterval, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
 
@@ -247,7 +249,7 @@ public class MessageBrowserPoll {
     public void StartPoll(MessageConsumer consumer, Session session) {
         try {
             System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.YELLOW
-                    + "New poll loop Processing"
+                    + "New poll loop Processing. Interval : " + PollInterval + " seconds"
                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
             Message msg;
             while ((msg = consumer.receiveNoWait()) != null) {
