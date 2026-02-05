@@ -179,9 +179,9 @@ public class MessageBrowserPoll {
                                             "",
                                             AlfrescoConstants.eActionPerformed.IODELETED,
                                             QMessage.getUsername(),
-                                            aController.alfresconNodeResponse.marking != null  ? aController.alfresconNodeResponse.marking : "DeletedFromPlatform",
-                                            aController.alfresconNodeResponse.label != null  ? aController.alfresconNodeResponse.label : "DeletedFromPlatform",
-                                            aController.alfresconNodeResponse.version != null  ? aController.alfresconNodeResponse.version : "DeletedFromPlatform");
+                                            "DeletedFromPlatform",
+                                            "DeletedFromPlatform",
+                                            "DeletedFromPlatform");
                                 } else {
                                     aController.GetNode();
                                     String IOUUID = "";

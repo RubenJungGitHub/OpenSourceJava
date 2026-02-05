@@ -15,9 +15,11 @@ public final class RJBindAndSecureIO {
     }
 
     static byte[] canonicalize(SecuredDocument doc) throws Exception {
+        //Parameters for binding and signing
         StringBuilder sb = new StringBuilder();
         sb.append("objectId=").append(doc.getId()).append("\n");
         sb.append("filename=").append(doc.getFileName()).append("\n");
+        sb.append("title=").append(doc.getTitle()).append("\n");
         sb.append("description=").append(doc.getDescription()).append("\n");
         sb.append("mimeType=").append(doc.getMimeType()).append("\n");
         sb.append("created=").append(doc.getCreated()).append("\n");
