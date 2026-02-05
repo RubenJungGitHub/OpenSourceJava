@@ -5,6 +5,50 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Represents a message structure for Alfresco queue processing.
+ * 
+ * This class is used to encapsulate information about Alfresco-related events
+ * or actions,
+ * including metadata such as node details, user information, and additional
+ * properties.
+ * It is designed to be deserialized from JSON, ignoring unknown properties.
+ *
+ *
+ * 
+ * Fields:
+ *
+ * <b>id</b>: Unique identifier for the message.
+ * <b>type</b>: Type of the message or event.
+ * <b>username</b>: The user associated with the event.
+ * <b>timestamp</b>: Time when the event occurred (epoch milliseconds).
+ * <b>seqNumber</b>: Sequence number for ordering messages.
+ * <b>txnId</b>: Transaction ID related to the event.
+ * <b>networkId</b>: Network identifier in Alfresco context.
+ * <b>client</b>: Client information (can be any object).
+ * <b>nodeId</b>: Alfresco node identifier.
+ * <b>siteId</b>: Site identifier where the node resides.
+ * <b>nodeType</b>: Type of the Alfresco node.
+ * <b>name</b>: Name of the node.
+ * <b>nodeModificationTime</b>: Last modification time of the node (epoch
+ * milliseconds).
+ * <b>paths</b>: List of paths (can be ArrayList representations) associated
+ * with the node.
+ * <b>parentNodeIds</b>: List of parent node identifiers.
+ * <b>aspects</b>: List of aspects applied to the node.
+ * <b>nodeProperties</b>: Map of node properties and their values.
+ * 
+ *
+ *
+ * 
+ * Getters and setters are provided for all fields.
+ *
+ *
+ * 
+ * Annotated with {@code @JsonIgnoreProperties(ignoreUnknown = true)} to allow
+ * for flexible JSON deserialization.
+ *
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AlfrescoQueMessage {
     private String id;

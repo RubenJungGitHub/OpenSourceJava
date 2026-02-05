@@ -9,11 +9,44 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
 import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
 
-public class AlfrescoNodeResponse  extends IOObjectProperies{
-     public Entry entry;
+/**
+ * Represents the response from Alfresco for a node (file or folder).
+ * Contains details about the node, its properties, content, and metadata.
+ *
+ * 
+ * The main entry is represented by the {@link Entry} class, which includes
+ * information such as node type, creation/modification details, content info,
+ * and custom properties.
+ * 
+ *
+ * 
+ * The {@link Properties} class is designed to handle both standard and custom
+ * Alfresco properties, including dynamic properties via {@link JsonAnySetter}.
+ * 
+ *
+ * 
+ * The {@code ToSecuredDocument()} method converts the Alfresco node response
+ * into a {@link SecuredDocument} object, mapping relevant fields and parsing
+ * date/time information.
+ * 
+ *
+ * pul>
+ * {@link Entry} - Main node details
+ * {@link CreatedByUser} - Creator information
+ * {@link ModifiedByUser} - Modifier information
+ * {@link Content} - Content metadata (MIME type, size, encoding)
+ * {@link Properties} - Node properties, including custom ones
+ *
+ * 
+ * b>Note:</b> This class extends {@code IOObjectProperies} (possible typo,
+ * should be "IOObjectProperties").
+ */
+public class AlfrescoNodeResponse extends IOObjectProperies {
+    public Entry entry;
 
     public static class Entry {
         public boolean isFile;
@@ -27,7 +60,7 @@ public class AlfrescoNodeResponse  extends IOObjectProperies{
         public boolean isFolder;
         public ModifiedByUser modifiedByUser;
         @JsonProperty("name")
-        public String filename;  // <- map JSON "name" here
+        public String filename; // <- map JSON "name" here
         public String id;
         public Properties properties;
         public String version;
@@ -79,7 +112,7 @@ public class AlfrescoNodeResponse  extends IOObjectProperies{
 
         Instant createdAtInstant = OffsetDateTime.parse(this.entry.createdAt, formatter).toInstant();
         Instant modifiedAtInstant = OffsetDateTime.parse(this.entry.modifiedAt, formatter).toInstant();
-        SecuredDocument secdoc = new  SecuredDocument(
+        SecuredDocument secdoc = new SecuredDocument(
                 this.content,
                 this.entry.id,
                 this.entry.id,
@@ -92,8 +125,7 @@ public class AlfrescoNodeResponse  extends IOObjectProperies{
                 modifiedAtInstant,
                 this.marking,
                 this.label,
-                this.version
-        );
+                this.version);
         return secdoc;
     }
 

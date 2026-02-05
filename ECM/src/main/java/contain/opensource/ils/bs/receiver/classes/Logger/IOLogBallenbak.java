@@ -1,7 +1,7 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
 import java.time.LocalDateTime;
-
+import java.util.Optional;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
 import jakarta.persistence.Column;
@@ -72,7 +72,7 @@ public class IOLogBallenbak {
     public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction, String ioSource,
                  String ioDestination, String pkiHash, String ioReference,
                  String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Label,String version) {
-        this.uuid = uuid != null ? uuid : UUIDUtil.getUUIDOverHTTP(); // use passed uuid if not null
+        this.uuid = uuid != null ? uuid : UUIDUtil.getUUIDOverHTTP(Optional.empty()); // use passed uuid if not null
         this.containIoUuid = containIOUUID;
         this.platformId = PlatformID;
         this.path = IOpath;

@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.UUID;
-
-//import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.ContainPlatforms;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 //import com.azure.core.annotation.Get;
@@ -41,12 +41,13 @@ public class UUIDUtil {
     // java.net.SocketException: Unexpected end of file from server
     // ===================================================================================================================================================
 
-    public static String getUUIDOverHTTP() {
+    public static String getUUIDOverHTTP(Optional<ContainPlatforms> prefix) {
         try {
             // Fetch Spring-managed bean
             UUIDUtil uuidUtil = SpringContext.getApplicationContext().getBean(UUIDUtil.class);
+            String query = prefix.map(p -> "?prefix=" + p.name()).orElse("");
 
-            String urlString = uuidUtil.iLSRestProperties.getBaseUrl() + "/api/GetUUID";
+            String urlString = uuidUtil.iLSRestProperties.getBaseUrl() + "/api/GetUUID" + query;
 
             System.out.println(
                     contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED + "Get UUID endpoint  : "
@@ -63,9 +64,6 @@ public class UUIDUtil {
                 BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 String uuid = in.readLine(); // assuming API returns plain UUID
                 in.close();
-                System.out.println(
-                        contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED + "GUID RETURNED : "
-                                + uuid + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
 
                 return uuid;
             } else {
@@ -81,13 +79,13 @@ public class UUIDUtil {
     }
 
     // To avoid rest endpoint http call within the same container
-    public static String getUUID() {
+    public static String getUUID(ContainPlatforms prefix) {
         try {
             UUID uuid = UUID.randomUUID();
             System.out.println(
                     contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED + "GUID RETURNED : "
                             + uuid.toString() + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
-            return uuid.toString();
+            return prefix.toString() + "-" + uuid.toString();
         } catch (Exception e) {
             System.err.println("exception in getUUID : " + e);
             e.printStackTrace();

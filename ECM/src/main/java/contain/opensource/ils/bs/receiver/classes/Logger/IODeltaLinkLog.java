@@ -1,9 +1,7 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
 import java.util.Optional;
-
 import org.springframework.stereotype.Component;
-
 import contain.opensource.ils.bs.receiver.services.IODeltalinkService;
 
 @Component

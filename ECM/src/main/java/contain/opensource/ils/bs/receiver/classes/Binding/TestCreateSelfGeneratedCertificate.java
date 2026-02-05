@@ -1,7 +1,6 @@
-
 package contain.opensource.ils.bs.receiver.classes.Binding;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 
 import java.io.FileOutputStream;
 import java.math.BigInteger;
@@ -24,7 +23,6 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 public class TestCreateSelfGeneratedCertificate {
-
     public static void Generate() throws Exception {
         // ✅ Register Bouncy Castle provider
         if (Security.getProvider("BC") == null) {
@@ -41,7 +39,7 @@ public class TestCreateSelfGeneratedCertificate {
         // 2. Build X.509 certificate
         long now = System.currentTimeMillis();
         Date startDate = new Date(now);
-        //Until retirement date ;-) 
+        // Until retirement date ;-)
         Date endDate = new Date(now + 1689L * 24 * 60 * 60 * 1000); // 1 year validity
 
         X500Name dnName = new X500Name("CN=Test Certificate");
@@ -67,14 +65,14 @@ public class TestCreateSelfGeneratedCertificate {
 
         System.out.println("Certificate written to c:/temp/Containselfsigned_cert.cer");
 
-                // 4. Save private key + certificate in PKCS#12 keystore
+        // 4. Save private key + certificate in PKCS#12 keystore
         KeyStore pkcs12 = KeyStore.getInstance("PKCS12");
         pkcs12.load(null, null); // initialize
 
         char[] password = AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray(); // choose a secure password
         String alias = AlfrescoConstants.p12PrivateKeyFileAlias;
 
-        pkcs12.setKeyEntry(alias, privateKey, password, new X509Certificate[]{certificate});
+        pkcs12.setKeyEntry(alias, privateKey, password, new X509Certificate[] { certificate });
 
         try (FileOutputStream fos = new FileOutputStream("c:/temp/Containselfsigned_cert.p12")) {
             pkcs12.store(fos, password);

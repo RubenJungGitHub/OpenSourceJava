@@ -172,7 +172,7 @@ public class GraphService {
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
             /// String uuid = GetUUID();
-            String uuid = AlfrescoConstants.ContainPlatforms.SPO.toString() + "-" + UUIDUtil.getUUIDOverHTTP();
+            String uuid =  UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
 
             HttpClient client = HttpClient.newHttpClient();
 

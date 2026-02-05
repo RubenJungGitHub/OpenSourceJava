@@ -41,7 +41,7 @@ public class IOLogBallenbakService {
             String destination,
             String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Label,String version) {
         IOLogBallenbak log = new IOLogBallenbak(
-                UUIDUtil.getUUIDOverHTTP(),
+                UUIDUtil.getUUIDOverHTTP(Optional.empty()),
                 containIOUUID,
                 PlatformID,
                 IOpath,

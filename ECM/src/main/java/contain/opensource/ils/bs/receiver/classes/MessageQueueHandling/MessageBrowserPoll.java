@@ -45,6 +45,72 @@ import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
+/**
+ * MessageBrowserPoll is a Spring component responsible for polling messages
+ * from an ActiveMQ queue,
+ * processing them, and interacting with Alfresco and other external systems as
+ * required.
+ * p>
+ * This class establishes a connection to an ActiveMQ broker, creates a consumer
+ * for a specific queue,
+ * and periodically polls for new messages using a scheduled executor. Each
+ * message is processed according
+ * to its type, with support for handling node removals, updating nodes, binding
+ * content, and relocating
+ * information objects between platforms.
+ * p>
+ * Key Features:
+ *
+ * Configurable ActiveMQ connection via Spring properties.
+ * Scheduled polling of messages from a designated queue.
+ * Integration with Alfresco for node operations via
+ * AlfrescoNodeController.
+ * Support for message acknowledgment and transaction management.
+ * Logging and error handling for message processing and external service
+ * interactions.
+ * Interaction with Redis for caching and deduplication of processing.
+ * REST calls to external services for binding and relocating information
+ * objects.
+ *
+ * p>
+ * Note: The class contains TODOs and comments regarding handling consumer
+ * closure and Alfresco server downtime.
+ * Proper resource cleanup and error handling are implemented to ensure
+ * reliability.
+ *
+ * Dependencies:
+ *
+ * Spring Framework (for dependency injection and configuration)
+ * ActiveMQ JMS client
+ * Jackson (for JSON processing)
+ * AlfrescoNodeController and related domain classes
+ * RedisManager for caching
+ * RestTemplate for REST API calls
+ *
+ *
+ * Usage:
+ * 
+ * pre>
+ * 
+ * @Autowired
+ *            private MessageBrowserPoll messageBrowserPoll;
+ *            ...
+ *            messageBrowserPoll.ReadMessages(args);
+ *            pre>
+ *
+ *            Configuration:
+ *            ul>
+ *            activemq.brokerUrl - URL of the ActiveMQ broker
+ *            activemq.user - Username for ActiveMQ
+ *            activemq.password - Password for ActiveMQ
+ *            ul>
+ *
+ *            Thread Safety: This class is designed to be used as a singleton
+ *            Spring bean.
+ *
+ *            Author: [Your Name or Team]
+ *            Since: [Version or Date]
+ */
 @Component
 public class MessageBrowserPoll {
 
@@ -72,6 +138,27 @@ public class MessageBrowserPoll {
         this.ILSProperties = ilsProperties;
     }
 
+    /**
+     * Reads messages from a specified ActiveMQ queue and polls for new messages at
+     * fixed intervals.
+     * p>
+     * This method establishes a connection to the ActiveMQ broker using the
+     * provided credentials and broker URL.
+     * It creates a session and a consumer for the specified queue, then schedules a
+     * polling task that periodically
+     * invokes the {@code StartPoll} method to process messages.
+     * p>
+     * The method keeps the main thread alive indefinitely to allow continuous
+     * polling. It also handles cleanup of
+     * resources such as the session and connection upon termination.
+     * p>
+     * b>Note:</b> There is a known issue where the consumer may hang if the
+     * Alfresco server is brought down.
+     * Proper handling and reinitialization of the consumer should be implemented to
+     * address this.
+     *
+     * @param args Command-line arguments (currently unused).
+     */
     public void ReadMessages(String[] args) {
         try {
 
@@ -130,6 +217,33 @@ public class MessageBrowserPoll {
         }
     }
 
+    /**
+     * Starts polling messages from the provided JMS consumer and processes each
+     * message.
+     * p>
+     * This method continuously receives messages from the given
+     * {@link MessageConsumer}
+     * without waiting, processes each message according to its type, and performs
+     * actions such as logging, updating, binding, and relocating information
+     * objects.
+     * It handles both text and non-text messages, commits the session after
+     * successful
+     * processing, and rolls back the session in case of processing errors.
+     * p>
+     * For text messages, it parses the message content as JSON, maps it to an
+     * {@code AlfrescoQueMessage}, and performs actions based on the node type,
+     * including logging deletions, updating nodes, binding, and relocating objects
+     * between platforms. It also interacts with Redis for caching and duplicate
+     * prevention.
+     * p>
+     * Exceptions during message processing are caught and logged, and the session
+     * is
+     * rolled back to ensure message integrity.
+     *
+     * @param consumer the {@link MessageConsumer} to poll messages from
+     * @param session  the JMS {@link Session} used for message acknowledgment and
+     *                 transaction management
+     */
     public void StartPoll(MessageConsumer consumer, Session session) {
         try {
             System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.YELLOW

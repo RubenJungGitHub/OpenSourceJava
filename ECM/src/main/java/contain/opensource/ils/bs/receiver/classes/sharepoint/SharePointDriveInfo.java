@@ -1,5 +1,36 @@
 package contain.opensource.ils.bs.receiver.classes.sharepoint;
 
+/**
+ * SharePointDriveInfo represents metadata information for a SharePoint drive.
+ * 
+ * This class encapsulates details about a SharePoint drive including tenant
+ * information,
+ * site and web identifiers, drive characteristics, and associated list
+ * information.
+ * It serves as a data transfer object (DTO) for SharePoint drive configuration
+ * and metadata.
+ * 
+ * 
+ * Attributes:
+ *
+ * {@code tenantID} - The unique identifier of the Microsoft 365 tenant
+ * {@code siteUrl} - The URL of the SharePoint site
+ * {@code driveId} - The unique identifier of the drive
+ * {@code driveName} - The display name of the drive
+ * {@code driveType} - The type of the drive (e.g., "personal",
+ * "documentLibrary")
+ * {@code siteId} - The unique identifier of the SharePoint site
+ * {@code webId} - The unique identifier of the SharePoint web
+ * {@code listId} - The unique identifier of the associated SharePoint
+ * list
+ * {@code listItemId} - The unique identifier of the list item
+ * {@code listName} - The display name of the SharePoint list
+ *
+ *
+ * 
+ * @author [Author Name]
+ * @version 1.0
+ */
 public class SharePointDriveInfo {
 
     private String tenantID;

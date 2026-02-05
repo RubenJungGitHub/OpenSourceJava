@@ -1,28 +1,22 @@
 package contain.opensource.ils.bs.receiver.classes.Binding;
-
 import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
 import java.time.Instant;
-import java.util.List;
 
+/**
+ * A secured document class that encapsulates document metadata and content with timestamp information.
+ * 
+ * This class extends {@link IOObjectProperies} and represents a document entity with security properties,
+ * including creation and modification timestamps. It maintains immutability for temporal attributes through
+ * final fields.
+ * 
+ * @author [Author Name]
+ * @version 1.0
+ * @since [Date]
+ */
 public final class SecuredDocument extends IOObjectProperies {
 
-    // Content
-    // private final byte[] content;
-
-    // Identity
-
-
-    // File metadata
-    // private final String filename;
-    // private final String description;
-    // private final String mimeType;
     private final Instant created;
     private final Instant lastModified;
-
-    // Security metadata
-    // private final List<String> classifications; // canonical codes
-    // private final List<String> labels;
-    // private final List<String> markings;
 
     public SecuredDocument(
             byte[] content,
@@ -38,13 +32,10 @@ public final class SecuredDocument extends IOObjectProperies {
             String marking,
             String label,
             String version
-    // List<String> classifications,
-    // List<String> labels,
-    // List<String> markings
     ) {
         this.content = content;
         this.objectId = objectId;
-        this.id= id;
+        this.id = id;
         this.UUID = UUID;
         this.Title = Title;
         this.filename = filename;
@@ -55,37 +46,7 @@ public final class SecuredDocument extends IOObjectProperies {
         this.marking = marking;
         this.label = label;
         this.version = version;
-        // this.classifications = List.copyOf(classifications);
-        // this.labels = List.copyOf(labels);
-        // this.markings = List.copyOf(markings);
     }
-
-    // getters only. VOID Because parent class has them
-
-    /*
-     * 
-     * public byte[] getContent() {
-     * return content;
-     * }
-     * 
-     * public String getObjectId() {
-     * return objectId;
-     * }
-     * 
-     * public String getFilename() {
-     * return filename;
-     * }
-     * 
-     * public String getMimeType() {
-     * return mimeType;
-     * }
-     * 
-     * 
-     * public String getDescription() {
-     * return Description;
-     * }
-     * 
-     */
 
     public Instant getCreated() {
         return created;
@@ -94,18 +55,4 @@ public final class SecuredDocument extends IOObjectProperies {
     public Instant getLastModified() {
         return lastModified;
     }
-    /*
-     * //public List<String> getClassifications() {
-     * // return classifications;
-     * //}
-     * 
-     * //public List<String> getLabels() {
-     * // return labels;
-     * //}
-     * 
-     * //public List<String> getMarkings() {
-     * // return markings;
-     * //}
-     * 
-     */
 }
