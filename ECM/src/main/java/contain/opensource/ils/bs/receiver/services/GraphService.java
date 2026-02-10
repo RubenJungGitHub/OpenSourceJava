@@ -71,6 +71,7 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.ChangedItemsResult;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.ContainPlatforms;
 import io.swagger.v3.oas.annotations.Parameter;
 
 //========================================================================
@@ -172,7 +173,7 @@ public class GraphService {
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
             /// String uuid = GetUUID();
-            String uuid =  UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
+            String uuid = UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
 
             HttpClient client = HttpClient.newHttpClient();
 
@@ -338,8 +339,8 @@ public class GraphService {
                 IOLogDeltaLink log = existingLog.get();
                 lastDeltaLink = log.getLastDeltaLink();
             }
-            // Assume value is your Notification object
 
+            // Assume value is your Notification object
             // Get Graph token (assuming graphService has a synchronous method or you wrap
             // it in CompletableFuture)
             // String accessToken = getGraphToken();
@@ -369,6 +370,7 @@ public class GraphService {
                     listId = parts[4];
                 }
             }
+
             ChangedItemsResult changedItems = getChangedItems(AlfrescoConstants.tenantId, siteId, listId, driveId,
                     lastDeltaLink);
             if (changedItems.changedItems == null || changedItems.changedItems.isEmpty()) {
@@ -380,6 +382,24 @@ public class GraphService {
             List<SharePointItemResponse> items = getListItemsByIds(siteId, listId, changedItems.changedItems);
             String action = "";
             for (SharePointItemResponse SPItem : items) {
+
+                String redisentryInRelocation = SPItem.UUID;
+                // Add to Redis cache to avoid double binding.
+                for (ContainPlatforms platform : ContainPlatforms.values()) {
+                    redisentryInRelocation = redisentryInRelocation.replace(platform.toString(), "");
+                }
+                redisentryInRelocation = "IOinRelocateProcess" + redisentryInRelocation;
+                String redisentryHashAssigned = "IOinHashAssigned" + redisentryInRelocation;
+                if (RedisManager.getHashField(redisentryInRelocation) != null) {
+                    RedisManager.deleteEntry(redisentryInRelocation);
+                    break;
+                }
+                if (RedisManager.getHashField(redisentryHashAssigned) != null) {
+                    RedisManager.deleteEntry(redisentryHashAssigned);
+                    break;
+                }
+
+
                 // One always needs to get content for binding
 
                 SPItem.filecontent = getSPItemContentById(SPItem.id, listId);
@@ -416,14 +436,10 @@ public class GraphService {
                 // ==========================================================================================
 
                 // Add to Redis cache to avoid double binding.
-                String redisentry = "IOinProcess-" + SPItem.UUID.replaceAll("^\"|\"$", "");
 
-                if (RedisManager.getHashField(redisentry) == null) {
-                    RedisManager.putHash("IOinProcess", redisentry, "InProcess", 240);
-                } else {
-                    RedisManager.deleteEntry(redisentry);
-                    break;
-                }
+                // Add to Redis cache to avoid double binding.
+
+
 
                 // Hash IO (Separate?)
                 PrivateKey key = PKCS12KeyLoader.PK;
@@ -479,6 +495,8 @@ public class GraphService {
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
+                        //Add to relocation cache
+                        RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation, "InProcess", 240);
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
                         ROobject.setHash(bindresponse.getBody());
                         String endpoint = String.format(

@@ -1,11 +1,15 @@
 package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -18,32 +22,32 @@ import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpEntity;
-import java.util.Base64;
-import java.nio.charset.StandardCharsets;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
-import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
 /**
  * MessageBrowserPoll is a Spring component responsible for polling messages
@@ -123,11 +127,13 @@ public class MessageBrowserPoll {
     @Value("${activemq.password}")
     private String password;
 
-    private Integer PollInterval = 60;
+    private Integer PollInterval = 15;
 
     private final ActiveMQProperties activeMQProps;
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     @Autowired
     private AlfrescoNodeController aController;
@@ -248,8 +254,9 @@ public class MessageBrowserPoll {
      */
     public void StartPoll(MessageConsumer consumer, Session session) {
         try {
+            String timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.YELLOW
-                    + "New poll loop Processing. Interval : " + PollInterval + " seconds"
+                    + timestamp  + " -> New poll loop Processing. Interval : " + PollInterval + " seconds"
                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
             Message msg;
             while ((msg = consumer.receiveNoWait()) != null) {
@@ -299,26 +306,39 @@ public class MessageBrowserPoll {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
+
+                                    
                                     aController.GetNode();
                                     String IOUUID = "";
                                     if (!aController.alfresconNodeResponse.HasUUID) {
                                         // Set UUID
-                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
-                                                Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                        String   redisentryHashAssigned =IOUUID;                                                                         
+                                        for (AlfrescoConstants.ContainPlatforms platform : ContainPlatforms.values()) {
+                                        redisentryHashAssigned = redisentryHashAssigned.replace(platform.toString(), "");
+                                    }
+                                        RedisManager.putHash("IOinHashAssigned", redisentryHashAssigned, "InProcess", 120);
+
                                     } else {
                                         IOUUID = aController.alfresconNodeResponse.UUID;
                                     }
-
+                                    
+                                     String redisentryInRelocation = IOUUID;
                                     // Add to Redis cache to avoid double binding.
-                                    String redisentry = "IOinProcess-" + IOUUID;
-
-                                    if (RedisManager.getHashField(redisentry) == null) {
-                                        RedisManager.putHash("IOinProcess", redisentry, "InProcess", 120);
-                                    } else {
-                                        RedisManager.deleteEntry(redisentry);
+                                    for (AlfrescoConstants.ContainPlatforms platform : ContainPlatforms.values()) {
+                                        redisentryInRelocation = redisentryInRelocation.replace(platform.toString(), "");
+                                    }
+                                    redisentryInRelocation = "IOinRelocateProcess" + redisentryInRelocation;
+                                    String redisentryHashAssigned = "IOinHashAssigned" + redisentryInRelocation;
+                                    
+                                    if (RedisManager.getHashField(redisentryInRelocation) != null) {
+                                        RedisManager.deleteEntry(redisentryInRelocation);
                                         return;
                                     }
-
+                                     if (RedisManager.getHashField(redisentryHashAssigned) != null) {
+                                        RedisManager.deleteEntry(redisentryHashAssigned);
+                                        return;
+                                    }
                                     // First sign and log
                                     // ==========================================================================================
                                     // ALL FUNCTIONS SHOULD BE SEPARATED
@@ -371,6 +391,9 @@ public class MessageBrowserPoll {
 
                                     // Moveobject
                                     if (aController.alfresconNodeResponse.MustMove) {
+                                        //Add id into relocate cache
+                                        RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation, "InProcess", 120);
+
                                         // Create generic property mapping information object
                                         RelocateInformationObject IOobject = new RelocateInformationObject(
                                                 aController.alfresconNodeResponse,

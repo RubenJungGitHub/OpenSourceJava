@@ -581,7 +581,13 @@ public class AlfrescoNodeController {
         try (CloseableHttpResponse response = client.execute(post)) {
           int statusCode = response.getCode();
           String responseBody = EntityUtils.toString(response.getEntity());
-
+          //Check if existant!
+          if(statusCode == 409)
+          {
+            //Debug
+            //Sometimes events cross. Avoid break of process
+            //Integer a = 1; 
+          }
           if (statusCode >= 200 && statusCode < 300) {
             // debug GetNode to check why fields are not set
             // get the new nodeID. THIS IS THE ONLY ABSURD WAY!!!
