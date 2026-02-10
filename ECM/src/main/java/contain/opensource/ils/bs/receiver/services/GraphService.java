@@ -200,7 +200,11 @@ public class GraphService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                System.out.println("UUID assigned updated successfully!");
+                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.MAGENTA
+                        + "UUID assigned updated successfully to : " + listItemId
+                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                // Cahc in Redis
+                RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid, "InProcess", 240);
                 return uuid;
             } else {
                 System.out.println("Failed to update field: " + response.body());
@@ -383,33 +387,14 @@ public class GraphService {
             String action = "";
             for (SharePointItemResponse SPItem : items) {
 
-                String redisentryInRelocation = SPItem.UUID;
-                // Add to Redis cache to avoid double binding.
-                for (ContainPlatforms platform : ContainPlatforms.values()) {
-                    redisentryInRelocation = redisentryInRelocation.replace(platform.toString(), "");
-                }
-                redisentryInRelocation = "IOinRelocateProcess" + redisentryInRelocation;
-                String redisentryHashAssigned = "IOinHashAssigned" + redisentryInRelocation;
-                if (RedisManager.getHashField(redisentryInRelocation) != null) {
-                    RedisManager.deleteEntry(redisentryInRelocation);
-                    break;
-                }
-                if (RedisManager.getHashField(redisentryHashAssigned) != null) {
-                    RedisManager.deleteEntry(redisentryHashAssigned);
-                    break;
-                }
-
-
                 // One always needs to get content for binding
 
                 SPItem.filecontent = getSPItemContentById(SPItem.id, listId);
                 if (!SPItem.MustMove && SPItem.HasUUID) {
-                    System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
+                    System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
                 if (!SPItem.HasUUID) {
-                    // AssignUUID
                     SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, listId);
-                    // Test ballenbak
                     action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
 
                     IOLog.log(
@@ -429,19 +414,32 @@ public class GraphService {
                             SPItem.version);
                 }
 
+                // Check double binding -> To become seperate function for all ecm environments
+                String redisLogId = SPItem.UUID;
+                // Add to Redis cache to avoid double binding.
+                for (ContainPlatforms platform : ContainPlatforms.values()) {
+                    redisLogId = redisLogId.replace(platform.toString(), "");
+                }
+                String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
+                String redisentryUUIDAssigned = "IOinUUIDAssigned" + SPItem.getUuid();
+                if (RedisManager.getHashField(redisentryInRelocation) != null) {
+                    RedisManager.deleteEntry(redisentryInRelocation);
+                    break;
+                }
+                if (RedisManager.getHashField(redisentryUUIDAssigned) != null && SPItem.HasUUID) {
+                    RedisManager.deleteEntry(redisentryUUIDAssigned);
+                    break;
+                }
+
                 // First sign and log
-                // Only for ballenbak
                 // ==========================================================================================
                 // ALL FUNCTIONS SHOULD BE SEPARATED
                 // ==========================================================================================
+                // Hash IO (Separate function!)
 
-                // Add to Redis cache to avoid double binding.
-
-                // Add to Redis cache to avoid double binding.
-
-
-
-                // Hash IO (Separate?)
+                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                        + ("Binding SP IO " + SPItem.UUID)
+                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                 PrivateKey key = PKCS12KeyLoader.PK;
                 String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
@@ -489,14 +487,15 @@ public class GraphService {
                             SPItem.version);
                     // ==========================================================================================
                 }
-                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.CYAN
-                        + "SPItem mustmove?" + SPItem.MustMove
-                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
-                        //Add to relocation cache
-                        RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation, "InProcess", 240);
+                        System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.GREEN
+                                + "SPItem mustmove?" + SPItem.MustMove
+                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                        // Add to relocation cache
+                        RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess", 240);
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
                         ROobject.setHash(bindresponse.getBody());
                         String endpoint = String.format(

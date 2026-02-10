@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
 import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
@@ -900,6 +901,7 @@ public class AlfrescoNodeController {
 
         if (statusCode == 200) {
           this.alfresconNodeResponse.UUID = propertyValue;
+          RedisManager.putHash("IOinHashAssigned","IOinUUIDAssigned" + propertyValue, "InProcess",120);
           // Test ballenbak
           IOLog.log(
               propertyValue,

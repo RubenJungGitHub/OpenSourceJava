@@ -9,7 +9,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -256,7 +255,7 @@ public class MessageBrowserPoll {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.YELLOW
-                    + timestamp  + " -> New poll loop Processing. Interval : " + PollInterval + " seconds"
+                    + timestamp + " -> New poll loop Processing. Interval : " + PollInterval + " seconds"
                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
             Message msg;
             while ((msg = consumer.receiveNoWait()) != null) {
@@ -307,36 +306,32 @@ public class MessageBrowserPoll {
                                             "DeletedFromPlatform");
                                 } else {
 
-                                    
                                     aController.GetNode();
                                     String IOUUID = "";
                                     if (!aController.alfresconNodeResponse.HasUUID) {
                                         // Set UUID
-                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,Optional.ofNullable(secondPath.toString()), Optional.empty());
-                                        String   redisentryHashAssigned =IOUUID;                                                                         
-                                        for (AlfrescoConstants.ContainPlatforms platform : ContainPlatforms.values()) {
-                                        redisentryHashAssigned = redisentryHashAssigned.replace(platform.toString(), "");
-                                    }
-                                        RedisManager.putHash("IOinHashAssigned", redisentryHashAssigned, "InProcess", 120);
+                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
+                                                Optional.ofNullable(secondPath.toString()), Optional.empty());
 
                                     } else {
                                         IOUUID = aController.alfresconNodeResponse.UUID;
                                     }
-                                    
-                                     String redisentryInRelocation = IOUUID;
+
+                                    String redisLogId = IOUUID;
                                     // Add to Redis cache to avoid double binding.
-                                    for (AlfrescoConstants.ContainPlatforms platform : ContainPlatforms.values()) {
-                                        redisentryInRelocation = redisentryInRelocation.replace(platform.toString(), "");
+                                    for (ContainPlatforms platform : ContainPlatforms.values()) {
+                                        redisLogId = redisLogId.replace(platform.toString(), "");
                                     }
-                                    redisentryInRelocation = "IOinRelocateProcess" + redisentryInRelocation;
-                                    String redisentryHashAssigned = "IOinHashAssigned" + redisentryInRelocation;
-                                    
+                                    String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
+                                    String redisentryUUIDAssigned = "IOinUUIDAssigned" + IOUUID;
+
                                     if (RedisManager.getHashField(redisentryInRelocation) != null) {
                                         RedisManager.deleteEntry(redisentryInRelocation);
                                         return;
                                     }
-                                     if (RedisManager.getHashField(redisentryHashAssigned) != null) {
-                                        RedisManager.deleteEntry(redisentryHashAssigned);
+                                    if (RedisManager.getHashField(redisentryUUIDAssigned) != null
+                                            && aController.alfresconNodeResponse.HasUUID) {
+                                        RedisManager.deleteEntry(redisentryUUIDAssigned);
                                         return;
                                     }
                                     // First sign and log
@@ -345,6 +340,9 @@ public class MessageBrowserPoll {
                                     // ==========================================================================================
 
                                     // IN the future store as actual byte in Redis and datastore. For POC store as
+                                    System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BRIGHT_RED
+                                                    + ("Binding ALFRESCO NODE IO " + IOUUID)
+                                                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                                     PrivateKey key = PKCS12KeyLoader.PK;
                                     String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
@@ -391,8 +389,14 @@ public class MessageBrowserPoll {
 
                                     // Moveobject
                                     if (aController.alfresconNodeResponse.MustMove) {
-                                        //Add id into relocate cache
-                                        RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation, "InProcess", 120);
+                                        // Add id into relocate cache
+                                        System.out.println(
+                                                contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.CYAN
+                                                        + "Alfresco  node must-move?"
+                                                        + aController.alfresconNodeResponse.MustMove
+                                                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                                        RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation, "InProcess",
+                                                120);
 
                                         // Create generic property mapping information object
                                         RelocateInformationObject IOobject = new RelocateInformationObject(

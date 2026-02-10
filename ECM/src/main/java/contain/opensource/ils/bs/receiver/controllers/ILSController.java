@@ -53,12 +53,18 @@ public class ILSController {
         switch (IOobject.getPlatfrom()) {
             case AlfrescoConstants.ContainPlatforms.ALFRESCO:
                 if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.SPO) {
-                    System.out.println("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  " + IOobject.getPlatformTo().toString());
+                    System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BRIGHT_BLUE
+                            + ("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  "
+                                    + IOobject.getPlatformTo().toString())
+                            + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                     this.alfrescoNodeController.RelocateIO(IOobject);
                 }
             case AlfrescoConstants.ContainPlatforms.SPO:
                 if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.ALFRESCO) {
-                    System.out.println("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  " + IOobject.getPlatformTo().toString());
+                    System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BRIGHT_MAGENTA
+                            + ("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  "
+                                    + IOobject.getPlatformTo().toString())
+                            + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                     this.graphService.RelocateIO(IOobject);
                 }
         }

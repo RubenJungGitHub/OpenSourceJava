@@ -101,7 +101,7 @@ public abstract class IOObjectProperies {
 
     public String getUuid() {
         String uuid = (UUID == null ? null : UUID.replace("\"", "").trim());
-        return uuid;
+        return uuid.replaceAll("^\"|\"$", "");
     }
 
     public void setUuid(String UUID) {
