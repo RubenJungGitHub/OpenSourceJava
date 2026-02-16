@@ -7,7 +7,6 @@ package contain.opensource.ils.bs.receiver.classes;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeResponse;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
-import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
 
 //Generic IO object Class for move between environments 
 //======================================================
@@ -31,7 +30,7 @@ public class RelocateInformationObject  extends IOObjectProperies  {
         this.containplatformfrom = containplatformfrom;
         this.containplatformto = containPlatFormTo;
         this.marking  = Anode.marking;
-        this.label = Anode.label;
+        this.classification = Anode.classification;
         this.version = Anode.version;
     }
 
@@ -48,7 +47,7 @@ public class RelocateInformationObject  extends IOObjectProperies  {
         this.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
         this.containplatformto = SPItem.MoveTo;
         this.marking  = SPItem.marking;
-        this.label = SPItem.label;
+        this.classification = SPItem.classification;
         this.version = SPItem.version;
     }
 }

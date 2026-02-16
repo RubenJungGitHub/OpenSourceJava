@@ -65,7 +65,7 @@ public class AlfrescoNodeResponse extends IOObjectProperies {
         public Properties properties;
         public String version;
         public String marking;
-        public String label;
+        public String classification;
     }
 
     public static class CreatedByUser {
@@ -90,8 +90,8 @@ public class AlfrescoNodeResponse extends IOObjectProperies {
         @JsonProperty("cm:versionType")
         public String versionType;
 
-        @JsonProperty("cm:versionLabel")
-        public String versionLabel;
+        @JsonProperty("cm:versionclassification")
+        public String versionclassification;
 
         @JsonProperty("cm:lastThumbnailModification")
         public List<String> lastThumbnailModification;
@@ -124,7 +124,7 @@ public class AlfrescoNodeResponse extends IOObjectProperies {
                 createdAtInstant,
                 modifiedAtInstant,
                 this.marking,
-                this.label,
+                this.classification,
                 this.version);
         return secdoc;
     }

@@ -42,7 +42,7 @@ public class IOLog {
             eActionPerformed actionPerformed,
             String ActionPerformedBy,
             String Marking,
-            String Label,
+            String Classification,
             String version) {
         if (delegate == null) {
             throw new IllegalStateException("IOLog not initialized yet");
@@ -61,7 +61,7 @@ public class IOLog {
                     actionPerformed,
                     ActionPerformedBy,
                     Marking,
-                    Label,
+                    Classification,
                     version);
                     
         } catch (Exception ex) {

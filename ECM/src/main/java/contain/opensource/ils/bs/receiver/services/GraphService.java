@@ -230,7 +230,7 @@ public class GraphService {
             body.put("ContAInUUID", node.getUuid());
             body.put("Title", node.getTitle());
             body.put("Marking", node.getMarking());
-            body.put("Label", node.getLabel());
+            body.put("Classification", node.getclassification());
 
             // Graph API will not allow description field to be a[dated. Even wordso./ If
             // this field is added the entire update fails!
@@ -323,6 +323,66 @@ public class GraphService {
         }
     }
 
+    private void BindObject(SharePointItemResponse SPItem) {
+        // First sign and log
+        try {
+            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW
+                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                    + ("Binding SP IO " + SPItem.UUID)
+                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+            PrivateKey key = PKCS12KeyLoader.PK;
+            String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
+
+            BindRequest request = new BindRequest(SPItem.ToSecuredDocument(),
+                    privateKeyBase64);
+            String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
+            System.out
+                    .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                            + "Binding endpoint  : "
+                            + endPoint
+                            + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+
+            URL url = new URL(endPoint);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+
+            int status = conn.getResponseCode();
+            System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
+
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
+            ResponseEntity<String> bindresponse = restTemplate.postForEntity(endPoint, entity,
+                    String.class);
+
+            // Move log to binding function
+            String action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+            if (bindresponse.getStatusCode().value() == 200) {
+                IOLog.log(
+                        SPItem.UUID,
+                        SPItem.id,
+                        "",
+                        action,
+                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        bindresponse.getBody(),
+                        SPItem.filename,
+                        "",
+                        AlfrescoConstants.eActionPerformed.IOBOUND,
+                        "System",
+                        SPItem.marking,
+                        SPItem.classification,
+                        SPItem.version);
+                // ==========================================================================================
+            }
+        } catch (Exception ex) {
+            System.err.println("Failed to bind object: " + ex);
+            ex.printStackTrace();
+        }
+    }
+
     public void ProcessChangedSharepointItems(Notification notification) {
         String lastDeltaLink = null;
         String driveId = null;
@@ -410,12 +470,17 @@ public class GraphService {
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
                             "System",
                             SPItem.marking,
-                            SPItem.label,
+                            SPItem.classification,
                             SPItem.version);
+                            BindObject(SPItem);
+                            continue;
                 }
 
+                // Redis is redundant. To memcollection? Obsolete? 
                 // Check double binding -> To become seperate function for all ecm environments
-                String redisLogId = SPItem.UUID;
+                
+                String redisLogId = SPItem.getUuid();
+                ;
                 // Add to Redis cache to avoid double binding.
                 for (ContainPlatforms platform : ContainPlatforms.values()) {
                     redisLogId = redisLogId.replace(platform.toString(), "");
@@ -424,68 +489,11 @@ public class GraphService {
                 String redisentryUUIDAssigned = "IOinUUIDAssigned" + SPItem.getUuid();
                 if (RedisManager.getHashField(redisentryInRelocation) != null) {
                     RedisManager.deleteEntry(redisentryInRelocation);
-                    break;
+                    continue;
                 }
                 if (RedisManager.getHashField(redisentryUUIDAssigned) != null && SPItem.HasUUID) {
                     RedisManager.deleteEntry(redisentryUUIDAssigned);
-                    break;
-                }
-
-                // First sign and log
-                // ==========================================================================================
-                // ALL FUNCTIONS SHOULD BE SEPARATED
-                // ==========================================================================================
-                // Hash IO (Separate function!)
-
-                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
-                        + ("Binding SP IO " + SPItem.UUID)
-                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
-                PrivateKey key = PKCS12KeyLoader.PK;
-                String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
-
-                BindRequest request = new BindRequest(SPItem.ToSecuredDocument(),
-                        privateKeyBase64);
-                String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
-                System.out
-                        .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
-                                + "Binding endpoint  : "
-                                + endPoint
-                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
-
-                URL url = new URL(endPoint);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-
-                int status = conn.getResponseCode();
-                System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
-
-                RestTemplate restTemplate = new RestTemplate();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-
-                HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
-                ResponseEntity<String> bindresponse = restTemplate.postForEntity(endPoint, entity,
-                        String.class);
-
-                // Move log to binding function
-                action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
-                if (bindresponse.getStatusCode().value() == 200) {
-                    IOLog.log(
-                            SPItem.UUID,
-                            SPItem.id,
-                            "",
-                            action,
-                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                            bindresponse.getBody(),
-                            SPItem.filename,
-                            "",
-                            AlfrescoConstants.eActionPerformed.IOBOUND,
-                            "System",
-                            SPItem.marking,
-                            SPItem.label,
-                            SPItem.version);
-                    // ==========================================================================================
+                    continue;
                 }
 
                 if (SPItem.MustMove) {
@@ -497,17 +505,17 @@ public class GraphService {
                         // Add to relocation cache
                         RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess", 240);
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-                        ROobject.setHash(bindresponse.getBody());
+                        // ROobject.setHash(bindresponse.getBody());
                         String endpoint = String.format(
                                 "%s/RelocateIO",
                                 this.ILSProperties.getBaseUrl());
-                        headers = new HttpHeaders();
+                        HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         headers.setBasicAuth(
                                 AlfrescoConstants.username,
                                 AlfrescoConstants.password,
                                 StandardCharsets.UTF_8);
-
+                        RestTemplate restTemplate = new RestTemplate();
                         HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
                                 headers);
 
@@ -517,7 +525,7 @@ public class GraphService {
                         System.out.println("Status: " + response.getStatusCodeValue());
                         System.out.println("Body: " + response.getBody());
 
-                        status = response.getStatusCode().value();
+                        int status = response.getStatusCode().value();
                         if (status != 200) {
                             throw new IOException("HTTP error " + status);
                         }
@@ -525,6 +533,9 @@ public class GraphService {
                     } catch (Exception e) {
                         System.out.println("Failed to delete SP item after move: " + e.getMessage());
                     }
+                } else {
+                    // Bind
+                    BindObject(SPItem);
                 }
             }
             LogNewDeltaLinkToFile(); // to do only if success
@@ -552,13 +563,14 @@ public class GraphService {
                     action,
                     ROobject.getPlatfrom().toString(),
                     ROobject.getPlatformTo().toString(),
-                    ROobject.getHash(),
+                    //ROobject.getHash(),
+                    "BOUND ON DESTINATION PLATFORM",
                     ROobject.getFileName(),
                     "",
                     AlfrescoConstants.eActionPerformed.IOCOPIED,
                     "System",
                     ROobject.marking,
-                    ROobject.label,
+                    ROobject.classification,
                     ROobject.version);
             // Delete from SP
             deleteSPItemById(ROobject.getId());
@@ -580,9 +592,11 @@ public class GraphService {
                     AlfrescoConstants.eActionPerformed.IODELETED,
                     "System",
                     ROobject.marking,
-                    ROobject.label,
+                    ROobject.classification,
                     ROobject.version);
         } catch (Exception ex) {
+            System.out.println("Failed to relocate IO: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
@@ -788,7 +802,7 @@ public class GraphService {
                         .items(itemId)
                         .buildRequest()
                         .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                        .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,Move, OData__UIVersionString, Marking, Label),driveItem")
+                        .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,Move, OData__UIVersionString, Marking, classification),driveItem")
                         .get();
                 items.add(item);
             } catch (GraphServiceException gse) {
@@ -869,7 +883,7 @@ public class GraphService {
                             Object title = adm.get("Title");
                             Object filename = adm.get("LinkFilename");
                             Object description = adm.get("containIODescription");
-                            String label = adm.get("Label").toString();
+                            String classification = adm.get("Classification").toString();
                             String marking = adm.get("Marking").toString();
                             String titleStr = title != null ? title.toString().replace("\"", "") : "";
                             String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
@@ -884,7 +898,7 @@ public class GraphService {
                             SPItem.HasUUID = hasUUID;
                             SPItem.version = latestVersion.id;
                             SPItem.marking = marking;
-                            SPItem.label = label;
+                            SPItem.classification = classification;
                             SPItem.MustMove = mustMove;
                             SPItem.MoveTo = moveTo;
                             SPResponseItems.add(SPItem);
@@ -895,6 +909,9 @@ public class GraphService {
                     }
                 }
             } catch (Exception e) {
+                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                        + "Processing non-text message: " + e.getMessage()
+                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                 System.err.println(e.getMessage());
             }
         }
@@ -939,7 +956,12 @@ public class GraphService {
                 return is.readAllBytes();
             }
         } else {
-            throw new IOException("Failed to fetch SharePoint item. Status: " + response.statusCode());
+            // throw new IOException("Failed to fetch SharePoint item. Status: " +
+            // response.statusCode());
+            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                    + "Failed to fetch SharePoint item.  " + itemId
+                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+            return null;
         }
     }
 
@@ -970,27 +992,31 @@ public class GraphService {
     }
 
     private void deleteSPItemById(String itemId) throws Exception {
-        String endpoint = String.format(
-                "https://graph.microsoft.com/v1.0/sites/%s:/sites/%s:/lists/%s/items/%s",
-                this.tenantDomain, this.SiteName, this.ListId, itemId);
+        try {
+            String endpoint = String.format(
+                    "https://graph.microsoft.com/v1.0/sites/%s:/sites/%s:/lists/%s/items/%s",
+                    this.tenantDomain, this.SiteName, this.ListId, itemId);
 
-        HttpClient client = HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newHttpClient();
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .header("Authorization", "Bearer " + accessToken)
-                .header("Accept", "application/json")
-                .DELETE()
-                .build();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endpoint))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Accept", "application/json")
+                    .DELETE()
+                    .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() == 204) {
-            System.out.println("Document deleted successfully.");
-        } else {
-            throw new RuntimeException(
-                    "Failed to delete document. HTTP "
-                            + response.statusCode() + " - " + response.body());
+            if (response.statusCode() == 204) {
+                System.out.println("Document deleted successfully.");
+            } else {
+                throw new RuntimeException(
+                        "Failed to delete document. HTTP "
+                                + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception ex) {
+            System.out.println("Failed to delete SP item: " + ex.getMessage());
         }
     }
 

@@ -66,6 +66,8 @@ public class AlfrescoConstants {
     public static String username = "admin";
     public static String password = "admin";
 
+    
+
     public enum PlatformPrefix {
         Alfresco,
         SPO

@@ -86,7 +86,7 @@ public final class RJBindAndSecureIO {
         sb.append("created=").append(doc.getCreated()).append("\n");
         sb.append("lastModified=").append(doc.getLastModified()).append("\n");
         sb.append("marking=").append(doc.getMarking()).append("\n");
-        sb.append("label=").append(doc.getLabel()).append("\n");
+        sb.append("classification=").append(doc.getclassification()).append("\n");
         sb.append("version=").append(doc.getVersion()).append("\n");
         byte[] contentHash = sha256(doc.getContent()); // now allowed
         sb.append("contentHash=")

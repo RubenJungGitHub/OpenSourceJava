@@ -20,13 +20,15 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api") // class-level base path
 public class SPWebhookController {
 
-
+    private Boolean SPWebHookActive = false;
+    private int WaitCounter = 0;
+    private int MaxWaitCounter = 10;
     private final GraphService graphService;
 
     @Autowired
     public SPWebhookController(GraphService graphService) {
         this.graphService = graphService;
-   }
+    }
 
     @PostMapping(value = "/WebHookListener", consumes = {
             MediaType.APPLICATION_JSON_VALUE,
@@ -38,9 +40,29 @@ public class SPWebhookController {
             @RequestBody(required = false) NotificationRoot notificationRoot,
             HttpServletRequest request) {
 
-        // Validation handshake
+        System.out.println(LocalDate.now() + ": IN JAVA SHAREPOINT WEBHOOKLISTENER : ");
+        // Check if not running then wait.
+        //thicky semaphore. Future solution is a-la Alfresco. Read  ActveMQ
+     /*
+        while (SPWebHookActive) {
+           System.out.println(LocalDate.now() + ": Waiting for running listener to complete : #" + WaitCounter + " of " + MaxWaitCounter);
+            try
+            {
+                WaitCounter++;
+                Thread.sleep(10000);
+                if (WaitCounter >= MaxWaitCounter) 
+                    {
+                    SPWebHookActive = false;
+                    }
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        SPWebHookActive = true;
+*/
 
-        System.out.println( LocalDate.now() + ": IN JAVA SHAREPOINT WEBHOOKLISTENER : ");
         if (validationToken != null && !validationToken.isEmpty()) {
             return ResponseEntity
                     .ok()
@@ -53,12 +75,12 @@ public class SPWebhookController {
                 && notificationRoot.getValue() != null
                 && !notificationRoot.getValue().isEmpty()
                 && notificationRoot.getValue().get(0).getResourceData() != null) {
-            //GraphService GService = new GraphService();
+            // GraphService GService = new GraphService();
             Notification notification = notificationRoot.getValue().get(0);
             this.graphService.ProcessChangedSharepointItems(notification);
+          //  SPWebHookActive = false;
         }
         System.out.println("EXIT LISTENER: ");
-        // Always return quickly
         return ResponseEntity.ok().build();
     }
 }

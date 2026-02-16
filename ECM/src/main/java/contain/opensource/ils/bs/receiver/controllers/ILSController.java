@@ -18,6 +18,7 @@ public class ILSController {
     private final GraphService graphService;
     private final AlfrescoNodeController alfrescoNodeController;
 
+
     @Autowired
     public ILSController(GraphService graphService, AlfrescoNodeController alfrescoNodeController) {
         this.graphService = graphService;

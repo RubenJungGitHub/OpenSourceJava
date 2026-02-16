@@ -52,7 +52,7 @@ import contain.opensource.ils.bs.receiver.services.GraphService;
  * Upload SharePoint items to Alfresco with metadata
  * Retrieve node information, content, and properties from Alfresco
  * Update node metadata including custom properties (UUID, MARKING,
- * LABEL)
+ * classification)
  * Delete nodes from Alfresco
  * Manage cross-platform document relocation (Alfresco to SharePoint and
  * vice versa)
@@ -394,7 +394,7 @@ public class AlfrescoNodeController {
    * the given {@link RelocateInformationObject}.
    * 
    * This method constructs a JSON payload containing the relevant metadata fields
-   * (such as title, description, UUID, marking, and label)
+   * (such as title, description, UUID, marking, and classification)
    * and sends an HTTP PUT request to the Alfresco REST API to update the node's
    * properties.
    * 
@@ -445,11 +445,11 @@ public class AlfrescoNodeController {
         rawMarking = rawMarking.replaceAll("^\"|\"$", "");
         propertiesNode.put("contain:MARKING", rawMarking);
       }
-      if (IOobject.getLabel() != null) {
-        String rawlabel = IOobject.getLabel();
+      if (IOobject.getclassification() != null) {
+        String rawlabel = IOobject.getclassification();
         // Remove leading/trailing quotes if they exist
         rawlabel = rawlabel.replaceAll("^\"|\"$", "");
-        propertiesNode.put("contain:LABEL", rawlabel);
+        propertiesNode.put("contain:CLASSIFICATION", rawlabel);
       }
       /*
        * chatgpt
@@ -493,13 +493,13 @@ public class AlfrescoNodeController {
               // AlfrescoConstants.ContainPlatforms.SPO.toString(),
               IOobject.getPlatfrom().toString(),
               IOobject.getPlatformTo().toString(),
-              IOobject.getHash(),
+              "BOUND ON DESTINATION PLATFORM",
               IOobject.getFileName(),
               "",
               AlfrescoConstants.eActionPerformed.COPIEDUUID,
               "System",
               IOobject.marking,
-              IOobject.label,
+              IOobject.classification,
               IOobject.version);
         }
       }
@@ -637,7 +637,7 @@ public class AlfrescoNodeController {
    * Parses the JSON response into an {@code AlfrescoNodeResponse}
    * object.
    * Extracts and sets properties such as title, description, version,
-   * marking, label, UUID, and MoveTo platform.
+   * marking, classification, UUID, and MoveTo platform.
    * Checks for the presence of UUID and MoveTo information, handling missing
    * or malformed data gracefully.
    * Fetches the node's content by calling {@code GetNodeContent()}.
@@ -700,9 +700,9 @@ public class AlfrescoNodeController {
                 .path("contain:MARKING")
                 .asText();
 
-            alfresconNodeResponse.label = rootNode.path("entry")
+            alfresconNodeResponse.classification = rootNode.path("entry")
                 .path("properties")
-                .path("contain:LABEL")
+                .path("contain:CLASSIFICATION")
                 .asText();
 
             // Check if UUID present
@@ -901,7 +901,7 @@ public class AlfrescoNodeController {
 
         if (statusCode == 200) {
           this.alfresconNodeResponse.UUID = propertyValue;
-          RedisManager.putHash("IOinHashAssigned","IOinUUIDAssigned" + propertyValue, "InProcess",120);
+          RedisManager.putHash("IOinHashAssigned","IOinUUIDAssigned" + propertyValue, "InProcess",240);
           // Test ballenbak
           IOLog.log(
               propertyValue,
@@ -917,7 +917,7 @@ public class AlfrescoNodeController {
               eActionPerformed.ASSIGNUUID,
               alfresconNodeResponse.entry.modifiedByUser.displayName,
               this.alfresconNodeResponse.marking,
-              this.alfresconNodeResponse.label,
+              this.alfresconNodeResponse.classification,
               this.alfresconNodeResponse.version);
 
           System.out.println("Node updated successfully:");
@@ -953,7 +953,7 @@ public class AlfrescoNodeController {
    * about the node to relocate,
    * including its ID, UUID, file name, source and destination
    * platforms, hash, marking,
-   * label, and version.
+   * classification, and version.
    */
   public void RelocateIO(RelocateInformationObject IOobject) {
     /// ==================================================
@@ -963,12 +963,16 @@ public class AlfrescoNodeController {
 
     // Could be done from here but because it is not sure from where relocation is
     // performed we are using a REST API
+    //ADD ERRORHANDLING
+
     GraphService GService = new GraphService();
     this.nodeId = IOobject.getId();
     // For now assumed only happy path. If something goes wrong rollback in
     // ballenbak and complete transacton`
     String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
         + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
+        
+      GService.uploadAlfrescoNodeToSP(IOobject);
     IOLog.log(
         IOobject.getUuid(),
         "",
@@ -982,9 +986,9 @@ public class AlfrescoNodeController {
         eActionPerformed.IOCOPIED,
         "System",
         IOobject.marking,
-        IOobject.label,
+        IOobject.classification,
         IOobject.version);
-    GService.uploadAlfrescoNodeToSP(IOobject);
+    
     DeleteAlfrescoNode();
   }
 

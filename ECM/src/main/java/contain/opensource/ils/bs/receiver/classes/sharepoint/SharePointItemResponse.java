@@ -123,7 +123,7 @@ public class SharePointItemResponse extends IOObjectProperies {
                 createdAtInstant,
                 null, // to be iplemented modifiedAtInstant
                 this.marking,
-                this.label,
+                this.classification,
                 this.version);
         return secdoc;
     }

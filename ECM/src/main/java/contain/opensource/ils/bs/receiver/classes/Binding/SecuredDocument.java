@@ -30,7 +30,7 @@ public final class SecuredDocument extends IOObjectProperies {
             Instant created,
             Instant lastModified,
             String marking,
-            String label,
+            String classification,
             String version
     ) {
         this.content = content;
@@ -44,7 +44,7 @@ public final class SecuredDocument extends IOObjectProperies {
         this.created = created;
         this.lastModified = lastModified;
         this.marking = marking;
-        this.label = label;
+        this.classification = classification;
         this.version = version;
     }
 

@@ -36,8 +36,8 @@ public abstract class IOObjectProperies {
     @JsonProperty("marking")
     public String marking;
 
-    @JsonProperty("label")
-    public String label;
+    @JsonProperty("classification")
+    public String classification;
 
     @JsonProperty("mimeType")
     public String mimeType;
@@ -124,12 +124,12 @@ public abstract class IOObjectProperies {
         this.marking = marking;
     }
 
-    public String getLabel() {
-        return this.label;
+    public String getclassification() {
+        return this.classification;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setclassification(String classification) {
+        this.classification = classification;
     }
 
     public String getVersion() {

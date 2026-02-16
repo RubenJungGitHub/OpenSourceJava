@@ -39,7 +39,7 @@ public class IOLogBallenbakService {
     @Transactional
     public void log(String containIOUUID, String PlatformID, String IOpath, String action, String source,
             String destination,
-            String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Label,String version) {
+            String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Classification,String version) {
         IOLogBallenbak log = new IOLogBallenbak(
                 UUIDUtil.getUUIDOverHTTP(Optional.empty()),
                 containIOUUID,
@@ -54,7 +54,7 @@ public class IOLogBallenbakService {
                 actionPerformed,
                 ActionPerformedBy,
                 Marking,
-                Label,
+                Classification,
                 version);
         // Update Redis
         if (actionPerformed != eActionPerformed.IODELETED) {

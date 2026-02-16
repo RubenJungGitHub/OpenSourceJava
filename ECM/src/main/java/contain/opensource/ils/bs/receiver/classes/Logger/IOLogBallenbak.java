@@ -28,8 +28,8 @@ public class IOLogBallenbak {
     @Column(name = "marking", nullable = true)
     private String marking;
         
-    @Column(name = "label", nullable = true)
-    private String label;
+    @Column(name = "Classification", nullable = true)
+    private String Classification;
 
     @Column(name = "version", nullable = true)
     private String version;
@@ -71,7 +71,7 @@ public class IOLogBallenbak {
     // Optional convenience constructor
     public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction, String ioSource,
                  String ioDestination, String pkiHash, String ioReference,
-                 String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Label,String version) {
+                 String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Classification,String version) {
         this.uuid = uuid != null ? uuid : UUIDUtil.getUUIDOverHTTP(Optional.empty()); // use passed uuid if not null
         this.containIoUuid = containIOUUID;
         this.platformId = PlatformID;
@@ -85,7 +85,7 @@ public class IOLogBallenbak {
         this.actionPerformed = actionPerformed;
         this.actionPerformedBy = ActionPerformedBy;
         this.marking = Marking;
-        this.label = Label;
+        this.Classification = Classification;
         this.version = version;
         this.logDateTime = LocalDateTime.now();
     }
@@ -103,8 +103,8 @@ public class IOLogBallenbak {
     public String getIoSource() { return ioSource; }
     public void setIoSource(String ioSource) { this.ioSource = ioSource; }
 
-    public String getlabel() { return label; }
-    public void setlabel(String label) { this.label = label; }
+    public String getlabel() { return Classification; }
+    public void setlabel(String Classification) { this.Classification = Classification; }
 
     public String getmarking() { return marking; }
     public void setmarking(String marking) { this.marking = marking; }
