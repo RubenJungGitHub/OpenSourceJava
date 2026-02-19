@@ -21,7 +21,7 @@ public class StartupRunner implements CommandLineRunner {
         System.out.println("StartupRunner: launching message polling...");
 
         // Run polling in a background thread to avoid blocking Spring
-       //new Thread(() -> AlfrescoPoll.ReadMessages(args)).start();
+       new Thread(() -> AlfrescoPoll.ReadMessages(args)).start();
        new Thread(() -> SPPoll.ReadMessages(args)).start();
     }
 }
