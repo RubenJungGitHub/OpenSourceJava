@@ -275,8 +275,8 @@ public class MessageBrowserPollSP {
                                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                                             "DeletedFromPlatform",
+                                            "DeletedFromPlatform",
                                             deltaLink,
-                                            "",
                                             AlfrescoConstants.eActionPerformed.IODELETED,
                                             "<Unknown>",
                                             "DeletedFromPlatform",
@@ -288,8 +288,8 @@ public class MessageBrowserPollSP {
 
                             }
 
-                            //session.commit();
-                             session.rollback();
+                            session.commit();
+                            //session.rollback();
                             System.out.println("Message acknowledged (removed from queue).");
 
                         } catch (JMSException processingError) {

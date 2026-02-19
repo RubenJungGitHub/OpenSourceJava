@@ -1,6 +1,5 @@
 package contain.opensource.ils.bs.receiver.services;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -74,7 +73,6 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemRespo
 import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
 
-
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
 // Implement helper classes etc.
@@ -87,23 +85,24 @@ public class GraphService {
     ObjectMapper mapper = new ObjectMapper();
 
     private String tenantDomain = "lls6.Sharepoint.com";
-    //private String siteGUID = "d155b09d-c4de-4d04-8b37-198f35e78232";
-    //private String siteGUID = "";
-    //private String SiteName = "SP-EventReceivers-Test";
-    //private String SiteName = "";
-    //private String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
-    //private String ListId ="";
-    //private String ListName = "Shared Documents";
-    //private String ListName = "";
+    // private String siteGUID = "d155b09d-c4de-4d04-8b37-198f35e78232";
+    // private String siteGUID = "";
+    // private String SiteName = "SP-EventReceivers-Test";
+    // private String SiteName = "";
+    // private String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
+    // private String ListId ="";
+    // private String ListName = "Shared Documents";
+    // private String ListName = "";
 
-    private  String SiteID = "d155b09d-c4de-4d04-8b37-198f35e78232";
-    private  String SiteName = "SP-EventReceivers-Test";
-    private  String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
-    private  String ListName = "Shared Documents";
+    private String SiteID = "d155b09d-c4de-4d04-8b37-198f35e78232";
+    private String SiteName = "SP-EventReceivers-Test";
+    private String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
+    private String ListName = "Shared Documents";
 
     private String newDeltaLink = "";
     private String DeltaLinkFile = null;
-    private final ClientCredentialParameters parameters = ClientCredentialParameters.builder(AlfrescoConstants.GraphScopes).build();
+    private final ClientCredentialParameters parameters = ClientCredentialParameters
+            .builder(AlfrescoConstants.GraphScopes).build();
     private String accessToken;
     private GraphServiceClient<?> graphClient;
     private AlfrescoConstants.eItemtype itemtype;
@@ -572,14 +571,15 @@ public class GraphService {
         }
     }
 
-    //public SharePointItemResponse getListItemsById(String listId, String listItemId,GraphServiceClient<?> graphClient)
+    // public SharePointItemResponse getListItemsById(String listId, String
+    // listItemId,GraphServiceClient<?> graphClient)
     public SharePointItemResponse getListItemsById(String listId, String listItemId)
             throws Exception {
         try {
             boolean hasUUID = false;
             boolean mustMove = false;
             GraphServiceClient<?> graphClient = getGraphClient(AlfrescoConstants.tenantId);
-            String SiteId =getSitecollectionID();
+            String SiteId = getSitecollectionID();
             ListItem li = graphClient.sites(SiteId)
                     .lists(listId)
                     .items(listItemId)
@@ -677,6 +677,15 @@ public class GraphService {
                 return SPItem;
             }
             return null;
+        } catch (GraphServiceException ex) {
+            // Catch Graph-specific errors
+            if ("itemNotFound".equals(ex.getServiceError().code)) {
+                System.out.println("The item was not found (itemNotFound). Ignoring...");
+                return null;
+            } else {
+                // rethrow other GraphServiceExceptions
+                throw ex;
+            }
         } catch (Exception ex) {
             System.out.println("Failed to get list items by id: " + ex.getMessage());
             ex.printStackTrace();
@@ -731,7 +740,7 @@ public class GraphService {
         }
     }
 
-  private String getSitecollectionID() throws IOException, InterruptedException {
+    private String getSitecollectionID() throws IOException, InterruptedException {
         String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s:/sites/%s",
                 this.tenantDomain.toLowerCase(), this.SiteName);
 
@@ -790,12 +799,12 @@ public class GraphService {
             throws MalformedURLException, Exception {
         String siteId = null;
         String driveId = null;
-        //String siteGUID = null;
-        //String listId = null;
+        // String siteGUID = null;
+        // String listId = null;
         String action = "";
         try {
             String accesstoken = getGraphToken();
-            String [] parts = ItemWebUrl.split("/");
+            String[] parts = ItemWebUrl.split("/");
             this.tenantDomain = parts[2];
             this.SiteName = parts[4];
             this.ListName = parts[5];
@@ -805,188 +814,23 @@ public class GraphService {
             siteId = parts[5];
             String[] siteParts = siteId.split(",");
             this.SiteID = siteParts[1];
-            //Single tennant for now
+            // Single tennant for now
             GraphServiceClient<?> graphClient = getGraphClient(this.tenantDomain);
-            //SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID, graphClient );
+            // SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID,
+            // graphClient );
             SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID);
-            if (!SPItem.MustMove && SPItem.HasUUID) {
-                System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
-            }
-            if (!SPItem.HasUUID) {
-                SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, this.ListId);
-                action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
-
-                IOLog.log(
-                        SPItem.UUID,
-                        SPItem.id,
-                        SPItem.Path,
-                        action,
-                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                        "NewOnPlatform",
-                        SPItem.filename,
-                        "",
-                        AlfrescoConstants.eActionPerformed.ASSIGNUUID,
-                        "System",
-                        SPItem.marking,
-                        SPItem.classification,
-                        SPItem.version);
-                return;
-            }
-
-            // Redis is redundant. To memcollection? Obsolete?
-            // Check double binding -> To become seperate function for all ecm environments
-
-            String redisLogId = SPItem.getUuid();
-            ;
-            // Add to Redis cache to avoid double binding.
-           // for (ContainPlatforms platform : ContainPlatforms.values()) {
-          //      redisLogId = redisLogId.replace(platform.toString(), "");
-           // }
-            String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
-            String redisentryUUIDAssigned = "IOinUUIDAssigned" + SPItem.getUuid();
-            if (RedisManager.getHashField(redisentryInRelocation) != null) {
-                RedisManager.deleteEntry(redisentryInRelocation);
-                return;
-            }
-            if (RedisManager.getHashField(redisentryUUIDAssigned) != null && SPItem.HasUUID) {
-                RedisManager.deleteEntry(redisentryUUIDAssigned);
-                return;
-            }
-
-            if (SPItem.MustMove) {
-                // Relocate item
-                try {
-                    System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.GREEN
-                            + "SPItem mustmove?" + SPItem.MustMove
-                            + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
-                    // Add to relocation cache
-                    RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess", 240);
-                    RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-                    // ROobject.setHash(bindresponse.getBody());
-                    String endpoint = String.format(
-                            "%s/RelocateIO",
-                            this.ILSProperties.getBaseUrl());
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    headers.setBasicAuth(
-                            AlfrescoConstants.username,
-                            AlfrescoConstants.password,
-                            StandardCharsets.UTF_8);
-                    RestTemplate restTemplate = new RestTemplate();
-                    HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
-                            headers);
-
-                    ResponseEntity<String> response = restTemplate.postForEntity(endpoint, entitymove,
-                            String.class);
-
-                    System.out.println("Status: " + response.getStatusCodeValue());
-                    System.out.println("Body: " + response.getBody());
-
-                    int status = response.getStatusCode().value();
-                    if (status != 200) {
-                        throw new IOException("HTTP error " + status);
-                    }
-
-                } catch (Exception e) {
-                    System.out.println("Failed to delete SP item after move: " + e.getMessage());
-                }
-            } else {
-                // Bind
-                BindObject(SPItem);
-            }
-        } catch (Exception ex) {
-            System.err.println("Failed to process changed SP item: " + ex);
-            ex.printStackTrace();
-            throw ex;
-        }
-    }
-
-    
-    
-//************************************************************************************ */
-//VOID BELOW HERE
-//************************************************************************************ */
-/*
-
-    public void ProcessChangedSharepointItems(Notification notification) {
-        String lastDeltaLink = null;
-        String driveId = null;
-        String siteId = null;
-        String siteGUID = null;
-        String domain = null;
-        String listId = null;
-        try {
-
-            // OLD first ensure file exists
-            ensureDeltaLinkFileExists();
-            String resourceValue = notification.getResource();
-
-            // NEW Read from datastore
-            Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(resourceValue);
-            if (existingLog.isPresent()) {
-                // Get latest token v
-                IOLogDeltaLink log = existingLog.get();
-                lastDeltaLink = log.getLastDeltaLink();
-            }
-            // Assume value is your Notification object
-
-            // Get Graph token (assuming graphService has a synchronous method or you wrap
-            // it in CompletableFuture)
-            // String accessToken = getGraphToken();
-            String accessToken = getGraphToken();
-            // Extract siteId and listId from resource URL
-            String[] parts = resourceValue.split("/");
-
-            if (resourceValue.contains("drives")) {
-                driveId = parts[2];
-
-                // Get drive info (synchronously for now)
-                SharePointDriveInfo driveInfo = getListInfoFromDriveID(driveId, AlfrescoConstants.tenantId);
-                // value.getTenantId());
-
-                siteGUID = driveInfo.getSiteId();
-                domain = driveInfo.getSiteUrl().split("/")[2];
-                listId = driveInfo.getListId();
-
-                // siteId = domain + "," + siteGUID + "," + driveInfo.getWebId();
-
-            } else {
-                if (parts.length >= 4) {
-                    siteId = parts[2];
-                    String[] siteParts = siteId.split(",");
-                    domain = siteParts[0];
-                    siteGUID = siteParts[1];
-                    listId = parts[4];
-                }
-            }
-            ChangedItemsResult changedItems = getChangedItems(AlfrescoConstants.tenantId, siteId, listId, driveId,
-                    lastDeltaLink);
-            if (changedItems.changedItems == null || changedItems.changedItems.isEmpty()) {
-                System.out.println("No changed items detected.");
-                // LogNewDeltaLinkToFile();
-                return;
-            }
-            // Now get the SP items
-            List<SharePointItemResponse> items = getListItemsByIds(siteId, listId, changedItems.changedItems);
-            String action = "";
-            for (SharePointItemResponse SPItem : items) {
-                // One always needs to get content for binding
-
-                SPItem.filecontent = getSPItemContentById(SPItem.id, listId);
+            if (SPItem != null) {
                 if (!SPItem.MustMove && SPItem.HasUUID) {
-                    System.out.println("Changes detected on item : " + SPItem.id + " but no action required.");
+                    System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
                 if (!SPItem.HasUUID) {
-                    // AssignUUID
-                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, listId);
-                    // Test ballenbak
+                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, this.ListId);
                     action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
 
                     IOLog.log(
                             SPItem.UUID,
                             SPItem.id,
-                            "",
+                            SPItem.Path,
                             action,
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
@@ -996,92 +840,51 @@ public class GraphService {
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
                             "System",
                             SPItem.marking,
-                            "",
+                            SPItem.classification,
                             SPItem.version);
+                    return;
                 }
 
-                // First sign and log
-                // Only for ballenbak
-                // ==========================================================================================
-                // ALL FUNCTIONS SHOULD BE SEPARATED
-                // ==========================================================================================
+                // Redis is redundant. To memcollection? Obsolete?
+                // Check double binding -> To become seperate function for all ecm environments
 
+                String redisLogId = SPItem.getUuid();
+                ;
                 // Add to Redis cache to avoid double binding.
-                String redisentry = "IOinProcess-" + SPItem.UUID.replaceAll("^\"|\"$", "");
-
-                if (RedisManager.getHashField(redisentry) == null) {
-                    RedisManager.putHash("IOinProcess", redisentry, "InProcess", 240);
-                } else {
-                    RedisManager.deleteEntry(redisentry);
-                    break;
+                // for (ContainPlatforms platform : ContainPlatforms.values()) {
+                // redisLogId = redisLogId.replace(platform.toString(), "");
+                // }
+                String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
+                String redisentryUUIDAssigned = "IOinUUIDAssigned" + SPItem.getUuid();
+                if (RedisManager.getHashField(redisentryInRelocation) != null) {
+                    RedisManager.deleteEntry(redisentryInRelocation);
+                    return;
+                }
+                if (RedisManager.getHashField(redisentryUUIDAssigned) != null && SPItem.HasUUID) {
+                    RedisManager.deleteEntry(redisentryUUIDAssigned);
+                    return;
                 }
 
-                // Hash IO (Separate?)
-                PrivateKey key = PKCS12KeyLoader.PK;
-                String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
-
-                BindRequest request = new BindRequest(SPItem.ToSecuredDocument(),
-                        privateKeyBase64);
-                String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
-                System.out
-                        .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
-                                + "Binding endpoint  : "
-                                + endPoint
-                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
-
-                URL url = new URL(endPoint);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-
-                int status = conn.getResponseCode();
-                System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
-
-                RestTemplate restTemplate = new RestTemplate();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-
-                HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
-                ResponseEntity<String> bindresponse = restTemplate.postForEntity(endPoint, entity,
-                        String.class);
-
-                // Move log to binding function
-                action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
-                if (bindresponse.getStatusCode().value() == 200) {
-                    IOLog.log(
-                            SPItem.UUID,
-                            SPItem.id,
-                            "",
-                            action,
-                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                            bindresponse.getBody(),
-                            SPItem.filename,
-                            "",
-                            AlfrescoConstants.eActionPerformed.IOBOUND,
-                            "System",
-                            SPItem.marking,
-                            "",
-                            SPItem.version);
-                    // ==========================================================================================
-                }
-                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.CYAN
-                        + "SPItem mustmove?" + SPItem.MustMove
-                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
+                        System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.GREEN
+                                + "SPItem mustmove?" + SPItem.MustMove
+                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                        // Add to relocation cache
+                        RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess", 240);
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-                        ROobject.setHash(bindresponse.getBody());
+                        // ROobject.setHash(bindresponse.getBody());
                         String endpoint = String.format(
                                 "%s/RelocateIO",
                                 this.ILSProperties.getBaseUrl());
-                        headers = new HttpHeaders();
+                        HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         headers.setBasicAuth(
                                 AlfrescoConstants.username,
                                 AlfrescoConstants.password,
                                 StandardCharsets.UTF_8);
-
+                        RestTemplate restTemplate = new RestTemplate();
                         HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
                                 headers);
 
@@ -1091,7 +894,7 @@ public class GraphService {
                         System.out.println("Status: " + response.getStatusCodeValue());
                         System.out.println("Body: " + response.getBody());
 
-                        status = response.getStatusCode().value();
+                        int status = response.getStatusCode().value();
                         if (status != 200) {
                             throw new IOException("HTTP error " + status);
                         }
@@ -1099,273 +902,526 @@ public class GraphService {
                     } catch (Exception e) {
                         System.out.println("Failed to delete SP item after move: " + e.getMessage());
                     }
+                } else {
+                    // Bind
+                    BindObject(SPItem);
                 }
             }
-           LogNewDeltaLinkToFile(); // to do only if success
         } catch (Exception ex) {
-            System.out.println("Error reading file or delta link not yet registered: " + ex.getMessage());
-            lastDeltaLink = null; // treat as first run
-        }
-    }
-
-
-    
-    public List<SharePointItemResponse> getListItemsByIds(String siteId, String listId, List<String> changedItemsIds) {
-        List<ListItem> items = new ArrayList<>();
-        List<SharePointItemResponse> SPResponseItems = new ArrayList<>();
-        boolean hasUUID = false;
-        boolean mustMove = false;
-        GraphServiceClient<?> graphClient = getGraphClient(AlfrescoConstants.tenantId);
-        for (String itemId : changedItemsIds) {
-            try {
-                ListItem item = graphClient.sites(siteId)
-                        .lists(listId)
-                        .items(itemId)
-                        .buildRequest()
-                        .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                        .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,Move, OData__UIVersionString, Marking, Label),driveItem")
-                        .get();
-                items.add(item);
-            } catch (GraphServiceException gse) {
-                if (gse.getResponseCode() == 404) {
-                    // ✅ Item not found – handle separately
-                    System.err.println("Item NOT FOUND: " + itemId);
-                    // e.g. mark for deletion, skip, log, etc.
-                    // continue;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to fetch item ID: " + itemId + " -> " + e.getMessage());
-            }
-        }
-        if (!items.isEmpty()) {
-            try {
-                for (ListItem li : items) {
-                    FieldValueSet fields = li.fields;
-                    AlfrescoConstants.ContainPlatforms moveTo = null;
-                    SharePointItemResponse SPItem = null;
-                    if (fields != null) {
-                        AdditionalDataManager adm = fields.additionalDataManager();
-                        for (Map.Entry<String, JsonElement> entry : adm.entrySet()) {
-                            String key = entry.getKey();
-                            JsonElement value = entry.getValue();
-
-                            // Example: convert to String
-                            if (value != null && !value.isJsonNull()) {
-                                try {
-                                    String valueStr = value.getAsString();
-                                    System.out.println(key + " = " + valueStr);
-                                } catch (Exception e) {
-                                    System.err.println("Failed to fetch SP field value" + e.getMessage());
-                                }
-                            }
-                        }
-                        Object moveValue = adm.get("Move");
-                        String moveStr = moveValue != null ? moveValue.toString().replace("\"", "") : "";
-                        String uuidValue = adm.get("ContAInUUID") != null ? adm.get("ContAInUUID").toString() : "";
-                        DriveItem driveItem = li.driveItem;
-                        String mimeType = (driveItem != null && driveItem.file != null) ? driveItem.file.mimeType
-                                : null;
-
-                        hasUUID = uuidValue != null && !uuidValue.isEmpty();
-                        mustMove = false;
-                        for (AlfrescoConstants.ContainPlatforms type : AlfrescoConstants.ContainPlatforms.values()) {
-                            // System.out.println("Check if " + type + " matches" + moveStr + " for itemid
-                            // "+ li.id);
-                            if (type.name().equalsIgnoreCase(moveStr)) {
-                                System.out.println("Found matching platform: " + type + " for itemid " + li.id);
-                                moveTo = type;
-                                mustMove = true;
-                            }
-                        }
-
-                        if (mustMove) {
-                            System.out.println("Item " + li.id + " marked for move to " + moveTo);
-                        }
-
-                        // Get latest version
-                        DriveItemVersion latestVersion = graphClient.sites(siteId)
-                                .lists(listId)
-                                .items(li.id)
-                                .driveItem()
-                                .versions()
-                                .buildRequest()
-                                .top(1) // newest version first
-                                .get()
-                                .getCurrentPage()
-                                .get(0);
-
-                        // Now create only the objects that require actions. reove because for binding
-                        // they always should be added
-                        // if (!hasUUID || mustMove) {
-                        // Convert SDK object to JSON string
-                        try {
-                            String json = mapper.writeValueAsString(li);
-                            SPItem = mapper.readValue(json, SharePointItemResponse.class);
-                            Object title = adm.get("Title");
-                            Object filename = adm.get("LinkFilename");
-                            Object description = adm.get("containIODescription");
-                            String label = adm.get("Label").toString();
-                            String marking = adm.get("Marking").toString();
-                            String titleStr = title != null ? title.toString().replace("\"", "") : "";
-                            String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
-                            String descriptionStr = description != null ? description.toString().replace("\"", "") : "";
-                            SPItem.title = titleStr;
-                            SPItem.filename = filenameStr;
-                            SPItem.description = descriptionStr;
-                            SPItem.mimetype = mimeType;
-                            SPItem.UUID = uuidValue;
-                            // String description = (String) fields.get("Description");
-                            // To do get file content
-                            SPItem.HasUUID = hasUUID;
-                            SPItem.version = latestVersion.id;
-                            SPItem.marking = marking;
-                            SPItem.classification = "";
-                            SPItem.MustMove = mustMove;
-                            SPItem.MoveTo = moveTo;
-                            SPResponseItems.add(SPItem);
-                        } catch (Exception e) {
-                            System.err.println("Failed to fetch item ID: " + li + " -> " + e.getMessage());
-                        }
-                        // }
-                    }
-                }
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-            }
-        }
-        return SPResponseItems;
-    }
-    
-    public ChangedItemsResult getChangedItems(String tenantId, String siteId, String listId, String driveId,
-            String deltaLink) throws Exception {
-        List<String> changedItems = new ArrayList<>();
-        String newDeltaLink = null;
-        // Determine delta URL
-        String deltaUrl;
-        if (deltaLink != null && !deltaLink.isEmpty()) {
-            deltaUrl = deltaLink;
-        } else if (driveId != null && !driveId.isEmpty()) {
-            deltaUrl = "https://graph.microsoft.com/v1.0/drives/" + driveId + "/root/delta";
-            this.itemtype = AlfrescoConstants.eItemtype.Graph;
-        } else if (listId != null && !listId.isEmpty()) {
-            deltaUrl = "https://graph.microsoft.com/v1.0/sites/" + siteId + "/lists/" + listId + "/items/delta";
-            this.itemtype = AlfrescoConstants.eItemtype.SharePoint;
-        } else {
-            throw new IllegalArgumentException("Either listId or driveId must be provided.");
-        }
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(deltaUrl))
-                .header("Authorization", "Bearer " + accessToken)
-                .header("Accept", "application/json")
-                .GET()
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        // Retry if deltaLink expired
-        if (response.statusCode() == 400) {
-            System.out.println("Delta link expired. Starting fresh.");
-            deltaUrl = "https://graph.microsoft.com/v1.0/sites/" + siteId + "/lists/" + listId + "/items/delta";
-            request = HttpRequest.newBuilder()
-                    .uri(URI.create(deltaUrl))
-                    .header("Authorization", "Bearer " + accessToken)
-                    .header("Accept", "application/json")
-                    .GET()
-                    .build();
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
-                throw new RuntimeException(
-                        "Graph delta call failed: " + response.statusCode() + " - " + response.body());
-            }
-        } else if (response.statusCode() != 200) {
-            throw new RuntimeException("Graph delta call failed: " + response.statusCode() + " - " + response.body());
-        }
-        // Parse JSON response
-        // ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(response.body());
-        if (root.has("value")) {
-            for (JsonNode item : root.get("value")) {
-                if (item.has("id")) {
-                    changedItems.add(item.get("id").asText());
-                }
-            }
-        }
-        if (root.has("@odata.deltaLink")) {
-            this.newDeltaLink = root.get("@odata.deltaLink").asText();
-        }
-        return new ChangedItemsResult(changedItems, newDeltaLink, this.itemtype);
-    }
-
-    
-    private void LogNewDeltaLinkToFile() {
-        try {
-
-            // Split delta link
-            String[] dlParts = newDeltaLink.split("\\?");
-            String SourceID = "/sites" + (dlParts[0].split("sites")[1]);
-            String TokenID = dlParts[1].replace("token=", "");
-            // Check if exists, if so overwrite, else add
-            Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(SourceID);
-
-            if (existingLog.isPresent()) {
-                // Overwrite token
-                IOLogDeltaLink log = existingLog.get();
-                log.setTokenId(TokenID);
-                log.setLastDeltaLink(newDeltaLink);
-                IODeltaLinkLog.log(SourceID, TokenID, newDeltaLink); // save updated record
-            } else {
-                // Add new record
-                IODeltaLinkLog.log(SourceID, TokenID, newDeltaLink); // save new record
-            }
-
-            Path path = Paths.get(this.DeltaLinkFile);
-
-            // Read all lines
-            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-
-            // Filter out lines containing the old delta link base
-            List<String> filteredLines = lines.stream()
-                    .filter(line -> !line.contains(dlParts[0]))
-                    .collect(Collectors.toList());
-
-            // Overwrite file with remaining lines
-            Files.write(
-                    path,
-                    filteredLines,
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING);
-
-            // Append corrected content
-            String correctedContent = dlParts[0] + "|" + newDeltaLink;
-            Files.write(
-                    path,
-                    Collections.singletonList(correctedContent),
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.APPEND);
-
-            // Console output with color (ANSI)
-            // System.out.println("\u001B[36mFile " + this.DeltaLinkFile + " updated with
-            // latest deltalink");
-            System.out.println("DB updated with latest deltalink");
-            System.out.println("______________________________________________________________________\u001B[0m");
-
-            // return ResponseEntity.ok().build(); // Spring
-            // return Response.ok().build(); // JAX-RS
-        } catch (IOException ex) {
+            System.err.println("Failed to process changed SP item: " + ex);
             ex.printStackTrace();
+            throw ex;
         }
     }
 
-        private void ensureDeltaLinkFileExists() throws IOException {
-        Path path = Paths.get(this.DeltaLinkFile);
-
-        // 1. Ensure parent directory exists (/app/data)
-        Files.createDirectories(path.getParent());
-
-        // 2. Create file if it does not exist
-        if (Files.notExists(path)) {
-            Files.createFile(path);
-        }
-    }
-        */
+    // ************************************************************************************
+    // */
+    // VOID BELOW HERE
+    // ************************************************************************************
+    // */
+    /*
+     * 
+     * public void ProcessChangedSharepointItems(Notification notification) {
+     * String lastDeltaLink = null;
+     * String driveId = null;
+     * String siteId = null;
+     * String siteGUID = null;
+     * String domain = null;
+     * String listId = null;
+     * try {
+     * 
+     * // OLD first ensure file exists
+     * ensureDeltaLinkFileExists();
+     * String resourceValue = notification.getResource();
+     * 
+     * // NEW Read from datastore
+     * Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(resourceValue);
+     * if (existingLog.isPresent()) {
+     * // Get latest token v
+     * IOLogDeltaLink log = existingLog.get();
+     * lastDeltaLink = log.getLastDeltaLink();
+     * }
+     * // Assume value is your Notification object
+     * 
+     * // Get Graph token (assuming graphService has a synchronous method or you
+     * wrap
+     * // it in CompletableFuture)
+     * // String accessToken = getGraphToken();
+     * String accessToken = getGraphToken();
+     * // Extract siteId and listId from resource URL
+     * String[] parts = resourceValue.split("/");
+     * 
+     * if (resourceValue.contains("drives")) {
+     * driveId = parts[2];
+     * 
+     * // Get drive info (synchronously for now)
+     * SharePointDriveInfo driveInfo = getListInfoFromDriveID(driveId,
+     * AlfrescoConstants.tenantId);
+     * // value.getTenantId());
+     * 
+     * siteGUID = driveInfo.getSiteId();
+     * domain = driveInfo.getSiteUrl().split("/")[2];
+     * listId = driveInfo.getListId();
+     * 
+     * // siteId = domain + "," + siteGUID + "," + driveInfo.getWebId();
+     * 
+     * } else {
+     * if (parts.length >= 4) {
+     * siteId = parts[2];
+     * String[] siteParts = siteId.split(",");
+     * domain = siteParts[0];
+     * siteGUID = siteParts[1];
+     * listId = parts[4];
+     * }
+     * }
+     * ChangedItemsResult changedItems = getChangedItems(AlfrescoConstants.tenantId,
+     * siteId, listId, driveId,
+     * lastDeltaLink);
+     * if (changedItems.changedItems == null || changedItems.changedItems.isEmpty())
+     * {
+     * System.out.println("No changed items detected.");
+     * // LogNewDeltaLinkToFile();
+     * return;
+     * }
+     * // Now get the SP items
+     * List<SharePointItemResponse> items = getListItemsByIds(siteId, listId,
+     * changedItems.changedItems);
+     * String action = "";
+     * for (SharePointItemResponse SPItem : items) {
+     * // One always needs to get content for binding
+     * 
+     * SPItem.filecontent = getSPItemContentById(SPItem.id, listId);
+     * if (!SPItem.MustMove && SPItem.HasUUID) {
+     * System.out.println("Changes detected on item : " + SPItem.id +
+     * " but no action required.");
+     * }
+     * if (!SPItem.HasUUID) {
+     * // AssignUUID
+     * SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, listId);
+     * // Test ballenbak
+     * action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " +
+     * SPItem.filename;
+     * 
+     * IOLog.log(
+     * SPItem.UUID,
+     * SPItem.id,
+     * "",
+     * action,
+     * AlfrescoConstants.ContainPlatforms.SPO.toString(),
+     * AlfrescoConstants.ContainPlatforms.SPO.toString(),
+     * "NewOnPlatform",
+     * SPItem.filename,
+     * "",
+     * AlfrescoConstants.eActionPerformed.ASSIGNUUID,
+     * "System",
+     * SPItem.marking,
+     * "",
+     * SPItem.version);
+     * }
+     * 
+     * // First sign and log
+     * // Only for ballenbak
+     * //
+     * =============================================================================
+     * =============
+     * // ALL FUNCTIONS SHOULD BE SEPARATED
+     * //
+     * =============================================================================
+     * =============
+     * 
+     * // Add to Redis cache to avoid double binding.
+     * String redisentry = "IOinProcess-" + SPItem.UUID.replaceAll("^\"|\"$", "");
+     * 
+     * if (RedisManager.getHashField(redisentry) == null) {
+     * RedisManager.putHash("IOinProcess", redisentry, "InProcess", 240);
+     * } else {
+     * RedisManager.deleteEntry(redisentry);
+     * break;
+     * }
+     * 
+     * // Hash IO (Separate?)
+     * PrivateKey key = PKCS12KeyLoader.PK;
+     * String privateKeyBase64 =
+     * Base64.getEncoder().encodeToString(key.getEncoded());
+     * 
+     * BindRequest request = new BindRequest(SPItem.ToSecuredDocument(),
+     * privateKeyBase64);
+     * String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
+     * System.out
+     * .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+     * + "Binding endpoint  : "
+     * + endPoint
+     * + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+     * 
+     * URL url = new URL(endPoint);
+     * HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+     * conn.setRequestMethod("POST");
+     * 
+     * int status = conn.getResponseCode();
+     * System.out.println("Accessing uuid rest url on " + endPoint +
+     * " return code -> " + status);
+     * 
+     * RestTemplate restTemplate = new RestTemplate();
+     * HttpHeaders headers = new HttpHeaders();
+     * headers.setContentType(MediaType.APPLICATION_JSON);
+     * 
+     * HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
+     * ResponseEntity<String> bindresponse = restTemplate.postForEntity(endPoint,
+     * entity,
+     * String.class);
+     * 
+     * // Move log to binding function
+     * action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " +
+     * SPItem.filename;
+     * if (bindresponse.getStatusCode().value() == 200) {
+     * IOLog.log(
+     * SPItem.UUID,
+     * SPItem.id,
+     * "",
+     * action,
+     * AlfrescoConstants.ContainPlatforms.SPO.toString(),
+     * AlfrescoConstants.ContainPlatforms.SPO.toString(),
+     * bindresponse.getBody(),
+     * SPItem.filename,
+     * "",
+     * AlfrescoConstants.eActionPerformed.IOBOUND,
+     * "System",
+     * SPItem.marking,
+     * "",
+     * SPItem.version);
+     * //
+     * =============================================================================
+     * =============
+     * }
+     * System.out.println(contain.opensource.ils.bs.receiver.constants.
+     * AlfrescoConstants.CYAN
+     * + "SPItem mustmove?" + SPItem.MustMove
+     * + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+     * if (SPItem.MustMove) {
+     * // Relocate item
+     * try {
+     * RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+     * ROobject.setHash(bindresponse.getBody());
+     * String endpoint = String.format(
+     * "%s/RelocateIO",
+     * this.ILSProperties.getBaseUrl());
+     * headers = new HttpHeaders();
+     * headers.setContentType(MediaType.APPLICATION_JSON);
+     * headers.setBasicAuth(
+     * AlfrescoConstants.username,
+     * AlfrescoConstants.password,
+     * StandardCharsets.UTF_8);
+     * 
+     * HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
+     * headers);
+     * 
+     * ResponseEntity<String> response = restTemplate.postForEntity(endpoint,
+     * entitymove,
+     * String.class);
+     * 
+     * System.out.println("Status: " + response.getStatusCodeValue());
+     * System.out.println("Body: " + response.getBody());
+     * 
+     * status = response.getStatusCode().value();
+     * if (status != 200) {
+     * throw new IOException("HTTP error " + status);
+     * }
+     * 
+     * } catch (Exception e) {
+     * System.out.println("Failed to delete SP item after move: " + e.getMessage());
+     * }
+     * }
+     * }
+     * LogNewDeltaLinkToFile(); // to do only if success
+     * } catch (Exception ex) {
+     * System.out.println("Error reading file or delta link not yet registered: " +
+     * ex.getMessage());
+     * lastDeltaLink = null; // treat as first run
+     * }
+     * }
+     * 
+     * 
+     * 
+     * public List<SharePointItemResponse> getListItemsByIds(String siteId, String
+     * listId, List<String> changedItemsIds) {
+     * List<ListItem> items = new ArrayList<>();
+     * List<SharePointItemResponse> SPResponseItems = new ArrayList<>();
+     * boolean hasUUID = false;
+     * boolean mustMove = false;
+     * GraphServiceClient<?> graphClient =
+     * getGraphClient(AlfrescoConstants.tenantId);
+     * for (String itemId : changedItemsIds) {
+     * try {
+     * ListItem item = graphClient.sites(siteId)
+     * .lists(listId)
+     * .items(itemId)
+     * .buildRequest()
+     * .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
+     * .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,Move, OData__UIVersionString, Marking, Label),driveItem"
+     * )
+     * .get();
+     * items.add(item);
+     * } catch (GraphServiceException gse) {
+     * if (gse.getResponseCode() == 404) {
+     * // ✅ Item not found – handle separately
+     * System.err.println("Item NOT FOUND: " + itemId);
+     * // e.g. mark for deletion, skip, log, etc.
+     * // continue;
+     * }
+     * } catch (Exception e) {
+     * System.err.println("Failed to fetch item ID: " + itemId + " -> " +
+     * e.getMessage());
+     * }
+     * }
+     * if (!items.isEmpty()) {
+     * try {
+     * for (ListItem li : items) {
+     * FieldValueSet fields = li.fields;
+     * AlfrescoConstants.ContainPlatforms moveTo = null;
+     * SharePointItemResponse SPItem = null;
+     * if (fields != null) {
+     * AdditionalDataManager adm = fields.additionalDataManager();
+     * for (Map.Entry<String, JsonElement> entry : adm.entrySet()) {
+     * String key = entry.getKey();
+     * JsonElement value = entry.getValue();
+     * 
+     * // Example: convert to String
+     * if (value != null && !value.isJsonNull()) {
+     * try {
+     * String valueStr = value.getAsString();
+     * System.out.println(key + " = " + valueStr);
+     * } catch (Exception e) {
+     * System.err.println("Failed to fetch SP field value" + e.getMessage());
+     * }
+     * }
+     * }
+     * Object moveValue = adm.get("Move");
+     * String moveStr = moveValue != null ? moveValue.toString().replace("\"", "") :
+     * "";
+     * String uuidValue = adm.get("ContAInUUID") != null ?
+     * adm.get("ContAInUUID").toString() : "";
+     * DriveItem driveItem = li.driveItem;
+     * String mimeType = (driveItem != null && driveItem.file != null) ?
+     * driveItem.file.mimeType
+     * : null;
+     * 
+     * hasUUID = uuidValue != null && !uuidValue.isEmpty();
+     * mustMove = false;
+     * for (AlfrescoConstants.ContainPlatforms type :
+     * AlfrescoConstants.ContainPlatforms.values()) {
+     * // System.out.println("Check if " + type + " matches" + moveStr + " for
+     * itemid
+     * // "+ li.id);
+     * if (type.name().equalsIgnoreCase(moveStr)) {
+     * System.out.println("Found matching platform: " + type + " for itemid " +
+     * li.id);
+     * moveTo = type;
+     * mustMove = true;
+     * }
+     * }
+     * 
+     * if (mustMove) {
+     * System.out.println("Item " + li.id + " marked for move to " + moveTo);
+     * }
+     * 
+     * // Get latest version
+     * DriveItemVersion latestVersion = graphClient.sites(siteId)
+     * .lists(listId)
+     * .items(li.id)
+     * .driveItem()
+     * .versions()
+     * .buildRequest()
+     * .top(1) // newest version first
+     * .get()
+     * .getCurrentPage()
+     * .get(0);
+     * 
+     * // Now create only the objects that require actions. reove because for
+     * binding
+     * // they always should be added
+     * // if (!hasUUID || mustMove) {
+     * // Convert SDK object to JSON string
+     * try {
+     * String json = mapper.writeValueAsString(li);
+     * SPItem = mapper.readValue(json, SharePointItemResponse.class);
+     * Object title = adm.get("Title");
+     * Object filename = adm.get("LinkFilename");
+     * Object description = adm.get("containIODescription");
+     * String label = adm.get("Label").toString();
+     * String marking = adm.get("Marking").toString();
+     * String titleStr = title != null ? title.toString().replace("\"", "") : "";
+     * String filenameStr = filename != null ? filename.toString().replace("\"", "")
+     * : "";
+     * String descriptionStr = description != null ?
+     * description.toString().replace("\"", "") : "";
+     * SPItem.title = titleStr;
+     * SPItem.filename = filenameStr;
+     * SPItem.description = descriptionStr;
+     * SPItem.mimetype = mimeType;
+     * SPItem.UUID = uuidValue;
+     * // String description = (String) fields.get("Description");
+     * // To do get file content
+     * SPItem.HasUUID = hasUUID;
+     * SPItem.version = latestVersion.id;
+     * SPItem.marking = marking;
+     * SPItem.classification = "";
+     * SPItem.MustMove = mustMove;
+     * SPItem.MoveTo = moveTo;
+     * SPResponseItems.add(SPItem);
+     * } catch (Exception e) {
+     * System.err.println("Failed to fetch item ID: " + li + " -> " +
+     * e.getMessage());
+     * }
+     * // }
+     * }
+     * }
+     * } catch (Exception e) {
+     * System.err.println(e.getMessage());
+     * }
+     * }
+     * return SPResponseItems;
+     * }
+     * 
+     * public ChangedItemsResult getChangedItems(String tenantId, String siteId,
+     * String listId, String driveId,
+     * String deltaLink) throws Exception {
+     * List<String> changedItems = new ArrayList<>();
+     * String newDeltaLink = null;
+     * // Determine delta URL
+     * String deltaUrl;
+     * if (deltaLink != null && !deltaLink.isEmpty()) {
+     * deltaUrl = deltaLink;
+     * } else if (driveId != null && !driveId.isEmpty()) {
+     * deltaUrl = "https://graph.microsoft.com/v1.0/drives/" + driveId +
+     * "/root/delta";
+     * this.itemtype = AlfrescoConstants.eItemtype.Graph;
+     * } else if (listId != null && !listId.isEmpty()) {
+     * deltaUrl = "https://graph.microsoft.com/v1.0/sites/" + siteId + "/lists/" +
+     * listId + "/items/delta";
+     * this.itemtype = AlfrescoConstants.eItemtype.SharePoint;
+     * } else {
+     * throw new
+     * IllegalArgumentException("Either listId or driveId must be provided.");
+     * }
+     * HttpClient client = HttpClient.newHttpClient();
+     * HttpRequest request = HttpRequest.newBuilder()
+     * .uri(URI.create(deltaUrl))
+     * .header("Authorization", "Bearer " + accessToken)
+     * .header("Accept", "application/json")
+     * .GET()
+     * .build();
+     * HttpResponse<String> response = client.send(request,
+     * HttpResponse.BodyHandlers.ofString());
+     * // Retry if deltaLink expired
+     * if (response.statusCode() == 400) {
+     * System.out.println("Delta link expired. Starting fresh.");
+     * deltaUrl = "https://graph.microsoft.com/v1.0/sites/" + siteId + "/lists/" +
+     * listId + "/items/delta";
+     * request = HttpRequest.newBuilder()
+     * .uri(URI.create(deltaUrl))
+     * .header("Authorization", "Bearer " + accessToken)
+     * .header("Accept", "application/json")
+     * .GET()
+     * .build();
+     * response = client.send(request, HttpResponse.BodyHandlers.ofString());
+     * if (response.statusCode() != 200) {
+     * throw new RuntimeException(
+     * "Graph delta call failed: " + response.statusCode() + " - " +
+     * response.body());
+     * }
+     * } else if (response.statusCode() != 200) {
+     * throw new RuntimeException("Graph delta call failed: " +
+     * response.statusCode() + " - " + response.body());
+     * }
+     * // Parse JSON response
+     * // ObjectMapper mapper = new ObjectMapper();
+     * JsonNode root = mapper.readTree(response.body());
+     * if (root.has("value")) {
+     * for (JsonNode item : root.get("value")) {
+     * if (item.has("id")) {
+     * changedItems.add(item.get("id").asText());
+     * }
+     * }
+     * }
+     * if (root.has("@odata.deltaLink")) {
+     * this.newDeltaLink = root.get("@odata.deltaLink").asText();
+     * }
+     * return new ChangedItemsResult(changedItems, newDeltaLink, this.itemtype);
+     * }
+     * 
+     * 
+     * private void LogNewDeltaLinkToFile() {
+     * try {
+     * 
+     * // Split delta link
+     * String[] dlParts = newDeltaLink.split("\\?");
+     * String SourceID = "/sites" + (dlParts[0].split("sites")[1]);
+     * String TokenID = dlParts[1].replace("token=", "");
+     * // Check if exists, if so overwrite, else add
+     * Optional<IOLogDeltaLink> existingLog = IODeltaLinkLog.GetLog(SourceID);
+     * 
+     * if (existingLog.isPresent()) {
+     * // Overwrite token
+     * IOLogDeltaLink log = existingLog.get();
+     * log.setTokenId(TokenID);
+     * log.setLastDeltaLink(newDeltaLink);
+     * IODeltaLinkLog.log(SourceID, TokenID, newDeltaLink); // save updated record
+     * } else {
+     * // Add new record
+     * IODeltaLinkLog.log(SourceID, TokenID, newDeltaLink); // save new record
+     * }
+     * 
+     * Path path = Paths.get(this.DeltaLinkFile);
+     * 
+     * // Read all lines
+     * List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+     * 
+     * // Filter out lines containing the old delta link base
+     * List<String> filteredLines = lines.stream()
+     * .filter(line -> !line.contains(dlParts[0]))
+     * .collect(Collectors.toList());
+     * 
+     * // Overwrite file with remaining lines
+     * Files.write(
+     * path,
+     * filteredLines,
+     * StandardCharsets.UTF_8,
+     * StandardOpenOption.CREATE,
+     * StandardOpenOption.TRUNCATE_EXISTING);
+     * 
+     * // Append corrected content
+     * String correctedContent = dlParts[0] + "|" + newDeltaLink;
+     * Files.write(
+     * path,
+     * Collections.singletonList(correctedContent),
+     * StandardCharsets.UTF_8,
+     * StandardOpenOption.APPEND);
+     * 
+     * // Console output with color (ANSI)
+     * // System.out.println("\u001B[36mFile " + this.DeltaLinkFile + " updated with
+     * // latest deltalink");
+     * System.out.println("DB updated with latest deltalink");
+     * System.out.println(
+     * "______________________________________________________________________\u001B[0m"
+     * );
+     * 
+     * // return ResponseEntity.ok().build(); // Spring
+     * // return Response.ok().build(); // JAX-RS
+     * } catch (IOException ex) {
+     * ex.printStackTrace();
+     * }
+     * }
+     * 
+     * private void ensureDeltaLinkFileExists() throws IOException {
+     * Path path = Paths.get(this.DeltaLinkFile);
+     * 
+     * // 1. Ensure parent directory exists (/app/data)
+     * Files.createDirectories(path.getParent());
+     * 
+     * // 2. Create file if it does not exist
+     * if (Files.notExists(path)) {
+     * Files.createFile(path);
+     * }
+     * }
+     */
 }
