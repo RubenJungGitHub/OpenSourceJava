@@ -616,7 +616,6 @@ public class AlfrescoNodeController {
         }
       }
     } catch (
-
     Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();

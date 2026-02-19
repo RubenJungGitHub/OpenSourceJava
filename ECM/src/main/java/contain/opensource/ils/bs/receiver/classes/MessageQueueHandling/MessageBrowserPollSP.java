@@ -283,13 +283,13 @@ public class MessageBrowserPollSP {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    this.graphService.ProcessChangedSharepointItem(item.getId(), deltaLink);
+                                    this.graphService.ProcessChangedSharepointItem(item.getWebUrl(), item.getId(), deltaLink);
                                 }
 
                             }
 
-                            session.commit();
-                            // session.rollback();
+                            //session.commit();
+                             session.rollback();
                             System.out.println("Message acknowledged (removed from queue).");
 
                         } catch (JMSException processingError) {
@@ -297,21 +297,18 @@ public class MessageBrowserPollSP {
                             System.err.println("Error while processing message, ROLLBACK.");
                             processingError.printStackTrace();
                         }
-                    } else {
-                        System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.WHITE
-                                + timestamp + " -> New SHAREPOINT poll loop Processing. Interval : " + PollInterval
-                                + " seconds"
-                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+
                     }
                 } catch (JMSException e) {
                     System.err.println("Error polling the queue:");
                     e.printStackTrace();
                 }
-                System.out.println("No remaining messages on queue");
+
             }
         } catch (Exception e) {
             System.err.println("Error in StartPoll:");
             e.printStackTrace();
         }
+        System.out.println("No remaining SHAREPOINT messages on queue");
     }
 }

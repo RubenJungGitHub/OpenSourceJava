@@ -542,6 +542,6 @@ public class MessageBrowserPollAlfresco {
             System.err.println("Error polling the queue:");
             e.printStackTrace();
         }
-        System.out.println("No remaining messages on queue");
+        System.out.println("No remaining ALFRESCO messages on queue");
     }
 }
