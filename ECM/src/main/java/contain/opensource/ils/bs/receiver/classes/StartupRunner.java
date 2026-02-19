@@ -2,15 +2,18 @@ package contain.opensource.ils.bs.receiver.classes;
 import  org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import contain.opensource.ils.bs.receiver.classes.MessageQueueHandling.MessageBrowserPoll;
+import contain.opensource.ils.bs.receiver.classes.MessageQueueHandling.MessageBrowserPollAlfresco;
+import contain.opensource.ils.bs.receiver.classes.MessageQueueHandling.MessageBrowserPollSP;
 
 @Component
 public class StartupRunner implements CommandLineRunner {
 
-    private final MessageBrowserPoll poll;
+    private final MessageBrowserPollAlfresco AlfrescoPoll;
+    private final MessageBrowserPollSP SPPoll;
 
-    public StartupRunner(MessageBrowserPoll poll) {
-        this.poll = poll;
+    public StartupRunner(MessageBrowserPollAlfresco AlfrescoPoll,MessageBrowserPollSP SPPoll) {
+        this.AlfrescoPoll = AlfrescoPoll;
+        this.SPPoll = SPPoll;
     }
 
     @Override
@@ -18,6 +21,7 @@ public class StartupRunner implements CommandLineRunner {
         System.out.println("StartupRunner: launching message polling...");
 
         // Run polling in a background thread to avoid blocking Spring
-       new Thread(() -> poll.ReadMessages(args)).start();
+       //new Thread(() -> AlfrescoPoll.ReadMessages(args)).start();
+       new Thread(() -> SPPoll.ReadMessages(args)).start();
     }
 }

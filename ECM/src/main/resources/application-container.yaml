@@ -13,7 +13,7 @@ spring:
  #   driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
  #------------PostGress datasource -------------
-    url: jdbc:postgresql://postgres:5432/contAInBallenbak
+    url: jdbc:postgresql://postgres-db:5432/contAInBallenbak
     username: contain
     password: contain
     driver-class-name: org.postgresql.Driver
@@ -35,6 +35,8 @@ activemq:
   brokerUrl: tcp://host.docker.internal:61616
   user: admin
   password: admin
+  sharepoint-queue: sharepoint.delta.queue
+  alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
 
 # ==========================
 # Logging

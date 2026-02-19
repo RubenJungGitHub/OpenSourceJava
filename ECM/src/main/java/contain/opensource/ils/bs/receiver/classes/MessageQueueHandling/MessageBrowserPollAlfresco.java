@@ -115,7 +115,7 @@ import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
  *            Since: [Version or Date]
  */
 @Component
-public class MessageBrowserPoll {
+public class MessageBrowserPollAlfresco {
 
     @Value("${activemq.brokerUrl}")
     private String brokerUrl;
@@ -138,7 +138,7 @@ public class MessageBrowserPoll {
     private AlfrescoNodeController aController;
 
     @Autowired
-    public MessageBrowserPoll(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
+    public MessageBrowserPollAlfresco(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsProperties) {
         this.activeMQProps = activeMQProps;
         this.alfrescoProps = alfrescoProps;
@@ -183,7 +183,7 @@ public class MessageBrowserPoll {
 
             // session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             // The queue you want to inspect
-            Queue queue = session.createQueue("Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes");
+            Queue queue = session.createQueue(activeMQProps.getAlfrescoQueue());
 
             // Trial
             // Queue queue = session.createQueue("acs-repo-transform-request");
@@ -192,8 +192,8 @@ public class MessageBrowserPoll {
             MessageConsumer consumer = session.createConsumer(queue);
 
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleAtFixedRate(() -> {
-                System.out.println("Polling messages...");
+            executor.scheduleWithFixedDelay(() -> {
+                System.out.println("Polling ALFRESCO messages...");
 
                 StartPoll(consumer, session);
             }, 0, PollInterval, TimeUnit.SECONDS);
@@ -316,11 +316,11 @@ public class MessageBrowserPoll {
     public void StartPoll(MessageConsumer consumer, Session session) {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.YELLOW
-                    + timestamp + " -> New poll loop Processing. Interval : " + PollInterval + " seconds"
+            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW
+                    + timestamp + " -> New ALFRESCO poll loop Processing. Interval : " + PollInterval + " seconds"
                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
             Message msg;
-            while ((msg = consumer.receiveNoWait()) != null) {
+            while ((msg = consumer.receive(1000)) != null) {
                 try {
                     String json = "";
                     if (msg instanceof TextMessage) {

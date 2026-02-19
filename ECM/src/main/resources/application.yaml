@@ -60,6 +60,8 @@ activemq:
   brokerUrl: tcp://localhost:61616
   user: admin
   password: admin
+  sharepoint-queue: sharepoint.delta.queue
+  alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
 
 # ==========================
 # Logging
@@ -79,6 +81,8 @@ alfresco:
   username: admin
   password: admin
   baseUrl: http://localhost:8080
+
+
 
 ils:
   #username: admin

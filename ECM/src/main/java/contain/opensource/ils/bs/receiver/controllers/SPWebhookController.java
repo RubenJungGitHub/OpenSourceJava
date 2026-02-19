@@ -30,7 +30,7 @@ public class SPWebhookController {
         this.graphService = graphService;
     }
 
-    @PostMapping(value = "/WebHookListener", consumes = {
+    @PostMapping(value = "/WebHookListenerREDUNDANT", consumes = {
             MediaType.APPLICATION_JSON_VALUE,
             MediaType.TEXT_PLAIN_VALUE,
             "application/*+json"
