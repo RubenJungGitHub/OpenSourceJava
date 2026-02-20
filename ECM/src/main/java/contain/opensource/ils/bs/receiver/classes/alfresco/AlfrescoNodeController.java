@@ -406,7 +406,7 @@ public class AlfrescoNodeController {
    * param IOobject the {@link RelocateInformationObject} containing the metadata
    * to update
    */
-  public void updateMetaData(String nodeId, RelocateInformationObject IOobject) {
+  public void updateMetaData(String nodeId, RelocateInformationObject IOobject)  throws Exception{
     try {
       // ===========================================================================================
       // Now it is working in separate methid but in my perception it should be
@@ -532,7 +532,7 @@ public class AlfrescoNodeController {
    * @return An empty string if the upload is successful; otherwise, returns
    *         "Failed".
    */
-  public String uploadSPItemToAlfresco(RelocateInformationObject IOobject) {
+  public String uploadSPItemToAlfresco(RelocateInformationObject IOobject) throws Exception{
     try {
       // First get SiteNode
       try (CloseableHttpClient client = HttpClients.createDefault()) {
@@ -619,8 +619,8 @@ public class AlfrescoNodeController {
     Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();
+      throw e;
     }
-    return "Failed";
   }
 
   /**

@@ -413,7 +413,7 @@ public class GraphService {
                     ROobject.marking,
                     ROobject.classification,
                     ROobject.version);
-            // Delete from SP
+            // Delete from SP (If no exception. This is to be implemented for persistance and transactions)
             deleteSPItemById(ROobject.getId());
 
             // Log
