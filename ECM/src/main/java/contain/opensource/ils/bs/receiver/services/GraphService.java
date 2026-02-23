@@ -854,16 +854,16 @@ public class GraphService {
                 // for (ContainPlatforms platform : ContainPlatforms.values()) {
                 // redisLogId = redisLogId.replace(platform.toString(), "");
                 // }
-                String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
-                String redisentryUUIDAssigned = "IOinUUIDAssigned" + SPItem.getUuid();
-                if (RedisManager.getHashField(redisentryInRelocation) != null) {
-                    RedisManager.deleteEntry(redisentryInRelocation);
-                    return;
-                }
-                if (RedisManager.getHashField(redisentryUUIDAssigned) != null && SPItem.HasUUID) {
-                    RedisManager.deleteEntry(redisentryUUIDAssigned);
-                    return;
-                }
+             //   String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
+             //   String redisentryUUIDAssigned = "IOinUUIDAssigned" + SPItem.getUuid();
+              //  if (RedisManager.getHashField(redisentryInRelocation) != null) {
+              //      RedisManager.deleteEntry(redisentryInRelocation);
+              //      return;
+              //  }
+              //  if (RedisManager.getHashField(redisentryUUIDAssigned) != null && SPItem.HasUUID) {
+              //      RedisManager.deleteEntry(redisentryUUIDAssigned);
+              //      return;
+              //  }
 
                 if (SPItem.MustMove) {
                     // Relocate item
@@ -872,7 +872,7 @@ public class GraphService {
                                 + "SPItem mustmove?" + SPItem.MustMove
                                 + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
                         // Add to relocation cache
-                        RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess", 240);
+                     //   RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess", 240);
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
                         // ROobject.setHash(bindresponse.getBody());
                         String endpoint = String.format(

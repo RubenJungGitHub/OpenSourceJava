@@ -429,6 +429,8 @@ public class AlfrescoNodeController {
 
       // Wrap all model properties inside a "properties" object
       ObjectNode propertiesNode = mapper.createObjectNode();
+
+      propertiesNode.put("contain:BINDIO", true);
       if (IOobject.getTitle() != null)
         propertiesNode.put("cm:title", IOobject.getTitle());
       if (IOobject.getDescription() != null)
