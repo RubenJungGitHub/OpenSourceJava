@@ -1,0 +1,7 @@
+services:
+
+  contain-ils:
+    build: .
+    container_name: uuidutil
+    ports:
+      - "5002:8080"

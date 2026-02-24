@@ -1,5 +1,20 @@
 ﻿cls
 
+$existingNetwork = docker network ls --format "{{.Name}}" | Where-Object { $_ -eq $networkName }
+
+#Build  shared 
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
+$env:Path = $env:JAVA_HOME + "\bin;" + $env:Path
+cd C:\ContainOpenSource\Java\OpenSourceJava\ECM\shared
+mvn clean package install -DskipTests=true
+
+#docker build -t sharedresources:latest .
+#docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ECM\shared\docker-compose.yaml down 
+#docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ECM\shared\docker-compose.yaml up -d --build
+#docker images --digests | findstr notification-service
+
+
+
 #Build ECM
 #cd C:\ContainOpenSource\Java\OpenSourceJava\ECM
 #docker build -t ils-app:latest .
@@ -17,11 +32,22 @@
 
 
 #Build  subsrciption service
-cd C:\ContainOpenSource\Java\SharePointHandler\Sharepoint\subscriber-service
+#cd C:\ContainOpenSource\Java\SharePointHandler\Sharepoint\subscriber-service
 #docker build -t notification-service-notificationservice:latest .
-docker compose  -f C:\ContainOpenSource\Java\SharePointHandler\Sharepoint\subscriber-service\docker-compose.yaml down 
-docker compose -f C:\ContainOpenSource\Java\SharePointHandler\Sharepoint\subscriber-service\docker-compose.yaml up -d --build
-docker images --digests | findstr notification-service
+#docker compose  -f C:\ContainOpenSource\Java\SharePointHandler\Sharepoint\subscriber-service\docker-compose.yaml down 
+#docker compose -f C:\ContainOpenSource\Java\SharePointHandler\Sharepoint\subscriber-service\docker-compose.yaml up -d --build
+#docker images --digests | findstr notification-service
+
+
+
+
+
+#Build  UUID service
+#cdC:\ContainOpenSource\Java\OpenSourceJava\ECM\uuidutil>
+#docker build -t uuidutil:latest .
+#docker compose  -fContainOpenSource\Java\OpenSourceJava\ECM\uuidutil\docker-compose.yaml down 
+#docker compose -f ContainOpenSource\Java\OpenSourceJava\ECM\uuidutil\docker-compose.yaml up -d --build
+#docker images --digests | findstr notification-service
 
 
 
