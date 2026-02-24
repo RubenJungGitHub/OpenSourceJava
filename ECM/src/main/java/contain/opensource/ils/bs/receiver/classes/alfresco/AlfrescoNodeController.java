@@ -431,6 +431,7 @@ public class AlfrescoNodeController {
       ObjectNode propertiesNode = mapper.createObjectNode();
 
       propertiesNode.put("contain:BINDIO", true);
+      //propertiesNode.put("contain:RELOCATEIO", false);
       if (IOobject.getTitle() != null)
         propertiesNode.put("cm:title", IOobject.getTitle());
       if (IOobject.getDescription() != null)
@@ -564,6 +565,7 @@ public class AlfrescoNodeController {
         ObjectNode props = mapper.createObjectNode();
         props.put("type", "contain:containdocument"); // mandatory
         props.put("name", IOobject.getFileName()); // mandatory
+       // props.put("contain:RELOCATEIO", true);
 
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.setMode(HttpMultipartMode.STRICT);

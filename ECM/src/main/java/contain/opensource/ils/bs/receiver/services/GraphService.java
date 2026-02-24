@@ -330,7 +330,7 @@ public class GraphService {
     private void BindObject(SharePointItemResponse SPItem) {
         // First sign and log
         try {
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW
+            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_MAGENTA
                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
                     + ("Binding SP IO " + SPItem.UUID)
                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
@@ -389,6 +389,7 @@ public class GraphService {
 
     public void RelocateIO(RelocateInformationObject ROobject) {
         try {
+
             String action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() +
                     " from "
                     + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
@@ -845,27 +846,7 @@ public class GraphService {
                     return;
                 }
 
-                // Redis is redundant. To memcollection? Obsolete?
-                // Check double binding -> To become seperate function for all ecm environments
-
-                String redisLogId = SPItem.getUuid();
-                ;
-                // Add to Redis cache to avoid double binding.
-                // for (ContainPlatforms platform : ContainPlatforms.values()) {
-                // redisLogId = redisLogId.replace(platform.toString(), "");
-                // }
-             //   String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
-             //   String redisentryUUIDAssigned = "IOinUUIDAssigned" + SPItem.getUuid();
-              //  if (RedisManager.getHashField(redisentryInRelocation) != null) {
-              //      RedisManager.deleteEntry(redisentryInRelocation);
-              //      return;
-              //  }
-              //  if (RedisManager.getHashField(redisentryUUIDAssigned) != null && SPItem.HasUUID) {
-              //      RedisManager.deleteEntry(redisentryUUIDAssigned);
-              //      return;
-              //  }
-
-                if (SPItem.MustMove) {
+                 if (SPItem.MustMove) {
                     // Relocate item
                     try {
                         System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.GREEN

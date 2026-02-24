@@ -256,7 +256,7 @@ public class MessageBrowserPollAlfresco {
 
         // IN the future store as actual byte in Redis and datastore. For POC store as
         try {
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW
+            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_CYAN
                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BRIGHT_RED
                     + ("Binding ALFRESCO NODE IO " + IOUUID)
                     + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
@@ -394,72 +394,6 @@ public class MessageBrowserPollAlfresco {
                                         return;
                                     }
 
-                                    /*
-                                     * // First sign and log
-                                     * //
-                                     * =============================================================================
-                                     * =============
-                                     * // ALL FUNCTIONS SHOULD BE SEPARATED
-                                     * //
-                                     * =============================================================================
-                                     * =============
-                                     * 
-                                     * // IN the future store as actual byte in Redis and datastore. For POC store
-                                     * as
-                                     * System.out.println(
-                                     * contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW
-                                     * + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BRIGHT_RED
-                                     * + ("Binding ALFRESCO NODE IO " + IOUUID)
-                                     * + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
-                                     * PrivateKey key = PKCS12KeyLoader.PK;
-                                     * String privateKeyBase64 =
-                                     * Base64.getEncoder().encodeToString(key.getEncoded());
-                                     * 
-                                     * BindRequest request = new BindRequest(
-                                     * aController.alfresconNodeResponse.ToSecuredDocument(), privateKeyBase64);
-                                     * String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
-                                     * System.out
-                                     * .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
-                                     * + "Binding endpoint  : "
-                                     * + endPoint
-                                     * + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
-                                     * 
-                                     * URL url = new URL(endPoint);
-                                     * 
-                                     * RestTemplate restTemplate = new RestTemplate();
-                                     * HttpHeaders headers = new HttpHeaders();
-                                     * headers.setContentType(MediaType.APPLICATION_JSON);
-                                     * 
-                                     * HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
-                                     * ResponseEntity<String> response = restTemplate.postForEntity(endPoint,
-                                     * entity,
-                                     * String.class);
-                                     * 
-                                     * // Move log to binding function
-                                     * String action = "Content and-or metadata changed : REBIND IO " + IOUUID +
-                                     * " : "
-                                     * + QMessage.getName();
-                                     * if (response.getStatusCode().value() == 200) {
-                                     * IOLog.log(
-                                     * IOUUID,
-                                     * QMessage.getId(),
-                                     * secondPath.toString(),
-                                     * action,
-                                     * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                     * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                     * response.getBody(),
-                                     * QMessage.getName(),
-                                     * "",
-                                     * AlfrescoConstants.eActionPerformed.IOBOUND,
-                                     * QMessage.getUsername(),
-                                     * aController.alfresconNodeResponse.marking,
-                                     * aController.alfresconNodeResponse.classification,
-                                     * aController.alfresconNodeResponse.version);
-                                     * //
-                                     * =============================================================================
-                                     * =============
-                                     * }
-                                     */
 
                                     // Moveobject, binding in new environment.
                                     if (aController.alfresconNodeResponse.MustMove) {
