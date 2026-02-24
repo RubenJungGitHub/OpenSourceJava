@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.controllers;
+package contain.opensource.uuidutil.controllers;
 
 
 import contain.opensource.ils.shared.constants.AlfrescoConstants;

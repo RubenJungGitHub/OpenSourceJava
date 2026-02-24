@@ -6,8 +6,14 @@ $existingNetwork = docker network ls --format "{{.Name}}" | Where-Object { $_ -e
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
 $env:Path = $env:JAVA_HOME + "\bin;" + $env:Path
 cd C:\ContainOpenSource\Java\OpenSourceJava\ECM\shared
-mvn clean package install -DskipTests=true
+mvn clean install -DskipTests=true
 
+
+#build uuidutil
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
+$env:Path = $env:JAVA_HOME + "\bin;" + $env:Path
+cd C:\ContainOpenSource\Java\OpenSourceJava\ECM\uuidutil
+mvn clean install -DskipTests=true
 #docker build -t sharedresources:latest .
 #docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ECM\shared\docker-compose.yaml down 
 #docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ECM\shared\docker-compose.yaml up -d --build
