@@ -8,7 +8,7 @@ COPY pom.xml .
 RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn clean install -DskipTests
 
 # ===== RUNTIME STAGE =====
 FROM azul/zulu-openjdk:21-jre

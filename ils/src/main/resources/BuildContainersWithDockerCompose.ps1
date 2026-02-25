@@ -12,20 +12,20 @@ mvn clean install -DskipTests=true
 #build uuidutil
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
 $env:Path = $env:JAVA_HOME + "\bin;" + $env:Path
-cd C:\ContainOpenSource\Java\OpenSourceJava\ECM\uuidutil
+cd C:\ContainOpenSource\Java\OpenSourceJava\ils\uuidutil
 mvn clean install -DskipTests=true
 #docker build -t sharedresources:latest .
-docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ECM\uuidutil\docker-compose.yml down 
-docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ECM\uuidutil\docker-compose.yml up -d --build
+docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ils\uuidutil\docker-compose.yml down 
+docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ils\uuidutil\docker-compose.yml up -d --build
 #docker images --digests | findstr notification-service
 
 
 
 #Build ECM
-#cd C:\ContainOpenSource\Java\OpenSourceJava\ECM
-#docker build -t ils-app:latest .
-#docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ECM\docker-compose.yml down 
-#docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ECM\docker-compose.yml up --build
+cd C:\ContainOpenSource\Java\OpenSourceJava\ils
+docker build -t ils-app:latest .
+docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ils\docker-compose.yml down 
+docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ils\docker-compose.yml up --build
 
 
 
