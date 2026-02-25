@@ -31,13 +31,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-//import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
-//import contain.opensource.shared.configurationproperties.ILSRestProperties;
-//import contain.opensource.shared.classes.SpringContext;
-//import contain.opensource.shared.constants.AlfrescoConstants;
+import contain.opensource.shared.configurationproperties.ActiveMQProperties;
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
+import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
+//import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
+//import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;

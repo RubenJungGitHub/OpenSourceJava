@@ -1,29 +1,19 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.time.LocalDateTime;
-import java.net.URL;
 
-import jakarta.persistence.Transient;
-
-import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
-import contain.opensource.shared.constants.AlfrescoConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
 
 @Entity
 @Table(name = "tbl_iolog")
 public class IOLogBallenbak {
     
-    @Transient
-    private ILSRestProperties ilsrestproperties;
 
     @Id
     @Column(name = "uuid", nullable = false)
@@ -79,38 +69,7 @@ public class IOLogBallenbak {
     protected IOLogBallenbak() {
     }
 
-    private String getloguuid() {
-        String uuid = "";
-        try {
-            // String uuid =
-            //
-            System.out.println(
-                    AlfrescoConstants.RED + "Get UUID for logging @ endpoint  : "
-                            + ilsrestproperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
-
-            String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.SPO;
-
-            String urlString = ilsrestproperties.getuudiutilendpoint() + query;
-
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-
-            int status = conn.getResponseCode();
-            System.out.println("Accessing uuid rest url on " + ilsrestproperties.getuudiutilendpoint() +
-                    " return code -> " + status);
-
-            if (status == 200) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                uuid = in.readLine(); // assuming API returns plain UUID
-                in.close();
-            }
-        } catch (Exception ex) {
-            return "exception returning loguuid";
-        }
-        return uuid;
-    }
-
+ 
     // Optional convenience constructor
     public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction,
             String ioSource,
@@ -119,7 +78,7 @@ public class IOLogBallenbak {
             String Classification, String version) {
 
         //this.uuid = uuid != null ? uuid : UUIDUtil.getUUIDOverHTTP(Optional.empty()); // use passed uuid if not null
-        this.uuid = uuid != null ? uuid : getloguuid(); // use passed uuid if not null
+        this.uuid = uuid;
         this.containIoUuid = containIOUUID;
         this.platformId = PlatformID;
         this.path = IOpath;

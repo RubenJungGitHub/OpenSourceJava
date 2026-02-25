@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties;
+import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import jakarta.annotation.PostConstruct;
 
 @Configuration
