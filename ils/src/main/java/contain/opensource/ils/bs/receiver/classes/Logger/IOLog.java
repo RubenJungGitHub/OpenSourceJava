@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
+import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.IOLogBallenbakService;
 
 @Component

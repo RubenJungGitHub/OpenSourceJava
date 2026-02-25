@@ -1,7 +1,9 @@
 package contain.opensource.ils.bs.receiver.services;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -11,20 +13,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -56,21 +51,16 @@ import com.microsoft.graph.models.ListItem;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
-import contain.opensource.ils.bs.receiver.classes.Logger.IODeltaLinkLog;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLogDeltaLink;
-import contain.opensource.ils.bs.receiver.classes.Notification;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.ils.bs.receiver.classes.sharepoint.ChangedItemsResult;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
 
 //========================================================================
@@ -98,7 +88,7 @@ public class GraphService {
     private String SiteName = "SP-EventReceivers-Test";
     private String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
     private String ListName = "Shared Documents";
-
+    
     private String newDeltaLink = "";
     private String DeltaLinkFile = null;
     private final ClientCredentialParameters parameters = ClientCredentialParameters
@@ -110,7 +100,7 @@ public class GraphService {
     @Autowired
     private AlfrescoNodeController aController;// = new AlfrescoNodeController();
 
-    public GraphService() {
+    public GraphService () {
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -176,8 +166,29 @@ public class GraphService {
 
             // First obtain new UUID and accesstoken
             String AccessToken = getGraphToken();
-            /// String uuid = GetUUID();
-            String uuid = UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
+            String uuid = "";
+            // String uuid =
+            // UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
+            System.out.println(
+                    AlfrescoConstants.RED + "Get UUID endpoint  : "
+                            + ILSProperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
+
+            String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.SPO;
+
+            String urlString = ILSProperties.getuudiutilendpoint() + query;
+
+            URL url = new URL(urlString);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            int status = conn.getResponseCode();
+            System.out.println("Accessing uuid rest url on " + ILSProperties.getuudiutilendpoint() + " return code -> " + status);
+
+            if (status == 200) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                uuid = in.readLine(); // assuming API returns plain UUID
+                in.close();
+            }
 
             HttpClient client = HttpClient.newHttpClient();
 
@@ -204,9 +215,9 @@ public class GraphService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.MAGENTA
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.MAGENTA
                         + "UUID assigned updated successfully to : " + listItemId
-                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                 // Cahc in Redis
                 RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid, "InProcess", 240);
                 return uuid;
@@ -330,10 +341,10 @@ public class GraphService {
     private void BindObject(SharePointItemResponse SPItem) {
         // First sign and log
         try {
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_MAGENTA
-                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_MAGENTA
+                    + contain.opensource.shared.constants.AlfrescoConstants.RED
                     + ("Binding SP IO " + SPItem.UUID)
-                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             PrivateKey key = PKCS12KeyLoader.PK;
             String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
@@ -341,10 +352,10 @@ public class GraphService {
                     privateKeyBase64);
             String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
             System.out
-                    .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                    .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "
                             + endPoint
-                            + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
             URL url = new URL(endPoint);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -414,7 +425,8 @@ public class GraphService {
                     ROobject.marking,
                     ROobject.classification,
                     ROobject.version);
-            // Delete from SP (If no exception. This is to be implemented for persistance and transactions)
+            // Delete from SP (If no exception. This is to be implemented for persistance
+            // and transactions)
             deleteSPItemById(ROobject.getId());
 
             // Log
@@ -497,9 +509,9 @@ public class GraphService {
             while (listItemId.equals("") && retryCounter <= retryCount) {
                 retryCounter++;
                 Thread.sleep(2000);
-                System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.MAGENTA
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.MAGENTA
                         + "Try " + retryCounter + " ->  Get new listitemId for driveitemID " + driveItemId
-                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
                 HttpResponse<String> response = HttpClient.newHttpClient().send(lirequest,
                         HttpResponse.BodyHandlers.ofString());
@@ -734,9 +746,9 @@ public class GraphService {
         } else {
             // throw new IOException("Failed to fetch SharePoint item. Status: " +
             // response.statusCode());
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
                     + "Failed to fetch SharePoint item.  " + itemId
-                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             return null;
         }
     }
@@ -846,14 +858,15 @@ public class GraphService {
                     return;
                 }
 
-                 if (SPItem.MustMove) {
+                if (SPItem.MustMove) {
                     // Relocate item
                     try {
-                        System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.GREEN
+                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                                 + "SPItem mustmove?" + SPItem.MustMove
-                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                         // Add to relocation cache
-                     //   RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess", 240);
+                        // RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess",
+                        // 240);
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
                         // ROobject.setHash(bindresponse.getBody());
                         String endpoint = String.format(

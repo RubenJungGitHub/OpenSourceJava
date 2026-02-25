@@ -23,8 +23,8 @@ public class UUIDController {
 
 
         System.out.println(
-                contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.CYAN + "GUID RETURNED : "
-                        + returnuuid + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                contain.opensource.shared.constants.AlfrescoConstants.CYAN + "GUID RETURNED : "
+                        + returnuuid + contain.opensource.shared.constants.AlfrescoConstants.RESET);
         return returnuuid;
     }
 }

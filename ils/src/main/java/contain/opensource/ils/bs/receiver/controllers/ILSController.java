@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 
 @RestController
@@ -54,18 +54,18 @@ public class ILSController {
         switch (IOobject.getPlatfrom()) {
             case AlfrescoConstants.ContainPlatforms.ALFRESCO:
                 if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.SPO) {
-                    System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BRIGHT_BLUE
+                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_BLUE
                             + ("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  "
                                     + IOobject.getPlatformTo().toString())
-                            + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     this.alfrescoNodeController.RelocateIO(IOobject);
                 }
             case AlfrescoConstants.ContainPlatforms.SPO:
                 if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.ALFRESCO) {
-                    System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BRIGHT_MAGENTA
+                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_MAGENTA
                             + ("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  "
                                     + IOobject.getPlatformTo().toString())
-                            + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     this.graphService.RelocateIO(IOobject);
                 }
         }

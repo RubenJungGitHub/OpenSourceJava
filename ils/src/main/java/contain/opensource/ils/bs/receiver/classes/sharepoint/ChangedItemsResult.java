@@ -2,7 +2,7 @@ package contain.opensource.ils.bs.receiver.classes.sharepoint;
 
 import java.util.List;
 
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 /**
  * Represents the result of a query for changed items from a SharePoint source.

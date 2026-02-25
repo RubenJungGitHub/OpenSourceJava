@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.UUID;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.ContainPlatforms;
+import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -50,8 +50,8 @@ public class UUIDUtil {
             String urlString = uuidUtil.iLSRestProperties.getBaseUrl() + "/api/GetUUID" + query;
 
             System.out.println(
-                    contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED + "Get UUID endpoint  : "
-                            + urlString + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                    contain.opensource.shared.constants.AlfrescoConstants.RED + "Get UUID endpoint  : "
+                            + urlString + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -83,8 +83,8 @@ public class UUIDUtil {
         try {
             UUID uuid = UUID.randomUUID();
             System.out.println(
-                    contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED + "GUID RETURNED : "
-                            + uuid.toString() + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                    contain.opensource.shared.constants.AlfrescoConstants.RED + "GUID RETURNED : "
+                            + uuid.toString() + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             return prefix.toString() + "-" + uuid.toString();
         } catch (Exception e) {
             System.err.println("exception in getUUID : " + e);

@@ -24,12 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.services.GraphService;
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties;
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
+import contain.opensource.shared.configurationproperties.ActiveMQProperties;
+import contain.opensource.shared.configurationproperties.AlfrescoProperties;
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 /**
  * MessageBrowserPoll is a Spring component responsible for polling messages
@@ -240,9 +240,9 @@ public class MessageBrowserPollSP {
     public void StartPoll(MessageConsumer consumer, Session session) {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_GREEN
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
                     + timestamp + " -> New SHAREPOINT poll loop Processing. Interval : " + PollInterval + " seconds"
-                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Message msg;
             String json = "";
             ObjectMapper mapper = new ObjectMapper();

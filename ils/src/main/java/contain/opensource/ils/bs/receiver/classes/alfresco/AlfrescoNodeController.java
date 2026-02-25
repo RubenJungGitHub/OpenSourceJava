@@ -42,11 +42,10 @@ import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 
-import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.ContainPlatforms;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeTypeFields;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
+import contain.opensource.shared.constants.AlfrescoConstants;
+import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
+import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
+import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 
 /**
@@ -896,7 +895,6 @@ public class AlfrescoNodeController {
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             propertyValue = in.readLine(); // assuming API returns plain UUID
             in.close();
-
           } else {
             System.err.println("REST call failed with status: " + status);
           }
@@ -918,9 +916,9 @@ public class AlfrescoNodeController {
           }
           """.formatted(propertyName, propertyValue);
 
-      System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.MAGENTA + "Updating "
+      System.out.println(contain.opensource.shared.constants.AlfrescoConstants.MAGENTA + "Updating "
           + this.alfresconNodeResponse.entry.filename + " " + jsonBody
-          + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+          + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
       // Encode username:password for Basic Auth
       String auth = Base64.getEncoder().encodeToString(

@@ -6,7 +6,7 @@ package contain.opensource.ils.bs.receiver.classes;
 
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeResponse;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 //Generic IO object Class for move between environments 
 //======================================================

@@ -75,7 +75,7 @@ activemq:
 
 app:
   keystore:
-    path: /app/config/Containselfsigned_cert.p12
+    path: C:\ContainOpenSource\Java\OpenSourceJava\ils\src\main\resources\Containselfsigned_cert.p12
 
 alfresco:
   username: admin

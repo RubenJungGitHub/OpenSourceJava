@@ -1,6 +1,6 @@
 package contain.opensource.ils.bs.receiver.classes;
 
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.ContainPlatforms;
+import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 
 public class RelocateIORequest {
     private String ioId;

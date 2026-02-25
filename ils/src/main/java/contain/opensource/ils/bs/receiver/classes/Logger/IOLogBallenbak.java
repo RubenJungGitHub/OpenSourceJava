@@ -1,9 +1,16 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.time.LocalDateTime;
-import java.util.Optional;
-import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
+import java.net.URL;
+
+import jakarta.persistence.Transient;
+
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
+import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
+import contain.opensource.shared.constants.AlfrescoConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -14,6 +21,9 @@ import jakarta.persistence.EnumType;
 @Entity
 @Table(name = "tbl_iolog")
 public class IOLogBallenbak {
+    
+    @Transient
+    private ILSRestProperties ilsrestproperties;
 
     @Id
     @Column(name = "uuid", nullable = false)
@@ -27,7 +37,7 @@ public class IOLogBallenbak {
 
     @Column(name = "marking", nullable = true)
     private String marking;
-        
+
     @Column(name = "Classification", nullable = true)
     private String Classification;
 
@@ -66,13 +76,50 @@ public class IOLogBallenbak {
     private String actionPerformedBy;
 
     // Required by JPA
-    protected IOLogBallenbak() {}
-    
+    protected IOLogBallenbak() {
+    }
+
+    private String getloguuid() {
+        String uuid = "";
+        try {
+            // String uuid =
+            //
+            System.out.println(
+                    AlfrescoConstants.RED + "Get UUID for logging @ endpoint  : "
+                            + ilsrestproperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
+
+            String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.SPO;
+
+            String urlString = ilsrestproperties.getuudiutilendpoint() + query;
+
+            URL url = new URL(urlString);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            int status = conn.getResponseCode();
+            System.out.println("Accessing uuid rest url on " + ilsrestproperties.getuudiutilendpoint() +
+                    " return code -> " + status);
+
+            if (status == 200) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                uuid = in.readLine(); // assuming API returns plain UUID
+                in.close();
+            }
+        } catch (Exception ex) {
+            return "exception returning loguuid";
+        }
+        return uuid;
+    }
+
     // Optional convenience constructor
-    public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction, String ioSource,
-                 String ioDestination, String pkiHash, String ioReference,
-                 String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Classification,String version) {
-        this.uuid = uuid != null ? uuid : UUIDUtil.getUUIDOverHTTP(Optional.empty()); // use passed uuid if not null
+    public IOLogBallenbak(String uuid, String containIOUUID, String PlatformID, String IOpath, String ioAction,
+            String ioSource,
+            String ioDestination, String pkiHash, String ioReference,
+            String additionalInfo, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,
+            String Classification, String version) {
+
+        //this.uuid = uuid != null ? uuid : UUIDUtil.getUUIDOverHTTP(Optional.empty()); // use passed uuid if not null
+        this.uuid = uuid != null ? uuid : getloguuid(); // use passed uuid if not null
         this.containIoUuid = containIOUUID;
         this.platformId = PlatformID;
         this.path = IOpath;
@@ -91,51 +138,131 @@ public class IOLogBallenbak {
     }
 
     // Getters and Setters
-    public String getUuid() { return uuid; }
-    public void setUuid(String uuid) { this.uuid = uuid; }
+    public String getUuid() {
+        return uuid;
+    }
 
-    public String getContainIOUUID() { return containIoUuid; }
-    public void setContainIOUUID(String containIoUuid) { this.containIoUuid = containIoUuid; }
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
-    public String getIoAction() { return ioAction; }
-    public void setIoAction(String ioAction) { this.ioAction = ioAction; }
+    public String getContainIOUUID() {
+        return containIoUuid;
+    }
 
-    public String getIoSource() { return ioSource; }
-    public void setIoSource(String ioSource) { this.ioSource = ioSource; }
+    public void setContainIOUUID(String containIoUuid) {
+        this.containIoUuid = containIoUuid;
+    }
 
-    public String getlabel() { return Classification; }
-    public void setlabel(String Classification) { this.Classification = Classification; }
+    public String getIoAction() {
+        return ioAction;
+    }
 
-    public String getmarking() { return marking; }
-    public void setmarking(String marking) { this.marking = marking; }
+    public void setIoAction(String ioAction) {
+        this.ioAction = ioAction;
+    }
 
-    public String getversion() { return version; }
-    public void setvesion(String version) { this.version = version; }
+    public String getIoSource() {
+        return ioSource;
+    }
 
-    public String getIoDestination() { return ioDestination; }
-    public void setIoDestination(String ioDestination) { this.ioDestination = ioDestination; }
+    public void setIoSource(String ioSource) {
+        this.ioSource = ioSource;
+    }
 
-    public String  getPkiHash() { return pkiHash; }
-    public void setPkiHash(String pkiHash) { this.pkiHash = pkiHash; }
+    public String getlabel() {
+        return Classification;
+    }
 
-    public String getIoReference() { return ioReference; }
-    public void setIoReference(String ioReference) { this.ioReference = ioReference; }
+    public void setlabel(String Classification) {
+        this.Classification = Classification;
+    }
 
-    public String getAdditionalInfo() { return additionalInfo; }
-    public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
+    public String getmarking() {
+        return marking;
+    }
 
-    public String getPlatformID() { return platformId; }
-    public void setPlatformID(String platformId) { this.platformId = platformId; }
+    public void setmarking(String marking) {
+        this.marking = marking;
+    }
 
-    public String getPath() { return path; }
-    public void setPath(String path) { this.path = path; }
+    public String getversion() {
+        return version;
+    }
 
-    public String getActionPerformedBy() { return actionPerformedBy; }
-    public void setActionPerformedBy(String actionperformedby) { this.actionPerformedBy = actionperformedby; }
+    public void setvesion(String version) {
+        this.version = version;
+    }
 
-    public eActionPerformed getActionPerformed() { return actionPerformed; }
-    public void setActionPerformed(eActionPerformed actionPerformed) { this.actionPerformed = actionPerformed; }
+    public String getIoDestination() {
+        return ioDestination;
+    }
 
-    public LocalDateTime getLogDateTime() { return logDateTime; }
-    public void setLogDateTime(LocalDateTime logDateTime) { this.logDateTime = logDateTime; }
+    public void setIoDestination(String ioDestination) {
+        this.ioDestination = ioDestination;
+    }
+
+    public String getPkiHash() {
+        return pkiHash;
+    }
+
+    public void setPkiHash(String pkiHash) {
+        this.pkiHash = pkiHash;
+    }
+
+    public String getIoReference() {
+        return ioReference;
+    }
+
+    public void setIoReference(String ioReference) {
+        this.ioReference = ioReference;
+    }
+
+    public String getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    public void setAdditionalInfo(String additionalInfo) {
+        this.additionalInfo = additionalInfo;
+    }
+
+    public String getPlatformID() {
+        return platformId;
+    }
+
+    public void setPlatformID(String platformId) {
+        this.platformId = platformId;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getActionPerformedBy() {
+        return actionPerformedBy;
+    }
+
+    public void setActionPerformedBy(String actionperformedby) {
+        this.actionPerformedBy = actionperformedby;
+    }
+
+    public eActionPerformed getActionPerformed() {
+        return actionPerformed;
+    }
+
+    public void setActionPerformed(eActionPerformed actionPerformed) {
+        this.actionPerformed = actionPerformed;
+    }
+
+    public LocalDateTime getLogDateTime() {
+        return logDateTime;
+    }
+
+    public void setLogDateTime(LocalDateTime logDateTime) {
+        this.logDateTime = logDateTime;
+    }
 }

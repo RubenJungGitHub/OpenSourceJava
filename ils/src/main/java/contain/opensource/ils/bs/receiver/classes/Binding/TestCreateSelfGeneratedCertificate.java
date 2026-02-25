@@ -1,6 +1,6 @@
 package contain.opensource.ils.bs.receiver.classes.Binding;
 
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 import java.io.FileOutputStream;
 import java.math.BigInteger;

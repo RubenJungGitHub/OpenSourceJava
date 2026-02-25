@@ -11,7 +11,7 @@ import contain.opensource.ils.bs.receiver.Interfaces.IOLogBallenbakRepository;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbak;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.UUIDUtil;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.eActionPerformed;
+import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 
 @Service
 public class IOLogBallenbakService {

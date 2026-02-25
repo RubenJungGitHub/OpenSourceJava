@@ -44,9 +44,9 @@ import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.ContainPlatforms;
-import contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.NodeType;
+import contain.opensource.shared.constants.AlfrescoConstants;
+import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
+import contain.opensource.shared.constants.AlfrescoConstants.NodeType;
 
 /**
  * MessageBrowserPoll is a Spring component responsible for polling messages
@@ -256,10 +256,10 @@ public class MessageBrowserPollAlfresco {
 
         // IN the future store as actual byte in Redis and datastore. For POC store as
         try {
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_CYAN
-                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BRIGHT_RED
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_CYAN
+                    + contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_RED
                     + ("Binding ALFRESCO NODE IO " + IOUUID)
-                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             PrivateKey key = PKCS12KeyLoader.PK;
             String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
@@ -267,10 +267,10 @@ public class MessageBrowserPollAlfresco {
                     aController.alfresconNodeResponse.ToSecuredDocument(), privateKeyBase64);
             String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
             System.out
-                    .println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                    .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "
                             + endPoint
-                            + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
             URL url = new URL(endPoint);
 
@@ -305,9 +305,9 @@ public class MessageBrowserPollAlfresco {
             }
             return response.getBody();
         } catch (Exception e) {
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
                     + "Error during binding: " + e.getMessage()
-                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             e.printStackTrace();
             return "Binding failed" + e.getMessage();
         }
@@ -316,9 +316,9 @@ public class MessageBrowserPollAlfresco {
     public void StartPoll(MessageConsumer consumer, Session session) {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
-            System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.BG_YELLOW
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
                     + timestamp + " -> New ALFRESCO poll loop Processing. Interval : " + PollInterval + " seconds"
-                    + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Message msg;
             while ((msg = consumer.receive(1000)) != null) {
                 try {
@@ -398,10 +398,10 @@ public class MessageBrowserPollAlfresco {
                                     // Moveobject, binding in new environment.
                                     if (aController.alfresconNodeResponse.MustMove) {
                                         System.out.println(
-                                                contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.CYAN
+                                                contain.opensource.shared.constants.AlfrescoConstants.CYAN
                                                         + "Alfresco  node must-move?"
                                                         + aController.alfresconNodeResponse.MustMove
-                                                        + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                                                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                                         RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation, "InProcess",
                                                 120);
 
@@ -448,13 +448,13 @@ public class MessageBrowserPollAlfresco {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
                                 + "Processing message: " + json
-                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     } else {
-                        System.out.println(contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RED
+                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
                                 + "Processing non-text message: " + msg
-                                + contain.opensource.ils.bs.receiver.constants.AlfrescoConstants.RESET);
+                                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
 
                     // msg.acknowledge(); // only removes message after successful processing
