@@ -1,3 +1,4 @@
 {
-    "maven.view": "hierarchical"
+    "maven.view": "hierarchical",
+		  "java.jdt.ls.java.home": "C:\\Users\\NL07428\\AppData\\Roaming\\Code\\User\\globalStorage\\pleiades.java-extension-pack-jdk\\java\\21"
 }

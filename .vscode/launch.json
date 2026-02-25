@@ -6,6 +6,20 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "contain.opensource.uuidutil.Main",
+      "projectName": ""
+    },
+    {
+      "type": "java",
+      "name": "ILSApplication",
+      "request": "launch",
+      "mainClass": "contain.opensource.ils.ILSApplication",
+      "projectName": ""
+    },
+    {
+      "type": "java",
       "name": "UUIDUtil",
       "request": "launch",
       "mainClass": "contain.opensource.ils.bs.receiver.classes.UUIDUtil",
