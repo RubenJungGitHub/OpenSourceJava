@@ -5,7 +5,7 @@ $existingNetwork = docker network ls --format "{{.Name}}" | Where-Object { $_ -e
 #Build  shared 
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
 $env:Path = $env:JAVA_HOME + "\bin;" + $env:Path
-cd C:\ContainOpenSource\Java\OpenSourceJava\ECM\shared
+cd C:\ContainOpenSource\Java\OpenSourceJava\ils\shared
 mvn clean install -DskipTests=true
 
 

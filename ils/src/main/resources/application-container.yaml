@@ -59,5 +59,7 @@ alfresco:
 ils:
   #username: admin
   #password: admin
+  uudiutilendpoint: http://host.docker.internal:5002/api/GetUUID
   base-url: http://host.docker.internal:5000
+  bindendpoint: host.docker.internal/api/GetUUID
   DeltaLinkFile: "/app/data/storeddeltalinks.csv"

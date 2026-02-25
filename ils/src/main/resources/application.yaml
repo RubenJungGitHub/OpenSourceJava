@@ -88,4 +88,6 @@ ils:
   #username: admin
   #password: admin
   base-url: http://localhost:5000
+  uudiutilendpoint: http://localhost:5002/api/GetUUID
+  bindendpoint: http://localhost:5002/api/GetUUID
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"

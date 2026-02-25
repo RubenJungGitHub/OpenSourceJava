@@ -1,4 +1,5 @@
 package contain.opensource.shared.configurationproperties;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
@@ -8,6 +9,8 @@ import jakarta.annotation.PostConstruct;
 public class ILSRestProperties {
     private String baseUrl;
     private String DeltaLinkFile;
+    private String uudiutilendpoint;
+    private String bindendpoint;
 
     // getters & setters
     public String getBaseUrl() {
@@ -26,6 +29,21 @@ public class ILSRestProperties {
         this.DeltaLinkFile = deltaLinkFile;
     }
 
+    public String getuudiutilendpoint() {
+        return uudiutilendpoint;
+    }
+
+    public void setuudiutilendpoint(String uudiutilendPoint) {
+        this.uudiutilendpoint = uudiutilendPoint;
+    }
+
+    public String getbindendpoint() {
+        return bindendpoint;
+    }
+
+    public void setbindendpoint(String uudiutilendPoint) {
+        this.bindendpoint = bindendpoint;
+    }
 
     @PostConstruct
     public void init() {

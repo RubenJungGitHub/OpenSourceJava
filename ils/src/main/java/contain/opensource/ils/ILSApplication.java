@@ -3,10 +3,15 @@ package contain.opensource.ils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
+
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Binding.TestCreateSelfGeneratedCertificate;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
+import contain.opensource.shared.configurationproperties.ActiveMQProperties;
+import contain.opensource.shared.configurationproperties.AlfrescoProperties;
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
 
 
 @SpringBootApplication(scanBasePackages = {
@@ -16,6 +21,7 @@ import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
         "contain.opensource.shared.configurationproperties"
 })
 	@ComponentScan(basePackages = "contain.opensource.ils") 
+	@EnableConfigurationProperties({ActiveMQProperties.class, AlfrescoProperties.class,ILSRestProperties.class})
 	@ConfigurationPropertiesScan
 	public class ILSApplication {
 	//private static final Logger log = LoggerFactory.getLogger(ILSApplication.class);

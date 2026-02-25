@@ -1,11 +1,15 @@
 package contain.opensource.ils.bs.receiver.classes.alfresco;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.Objects;
+import java.net.URL;
 
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -857,7 +861,7 @@ public class AlfrescoNodeController {
    * 
    * @throws IllegalArgumentException if the specified field is not supported.
    */
-  public String UpdateNode(NodeTypeFields field, Optional<String> IOPath, Optional<String> fieldValue) {
+  public String UpdateNode(NodeTypeFields field, String uuidutilendpoint, Optional<String> IOPath,   Optional<String> fieldValue) {
     try {
       String endpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
@@ -871,7 +875,31 @@ public class AlfrescoNodeController {
         case UUID:
           propertyName = "contain:IOUUID"; // custom aspect property
           //propertyValue = AlfrescoConstants.ContainPlatforms.ALFRESCO.toString() + "-" + UUIDUtil.getUUIDOverHTTP();
-          propertyValue =UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.ALFRESCO));
+       //   propertyValue =UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.ALFRESCO));
+               propertyName = "contain:IOUUID"; // custom aspect property
+          System.out.println(
+              AlfrescoConstants.RED + "Get UUID endpoint  : "
+                  + uuidutilendpoint + AlfrescoConstants.RESET);
+
+            String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.ALFRESCO;
+
+            String urlString = uuidutilendpoint + query;
+
+          URL url = new URL(urlString);
+          HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+          conn.setRequestMethod("GET");
+
+          int status = conn.getResponseCode();
+          System.out.println("Accessing uuid rest url on " + uuidutilendpoint + " return code -> " + status);
+
+          if (status == 200) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            propertyValue = in.readLine(); // assuming API returns plain UUID
+            in.close();
+
+          } else {
+            System.err.println("REST call failed with status: " + status);
+          }
           action = "Assign UUID " + propertyValue + "  to new Alfresco IO " + this.alfresconNodeResponse.entry.filename;
           break;
         case Title:

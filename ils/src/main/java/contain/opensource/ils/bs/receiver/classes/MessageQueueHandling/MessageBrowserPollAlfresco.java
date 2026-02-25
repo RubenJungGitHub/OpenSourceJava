@@ -36,9 +36,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ActiveMQProperties;
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
-import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
+import contain.opensource.shared.configurationproperties.ActiveMQProperties;
+import contain.opensource.shared.configurationproperties.AlfrescoProperties;
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -368,8 +368,8 @@ public class MessageBrowserPollAlfresco {
                                     String IOUUID = "";
                                     if (!aController.alfresconNodeResponse.HasUUID) {
                                         // Set UUID
-                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
-                                                Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, ILSProperties.getuudiutilendpoint() ,Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                        //IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID ,Optional.ofNullable(secondPath.toString()), Optional.empty());
 
                                     } else {
                                         IOUUID = aController.alfresconNodeResponse.UUID;
