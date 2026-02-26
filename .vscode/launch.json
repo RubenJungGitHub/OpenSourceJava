@@ -49,6 +49,17 @@
       "request": "attach",
       "hostName": "localhost",
       "port": 5005
+    },
+    {
+      "type": "java",
+      "name": "Debug Receiver",
+      "request": "launch",
+      "mainClass": "contain.opensource.ils.bs.receiver.ReceiverApplication",
+      "projectName": "ILS",
+      "preLaunchTask": "mvn-compile",
+      "cwd": "${workspaceFolder}/ILS",
+      "args": "",
+      "vmArgs": "-Dspring.profiles.active=dev"
     }
   ]
 }
