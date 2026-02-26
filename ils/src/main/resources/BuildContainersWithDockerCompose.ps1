@@ -19,6 +19,12 @@ docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ils\uuidutil\docker-
 docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ils\uuidutil\docker-compose.yml up -d --build
 #docker images --digests | findstr notification-service
 
+#The above two probably dont require build because it is define din the root pom.xml
+#	<packaging>pom</packaging>
+#	<modules>
+#		<module>shared</module>
+#		<module>uuidutil</module>
+#	</modules>
 
 
 #Build ECM
