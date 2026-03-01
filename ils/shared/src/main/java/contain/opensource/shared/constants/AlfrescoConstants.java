@@ -54,7 +54,7 @@ public class AlfrescoConstants {
     public static final String alfrescoDemoSiteName = "ontobind";
     public static final String alfrescoDemoSiteDropLib = "documentLibrary";
     public static final String alfrescoBaseUrl = "http://localhost:8080";
-    public static final String p12PrivateKeyFile = "C:\\ContainOpenSource\\Java\\OpenSourceJava\\ils\\src\\main\\resources\\Containselfsigned_cert.p12";
+    public static final String p12PrivateKeyFile = "C:\\ContainOpenSource\\Java\\OpenSourceJava\\ils\\receiver\\src\\main\\resources\\Containselfsigned_cert.p12";
     public static final String p12PrivateKeyFilePassword = "changeitsosecure";
     public static final String p12PrivateKeyFileAlias = "mykey";
 
