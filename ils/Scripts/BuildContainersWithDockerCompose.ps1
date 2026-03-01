@@ -12,13 +12,14 @@ docker ps -q | ForEach-Object {
 
 #Check network connected containers
 docker network ls
+docker network inspect ils_default
 docker network inspect ils-network
 docker network inspect ils_ils-network
 docker network inspect ecm_ils-network
 
 
 #build redis 
-docker run -d --name Redis-service --network ils-network -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+docker run -d --name Redis-service --network ils_default -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
 
 
 #Build  shared 
@@ -29,6 +30,7 @@ mvn clean install -DskipTests=true
 
 
 #build uuidutil
+cls
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
 $env:Path = $env:JAVA_HOME + "\bin;" + $env:Path
 cd C:\ContainOpenSource\Java\OpenSourceJava\ils\uuidutil
@@ -46,11 +48,14 @@ docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ils\uuidutil\docker-c
 #	</modules>
 
 
-#Build ECM
+#Build receiver
+cls
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.10"
+$env:Path = $env:JAVA_HOME + "\bin;" + $env:Path
 cd C:\ContainOpenSource\Java\OpenSourceJava\ils
 docker build -t ils-app:latest .
-docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ils\docker-compose.yml down 
-docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ils\docker-compose.yml up --build
+docker compose  -f C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\docker-compose.yml down 
+docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\docker-compose.yml up --build
 
 
 

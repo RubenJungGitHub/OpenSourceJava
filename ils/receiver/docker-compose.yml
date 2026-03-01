@@ -1,37 +1,11 @@
+
+name : ils
 services:
-  redis:
-    image: redis/redis-stack:latest
-    container_name: Redis-service
-    ports:
-    - "6379:6379"
-    - "8001:8001"
-    networks:
-    - ils-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 2s
-      retries: 5
-
-  postgres:
-    image: postgres:16
-    container_name: postgres-db
-    environment:
-      POSTGRES_USER: contain
-      POSTGRES_PASSWORD: contain
-      POSTGRES_DB: contAInBallenbak  # <-- the database Spring Boot will use
-    ports:
-      - "5433:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - ils-network
-
   contain-ils:
-    build: .
+    build:
+      context: C:/ContainOpenSource/Java/OpenSourceJava/ils
+      dockerfile: receiver/Dockerfile
     container_name: contain-ils
-    depends_on:
-      - postgres
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/contAInBallenbak
       SPRING_DATASOURCE_USERNAME: contain
@@ -42,7 +16,7 @@ services:
     ports:
       - "5000:8080"
     networks:
-      - ils-network
+      - ils_ils_default
       - end-user_default
 
 
@@ -50,9 +24,8 @@ volumes:
   pgdata:
 
 networks:
-  ils-network:
-    driver: bridge
-
+  ils_ils_default:
+    external: true
   end-user_default:
     external: true
 

@@ -1,4 +1,3 @@
-
 name : ils
 services:
   redis:
@@ -8,7 +7,7 @@ services:
     - "6379:6379"
     - "8001:8001"
     networks:
-    - ils_default
+    - ils_ils_default
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -27,36 +26,15 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - ils_default
-
-
-
-  contain-ils:
-    build: .
-    container_name: contain-ils
-    depends_on:
-      - postgres
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/contAInBallenbak
-      SPRING_DATASOURCE_USERNAME: contain
-      SPRING_DATASOURCE_PASSWORD: contain
-      SPRING_CONFIG_LOCATION: /app/data/application.yaml
-      APP_KEYSTORE_PATH: /app/config/Containselfsigned_cert.p12
-      SPRING_REDIS_HOST: Redis-service
-    ports:
-      - "5000:8080"
-    networks:
       - ils_ils_default
-      - end-user_default
-
 
 volumes:
   pgdata:
 
 networks:
-  ils_default:
+  ils_ils_default:
     driver: bridge
+    external: true
 
   end-user_default:
     external: true
-

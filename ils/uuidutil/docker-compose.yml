@@ -9,5 +9,11 @@ services:
       dockerfile: uuidutil/Dockerfile
     ports:
       - "5002:5002"
+    networks:
+      - ils_ils_default
+
     volumes:
       - ~/.m2/repository:/root/.m2/repository
+networks:
+  ils_ils_default:
+    external: true
