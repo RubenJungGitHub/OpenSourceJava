@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<!-- ENABLE IF FULL BUILD FROM ROOT-->
+    <!-- ENABLE IF FULL BUILD FROM ROOT-->
     <!--
 
 	<parent>
@@ -15,19 +15,19 @@
     <!-- 
 		DISABLE IF DOCKERRED FROM ROOT
 		Standalone module: explicitly define groupId and version 
--->	
+-->
     <groupId>contain.opensource.java</groupId>
     <artifactId>uuidutil</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
 
-	<properties>
-		<java.version>21</java.version>
+    <properties>
+        <java.version>21</java.version>
         <spring-boot.version>3.2.5</spring-boot.version>
-	</properties>
+    </properties>
 
-	
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -48,7 +48,7 @@
         </dependency>
 
         <dependency>
-            <groupId>contain.opensource</groupId>
+            <groupId>contain.opensource.java</groupId>
             <artifactId>shared</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
@@ -59,7 +59,7 @@
             <version>${spring-boot.version}</version>
             <optional>true</optional>
         </dependency>
-	</dependencies>
+    </dependencies>
 
 
     <build>
@@ -68,6 +68,13 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -78,6 +85,9 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>
