@@ -7,8 +7,6 @@ services:
     ports:
     - "6379:6379"
     - "8001:8001"
-    networks:
-    - ils-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -30,8 +28,4 @@ services:
 
 volumes:
   pgdata:
-
-networks:
-  ils-network:
-    driver: bridge
 

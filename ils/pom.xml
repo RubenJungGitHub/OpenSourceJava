@@ -18,7 +18,7 @@
 	<modules>
 		<module>shared</module>
 		<module>uuidutil</module>
-		<module>receiver</module>
+		<!--<module>receiver</module>-->
 	</modules>
 	<properties>
 		<java.version>21</java.version>

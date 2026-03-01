@@ -87,7 +87,7 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>contain.opensource</groupId>
+			<groupId>contain.opensource.java</groupId>
 			<artifactId>shared</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
