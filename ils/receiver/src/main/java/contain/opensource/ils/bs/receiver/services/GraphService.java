@@ -350,7 +350,7 @@ public class GraphService {
 
             BindRequest request = new BindRequest(SPItem.ToSecuredDocument(),
                     privateKeyBase64);
-            String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
+            String endPoint = ILSProperties.getbindendpoint();
             System.out
                     .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "

@@ -2,6 +2,7 @@ package contain.opensource.shared.configurationproperties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
 import jakarta.annotation.PostConstruct;
 
 @Component
@@ -11,6 +12,7 @@ public class ILSRestProperties {
     private String DeltaLinkFile;
     private String uudiutilendpoint;
     private String bindendpoint;
+    private String relocateendpoint;
 
     // getters & setters
     public String getBaseUrl() {
@@ -41,8 +43,17 @@ public class ILSRestProperties {
         return bindendpoint;
     }
 
-    public void setbindendpoint(String uudiutilendPoint) {
+    public void setbindendpoint(String bindendpoint) {
         this.bindendpoint = bindendpoint;
+    }
+
+    
+    public String getrelocateendpoint() {
+        return relocateendpoint;
+    }
+
+    public void setrelocateendpoint(String relocateendpoint) {
+        this.relocateendpoint = relocateendpoint;
     }
 
     @PostConstruct

@@ -18,8 +18,10 @@ WORKDIR /app
 RUN mkdir -p /app/config /app/data
 
 COPY --from=build /build/receiver/target/*.jar app.jar
-COPY --from=build /build/receiver/src/main/resources/application-container.yaml /app/data/application.yaml
-COPY --from=build /build/receiver/src/main/resources/Containselfsigned_cert.p12 /app/config/Containselfsigned_cert.p12
+#COPY --from=build /build/receiver/src/main/resources/application-container.yaml /app/data/application.yaml
+#COPY --from=build /build/receiver/src/main/resources/Containselfsigned_cert.p12 /app/config/Containselfsigned_cert.p12
+COPY --from=build /build/receiver/target/classes/application-container.yaml /app/data/application.yaml
+COPY --from=build /build/receiver/target/classes/Containselfsigned_cert.p12 /app/config/Containselfsigned_cert.p12
 
 EXPOSE 5002
 ENV SPRING_CONFIG_LOCATION=/app/data/application.yaml

@@ -53,10 +53,11 @@ alfresco:
   baseUrl: http://end-user-alfresco-1:8080
   
 
-receiver:
+ils:
   #username: admin
   #password: admin
   uudiutilendpoint: http://host.docker.internal:5002/api/GetUUID
   base-url: http://host.docker.internal:5000
-  bindendpoint: host.docker.internal/api/GetUUID
+  bindendpoint: http://host.docker.internal:5000/api/Bind
+  relocateendpoint: http://host.docker.internal:5000/api/RelocateIO
   DeltaLinkFile: "/app/data/storeddeltalinks.csv"

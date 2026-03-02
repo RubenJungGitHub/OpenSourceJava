@@ -36,14 +36,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
-import contain.opensource.shared.configurationproperties.ActiveMQProperties;
-import contain.opensource.shared.configurationproperties.AlfrescoProperties;
-import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
+import contain.opensource.shared.configurationproperties.ActiveMQProperties;
+import contain.opensource.shared.configurationproperties.AlfrescoProperties;
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeType;
@@ -265,7 +265,7 @@ public class MessageBrowserPollAlfresco {
 
             BindRequest request = new BindRequest(
                     aController.alfresconNodeResponse.ToSecuredDocument(), privateKeyBase64);
-            String endPoint = ILSProperties.getBaseUrl() + "/api/Bind";
+            String endPoint = ILSProperties.getbindendpoint() ;
             System.out
                     .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "
