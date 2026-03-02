@@ -869,9 +869,10 @@ public class GraphService {
                         // 240);
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
                         // ROobject.setHash(bindresponse.getBody());
-                        String endpoint = String.format(
-                                "%s/RelocateIO",
-                                this.ILSProperties.getBaseUrl());
+                  //      String endpoint = String.format(
+                    //            "%s/RelocateIO",
+                      //          this.ILSProperties.getBaseUrl());
+                        String endpoint = this.ILSProperties.getrelocateendpoint();
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         headers.setBasicAuth(

@@ -416,9 +416,10 @@ public class MessageBrowserPollAlfresco {
                                         // relocaiton is called we use a REST API
                                         // aController.RelocateIO(IOobject);
                                         RestTemplate restTemplate = new RestTemplate();        
-                                        String endpoint = String.format(
-                                                "%s/RelocateIO",
-                                                this.ILSProperties.getBaseUrl());
+                                        //String endpoint = String.format(
+                                        //        "%s/RelocateIO",
+                                        //        this.ILSProperties.getBaseUrl());
+                                        String endpoint = this.ILSProperties.getBaseUrl();
                                         HttpHeaders headers = new HttpHeaders();
                                         headers.setContentType(MediaType.APPLICATION_JSON);
                                         headers.setBasicAuth(

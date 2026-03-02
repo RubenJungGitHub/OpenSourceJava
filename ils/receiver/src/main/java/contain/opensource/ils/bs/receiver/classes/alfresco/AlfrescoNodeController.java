@@ -439,7 +439,6 @@ public class AlfrescoNodeController {
       ObjectNode propertiesNode = mapper.createObjectNode();
 
       propertiesNode.put("contain:BINDIO", true);
-      //propertiesNode.put("contain:RELOCATEIO", false);
       if (IOobject.getTitle() != null)
         propertiesNode.put("cm:title", IOobject.getTitle());
       if (IOobject.getDescription() != null)
