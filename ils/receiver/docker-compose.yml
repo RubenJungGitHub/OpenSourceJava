@@ -1,13 +1,13 @@
 
 name : ils
 services:
-  contain-ils:
+  receiver:
     build:
       context: C:/ContainOpenSource/Java/OpenSourceJava/ils
       dockerfile: receiver/Dockerfile
-    container_name: contain-ils
+    container_name: receiver
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/contAInBallenbak
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/contAInBallenbak
       SPRING_DATASOURCE_USERNAME: contain
       SPRING_DATASOURCE_PASSWORD: contain
       SPRING_CONFIG_LOCATION: /app/data/application.yaml
@@ -19,9 +19,6 @@ services:
       - ils_ils_default
       - end-user_default
 
-
-volumes:
-  pgdata:
 
 networks:
   ils_ils_default:

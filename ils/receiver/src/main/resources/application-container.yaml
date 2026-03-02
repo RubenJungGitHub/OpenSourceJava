@@ -1,6 +1,9 @@
+
 # ==========================
 # Spring Boot Configuration
 # ==========================
+
+name: receiver
 
 #debug: true
 
@@ -20,32 +23,25 @@ spring:
     idle-timeout: 30000          # 30 seconds
     max-lifetime: 1800000        # 30 minutes
     connection-timeout: 30000    # 30 seconds
-    leak-detection-threshold: 20000  # 20 seconds
+    leak-detection-threshold: 20000  # 20 seconds\
+  jpa:
+    hibernate:
+      ddl-auto: update   # or create / create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+# ==========================
+# Custom Application Properties
+# ==========================
 
-
-    # ---------- Redis ----------
-  data:
-    redis:
-      host: ${SPRING_REDIS_HOST:Redis-service}
-      port: ${SPRING_REDIS_PORT:6379}
-      password: ""
-
-  # ---------- ActiveMQ ----------
 activemq:
-  brokerUrl: tcp://host.docker.internal:61616
+  brokerUrl: tcp://end-user-activemq-1:61616
   user: admin
   password: admin
   sharepoint-queue: sharepoint.delta.queue
   alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
 
-# ==========================
-# Logging
-# ==========================
-
-
-# ==========================
-# Custom Application Properties
-# ==========================
 
 app:
   keystore:
@@ -55,8 +51,9 @@ alfresco:
   username: admin
   password: admin
   baseUrl: http://end-user-alfresco-1:8080
+  
 
-ils:
+receiver:
   #username: admin
   #password: admin
   uudiutilendpoint: http://host.docker.internal:5002/api/GetUUID
