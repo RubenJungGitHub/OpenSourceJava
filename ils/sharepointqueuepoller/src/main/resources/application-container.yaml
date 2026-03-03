@@ -3,14 +3,11 @@
 # Spring Boot Configuration
 # ==========================
 
-name: receiver
+name: ils
 
 #debug: true
 
 spring:
-
-  profiles:
-    active: sp
 
 redis:
   enabled: false

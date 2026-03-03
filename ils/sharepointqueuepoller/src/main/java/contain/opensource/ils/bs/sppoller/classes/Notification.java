@@ -1,4 +1,5 @@
-package contain.opensource.ils.bs.receiver.classes;
+package contain.opensource.ils.bs.sppoller.classes;
+import contain.opensource.ils.bs.receiver.classes.ResourceData;
 
 public class Notification {
     private String subscriptionId;

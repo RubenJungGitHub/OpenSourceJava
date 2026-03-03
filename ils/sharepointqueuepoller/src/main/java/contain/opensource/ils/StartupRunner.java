@@ -3,7 +3,7 @@ import  org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 
-import contain.opensource.ils.bs.receiver.classes.MessageQueueHandling.MessageBrowserPollSP;
+import contain.opensource.ils.bs.sppoller.classes.messagequeuehandling.*;
 
 @Component
 public class StartupRunner implements CommandLineRunner {
@@ -19,6 +19,7 @@ public class StartupRunner implements CommandLineRunner {
         System.out.println("StartupRunner: launching message polling...");
 
         // Run polling in a background thread to avoid blocking Spring
-       new Thread(() -> SPPoll.ReadMessages(args)).start();
+    //new Thread(() -> SPPoll.ReadMessages(args)).start();
+    SPPoll.ReadMessages(args);
     }
 }

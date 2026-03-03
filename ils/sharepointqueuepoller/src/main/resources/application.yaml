@@ -3,12 +3,11 @@
 # ==========================
 
 #debug: true
-
+name: ils
 spring:
   profiles:
     active: sp
 
-   
   flyway:
       enabled: false
 
@@ -66,6 +65,10 @@ activemq:
   password: admin
   sharepoint-queue: sharepoint.delta.queue
   alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+
+# ---------- SERVER PORT ----------
+server:
+  port: 5002
 
 # ==========================
 # Logging

@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes;
+package contain.opensource.ils.bs.sppoller.classes;
 
 import java.util.List;
 

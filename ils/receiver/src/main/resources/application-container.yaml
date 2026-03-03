@@ -8,8 +8,8 @@ name: receiver
 #debug: true
 
 spring:
-  profiles:
-    active: receiver
+  #profiles:
+    #active: receiver
 
 redis:
   enabled: true

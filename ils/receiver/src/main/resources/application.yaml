@@ -1,67 +1,24 @@
-# ==========================
-# Spring Boot Configuration
-# ==========================
-
-#debug: true
-
 spring:
-  
   profiles:
-    active: receiver
+    active: sp
   flyway:
-      enabled: false
-
-redis:
-  enabled: true
-
-  # ---------- Redis ----------
-  data:
-    redis:
-      host: ${SPRING_REDIS_HOST:Redis-service}
-      port: ${SPRING_REDIS_PORT:8001}
-      password: ""
-
-  # ---------- SQL DataSource ----------
-# datasource:
- #   url: jdbc:sqlserver://localhost:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
- #   username: sa
- #   password: contAIn123!
- #   driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-
-
-
- #------------PostGress datasource -------------
+    enabled: false
   datasource:
     url: jdbc:postgresql://localhost:5433/contAInBallenbak
     username: contain
     password: contain
     driver-class-name: org.postgresql.Driver
-    idle-timeout: 30000          # 30 seconds
-    max-lifetime: 1800000        # 30 minutes
-    connection-timeout: 30000    # 30 seconds
-    leak-detection-threshold: 20000  # 20 seconds
-
+    hikari:
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      leak-detection-threshold: 20000
   jpa:
     hibernate:
-      ddl-auto: update   # or create / create-drop
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-
-  # ---------- JPA ----------
-  #jpa:
-  #  hibernate:
-  #    ddl-auto: none
-  #    naming:
-  #      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-  #  show-sql: true
-  #  properties:
-  #    hibernate:
-  #      dialect: org.hibernate.dialect.PostgreSQLDialect
-  #      #dialect: org.hibernate.dialect.SQLServerDialect
-
-  # ---------- ActiveMQ ----------
+# ---------------- ActiveMQ ----------------
 activemq:
   brokerUrl: tcp://localhost:61616
   user: admin
@@ -69,16 +26,7 @@ activemq:
   sharepoint-queue: sharepoint.delta.queue
   alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
 
-# ==========================
-# Logging
-# ==========================
-
-
-
-# ==========================
-# Custom Application Properties
-# ==========================
-
+# ---------------- Custom App ----------------
 app:
   keystore:
     path: C:\ContainOpenSource\Java\OpenSourceJava\ils\src\main\resources\Containselfsigned_cert.p12
@@ -88,11 +36,7 @@ alfresco:
   password: admin
   baseUrl: http://localhost:8080
 
-
-
 ils:
-  #username: admin
-  #password: admin
   base-url: http://localhost:5000
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:5000/api/Bind

@@ -1,5 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
-
+package contain.opensource.ils.bs.sppoller.classes.messagequeuehandling;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
@@ -23,12 +22,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
-import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
 import contain.opensource.shared.constants.AlfrescoConstants;
 
 /**
@@ -117,8 +115,8 @@ public class MessageBrowserPollSP {
     private final GraphService graphService;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
-    @Autowired
-    private AlfrescoNodeController aController;
+    //@Autowired
+    //private AlfrescoNodeController aController;
 
     @Autowired
     public MessageBrowserPollSP(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,

@@ -4,13 +4,6 @@
                         https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-
-	<parent>
-        <groupId>contain.opensource.java</groupId>
-        <artifactId>ils</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-    </parent>
-
     <!--
     <parent>
 		<groupId>org.springframework.boot</groupId>
@@ -20,8 +13,18 @@
 	</parent>
     -->
 
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.3.0</version>
+		<relativePath />
+	</parent>
+
+	<groupId>contain.opensource.java</groupId>
 	<artifactId>sharepointqueuepoller</artifactId>
+	<version>3.3.0</version>
 	<packaging>jar</packaging>
+
 	<properties>
 		<java.version>21</java.version>
 	</properties>
@@ -29,9 +32,9 @@
     <dependencies>
         <!-- Internal modules -->
         <dependency>
-            <groupId>contain.opensource.java</groupId>
+            <groupId>contain.opensource.ils.bs</groupId>
             <artifactId>receiver</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+             <version>3.3.0</version> <!-- ✅ matches receiver POM -->
         </dependency>
         <dependency>
             <groupId>contain.opensource.java</groupId>
@@ -78,7 +81,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>contain.opensource.ils.sharepointqueuepoller.ILSApplication</mainClass>
+                    <mainClass>contain.opensource.ils.ILSApplication</mainClass>
                 </configuration>
             </plugin>
             <plugin>
