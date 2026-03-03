@@ -8,13 +8,13 @@ name: receiver
 #debug: true
 
 spring:
+
   profiles:
-    active: receiver
+    active: sp
 
 redis:
-  enabled: true
-
-
+  enabled: false
+  
   # ---------- SQL DataSource ----------
   datasource:
  #   url: jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
@@ -49,22 +49,3 @@ activemq:
   sharepoint-queue: sharepoint.delta.queue
   alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
 
-
-app:
-  keystore:
-    path: /app/config/Containselfsigned_cert.p12
-
-alfresco:
-  username: admin
-  password: admin
-  baseUrl: http://end-user-alfresco-1:8080
-  
-
-ils:
-  #username: admin
-  #password: admin
-  uudiutilendpoint: http://host.docker.internal:5002/api/GetUUID
-  base-url: http://host.docker.internal:5000
-  bindendpoint: http://host.docker.internal:5000/api/Bind
-  relocateendpoint: http://host.docker.internal:5000/api/RelocateIO
-  DeltaLinkFile: "/app/data/storeddeltalinks.csv"

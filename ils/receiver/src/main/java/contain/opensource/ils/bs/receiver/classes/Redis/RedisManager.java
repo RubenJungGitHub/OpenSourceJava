@@ -2,6 +2,12 @@ package contain.opensource.ils.bs.receiver.classes.Redis;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -29,8 +35,11 @@ import io.lettuce.core.api.sync.RedisCommands;
  * Note: This class is not intended to be instantiated.
  *
  */
+@Component
+@Profile("receiver")   // only load Redis/Alfresco in 'receiver' profile
+@ConditionalOnProperty(name="redis.enabled", havingValue="true", matchIfMissing=false)
+@ConditionalOnMissingBean(RedisManager.class)
 public final class RedisManager {
-
     private static final String REDIS_URI = "redis://localhost:6379"; // Redis protocol port
 
     public static RedisClient client;

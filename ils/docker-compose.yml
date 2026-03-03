@@ -1,63 +1,97 @@
 
-name : ils
+name: ils
 services:
-  redis:
-    image: redis/redis-stack:latest
-    container_name: Redis-service
-    ports:
-    - "6379:6379"
-    - "8001:8001"
-    networks:
-    - ils_ils_default
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 2s
-      retries: 5
 
-  postgres:
-    image: postgres:16
-    container_name: postgres-db
-    environment:
-      POSTGRES_USER: contain
-      POSTGRES_PASSWORD: contain
-      POSTGRES_DB: contAInBallenbak  # <-- the database Spring Boot will use
-    ports:
-      - "5433:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - ils_ils_default
+  # ==========================
+  # Infrastructure
+  # ==========================
 
 
+#  postgres-db:
+#    image: postgres:16
+#    container_name: postgres-db
+#    environment:
+#      POSTGRES_DB: contAInBallenbak
+#      POSTGRES_USER: contain
+#      POSTGRES_PASSWORD: contain
+#    ports:
+#      - "5433:5432"
+#    volumes:
+#     - pgdata:/var/lib/postgresql/data
+#    networks:
+#      - ils-network
+
+#  redis:
+#    image: redis:7
+#    container_name: Redis-service
+#    ports:
+#      - "6379:6379"
+#    networks:
+#      - ils-network
+
+
+  # ==========================
+  # Applications
+  # ==========================
 
   receiver:
-    build: .
-    container_name: receiver
-    depends_on:
-      - postgres
+    build:
+      context: .
+      dockerfile: receiver/Dockerfile
+    container_name: ils-receiver
     environment:
+      SPRING_PROFILES_ACTIVE: receiver
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/contAInBallenbak
       SPRING_DATASOURCE_USERNAME: contain
       SPRING_DATASOURCE_PASSWORD: contain
-      SPRING_CONFIG_LOCATION: /app/data/application.yaml
-      APP_KEYSTORE_PATH: /app/config/Containselfsigned_cert.p12
       SPRING_REDIS_HOST: Redis-service
-    ports:
-      - "5000:8080"
+      SPRING_REDIS_PORT: 6379
+      ACTIVEMQ_BROKERURL: tcp://activemq:61616
+#    depends_on:
+#      - postgres-db
+#      - activemq
+#      - redis
     networks:
-      - ils_ils_default
-      - end-user_default
+      - ils-network
 
+
+  sharepointpoller:
+    build:
+      context: .
+      dockerfile: sharepointqueuepoller/Dockerfile
+    container_name: ils-sharepointpoller
+    environment:
+      SPRING_PROFILES_ACTIVE: sp
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+      SPRING_DATASOURCE_USERNAME: contain
+      SPRING_DATASOURCE_PASSWORD: contain
+      ACTIVEMQ_BROKERURL: tcp://activemq:61616
+#    depends_on:
+#      - postgres-db
+#      - activemq
+    networks:
+      - ils-network
+
+
+  uuidutil:
+    build:
+      context: .
+      dockerfile: uuidutil/Dockerfile
+    container_name: ils-uuidutil
+    ports:
+      - "5002:5002"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+    networks:
+      - ils-network
+
+
+# ==========================
+# Network
+# ==========================
+networks:
+  ils-network:
+    name: ils-network
 
 volumes:
   pgdata:
-
-networks:
-  ils_ils_default:
-    external: true
-    driver: bridge
-
-  end-user_default:
-    external: true
-
