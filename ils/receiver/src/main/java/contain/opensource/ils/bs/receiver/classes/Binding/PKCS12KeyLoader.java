@@ -41,36 +41,44 @@ import contain.opensource.shared.constants.AlfrescoConstants;
  * @author [Your Name]
  * @since 1.0
  */
+
 @Component
 public final class PKCS12KeyLoader {
 
-    public static PrivateKey PK;
+    private static PrivateKey cachedKey;
 
-    // public static PrivateKey loadPrivateKey(
-    public static void loadPrivateKey() throws Exception {
+    private PKCS12KeyLoader() {} // prevent instantiation
+
+    public static synchronized PrivateKey getPrivateKey() throws Exception {
+        if (cachedKey == null) {
+            cachedKey = loadPrivateKeyInternal();
+            System.out.println("[PKCS12] Private key loaded and cached");
+        }
+        return cachedKey;
+    }
+
+    private static PrivateKey loadPrivateKeyInternal() throws Exception {
         String keyStorePath = resolveKeystorePath();
         System.out.println("[PKCS12] Loading keystore from: " + keyStorePath);
 
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
-
         try (FileInputStream fis = new FileInputStream(keyStorePath)) {
-            keyStore.load(
-                    fis,
-                    AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
+            keyStore.load(fis, AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
         }
-        Key key = keyStore.getKey(AlfrescoConstants.p12PrivateKeyFileAlias,
-                AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
-        PK = (PrivateKey) key;
+
+        Key key = keyStore.getKey(
+            AlfrescoConstants.p12PrivateKeyFileAlias,
+            AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray()
+        );
+        return (PrivateKey) key;
     }
 
     private static String resolveKeystorePath() {
-        
         String env = System.getenv("APP_KEYSTORE_PATH");
-        System.out.println("[PKCS12]environment variable inside container  " + env);
+        System.out.println("[PKCS12] environment variable inside container: " + env);
         if (env != null && !env.isBlank()) {
             return env;
         }
-        return AlfrescoConstants.p12PrivateKeyFile; // dev fallback
+        return AlfrescoConstants.p12PrivateKeyFile; // fallback
     }
-
 }

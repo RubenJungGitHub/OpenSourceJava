@@ -260,7 +260,7 @@ public class MessageBrowserPollAlfresco {
                     + contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_RED
                     + ("Binding ALFRESCO NODE IO " + IOUUID)
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            PrivateKey key = PKCS12KeyLoader.PK;
+            PrivateKey key = PKCS12KeyLoader.getPrivateKey();
             String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
             BindRequest request = new BindRequest(

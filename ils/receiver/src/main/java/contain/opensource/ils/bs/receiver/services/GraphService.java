@@ -351,7 +351,10 @@ public class GraphService {
                     + contain.opensource.shared.constants.AlfrescoConstants.RED
                     + ("Binding SP IO " + SPItem.UUID)
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            PrivateKey key = PKCS12KeyLoader.PK;
+            // PrivateKey key = PKCS12KeyLoader.PK;
+            PrivateKey key;
+            key = PKCS12KeyLoader.getPrivateKey();
+
             String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
             BindRequest request = new BindRequest(SPItem.ToSecuredDocument(),
