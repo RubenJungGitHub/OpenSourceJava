@@ -4,6 +4,9 @@ import java.io.FileInputStream;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+
+import org.springframework.stereotype.Component;
+
 import contain.opensource.shared.constants.AlfrescoConstants;
 
 /**
@@ -38,6 +41,7 @@ import contain.opensource.shared.constants.AlfrescoConstants;
  * @author [Your Name]
  * @since 1.0
  */
+@Component
 public final class PKCS12KeyLoader {
 
     public static PrivateKey PK;
@@ -60,7 +64,9 @@ public final class PKCS12KeyLoader {
     }
 
     private static String resolveKeystorePath() {
+        
         String env = System.getenv("APP_KEYSTORE_PATH");
+        System.out.println("[PKCS12]environment variable inside container  " + env);
         if (env != null && !env.isBlank()) {
             return env;
         }

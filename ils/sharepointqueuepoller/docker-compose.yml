@@ -15,7 +15,6 @@ services:
       - "3001:3001"
     networks:
       - ils_ils_default
-      - end-user_default
 
 
 networks:

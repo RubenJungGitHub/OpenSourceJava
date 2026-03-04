@@ -25,13 +25,15 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
@@ -45,7 +47,7 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
-import contain.opensource.ils.bs.receiver.services.GraphService;
+import contain.opensource.ils.bs.receiver.services.migrationservice;
 
 /**
  * AlfrescoNodeController is a Spring component that manages interactions with
@@ -110,6 +112,8 @@ public class AlfrescoNodeController {
   private ILSRestProperties ilsRestProperties;
   private AlfrescoProperties alfrescoProperties;
 
+  private migrationservice migrationservice;
+
   @Autowired
   public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsProperties) {
     this.alfrescoProperties = alfrescoProperties;
@@ -117,6 +121,11 @@ public class AlfrescoNodeController {
     this.endpoint = alfrescoProperties.getBaseUrl();
     this.username = alfrescoProperties.getUsername();
     this.password = alfrescoProperties.getPassword();
+  }
+
+  @Autowired
+  public void setMigrationService(@Lazy migrationservice migrationService) {
+    this.migrationservice = migrationService;
   }
 
   public AlfrescoNodeController() {
@@ -414,7 +423,7 @@ public class AlfrescoNodeController {
    * param IOobject the {@link RelocateInformationObject} containing the metadata
    * to update
    */
-  public void updateMetaData(String nodeId, RelocateInformationObject IOobject)  throws Exception{
+  public void updateMetaData(String nodeId, RelocateInformationObject IOobject) throws Exception {
     try {
       // ===========================================================================================
       // Now it is working in separate methid but in my perception it should be
@@ -542,7 +551,7 @@ public class AlfrescoNodeController {
    * @return An empty string if the upload is successful; otherwise, returns
    *         "Failed".
    */
-  public String uploadSPItemToAlfresco(RelocateInformationObject IOobject) throws Exception{
+  public String uploadSPItemToAlfresco(RelocateInformationObject IOobject) throws Exception {
     try {
       // First get SiteNode
       try (CloseableHttpClient client = HttpClients.createDefault()) {
@@ -572,7 +581,7 @@ public class AlfrescoNodeController {
         ObjectNode props = mapper.createObjectNode();
         props.put("type", "contain:containdocument"); // mandatory
         props.put("name", IOobject.getFileName()); // mandatory
-       // props.put("contain:RELOCATEIO", true);
+        // props.put("contain:RELOCATEIO", true);
 
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.setMode(HttpMultipartMode.STRICT);
@@ -593,12 +602,11 @@ public class AlfrescoNodeController {
         try (CloseableHttpResponse response = client.execute(post)) {
           int statusCode = response.getCode();
           String responseBody = EntityUtils.toString(response.getEntity());
-          //Check if existant!
-          if(statusCode == 409)
-          {
-            //Debug
-            //Sometimes events cross. Avoid break of process
-            //Integer a = 1; 
+          // Check if existant!
+          if (statusCode == 409) {
+            // Debug
+            // Sometimes events cross. Avoid break of process
+            // Integer a = 1;
           }
           if (statusCode >= 200 && statusCode < 300) {
             // debug GetNode to check why fields are not set
@@ -619,15 +627,14 @@ public class AlfrescoNodeController {
             // reliably Checked relentlessly with ChatGPT 17-12-2025
             updateMetaData(nodeId, IOobject);
             System.out.println("Item  : " + IOobject.getFileName() + " moved to Alfresco succesfully");
-            //BS
+            // BS
             return "";
           } else {
             throw new RuntimeException("Upload failed: " + statusCode + " - " + responseBody);
           }
         }
       }
-    } catch (
-    Exception e) {
+    } catch (Exception e) {
       System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();
       throw e;
@@ -858,7 +865,8 @@ public class AlfrescoNodeController {
    * 
    * @throws IllegalArgumentException if the specified field is not supported.
    */
-  public String UpdateNode(NodeTypeFields field, String uuidutilendpoint, Optional<String> IOPath,   Optional<String> fieldValue) {
+  public String UpdateNode(NodeTypeFields field, String uuidutilendpoint, Optional<String> IOPath,
+      Optional<String> fieldValue) {
     try {
       String endpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
@@ -871,16 +879,18 @@ public class AlfrescoNodeController {
       switch (field) {
         case UUID:
           propertyName = "contain:IOUUID"; // custom aspect property
-          //propertyValue = AlfrescoConstants.ContainPlatforms.ALFRESCO.toString() + "-" + UUIDUtil.getUUIDOverHTTP();
-       //   propertyValue =UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.ALFRESCO));
-               propertyName = "contain:IOUUID"; // custom aspect property
+          // propertyValue = AlfrescoConstants.ContainPlatforms.ALFRESCO.toString() + "-"
+          // + UUIDUtil.getUUIDOverHTTP();
+          // propertyValue
+          // =UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.ALFRESCO));
+          propertyName = "contain:IOUUID"; // custom aspect property
           System.out.println(
               AlfrescoConstants.RED + "Get UUID endpoint  : "
                   + uuidutilendpoint + AlfrescoConstants.RESET);
 
-            String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.ALFRESCO;
+          String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.ALFRESCO;
 
-            String urlString = uuidutilendpoint + query;
+          String urlString = uuidutilendpoint + query;
 
           URL url = new URL(urlString);
           HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -934,7 +944,7 @@ public class AlfrescoNodeController {
 
         if (statusCode == 200) {
           this.alfresconNodeResponse.UUID = propertyValue;
-          RedisManager.putHash("IOinHashAssigned","IOinUUIDAssigned" + propertyValue, "InProcess",240);
+          RedisManager.putHash("IOinHashAssigned", "IOinUUIDAssigned" + propertyValue, "InProcess", 240);
           // Test ballenbak
           IOLog.log(
               propertyValue,
@@ -996,16 +1006,15 @@ public class AlfrescoNodeController {
 
     // Could be done from here but because it is not sure from where relocation is
     // performed we are using a REST API
-    //ADD ERRORHANDLING
+    // ADD ERRORHANDLING
 
-    GraphService GService = new GraphService();
     this.nodeId = IOobject.getId();
     // For now assumed only happy path. If something goes wrong rollback in
     // ballenbak and complete transacton`
     String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
         + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
-        
-      GService.uploadAlfrescoNodeToSP(IOobject);
+
+    this.migrationservice.migrateNodeToSP(IOobject);
     IOLog.log(
         IOobject.getUuid(),
         "",
@@ -1021,7 +1030,7 @@ public class AlfrescoNodeController {
         IOobject.marking,
         IOobject.classification,
         IOobject.version);
-    
+
     DeleteAlfrescoNode();
   }
 

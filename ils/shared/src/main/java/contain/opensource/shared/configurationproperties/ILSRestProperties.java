@@ -1,20 +1,20 @@
 package contain.opensource.shared.configurationproperties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 
-@Component
+
 @ConfigurationProperties(prefix = "ils")
 public class ILSRestProperties {
+
     private String baseUrl;
-    private String DeltaLinkFile;
+    private String deltaLinkFile;
     private String uudiutilendpoint;
     private String bindendpoint;
     private String relocateendpoint;
 
-    // getters & setters
+    // ----------------- Getters & Setters -----------------
     public String getBaseUrl() {
         return baseUrl;
     }
@@ -24,40 +24,44 @@ public class ILSRestProperties {
     }
 
     public String getDeltaLinkFile() {
-        return DeltaLinkFile;
+        return deltaLinkFile;
     }
 
     public void setDeltaLinkFile(String deltaLinkFile) {
-        this.DeltaLinkFile = deltaLinkFile;
+        this.deltaLinkFile = deltaLinkFile;
     }
 
-    public String getuudiutilendpoint() {
+    public String getUudiutilendpoint() {
         return uudiutilendpoint;
     }
 
-    public void setuudiutilendpoint(String uudiutilendPoint) {
-        this.uudiutilendpoint = uudiutilendPoint;
+    public void setUudiutilendpoint(String uudiutilendpoint) {
+        this.uudiutilendpoint = uudiutilendpoint;
     }
 
-    public String getbindendpoint() {
+    public String getBindendpoint() {
         return bindendpoint;
     }
 
-    public void setbindendpoint(String bindendpoint) {
+    public void setBindendpoint(String bindendpoint) {
         this.bindendpoint = bindendpoint;
     }
 
-    
-    public String getrelocateendpoint() {
+    public String getRelocateendpoint() {
         return relocateendpoint;
     }
 
-    public void setrelocateendpoint(String relocateendpoint) {
+    public void setRelocateendpoint(String relocateendpoint) {
         this.relocateendpoint = relocateendpoint;
     }
 
     @PostConstruct
     public void init() {
-        System.out.println("ILS baseUrl in postcinstruct : " + baseUrl);
+        System.out.println("ILSRestProperties loaded:");
+        System.out.println("baseUrl = " + baseUrl);
+        System.out.println("deltaLinkFile = " + deltaLinkFile);
+        System.out.println("uudiutilendpoint = " + uudiutilendpoint);
+        System.out.println("bindendpoint = " + bindendpoint);
+        System.out.println("relocateendpoint = " + relocateendpoint);
     }
 }

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -51,15 +52,14 @@ import com.microsoft.graph.models.ListItem;
 import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
-import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
 
@@ -75,20 +75,12 @@ public class GraphService {
     ObjectMapper mapper = new ObjectMapper();
 
     private String tenantDomain = "lls6.Sharepoint.com";
-    // private String siteGUID = "d155b09d-c4de-4d04-8b37-198f35e78232";
-    // private String siteGUID = "";
-    // private String SiteName = "SP-EventReceivers-Test";
-    // private String SiteName = "";
-    // private String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
-    // private String ListId ="";
-    // private String ListName = "Shared Documents";
-    // private String ListName = "";
 
     private String SiteID = "d155b09d-c4de-4d04-8b37-198f35e78232";
     private String SiteName = "SP-EventReceivers-Test";
     private String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
     private String ListName = "Shared Documents";
-    
+
     private String newDeltaLink = "";
     private String DeltaLinkFile = null;
     private final ClientCredentialParameters parameters = ClientCredentialParameters
@@ -97,22 +89,35 @@ public class GraphService {
     private GraphServiceClient<?> graphClient;
     private AlfrescoConstants.eItemtype itemtype;
     private ILSRestProperties ILSProperties = null;
-    @Autowired
-    private AlfrescoNodeController aController;// = new AlfrescoNodeController();
+    private migrationservice migrationservice;
 
-    public GraphService () {
-        mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
+    /*
+     * @Autowired
+     * public GraphService(ILSRestProperties ilsProperties, @Lazy migrationservice
+     * migrationService) {
+     * System.out.println("GraphService autowired constructor called!");
+     * this.ILSProperties = ilsProperties;
+     * this.DeltaLinkFile = ILSProperties.getDeltaLinkFile();
+     * this.migrationservice = migrationService;
+     * mapper = new ObjectMapper();
+     * mapper.registerModule(new JavaTimeModule());
+     * mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+     * }
+     */
 
     @Autowired
     public GraphService(ILSRestProperties ilsProperties) {
         this.ILSProperties = ilsProperties;
-        this.DeltaLinkFile = ILSProperties.getDeltaLinkFile();
         mapper = new ObjectMapper();
+        this.DeltaLinkFile = ILSProperties.getDeltaLinkFile();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // this will be set later via setter
+    }
+
+    @Autowired
+    public void setMigrationService(@Lazy migrationservice migrationService) {
+        this.migrationservice = migrationService;
     }
 
     public String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
@@ -171,18 +176,19 @@ public class GraphService {
             // UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
             System.out.println(
                     AlfrescoConstants.RED + "Get UUID endpoint  : "
-                            + ILSProperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
+                            + ILSProperties.getUudiutilendpoint() + AlfrescoConstants.RESET);
 
             String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.SPO;
 
-            String urlString = ILSProperties.getuudiutilendpoint() + query;
+            String urlString = ILSProperties.getUudiutilendpoint() + query;
 
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
             int status = conn.getResponseCode();
-            System.out.println("Accessing uuid rest url on " + ILSProperties.getuudiutilendpoint() + " return code -> " + status);
+            System.out.println(
+                    "Accessing uuid rest url on " + ILSProperties.getUudiutilendpoint() + " return code -> " + status);
 
             if (status == 200) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -350,7 +356,7 @@ public class GraphService {
 
             BindRequest request = new BindRequest(SPItem.ToSecuredDocument(),
                     privateKeyBase64);
-            String endPoint = ILSProperties.getbindendpoint();
+            String endPoint = ILSProperties.getBindendpoint();
             System.out
                     .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "
@@ -406,7 +412,7 @@ public class GraphService {
                     + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
 
             // Upload to Alfrewsco
-            aController.uploadSPItemToAlfresco(ROobject);
+            migrationservice.migrateNodeToAlfresco(ROobject);
 
             // log
             IOLog.log(
@@ -869,10 +875,10 @@ public class GraphService {
                         // 240);
                         RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
                         // ROobject.setHash(bindresponse.getBody());
-                  //      String endpoint = String.format(
-                    //            "%s/RelocateIO",
-                      //          this.ILSProperties.getBaseUrl());
-                        String endpoint = this.ILSProperties.getrelocateendpoint();
+                        // String endpoint = String.format(
+                        // "%s/RelocateIO",
+                        // this.ILSProperties.getBaseUrl());
+                        String endpoint = this.ILSProperties.getRelocateendpoint();
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         headers.setBasicAuth(

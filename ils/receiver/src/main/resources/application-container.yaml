@@ -3,16 +3,17 @@
 # Spring Boot Configuration
 # ==========================
 
-name: receiver
+name: ils
 
 #debug: true
 
 spring:
-  #profiles:
-    #active: receiver
+  # profiles:
+  #  active: receiver
 
-redis:
-  enabled: true
+  redis:
+    host: Redis-service
+    port: 6379
 
 
   # ---------- SQL DataSource ----------
@@ -63,8 +64,8 @@ alfresco:
 ils:
   #username: admin
   #password: admin
-  uudiutilendpoint: http://host.docker.internal:5002/api/GetUUID
-  base-url: http://host.docker.internal:5000
-  bindendpoint: http://host.docker.internal:5000/api/Bind
-  relocateendpoint: http://host.docker.internal:5000/api/RelocateIO
+  uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
+  base-url: http://receiver:5000
+  bindendpoint: http://receiver:5000/api/Bind
+  relocateendpoint: http://receiver:5000/api/RelocateIO
   DeltaLinkFile: "/app/data/storeddeltalinks.csv"

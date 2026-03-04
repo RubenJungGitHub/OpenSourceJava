@@ -24,8 +24,8 @@ FROM eclipse-temurin:21-jre
 
 # Copy the final JAR from build stage
 COPY --from=build /build/sharepointqueuepoller/target/sharepointqueuepoller-3.3.0.jar /app/sharepointqueuepoller.jar
-COPY --from=build /build/receiver/target/classes/application-container.yaml /app/data/application.yaml
-
+COPY --from=build /build/sharepointqueuepoller/target/classes/application-container.yaml /app/data/application.yaml
+ENV SPRING_CONFIG_LOCATION=file:/app/data/application.yaml
 WORKDIR /app
 
 # Command to run your application

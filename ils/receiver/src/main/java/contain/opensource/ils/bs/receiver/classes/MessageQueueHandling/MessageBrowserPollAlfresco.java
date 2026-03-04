@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import org.springframework.stereotype.Component;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -30,6 +29,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -265,7 +265,7 @@ public class MessageBrowserPollAlfresco {
 
             BindRequest request = new BindRequest(
                     aController.alfresconNodeResponse.ToSecuredDocument(), privateKeyBase64);
-            String endPoint = ILSProperties.getbindendpoint() ;
+            String endPoint = ILSProperties.getBindendpoint() ;
             System.out
                     .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "
@@ -368,7 +368,7 @@ public class MessageBrowserPollAlfresco {
                                     String IOUUID = "";
                                     if (!aController.alfresconNodeResponse.HasUUID) {
                                         // Set UUID
-                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, ILSProperties.getuudiutilendpoint() ,Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, ILSProperties.getUudiutilendpoint() ,Optional.ofNullable(secondPath.toString()), Optional.empty());
                                         //IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID ,Optional.ofNullable(secondPath.toString()), Optional.empty());
 
                                     } else {

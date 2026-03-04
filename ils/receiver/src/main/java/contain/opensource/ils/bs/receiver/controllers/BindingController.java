@@ -1,22 +1,20 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.security.KeyFactory;  
+import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
-import  contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
+import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
+import  contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 
 @RestController
 @RequestMapping("/api") // class-level base path

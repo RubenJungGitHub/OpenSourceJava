@@ -1,8 +1,5 @@
 spring:
-  redis:
-    host: localhost
-    port: 6379
-    profiles:
+  profiles:
     active: sp
   flyway:
     enabled: false
@@ -29,7 +26,6 @@ activemq:
   sharepoint-queue: sharepoint.delta.queue
   alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
 
-
 # ---------------- Custom App ----------------
 app:
   keystore:
@@ -46,4 +42,3 @@ ils:
   bindendpoint: http://localhost:5000/api/Bind
   relocateendpoint: http://localhost:5000/api/RelocateIO
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"
-

@@ -24,6 +24,7 @@ WORKDIR /app
 COPY --from=build /build/receiver/target/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
+ENV SPRING_PROFILES_ACTIVE=sppoller
 # ===== STAGE 4: SHAREPOINT POLLER IMAGE =====
 FROM eclipse-temurin:21-jre-alpine AS sharepointpoller
 WORKDIR /app

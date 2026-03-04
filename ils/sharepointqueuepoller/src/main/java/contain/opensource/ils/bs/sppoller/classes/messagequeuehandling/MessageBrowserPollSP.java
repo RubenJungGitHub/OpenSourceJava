@@ -148,7 +148,21 @@ public class MessageBrowserPollSP {
      *
      * @param args Command-line arguments (currently unused).
      */
-    public void ReadMessages(String[] args) {
+
+    // Public method to start polling
+    public void startPolling() {
+        System.out.println("MessageBrowserPollSP: starting polling in background thread...");
+
+        new Thread(() -> {
+            try {
+                ReadMessages();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, "SPPoller-Thread").start();
+    }
+    
+    public void ReadMessages() {
         try {
 
             /// ================================================================================================================================

@@ -1,9 +1,7 @@
 package contain.opensource.shared.configurationproperties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
 @ConfigurationProperties(prefix = "alfresco")
 public class AlfrescoProperties {
     private String baseUrl;

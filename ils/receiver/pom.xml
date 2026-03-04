@@ -78,12 +78,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- Optional: Swagger/OpenAPI -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.0.2</version>
-		</dependency>
 		<!-- Optional: Microsoft Azure Auth -->
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
@@ -168,16 +162,44 @@
 	</dependencies>
 	<build>
 		<plugins>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>repackage</id>
-                    <phase>none</phase> <!-- disable repackaging -->
-                </execution>
-            </executions>
-        </plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>repackage</id>
+						<phase>none</phase> <!-- disable repackaging -->
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>contain.opensource.ils.startreceiver</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<!-- Docker profile: enables fat JAR -->
+		<profile>
+			<id>docker</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<!-- DO NOT disable execution here -->
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

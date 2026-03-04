@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import io.lettuce.core.RedisClient;
@@ -36,8 +35,7 @@ import io.lettuce.core.api.sync.RedisCommands;
  *
  */
 @Component
-@Profile("receiver")   // only load Redis/Alfresco in 'receiver' profile
-@ConditionalOnProperty(name="redis.enabled", havingValue="true", matchIfMissing=false)
+@ConditionalOnProperty(name = "redis.enabled", havingValue = "true", matchIfMissing = false)
 @ConditionalOnMissingBean(RedisManager.class)
 public final class RedisManager {
     private static final String REDIS_URI = "redis://localhost:6379"; // Redis protocol port
@@ -71,20 +69,12 @@ public final class RedisManager {
      * This method is synchronized to ensure thread safety during initialization.
      *
      */
-    public static synchronized void init() {
+    public static synchronized void init(RedisConfigProperties config) {
         if (redis != null)
             return; // already initialized
         try {
-            String host = System.getenv("SPRING_REDIS_HOST");
-            if (host == null || host.isBlank()) {
-                host = "localhost";
-            }
-
-            String portStr = System.getenv("SPRING_REDIS_PORT");
-            int port = 6379; // container default
-            if (portStr != null && !portStr.isBlank()) {
-                port = Integer.parseInt(portStr);
-            }
+            String host = config.getHost() != null ? config.getHost() : "localhost";
+            int port = config.getPort() != 0 ? config.getPort() : 6379;
 
             String redisUri = "redis://" + host + ":" + port;
             System.out.println("[RedisManager] Connecting to " + redisUri);
@@ -125,7 +115,7 @@ public final class RedisManager {
      * param TimeSpanSecs The expiration time in seconds for the key-value pair.
      */
     public static void putHash(String hashKey, String field, String value, Integer TimeSpanSecs) {
-        init();
+        //init();
         // As hashjey TTL will delete entire hashkey .
         // This is undesired because we want to keep the essential info in cache..
         // Downside is there is no control over cache deletion if items are deleted.
@@ -149,7 +139,7 @@ public final class RedisManager {
      *         Redis is unavailable
      */
     public static String getHashField(String uuid) {
-        init();
+        //init();
         if (redis != null) {
             // This returns value from key
             redis.expire(uuid, 60); // reset TTL to 60 seconds
@@ -169,7 +159,7 @@ public final class RedisManager {
      *         field does not exist or Redis is unavailable
      */
     public static String getHashField(String hashKey, String field) {
-        init();
+       // init();
         if (redis != null)
             // This returs the valu from Keyvaluepair
             return redis.hget(hashKey, field);
@@ -188,7 +178,7 @@ public final class RedisManager {
      *         or an empty map if the Redis connection is not available
      */
     public static Map<String, String> getAllHash(String hashKey) {
-        init();
+       // init();
         if (redis != null)
             return redis.hgetall(hashKey);
         return new HashMap<>();
@@ -196,7 +186,7 @@ public final class RedisManager {
 
     /** Delete a field from a hash */
     public static void deleteHashField(String hashKey, String field) {
-        init();
+        //init();
         if (redis != null)
             redis.hdel(hashKey, field);
     }

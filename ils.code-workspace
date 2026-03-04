@@ -3,5 +3,8 @@
 		{
 			"path": "ils"
 		}
-	]
+	],
+	"settings": {
+		"java.debug.settings.onBuildFailureProceed": true
+	}
 }
