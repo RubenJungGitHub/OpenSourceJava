@@ -1,6 +1,7 @@
-package contain.opensource.ils.bs.receiver.classes.models;
+package contain.opensource.ils.bs.migration.models;
 
 import java.util.Objects;
+
 import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 
 public class MigrationRequest {

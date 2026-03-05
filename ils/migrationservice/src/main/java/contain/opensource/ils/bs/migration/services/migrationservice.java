@@ -1,30 +1,29 @@
+package contain.opensource.ils.bs.migration.services;
 
-package contain.opensource.ils.bs.receiver.services;
 import org.springframework.stereotype.Service;
 
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 
 
 
 @Service
 public class migrationservice {
 
-    private final GraphService graphService;
-    private final AlfrescoNodeController alfrescoController;
+    //private final GraphService graphService;
+  //  private final AlfrescoNodeController alfrescoController;
 
-    public migrationservice(GraphService graphService,
-                            AlfrescoNodeController alfrescoController) {
-        this.graphService = graphService;
-        this.alfrescoController = alfrescoController;
-    }
+//   public migrationservice(GraphService graphService,
+//                           AlfrescoNodeController alfrescoController) {
+//        this.graphService = graphService;
+//        this.alfrescoController = alfrescoController;
+//    }
 
     public void migrateNodeToAlfresco(RelocateInformationObject robject) {
 
         //alfrescoController.fetchNode(object.getId());
         try
         {
-            alfrescoController.uploadSPItemToAlfresco(robject);
+    //        alfrescoController.uploadSPItemToAlfresco(robject);
         }
         catch(Exception ex)
         {
@@ -38,7 +37,7 @@ public class migrationservice {
         //alfrescoController.fetchNode(object.getId());
         try
         {
-            graphService.uploadAlfrescoNodeToSP(robject);
+      //      graphService.uploadAlfrescoNodeToSP(robject);
         }
         catch(Exception ex)
         {

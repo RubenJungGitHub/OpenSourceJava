@@ -47,7 +47,7 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
-import contain.opensource.ils.bs.receiver.services.migrationservice;
+
 
 /**
  * AlfrescoNodeController is a Spring component that manages interactions with
@@ -112,7 +112,7 @@ public class AlfrescoNodeController {
   private ILSRestProperties ilsRestProperties;
   private AlfrescoProperties alfrescoProperties;
 
-  private migrationservice migrationservice;
+  //private migrationservice migrationservice;
 
   @Autowired
   public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsProperties) {
@@ -123,10 +123,10 @@ public class AlfrescoNodeController {
     this.password = alfrescoProperties.getPassword();
   }
 
-  @Autowired
-  public void setMigrationService(@Lazy migrationservice migrationService) {
-    this.migrationservice = migrationService;
-  }
+  //@Autowired
+  //public void setMigrationService(@Lazy migrationservice migrationService) {
+  //  this.migrationservice = migrationService;
+ // }
 
   public AlfrescoNodeController() {
   }
@@ -1014,7 +1014,7 @@ public class AlfrescoNodeController {
     String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
         + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
 
-    this.migrationservice.migrateNodeToSP(IOobject);
+   // this.migrationservice.migrateNodeToSP(IOobject);
     IOLog.log(
         IOobject.getUuid(),
         "",

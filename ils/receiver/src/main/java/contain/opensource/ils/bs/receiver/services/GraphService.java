@@ -89,7 +89,7 @@ public class GraphService {
     private GraphServiceClient<?> graphClient;
     private AlfrescoConstants.eItemtype itemtype;
     private ILSRestProperties ILSProperties = null;
-    private migrationservice migrationservice;
+    //private migrationservice migrationservice;
 
     /*
      * @Autowired
@@ -115,10 +115,10 @@ public class GraphService {
         // this will be set later via setter
     }
 
-    @Autowired
-    public void setMigrationService(@Lazy migrationservice migrationService) {
-        this.migrationservice = migrationService;
-    }
+    //@Autowired
+   // public void setMigrationService(@Lazy migrationservice migrationService) {
+   //     this.migrationservice = migrationService;
+   // }
 
     public String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
         // Build confidential client application
@@ -412,8 +412,8 @@ public class GraphService {
                     " from "
                     + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
 
-            // Upload to Alfrewsco
-            migrationservice.migrateNodeToAlfresco(ROobject);
+           // Upload to Alfrewsco
+         //   migrationservice.migrateNodeToAlfresco(ROobject);
 
             // log
             IOLog.log(

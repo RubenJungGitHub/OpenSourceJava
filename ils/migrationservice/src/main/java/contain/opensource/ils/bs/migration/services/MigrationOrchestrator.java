@@ -1,20 +1,20 @@
-package contain.opensource.ils.bs.receiver.services;
+package contain.opensource.ils.bs.migration.services;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.springframework.stereotype.Component;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import contain.opensource.ils.bs.receiver.classes.models.MigrationRequest;
+import org.springframework.stereotype.Component;
+
+import contain.opensource.ils.bs.migration.models.MigrationRequest;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.ils.bs.receiver.services.*;
-
-
-import jakarta.annotation.PostConstruct; // or javax.annotation.PostConstruct depending on your setup
+import contain.opensource.ils.bs.receiver.services.GraphService;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class MigrationOrchestrator {
@@ -27,6 +27,7 @@ public class MigrationOrchestrator {
     public void startWorker() {
         executor.submit(() -> {
             while (true) {
+                //sHOULD BE PER PLATFORM 
                 MigrationRequest request = queue.take(); // blocks if empty
                 Semaphore token = ioTokens.computeIfAbsent(request.getIoId(), k -> new Semaphore(1));
                 token.acquire(); // wait if another migration is in progress
@@ -55,3 +56,4 @@ public class MigrationOrchestrator {
     @Autowired @Lazy private AlfrescoNodeController alfrescoController;
     @Autowired @Lazy private GraphService spController;
 }
+
