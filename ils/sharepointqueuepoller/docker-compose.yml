@@ -20,6 +20,5 @@ services:
 networks:
   ils_ils_default:
     external: true
-  end-user_default:
-    external: true
+
 

@@ -69,3 +69,9 @@ ils:
   bindendpoint: http://receiver:5000/api/Bind
   relocateendpoint: http://receiver:5000/api/RelocateIO
   DeltaLinkFile: "/app/data/storeddeltalinks.csv"
+
+
+#Accept all connections inside the network
+server:
+  port: 5000
+  address: 0.0.0.0

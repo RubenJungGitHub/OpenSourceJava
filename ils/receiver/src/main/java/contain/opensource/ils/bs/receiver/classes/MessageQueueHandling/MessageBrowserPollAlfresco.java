@@ -260,12 +260,11 @@ public class MessageBrowserPollAlfresco {
                     + contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_RED
                     + ("Binding ALFRESCO NODE IO " + IOUUID)
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            PrivateKey key = PKCS12KeyLoader.getPrivateKey();
-            String privateKeyBase64 = Base64.getEncoder().encodeToString(key.getEncoded());
 
-            BindRequest request = new BindRequest(
-                    aController.alfresconNodeResponse.ToSecuredDocument(), privateKeyBase64);
-            String endPoint = ILSProperties.getBindendpoint() ;
+            // Create request WITHOUT key
+            BindRequest request = new BindRequest(aController.alfresconNodeResponse.ToSecuredDocument());
+
+            String endPoint = ILSProperties.getBindendpoint();
             System.out
                     .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "
@@ -368,8 +367,11 @@ public class MessageBrowserPollAlfresco {
                                     String IOUUID = "";
                                     if (!aController.alfresconNodeResponse.HasUUID) {
                                         // Set UUID
-                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, ILSProperties.getUudiutilendpoint() ,Optional.ofNullable(secondPath.toString()), Optional.empty());
-                                        //IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID ,Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
+                                                ILSProperties.getUudiutilendpoint(),
+                                                Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                        // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID
+                                        // ,Optional.ofNullable(secondPath.toString()), Optional.empty());
 
                                     } else {
                                         IOUUID = aController.alfresconNodeResponse.UUID;
@@ -394,7 +396,6 @@ public class MessageBrowserPollAlfresco {
                                         return;
                                     }
 
-
                                     // Moveobject, binding in new environment.
                                     if (aController.alfresconNodeResponse.MustMove) {
                                         System.out.println(
@@ -415,10 +416,10 @@ public class MessageBrowserPollAlfresco {
                                         // Could Be done from here but because it is not yet certain from where the
                                         // relocaiton is called we use a REST API
                                         // aController.RelocateIO(IOobject);
-                                        RestTemplate restTemplate = new RestTemplate();        
-                                        //String endpoint = String.format(
-                                        //        "%s/RelocateIO",
-                                        //        this.ILSProperties.getBaseUrl());
+                                        RestTemplate restTemplate = new RestTemplate();
+                                        // String endpoint = String.format(
+                                        // "%s/RelocateIO",
+                                        // this.ILSProperties.getBaseUrl());
                                         String endpoint = this.ILSProperties.getBaseUrl();
                                         HttpHeaders headers = new HttpHeaders();
                                         headers.setContentType(MediaType.APPLICATION_JSON);
