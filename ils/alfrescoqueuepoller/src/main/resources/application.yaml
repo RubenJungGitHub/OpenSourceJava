@@ -1,0 +1,83 @@
+# ==========================
+# Spring Boot Configuration
+# ==========================
+
+#debug: true
+name: ils
+spring:
+  profiles:
+    active: sp
+
+  flyway:
+      enabled: false
+
+  # ---------- Redis ----------
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:Redis-service}
+      port: ${SPRING_REDIS_PORT:8001}
+      password: ""
+
+  # ---------- SQL DataSource ----------
+# datasource:
+ #   url: jdbc:sqlserver://localhost:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
+ #   username: sa
+ #   password: contAIn123!
+ #   driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+
+
+ #------------PostGress datasource -------------
+  datasource:
+    url: jdbc:postgresql://localhost:5433/contAInBallenbak
+    username: contain
+    password: contain
+    driver-class-name: org.postgresql.Driver
+    idle-timeout: 30000          # 30 seconds
+    max-lifetime: 1800000        # 30 minutes
+    connection-timeout: 30000    # 30 seconds
+    leak-detection-threshold: 20000  # 20 seconds
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # or create / create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # ---------- JPA ----------
+  #jpa:
+  #  hibernate:
+  #    ddl-auto: none
+  #    naming:
+  #      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  #  show-sql: true
+  #  properties:
+  #    hibernate:
+  #      dialect: org.hibernate.dialect.PostgreSQLDialect
+  #      #dialect: org.hibernate.dialect.SQLServerDialect
+
+  # ---------- ActiveMQ ----------
+activemq:
+  brokerUrl: tcp://localhost:61617
+  user: admin
+  password: admin
+  sharepoint-queue: sharepoint.delta.queue
+  alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+
+# ---------- SERVER PORT ----------
+server:
+  port: 5002
+
+# ==========================
+# Logging
+# ==========================
+
+
+ils:
+  base-url: http://localhost:5000
+  uudiutilendpoint: http://localhost:5002/api/GetUUID
+  bindendpoint: http://localhost:5000/api/Bind
+  relocateendpoint: http://localhost:5000/api/RelocateIO
+  DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"

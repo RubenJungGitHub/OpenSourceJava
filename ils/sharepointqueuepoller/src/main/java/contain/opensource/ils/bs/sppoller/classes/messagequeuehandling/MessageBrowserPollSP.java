@@ -151,7 +151,7 @@ public class MessageBrowserPollSP {
 
     // Public method to start polling
     public void startPolling() {
-        System.out.println("MessageBrowserPollSP: starting polling in background thread...");
+        System.out.println("MessageBrowserPollSP: starting SharePoint polling in background thread...");
 
         new Thread(() -> {
             try {
@@ -253,7 +253,7 @@ public class MessageBrowserPollSP {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
-                    + timestamp + " -> New SHAREPOINT poll loop Processing. Interval : " + PollInterval + " seconds"
+                    + timestamp + " -> New SHAREPOINT poll loop on broker : " +  activeMQProps.getBrokerUrl() + " on queue "  +  activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Message msg;
             String json = "";

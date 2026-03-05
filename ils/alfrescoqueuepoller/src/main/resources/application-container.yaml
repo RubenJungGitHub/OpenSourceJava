@@ -1,0 +1,57 @@
+
+# ==========================
+# Spring Boot Configuration
+# ==========================
+
+name: ils
+
+#debug: true
+
+spring:
+
+  redis:
+    host: Redis-service
+    port: 6379
+  
+  # ---------- SQL DataSource ----------
+  datasource:
+ #   url: jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
+ #   username: sa
+ #   password: contAIn123!
+ #   driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+ #------------PostGress datasource -------------
+    url: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+    username: contain
+    password: contain
+    driver-class-name: org.postgresql.Driver
+    idle-timeout: 30000          # 30 seconds
+    max-lifetime: 1800000        # 30 minutes
+    connection-timeout: 30000    # 30 seconds
+    leak-detection-threshold: 20000  # 20 seconds\
+  jpa:
+    hibernate:
+      ddl-auto: update   # or create / create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+# ==========================
+# Custom Application Properties
+# ==========================
+
+activemq:
+  #brokerUrl: tcp://end-user-activemq-1:61616 Alfresco queue
+alfresco:
+  username: admin
+  password: admin
+  baseUrl: http://end-user-alfresco-1:8080
+  sharepoint-queue: sharepoint.delta.queue
+  alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+
+ils:
+  uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
+  base-url: http://receiver:5000
+  bindendpoint: http://receiver:5000/api/Bind
+  relocateendpoint: http://receiver:5000/api/RelocateIO
+  DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"

@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes;
+package contain.opensource.ils.bs.alfrescopoller.classes;
 
 import java.util.List;
 

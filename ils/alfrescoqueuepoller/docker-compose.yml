@@ -1,0 +1,24 @@
+
+name : ils
+services:
+  alfrescoqueuepoller:
+    build:
+      context: C:/ContainOpenSource/Java/OpenSourceJava/ils
+      dockerfile: alfrescoqueuepoller/Dockerfile
+    container_name: alfrescoqueuepoller
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+      SPRING_DATASOURCE_USERNAME: contain
+      SPRING_DATASOURCE_PASSWORD: contain
+      SPRING_CONFIG_LOCATION: /app/data/application.yaml
+    ports:
+      - "3002:3002"
+    networks:
+      - ils_ils_default
+
+
+networks:
+  ils_ils_default:
+    external: true
+
+

@@ -1,12 +1,10 @@
-package contain.opensource.ils.bs.receiver.classes.MessageQueueHandling;
+package contain.opensource.ils.bs.alfrescopoller.classes.messagequeuehandling;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -35,7 +33,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
-import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -166,7 +163,21 @@ public class MessageBrowserPollAlfresco {
      *
      * @param args Command-line arguments (currently unused).
      */
-    public void ReadMessages(String[] args) {
+
+       // Public method to start polling
+    public void startPolling() {
+        System.out.println("MessageBrowserPollAlfresco: starting ALFRESCO in background thread...");
+
+        new Thread(() -> {
+            try {
+                ReadMessages();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, "AlfrescoPoller-Thread").start();
+    }
+    
+    public void ReadMessages() {
         try {
 
             /// ================================================================================================================================
@@ -316,7 +327,7 @@ public class MessageBrowserPollAlfresco {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
-                    + timestamp + " -> New ALFRESCO poll loop Processing. Interval : " + PollInterval + " seconds"
+                    + timestamp + " -> New ALFREASCO poll loop on broker : " +  activeMQProps.getBrokerUrl() + " on queue "  +  activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Message msg;
             while ((msg = consumer.receive(1000)) != null) {

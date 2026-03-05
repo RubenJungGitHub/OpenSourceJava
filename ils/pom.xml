@@ -20,6 +20,7 @@
 		<module>uuidutil</module>
 		<module>receiver</module>
 		<module>sharepointqueuepoller</module>
+    <module>alfrescoqueuepoller</module>
 	</modules>
 	<properties>
 		<java.version>21</java.version>
