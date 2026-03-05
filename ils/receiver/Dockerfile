@@ -18,15 +18,20 @@ RUN mvn -B -Pdocker -f receiver/pom.xml clean package spring-boot:repackage -Dsk
 # ===== STAGE 2: RUNTIME =====
 FROM eclipse-temurin:21-jre
 WORKDIR /app
+
+# Prepare directories
 RUN mkdir -p /app/config /app/data
 
 # Copy fat JAR
 COPY --from=build /build/receiver/target/*.jar app.jar
 
-# Copy config and keystore
+# Copy application config
 COPY --from=build /build/receiver/target/classes/application-container.yaml /app/data/application.yaml
-COPY receiver/src/main/resources/Containselfsigned_cert.p12 /app/config/Containselfsigned_cert.p12
 
+# ✅ Copy the keystore from build stage classes folder
+COPY --from=build /build/receiver/target/classes/Containselfsigned_cert.p12 /app/config/Containselfsigned_cert.p12
+
+# Expose port and set environment
 EXPOSE 5002
 ENV SPRING_CONFIG_LOCATION=/app/data/application.yaml
 ENV APP_KEYSTORE_PATH=/app/config/Containselfsigned_cert.p12

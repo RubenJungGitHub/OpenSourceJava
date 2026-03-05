@@ -4,7 +4,7 @@ import java.io.FileInputStream;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import contain.opensource.shared.constants.AlfrescoConstants;
@@ -43,13 +43,16 @@ import contain.opensource.shared.constants.AlfrescoConstants;
  */
 
 @Component
-public final class PKCS12KeyLoader {
+public class PKCS12KeyLoader {
+    private final String keyStorePath;
+    private PrivateKey cachedKey;
 
-    private static PrivateKey cachedKey;
+    public PKCS12KeyLoader(@Value("${APP_KEYSTORE_PATH:/app/config/Containselfsigned_cert.p12}") String keyStorePath) {
+        this.keyStorePath = keyStorePath;
+        System.out.println("[PKCS12] resolved keystore path: " + this.keyStorePath);
+    }
 
-    private PKCS12KeyLoader() {} // prevent instantiation
-
-    public static synchronized PrivateKey getPrivateKey() throws Exception {
+    public synchronized PrivateKey getPrivateKey() throws Exception {
         if (cachedKey == null) {
             cachedKey = loadPrivateKeyInternal();
             System.out.println("[PKCS12] Private key loaded and cached");
@@ -57,28 +60,19 @@ public final class PKCS12KeyLoader {
         return cachedKey;
     }
 
-    private static PrivateKey loadPrivateKeyInternal() throws Exception {
-        String keyStorePath = resolveKeystorePath();
-        System.out.println("[PKCS12] Loading keystore from: " + keyStorePath);
+    // <<< Add this getter
+    public String getKeyStorePath() {
+        return keyStorePath;
+    }
 
+    private PrivateKey loadPrivateKeyInternal() throws Exception {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
         try (FileInputStream fis = new FileInputStream(keyStorePath)) {
             keyStore.load(fis, AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
         }
-
         Key key = keyStore.getKey(
-            AlfrescoConstants.p12PrivateKeyFileAlias,
-            AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray()
-        );
+                AlfrescoConstants.p12PrivateKeyFileAlias,
+                AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
         return (PrivateKey) key;
-    }
-
-    private static String resolveKeystorePath() {
-        String env = System.getenv("APP_KEYSTORE_PATH");
-        System.out.println("[PKCS12] environment variable inside container: " + env);
-        if (env != null && !env.isBlank()) {
-            return env;
-        }
-        return AlfrescoConstants.p12PrivateKeyFile; // fallback
     }
 }
