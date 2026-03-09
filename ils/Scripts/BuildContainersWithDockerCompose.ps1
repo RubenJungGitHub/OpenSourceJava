@@ -10,16 +10,25 @@ docker ps -q | ForEach-Object {
     Write-Output "$name : $networks"
 }
 
+#recreate  network to make it attachebale 
+docker network rm ils_ils_default
+docker network create --driver=bridge --attachable ils_ils_default
+
+
 #Check network connected containers
 docker network ls
 docker network inspect ils_default
+docker network inspect ils_ils_default
 docker network inspect ils-network
 docker network inspect ils_ils-network
 docker network inspect ecm_ils-network
+docker network inspect end-user_default
 
+
+docker network connect --ip 172.23.0.10 ils_ils_default subscriber-service
 
 #build redis 
-docker run -d --name Redis-service --network ils_default -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+#docker run -d --name Redis-service --network ils_default -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
 
 
 #Build  shared 
@@ -28,6 +37,9 @@ $env:Path = $env:JAVA_HOME + "\bin;" + $env:Path
 cd C:\ContainOpenSource\Java\OpenSourceJava\ils\shared
 mvn clean install -DskipTests=true
 
+
+#Set springboot to version 21
+#mvn clean spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
 
 #build uuidutil
 cls
@@ -98,3 +110,21 @@ docker compose -f C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\docker-c
 #docker rm -f postgres
 #docker volume ls        # find volume used for Postgres
 #docker volume rm  main_postgres-data
+
+docker network connect ils_ils_default subscriber-service
+docker inspect subscriber-service --format '{{json .NetworkSettings.Networks}}' | ConvertFrom-Json
+docker network inspect ils_ils_default
+
+docker inspect receiver --format '{{json .NetworkSettings.Networks}}' | ConvertFrom-Json
+
+
+docker rm -f subscriber-service
+docker network inspect ils_ils_default
+cd C:\ContainOpenSource\Java\SharePointHandler\Sharepoint
+docker compose -f docker-compose.yaml up -d --build subscriber-service
+docker inspect subscriber-service --format '{{json .NetworkSettings.Networks}}' | ConvertFrom-Json
+docker exec -it subscriber-service ping postgres-db
+
+$env:JAVA_HOME="C:\Users\NL07428\AppData\Roaming\Code\User\globalStorage\pleiades.java-extension-pack-jdk\java\21"
+$env:PATH="$env:JAVA_HOME\bin;$env:PATH"
+mvn clean spring-boot:run

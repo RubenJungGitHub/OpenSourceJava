@@ -47,10 +47,11 @@ activemq:
   password: admin
   sharepoint-queue: sharepoint.delta.queue
   alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+  migration-queue: contain.ils.queue.migration
 
 ils:
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
-  base-url: http://receiver:5000
-  bindendpoint: http://receiver:5000/api/Bind
-  relocateendpoint: http://receiver:5000/api/RelocateIO
+  base-url: http://receiver:55000
+  bindendpoint: http://receiver:55000/api/Bind
+  relocateendpoint: http://receiver:55000/api/RelocateIO
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"

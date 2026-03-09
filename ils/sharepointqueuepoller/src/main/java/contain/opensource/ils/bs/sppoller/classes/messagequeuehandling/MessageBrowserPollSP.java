@@ -1,4 +1,5 @@
 package contain.opensource.ils.bs.sppoller.classes.messagequeuehandling;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
@@ -7,16 +8,20 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
 import contain.opensource.ils.bs.receiver.services.GraphService;
+import contain.opensource.shared.classes.MigrationQueueMessage;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
@@ -108,23 +114,27 @@ public class MessageBrowserPollSP {
     private String password;
 
     private Integer PollInterval = 15;
-
+    private JmsTemplate jmsTemplate;
+    private final ObjectMapper objectMapper;
     private final ActiveMQProperties activeMQProps;
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
     private final GraphService graphService;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
-    //@Autowired
-    //private AlfrescoNodeController aController;
+    // @Autowired
+    // private AlfrescoNodeController aController;
 
     @Autowired
     public MessageBrowserPollSP(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsProperties, GraphService graphService) {
+            ILSRestProperties ilsProperties, GraphService graphService, ObjectMapper mapper, JmsTemplate jmsTemplate) {
         this.activeMQProps = activeMQProps;
         this.alfrescoProps = alfrescoProps;
         this.ILSProperties = ilsProperties;
         this.graphService = graphService;
+        this.objectMapper = mapper;
+        this.jmsTemplate = jmsTemplate;
+
     }
 
     /**
@@ -161,7 +171,7 @@ public class MessageBrowserPollSP {
             }
         }, "SPPoller-Thread").start();
     }
-    
+
     public void ReadMessages() {
         try {
 
@@ -253,7 +263,8 @@ public class MessageBrowserPollSP {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
-                    + timestamp + " -> New SHAREPOINT poll loop on broker : " +  activeMQProps.getBrokerUrl() + " on queue "  +  activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
+                    + timestamp + " -> New SHAREPOINT poll loop on broker : " + activeMQProps.getBrokerUrl()
+                    + " on queue " + activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Message msg;
             String json = "";
@@ -295,13 +306,17 @@ public class MessageBrowserPollSP {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    this.graphService.ProcessChangedSharepointItem(item.getWebUrl(), item.getId(), deltaLink);
+                                    boolean migrate = this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
+                                            item.getId(), deltaLink);
+                                    if (migrate) {
+                                        SendMigrationMessage(item);
+                                    }
                                 }
 
                             }
 
                             session.commit();
-                            //session.rollback();
+                            // session.rollback();
                             System.out.println("Message acknowledged (removed from queue).");
 
                         } catch (JMSException processingError) {
@@ -322,5 +337,49 @@ public class MessageBrowserPollSP {
             e.printStackTrace();
         }
         System.out.println("No remaining SHAREPOINT messages on queue");
+    }
+
+
+    //=======================================================================
+    // As more functions this should be more generic and moved to central point.
+    //=======================================================================
+    private void SendMigrationMessage(SharepointQueMessage.Item item) {
+        try {
+
+            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+
+            // Create a connection
+            Connection connection = factory.createConnection();
+            connection.start();
+
+            // Create a session (non-transacted, auto-acknowledge)
+            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
+
+            // Create the queue (migration queue)
+            Queue queue = session.createQueue(activeMQProps.getMigrationqueue());
+
+            // Create a message producer
+            MessageProducer producer = session.createProducer(queue);
+            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+            MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", "SPO",
+                    item.getFields().get("Move").toString());
+            String json = objectMapper.writeValueAsString(payload);
+            String correlationId = MDC.get("correlationId");
+            TextMessage message = session.createTextMessage(json);
+
+            // Send the message
+            producer.send(message);
+
+            // Clean up
+            producer.close();
+            session.commit();
+            session.close();
+            connection.close();
+
+        } catch (Exception ex) {
+            // log.error("Failed to send delta message to ActiveMQ", ex);
+            throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);
+        }
     }
 }

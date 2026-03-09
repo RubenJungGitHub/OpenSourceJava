@@ -10,6 +10,7 @@ public class ActiveMQProperties {
     private String password;
     private String sharepointQueue;
     private String alfrescoQueue;
+    private String migrationqueue;
 
     // getters & setters
     public String getBrokerUrl() {
@@ -50,5 +51,13 @@ public class ActiveMQProperties {
 
     public void setAlfrescoQueue(String AlfrescoQueue) {
         this.alfrescoQueue = AlfrescoQueue;
+    }
+
+    public String getMigrationqueue() {
+        return migrationqueue;
+    }
+
+    public void setMigrationqueue(String migrationqueue) {
+        this.migrationqueue = migrationqueue;
     }
 }

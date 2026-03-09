@@ -1,9 +1,6 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
-import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
-import  contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
+import contain.opensource.ils.bs.receiver.classes.Binding.RJBindAndSecureIO;
 
 @RestController
 @RequestMapping("/api")
@@ -30,6 +27,10 @@ public class BindingController {
     @PostMapping(value = "/Bind", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> bind(@RequestBody BindRequest request) {
         try {
+
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
+                            + "Accessed binding rest endpoint"
+                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             PrivateKey privateKey = keyLoader.getPrivateKey();
 
             byte[] HASH = RJBindAndSecureIO.sign(

@@ -65,13 +65,13 @@ ils:
   #username: admin
   #password: admin
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
-  base-url: http://receiver:5000
-  bindendpoint: http://receiver:5000/api/Bind
-  relocateendpoint: http://receiver:5000/api/RelocateIO
+  base-url: http://receiver:55000
+  bindendpoint: http://receiver:55000/api/Bind
+  relocateendpoint: http://receiver:55000/api/RelocateIO
   DeltaLinkFile: "/app/data/storeddeltalinks.csv"
 
 
 #Accept all connections inside the network
 server:
-  port: 5000
+  port: 8080
   address: 0.0.0.0

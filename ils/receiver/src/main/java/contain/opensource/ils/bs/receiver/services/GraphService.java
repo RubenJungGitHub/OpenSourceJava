@@ -15,14 +15,12 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -53,7 +51,6 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
-import contain.opensource.ils.bs.receiver.classes.Binding.PKCS12KeyLoader;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -89,7 +86,7 @@ public class GraphService {
     private GraphServiceClient<?> graphClient;
     private AlfrescoConstants.eItemtype itemtype;
     private ILSRestProperties ILSProperties = null;
-    //private migrationservice migrationservice;
+    // private migrationservice migrationservice;
 
     /*
      * @Autowired
@@ -115,10 +112,10 @@ public class GraphService {
         // this will be set later via setter
     }
 
-    //@Autowired
-   // public void setMigrationService(@Lazy migrationservice migrationService) {
-   //     this.migrationservice = migrationService;
-   // }
+    // @Autowired
+    // public void setMigrationService(@Lazy migrationservice migrationService) {
+    // this.migrationservice = migrationService;
+    // }
 
     public String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
         // Build confidential client application
@@ -412,8 +409,8 @@ public class GraphService {
                     " from "
                     + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
 
-           // Upload to Alfrewsco
-         //   migrationservice.migrateNodeToAlfresco(ROobject);
+            // Upload to Alfrewsco
+            // migrationservice.migrateNodeToAlfresco(ROobject);
 
             // log
             IOLog.log(
@@ -815,13 +812,14 @@ public class GraphService {
         }
     }
 
-    public void ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID, String resourceValue)
+    public boolean ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID, String resourceValue)
             throws MalformedURLException, Exception {
         String siteId = null;
         String driveId = null;
         // String siteGUID = null;
         // String listId = null;
         String action = "";
+        boolean MustMove = false;
         try {
             String accesstoken = getGraphToken();
             String[] parts = ItemWebUrl.split("/");
@@ -840,6 +838,7 @@ public class GraphService {
             // graphClient );
             SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID);
             if (SPItem != null) {
+                MustMove = SPItem.MustMove;
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
@@ -862,57 +861,68 @@ public class GraphService {
                             SPItem.marking,
                             SPItem.classification,
                             SPItem.version);
-                    return;
+                    return MustMove;
                 }
 
-                if (SPItem.MustMove) {
-                    // Relocate item
-                    try {
-                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
-                                + "SPItem mustmove?" + SPItem.MustMove
-                                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                        // Add to relocation cache
-                        // RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess",
-                        // 240);
-                        RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-                        // ROobject.setHash(bindresponse.getBody());
-                        // String endpoint = String.format(
-                        // "%s/RelocateIO",
-                        // this.ILSProperties.getBaseUrl());
-                        String endpoint = this.ILSProperties.getRelocateendpoint();
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        headers.setBasicAuth(
-                                AlfrescoConstants.username,
-                                AlfrescoConstants.password,
-                                StandardCharsets.UTF_8);
-                        RestTemplate restTemplate = new RestTemplate();
-                        HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
-                                headers);
-
-                        ResponseEntity<String> response = restTemplate.postForEntity(endpoint, entitymove,
-                                String.class);
-
-                        System.out.println("Status: " + response.getStatusCodeValue());
-                        System.out.println("Body: " + response.getBody());
-
-                        int status = response.getStatusCode().value();
-                        if (status != 200) {
-                            throw new IOException("HTTP error " + status);
-                        }
-
-                    } catch (Exception e) {
-                        System.out.println("Failed to delete SP item after move: " + e.getMessage());
-                    }
-                } else {
-                    // Bind
-                    BindObject(SPItem);
-                }
+                // ========================================================================
+                // MOVE TO MIGRATIONSERVICE
+                // ========================================================================
+                /**/
+                /*
+                 * if (SPItem.MustMove) {
+                 * // Relocate item
+                 * try {
+                 * System.out.println(contain.opensource.shared.constants.AlfrescoConstants.
+                 * GREEN
+                 * + "SPItem mustmove?" + SPItem.MustMove
+                 * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                 * // Add to relocation cache
+                 * // RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess",
+                 * // 240);
+                 * RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+                 * // ROobject.setHash(bindresponse.getBody());
+                 * // String endpoint = String.format(
+                 * // "%s/RelocateIO",
+                 * // this.ILSProperties.getBaseUrl());
+                 * String endpoint = this.ILSProperties.getRelocateendpoint();
+                 * HttpHeaders headers = new HttpHeaders();
+                 * headers.setContentType(MediaType.APPLICATION_JSON);
+                 * headers.setBasicAuth(
+                 * AlfrescoConstants.username,
+                 * AlfrescoConstants.password,
+                 * StandardCharsets.UTF_8);
+                 * RestTemplate restTemplate = new RestTemplate();
+                 * HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
+                 * headers);
+                 * 
+                 * ResponseEntity<String> response = restTemplate.postForEntity(endpoint,
+                 * entitymove,
+                 * String.class);
+                 * 
+                 * System.out.println("Status: " + response.getStatusCodeValue());
+                 * System.out.println("Body: " + response.getBody());
+                 * 
+                 * int status = response.getStatusCode().value();
+                 * if (status != 200) {
+                 * throw new IOException("HTTP error " + status);
+                 * }
+                 * 
+                 * } catch (Exception e) {
+                 * System.out.println("Failed to delete SP item after move: " + e.getMessage());
+                 * }
+                 * } else {
+                 * // Bind
+                 * BindObject(SPItem);
+                 * }
+                 */
+                BindObject(SPItem);
+                return MustMove;
             }
         } catch (Exception ex) {
             System.err.println("Failed to process changed SP item: " + ex);
             ex.printStackTrace();
             throw ex;
         }
+        return MustMove;
     }
 }

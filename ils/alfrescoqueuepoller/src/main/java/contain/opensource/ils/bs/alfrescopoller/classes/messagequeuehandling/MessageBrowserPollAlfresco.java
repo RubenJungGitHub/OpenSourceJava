@@ -19,8 +19,11 @@ import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.DeliveryMode;
 
+import javax.jms.MessageProducer;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -38,6 +41,8 @@ import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
+import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
+import contain.opensource.shared.classes.MigrationQueueMessage;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
@@ -128,7 +133,7 @@ public class MessageBrowserPollAlfresco {
     private final ActiveMQProperties activeMQProps;
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
-
+    private final ObjectMapper objectMapper;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     @Autowired
@@ -136,10 +141,11 @@ public class MessageBrowserPollAlfresco {
 
     @Autowired
     public MessageBrowserPollAlfresco(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsProperties) {
+            ILSRestProperties ilsProperties, ObjectMapper mapper) {
         this.activeMQProps = activeMQProps;
         this.alfrescoProps = alfrescoProps;
         this.ILSProperties = ilsProperties;
+        this.objectMapper = mapper;
     }
 
     /**
@@ -164,7 +170,7 @@ public class MessageBrowserPollAlfresco {
      * @param args Command-line arguments (currently unused).
      */
 
-       // Public method to start polling
+    // Public method to start polling
     public void startPolling() {
         System.out.println("MessageBrowserPollAlfresco: starting ALFRESCO in background thread...");
 
@@ -176,7 +182,7 @@ public class MessageBrowserPollAlfresco {
             }
         }, "AlfrescoPoller-Thread").start();
     }
-    
+
     public void ReadMessages() {
         try {
 
@@ -327,7 +333,8 @@ public class MessageBrowserPollAlfresco {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
-                    + timestamp + " -> New ALFREASCO poll loop on broker : " +  activeMQProps.getBrokerUrl() + " on queue "  +  activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
+                    + timestamp + " -> New ALFREASCO poll loop on broker : " + activeMQProps.getBrokerUrl()
+                    + " on queue " + activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Message msg;
             while ((msg = consumer.receive(1000)) != null) {
@@ -407,6 +414,10 @@ public class MessageBrowserPollAlfresco {
                                         return;
                                     }
 
+                                    //========================================================================
+                                    //To be moved to migration service 
+                                    //========================================================================
+                                    /*
                                     // Moveobject, binding in new environment.
                                     if (aController.alfresconNodeResponse.MustMove) {
                                         System.out.println(
@@ -456,6 +467,14 @@ public class MessageBrowserPollAlfresco {
                                         // BindObject
                                         BindIO(IOUUID, QMessage, secondPath);
                                     }
+                                        */
+
+                                    BindIO(IOUUID, QMessage, secondPath);
+                                    //boolean migrate = this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
+                                    //        item.getId(), deltaLink);
+                                    //if (migrate) {
+                                    //    SendMigrationMessage(item);
+                                    //}
                                 }
                             }
                         } catch (Exception e) {
@@ -490,5 +509,48 @@ public class MessageBrowserPollAlfresco {
             e.printStackTrace();
         }
         System.out.println("No remaining ALFRESCO messages on queue");
+    }
+
+    // =======================================================================
+    // As more functions this should be more generic and moved to central point.
+    // =======================================================================
+    private void SendMigrationMessage(SharepointQueMessage.Item item) {
+        try {
+
+            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+
+            // Create a connection
+            Connection connection = factory.createConnection();
+            connection.start();
+
+            // Create a session (non-transacted, auto-acknowledge)
+            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
+
+            // Create the queue (migration queue)
+            Queue queue = session.createQueue(activeMQProps.getMigrationqueue());
+
+            // Create a message producer
+            MessageProducer producer = session.createProducer(queue);
+            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+            MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", "SPO",
+                    item.getFields().get("Move").toString());
+            String json = objectMapper.writeValueAsString(payload);
+            String correlationId = MDC.get("correlationId");
+            TextMessage message = session.createTextMessage(json);
+
+            // Send the message
+            producer.send(message);
+
+            // Clean up
+            producer.close();
+            session.commit();
+            session.close();
+            connection.close();
+
+        } catch (Exception ex) {
+            // log.error("Failed to send delta message to ActiveMQ", ex);
+            throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);
+        }
     }
 }
