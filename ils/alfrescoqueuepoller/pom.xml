@@ -71,7 +71,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        <!-- Add any other dependencies as needed -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-activemq</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -79,7 +82,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>contain.opensource.ils.bs.alfrescopoller.StartAlfrescoPoller</mainClass>
+                    <mainClass>contain.opensource.ils.bs.sppoller.StartSPPoller</mainClass>
                 </configuration>
             </plugin>
             <plugin>

@@ -2,6 +2,7 @@ package contain.opensource.ils.bs.sppoller.classes.messagequeuehandling;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +15,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
+import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
@@ -120,6 +122,7 @@ public class MessageBrowserPollSP {
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
     private final GraphService graphService;
+    private String timestamp;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     // @Autowired
@@ -134,7 +137,6 @@ public class MessageBrowserPollSP {
         this.graphService = graphService;
         this.objectMapper = mapper;
         this.jmsTemplate = jmsTemplate;
-
     }
 
     /**
@@ -178,31 +180,30 @@ public class MessageBrowserPollSP {
             /// ================================================================================================================================
             /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
             // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
+            // Methods must be made more generic because there is duplicated code over all
+            /// different queuepollers/
             /// ================================================================================================================================
 
             ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
             Connection connection = factory.createConnection();
-            connection.start();
+            // connection.start();
 
             // Create a session
             Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
 
-            // session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            // The queue you want to inspect. THIS SHOULD BE CONFIGURATIONENTRY, NOT
-            // HARDCODED
             Queue queue = session.createQueue(activeMQProps.getSharepointQueue());
 
             // Trial
             // Queue queue = session.createQueue("acs-repo-transform-request");
             // Queue queue =
             // session.createQueue("Consumer.cfd643ac-3ca4-35a9-9818-95efc887532a.VirtualTopic.alfresco.repo.events.nodes");
-            MessageConsumer consumer = session.createConsumer(queue);
+            QueueBrowser browser = session.createBrowser(queue);
 
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleWithFixedDelay(() -> {
                 System.out.println("Polling SHAREPOINT messages...");
 
-                StartPoll(consumer, session);
+                StartPoll(browser, session);
             }, 0, PollInterval, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
@@ -254,22 +255,23 @@ public class MessageBrowserPollSP {
      * is
      * rolled back to ensure message integrity.
      *
-     * @param consumer the {@link MessageConsumer} to poll messages from
-     * @param session  the JMS {@link Session} used for message acknowledgment and
-     *                 transaction management
      */
 
-    public void StartPoll(MessageConsumer consumer, Session session) {
+     public void StartPoll(QueueBrowser browser, Session session) {
         try {
-            String timestamp = LocalDateTime.now().format(formatter);
+            timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
                     + timestamp + " -> New SHAREPOINT poll loop on broker : " + activeMQProps.getBrokerUrl()
-                    + " on queue " + activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
+                    + " on queue " + activeMQProps.getSharepointQueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            Message msg;
             String json = "";
+            int count = 0;
             ObjectMapper mapper = new ObjectMapper();
-            while ((msg = consumer.receive(1000)) != null) {
+            Enumeration<?> messages = browser.getEnumeration();
+            while (messages.hasMoreElements()) {
+                Message msg = (Message) messages.nextElement();
+                count++;
+                System.out.println("Processing " + msg + " message # " + count + " from queue");
                 try {
                     if (msg instanceof TextMessage) {
                         json = ((TextMessage) msg).getText();
@@ -314,13 +316,9 @@ public class MessageBrowserPollSP {
                                 }
 
                             }
-
-                            session.commit();
-                            // session.rollback();
-                            System.out.println("Message acknowledged (removed from queue).");
+                            // consumeMessageById(session, queue, msg.getJMSMessageID());
 
                         } catch (JMSException processingError) {
-                            session.rollback();
                             System.err.println("Error while processing message, ROLLBACK.");
                             processingError.printStackTrace();
                         }
@@ -339,6 +337,25 @@ public class MessageBrowserPollSP {
         System.out.println("No remaining SHAREPOINT messages on queue");
     }
 
+    private void consumeMessageById(Session session, Queue queue, String messageId) throws JMSException {
+        String selector = "JMSMessageID = '" + messageId + "'";
+        MessageConsumer consumer = session.createConsumer(queue, selector);
+        try {
+            Message msg = consumer.receive(1000);
+            if (msg != null) {
+                timestamp = LocalDateTime.now().format(formatter);
+                session.commit(); // remove the message
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
+                        + timestamp + ("Message " + messageId + " acknowledged (removed from queue.")
+                        + activeMQProps.getSharepointQueue() + ". Interval : " + PollInterval + " seconds"
+                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
+            }
+        } catch (Exception ex) {
+        } finally {
+            consumer.close();
+        }
+    }
 
     //=======================================================================
     // As more functions this should be more generic and moved to central point.

@@ -2,23 +2,22 @@ package contain.opensource.ils.bs.migrationpoller.classes.messagequeuehandling;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Enumeration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.jms.Queue;
+import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.JMSException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
@@ -26,8 +25,6 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
-import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
@@ -53,7 +50,7 @@ public class MessageBrowserPollMigration {
     private final ILSRestProperties ILSProperties;
     private final GraphService graphService;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
+    private String timestamp;
     // @Autowired
     // private AlfrescoNodeController aController;
 
@@ -66,7 +63,6 @@ public class MessageBrowserPollMigration {
         this.graphService = graphService;
         this.objectMapper = mapper;
         this.jmsTemplate = jmsTemplate;
-
     }
 
     /**
@@ -104,13 +100,15 @@ public class MessageBrowserPollMigration {
         }, "SPPoller-Thread").start();
     }
 
+    /* */
     public void ReadMessages() {
         try {
 
             /// ================================================================================================================================
             /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
             // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
-            // Method must be made more generic because there is duplicated code over
+            // Method must be made more generic because there is duplicated code over all
+            /// different queuepollers/
             /// several polling projects.
             /// ================================================================================================================================
 
@@ -120,23 +118,15 @@ public class MessageBrowserPollMigration {
 
             // Create a session
             Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-
-            // session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            // The queue you want to inspect. THIS SHOULD BE CONFIGURATIONENTRY, NOT
-            // HARDCODED
             Queue queue = session.createQueue(activeMQProps.getMigrationqueue());
-
-            // Trial
-            // Queue queue = session.createQueue("acs-repo-transform-request");
-            // Queue queue =
-            // session.createQueue("Consumer.cfd643ac-3ca4-35a9-9818-95efc887532a.VirtualTopic.alfresco.repo.events.nodes");
-            MessageConsumer consumer = session.createConsumer(queue);
-
+            QueueBrowser browser = session.createBrowser(queue);
+            
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleWithFixedDelay(() -> {
                 System.out.println("Polling MIGRATION messages...");
 
-                StartPoll(consumer, session);
+     
+                StartPoll(browser, session, queue); 
             }, 0, PollInterval, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
@@ -187,83 +177,31 @@ public class MessageBrowserPollMigration {
      * Exceptions during message processing are caught and logged, and the session
      * is
      * rolled back to ensure message integrity.
-     *
-     * @param consumer the {@link MessageConsumer} to poll messages from
-     * @param session  the JMS {@link Session} used for message acknowledgment and
-     *                 transaction management
+
      */
 
-    public void StartPoll(MessageConsumer consumer, Session session) {
+   public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
-            String timestamp = LocalDateTime.now().format(formatter);
+            timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
                     + timestamp + " -> New MIGRATION poll loop on broker : " + activeMQProps.getBrokerUrl()
                     + " on queue " + activeMQProps.getMigrationqueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            Message msg;
-            String json = "";
-            ObjectMapper mapper = new ObjectMapper();
-            while ((msg = consumer.receive(1000)) != null) {
+            Enumeration<?> messages = browser.getEnumeration();
+            int count = 0;
+            while (messages.hasMoreElements()) {
+                count++;
+                Message msg = (Message) messages.nextElement();
+                System.out.println("Processing " + msg + " message # " + count + " from queue");
                 try {
                     if (msg instanceof TextMessage) {
-                        try {
-                            json = ((TextMessage) msg).getText();
-                            // TextMessage text = (TextMessage) msg;
-                            // try {
-                            System.out.println("RAW JSON: " + json);
-                            MigrationQueueMessage message = mapper.readValue(json, MigrationQueueMessage.class);
-                            // for (MigrationQueueMessage.Item item : message.Getkey()) {
-                            System.out.println("Migrationmessage : " + message);
-                            /*
-                             * if (item.getParentReference() != null) {
-                             * System.out.println("Site ID: " + item.getParentReference().getSiteId());
-                             * }
-                             * if (item.getFields() != null) {
-                             * System.out.println("Fields: " + item.getFields());
-                             * }
-                             * String deltaLink = message.getDeltaLink().split("\\?")[0];
-                             * if (item.getDeleted() != null) {
-                             * 
-                             * String action = "IO  " + item.getId() + " deleted from platform";
-                             * IOLog.log(
-                             * "DeletedFromPlatform",
-                             * item.getId(),
-                             * "DeletedFromPlatform",
-                             * action,
-                             * AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                             * AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                             * "DeletedFromPlatform",
-                             * "DeletedFromPlatform",
-                             * deltaLink,
-                             * AlfrescoConstants.eActionPerformed.IODELETED,
-                             * "<Unknown>",
-                             * "DeletedFromPlatform",
-                             * "DeletedFromPlatform",
-                             * "DeletedFromPlatform");
-                             * } else {
-                             * boolean migrate =
-                             * this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
-                             * item.getId(), deltaLink);
-                             * if (migrate) {
-                             * SendMigrationMessage(item);
-                             * }
-                             * }
-                             */
-                            // }
-
-                            //session.commit();
-                            System.out.println("Message acknowledged (removed from queue).");
-                        } catch (JMSException processingError) {
-                            session.rollback();
-                            System.err.println("Error while processing message, ROLLBACK.");
-                            processingError.printStackTrace();
-                        }
+                        // Process migration
+                        consumeMessageById(session, queue, msg.getJMSMessageID());
                     }
-                } catch (JMSException e) {
-                    System.err.println("Error polling the queue:");
+                } catch (Exception e) {
+                    System.err.println("Error in StartPoll:");
                     e.printStackTrace();
                 }
-
             }
         } catch (Exception e) {
             System.err.println("Error in StartPoll:");
@@ -272,46 +210,18 @@ public class MessageBrowserPollMigration {
         System.out.println("No remaining MIGRATION messages on queue");
     }
 
-    // =======================================================================
-    // As more functions this should be more generic and moved to central point.
-    // =======================================================================
-    private void SendMigrationMessage(SharepointQueMessage.Item item) {
+    private void consumeMessageById(Session session, Queue queue, String messageId) throws JMSException {
+        String selector = "JMSMessageID = '" + messageId + "'";
+        MessageConsumer consumer = session.createConsumer(queue, selector);
         try {
-
-            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-
-            // Create a connection
-            Connection connection = factory.createConnection();
-            connection.start();
-
-            // Create a session (non-transacted, auto-acknowledge)
-            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-
-            // Create the queue (migration queue)
-            Queue queue = session.createQueue(activeMQProps.getMigrationqueue());
-
-            // Create a message producer
-            MessageProducer producer = session.createProducer(queue);
-            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-            MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", "SPO",
-                    item.getFields().get("Move").toString());
-            String json = objectMapper.writeValueAsString(payload);
-            String correlationId = MDC.get("correlationId");
-            TextMessage message = session.createTextMessage(json);
-
-            // Send the message
-            producer.send(message);
-
-            // Clean up
-            producer.close();
-            session.commit();
-            session.close();
-            connection.close();
-
+            Message msg = consumer.receive(1000);
+            if (msg != null) {
+                session.commit(); // remove the message
+                System.out.println("Message acknowledged " + messageId + " (removed from queue.)");
+            }
         } catch (Exception ex) {
-            // log.error("Failed to send delta message to ActiveMQ", ex);
-            throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);
+        } finally {
+            consumer.close();
         }
     }
 }
