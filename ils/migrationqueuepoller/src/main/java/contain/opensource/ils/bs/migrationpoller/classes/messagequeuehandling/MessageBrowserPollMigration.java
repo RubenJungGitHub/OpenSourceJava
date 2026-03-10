@@ -8,14 +8,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.JMSException;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +49,8 @@ public class MessageBrowserPollMigration {
     private final ILSRestProperties ILSProperties;
     private final GraphService graphService;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+    private Session session;
+    private Connection connection;
     private String timestamp;
     // @Autowired
     // private AlfrescoNodeController aController;
@@ -100,7 +101,31 @@ public class MessageBrowserPollMigration {
         }, "SPPoller-Thread").start();
     }
 
-    /* */
+    private Connection createConnectionWithRetry() {
+        int retryCount = 0;
+        int maxRetries = 10; // or Integer.MAX_VALUE for infinite
+        int retryIntervalSec = 10;
+
+        while (true) {
+            try {
+                ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+                connection = factory.createConnection();
+                connection.start();
+                System.out.println("Connected to ActiveMQ!");
+                return connection;
+            } catch (JMSException e) {
+                retryCount++;
+                System.err.println("Failed to connect to ActiveMQ (attempt " + retryCount + "): " + e.getMessage());
+                try {
+                    Thread.sleep(retryIntervalSec * 1000L);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted while waiting to retry ActiveMQ connection", ie);
+                }
+            }
+        }
+    }
+
     public void ReadMessages() {
         try {
 
@@ -111,22 +136,21 @@ public class MessageBrowserPollMigration {
             /// different queuepollers/
             /// several polling projects.
             /// ================================================================================================================================
-
-            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-            Connection connection = factory.createConnection();
-            connection.start();
-
-            // Create a session
-            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-            Queue queue = session.createQueue(activeMQProps.getMigrationqueue());
-            QueueBrowser browser = session.createBrowser(queue);
-            
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleWithFixedDelay(() -> {
                 System.out.println("Polling MIGRATION messages...");
 
-     
-                StartPoll(browser, session, queue); 
+                try {
+                    connection = createConnectionWithRetry();
+                    session = connection.createSession(true, Session.SESSION_TRANSACTED);
+                    Queue queue = session.createQueue(activeMQProps.getSharepointQueue());
+                    QueueBrowser browser = session.createBrowser(queue);
+
+                    StartPoll(browser, session, queue);
+                } catch (JMSException e) {
+                    System.err.println("Session/Connection error: " + e.getMessage());
+                    // will retry creating connection after outer while loop
+                }
             }, 0, PollInterval, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
@@ -177,10 +201,10 @@ public class MessageBrowserPollMigration {
      * Exceptions during message processing are caught and logged, and the session
      * is
      * rolled back to ensure message integrity.
-
+     * 
      */
 
-   public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
+    public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
             timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
@@ -217,7 +241,9 @@ public class MessageBrowserPollMigration {
             Message msg = consumer.receive(1000);
             if (msg != null) {
                 session.commit(); // remove the message
-                System.out.println("Message acknowledged " + messageId + " (removed from queue.)");
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_CYAN
+                        + timestamp + "Message acknowledged " + messageId + " (removed from queue.)"
+                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             }
         } catch (Exception ex) {
         } finally {

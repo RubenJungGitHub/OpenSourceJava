@@ -133,6 +133,8 @@ public class MessageBrowserPollAlfresco {
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
     private final ObjectMapper objectMapper;
+    private Session session;
+    private Connection connection;
     private String timestamp;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -183,6 +185,31 @@ public class MessageBrowserPollAlfresco {
         }, "AlfrescoPoller-Thread").start();
     }
 
+    private Connection createConnectionWithRetry() {
+        int retryCount = 0;
+        int maxRetries = 10; // or Integer.MAX_VALUE for infinite
+        int retryIntervalSec = 10;
+
+        while (true) {
+            try {
+                ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+                connection = factory.createConnection();
+                connection.start();
+                System.out.println("Connected to ActiveMQ!");
+                return connection;
+            } catch (JMSException e) {
+                retryCount++;
+                System.err.println("Failed to connect to ActiveMQ (attempt " + retryCount + "): " + e.getMessage());
+                try {
+                    Thread.sleep(retryIntervalSec * 1000L);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted while waiting to retry ActiveMQ connection", ie);
+                }
+            }
+        }
+    }
+
     public void ReadMessages() {
         try {
 
@@ -190,28 +217,21 @@ public class MessageBrowserPollAlfresco {
             /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
             // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
             /// ================================================================================================================================
-            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-            Connection connection = factory.createConnection();
-            connection.start();
-
-            // Create a session
-            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-
-            // session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            // The queue you want to inspect
-            Queue queue = session.createQueue(activeMQProps.getAlfrescoQueue());
-
-            // Trial
-            // Queue queue = session.createQueue("acs-repo-transform-request");
-            // Queue queue =
-            // session.createQueue("Consumer.cfd643ac-3ca4-35a9-9818-95efc887532a.VirtualTopic.alfresco.repo.events.nodes");
-            QueueBrowser browser = session.createBrowser(queue);
 
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleWithFixedDelay(() -> {
                 System.out.println("Polling ALFRESCO messages...");
+                try {
+                    connection = createConnectionWithRetry();
+                    session = connection.createSession(true, Session.SESSION_TRANSACTED);
+                    Queue queue = session.createQueue(activeMQProps.getSharepointQueue());
+                    QueueBrowser browser = session.createBrowser(queue);
 
-                StartPoll(browser, session, queue);
+                    StartPoll(browser, session, queue);
+                } catch (JMSException e) {
+                    System.err.println("Session/Connection error: " + e.getMessage());
+                    // will retry creating connection after outer while loop
+                }
             }, 0, PollInterval, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
@@ -417,67 +437,70 @@ public class MessageBrowserPollAlfresco {
                                         return;
                                     }
 
-                                    //========================================================================
-                                    //To be moved to migration service 
-                                    //========================================================================
+                                    // ========================================================================
+                                    // To be moved to migration service
+                                    // ========================================================================
                                     /*
-                                    // Moveobject, binding in new environment.
-                                    if (aController.alfresconNodeResponse.MustMove) {
-                                        System.out.println(
-                                                contain.opensource.shared.constants.AlfrescoConstants.CYAN
-                                                        + "Alfresco  node must-move?"
-                                                        + aController.alfresconNodeResponse.MustMove
-                                                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                                        RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation, "InProcess",
-                                                120);
-
-                                        // Create generic property mapping information object
-                                        RelocateInformationObject IOobject = new RelocateInformationObject(
-                                                aController.alfresconNodeResponse,
-                                                "BOUND ON DESTINATION PLATFORM",
-                                                AlfrescoConstants.ContainPlatforms.ALFRESCO,
-                                                AlfrescoConstants.ContainPlatforms.SPO);
-                                        // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
-                                        // Could Be done from here but because it is not yet certain from where the
-                                        // relocaiton is called we use a REST API
-                                        // aController.RelocateIO(IOobject);
-                                        RestTemplate restTemplate = new RestTemplate();
-                                        // String endpoint = String.format(
-                                        // "%s/RelocateIO",
-                                        // this.ILSProperties.getBaseUrl());
-                                        String endpoint = this.ILSProperties.getBaseUrl();
-                                        HttpHeaders headers = new HttpHeaders();
-                                        headers.setContentType(MediaType.APPLICATION_JSON);
-                                        headers.setBasicAuth(
-                                                AlfrescoConstants.username,
-                                                AlfrescoConstants.password,
-                                                StandardCharsets.UTF_8);
-
-                                        HttpEntity<RelocateInformationObject> entity2 = new HttpEntity<>(IOobject,
-                                                headers);
-
-                                        ResponseEntity<String> response2 = restTemplate.postForEntity(endpoint, entity2,
-                                                String.class);
-
-                                        System.out.println("Status: " + response2.getStatusCodeValue());
-                                        System.out.println("Body: " + response2.getBody());
-
-                                        Integer status = response2.getStatusCode().value();
-                                        if (status != 200) {
-                                            throw new IOException("HTTP error " + status);
-                                        }
-                                    } else {
-                                        // BindObject
-                                        BindIO(IOUUID, QMessage, secondPath);
-                                    }
-                                        */
+                                     * // Moveobject, binding in new environment.
+                                     * if (aController.alfresconNodeResponse.MustMove) {
+                                     * System.out.println(
+                                     * contain.opensource.shared.constants.AlfrescoConstants.CYAN
+                                     * + "Alfresco  node must-move?"
+                                     * + aController.alfresconNodeResponse.MustMove
+                                     * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                                     * RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation,
+                                     * "InProcess",
+                                     * 120);
+                                     * 
+                                     * // Create generic property mapping information object
+                                     * RelocateInformationObject IOobject = new RelocateInformationObject(
+                                     * aController.alfresconNodeResponse,
+                                     * "BOUND ON DESTINATION PLATFORM",
+                                     * AlfrescoConstants.ContainPlatforms.ALFRESCO,
+                                     * AlfrescoConstants.ContainPlatforms.SPO);
+                                     * // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
+                                     * // Could Be done from here but because it is not yet certain from where the
+                                     * // relocaiton is called we use a REST API
+                                     * // aController.RelocateIO(IOobject);
+                                     * RestTemplate restTemplate = new RestTemplate();
+                                     * // String endpoint = String.format(
+                                     * // "%s/RelocateIO",
+                                     * // this.ILSProperties.getBaseUrl());
+                                     * String endpoint = this.ILSProperties.getBaseUrl();
+                                     * HttpHeaders headers = new HttpHeaders();
+                                     * headers.setContentType(MediaType.APPLICATION_JSON);
+                                     * headers.setBasicAuth(
+                                     * AlfrescoConstants.username,
+                                     * AlfrescoConstants.password,
+                                     * StandardCharsets.UTF_8);
+                                     * 
+                                     * HttpEntity<RelocateInformationObject> entity2 = new HttpEntity<>(IOobject,
+                                     * headers);
+                                     * 
+                                     * ResponseEntity<String> response2 = restTemplate.postForEntity(endpoint,
+                                     * entity2,
+                                     * String.class);
+                                     * 
+                                     * System.out.println("Status: " + response2.getStatusCodeValue());
+                                     * System.out.println("Body: " + response2.getBody());
+                                     * 
+                                     * Integer status = response2.getStatusCode().value();
+                                     * if (status != 200) {
+                                     * throw new IOException("HTTP error " + status);
+                                     * }
+                                     * } else {
+                                     * // BindObject
+                                     * BindIO(IOUUID, QMessage, secondPath);
+                                     * }
+                                     */
 
                                     BindIO(IOUUID, QMessage, secondPath);
-                                    //boolean migrate = this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
-                                    //        item.getId(), deltaLink);
-                                    //if (migrate) {
-                                    //SendMigrationMessage(item);
-                                    //}
+                                    // boolean migrate =
+                                    // this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
+                                    // item.getId(), deltaLink);
+                                    // if (migrate) {
+                                    // SendMigrationMessage(item);
+                                    // }
                                 }
                             }
                         } catch (Exception e) {
@@ -493,7 +516,7 @@ public class MessageBrowserPollAlfresco {
                     }
 
                     // consumeMessageById(session, queue, msg.getJMSMessageID());
-                    
+
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");
                     processingError.printStackTrace();
@@ -527,7 +550,6 @@ public class MessageBrowserPollAlfresco {
             consumer.close();
         }
     }
-
 
     // =======================================================================
     // As more functions this should be more generic and moved to central point.

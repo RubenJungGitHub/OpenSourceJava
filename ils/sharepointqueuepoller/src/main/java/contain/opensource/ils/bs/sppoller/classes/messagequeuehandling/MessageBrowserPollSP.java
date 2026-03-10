@@ -122,6 +122,8 @@ public class MessageBrowserPollSP {
     private final AlfrescoProperties alfrescoProps;
     private final ILSRestProperties ILSProperties;
     private final GraphService graphService;
+    private Session session;
+    private Connection connection;
     private String timestamp;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -174,36 +176,53 @@ public class MessageBrowserPollSP {
         }, "SPPoller-Thread").start();
     }
 
+    private Connection createConnectionWithRetry() {
+        int retryCount = 0;
+        int maxRetries = 10; // or Integer.MAX_VALUE for infinite
+        int retryIntervalSec = 10;
+
+        while (true) {
+            try {
+                ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+                connection = factory.createConnection();
+                connection.start();
+                System.out.println("Connected to ActiveMQ!");
+                return connection;
+            } catch (JMSException e) {
+                retryCount++;
+                System.err.println("Failed to connect to ActiveMQ (attempt " + retryCount + "): " + e.getMessage());
+                try {
+                    Thread.sleep(retryIntervalSec * 1000L);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted while waiting to retry ActiveMQ connection", ie);
+                }
+            }
+        }
+    }
+
     public void ReadMessages() {
         try {
-
             /// ================================================================================================================================
             /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
             // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
             // Methods must be made more generic because there is duplicated code over all
             /// different queuepollers/
             /// ================================================================================================================================
-
-            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-            Connection connection = factory.createConnection();
-            // connection.start();
-
-            // Create a session
-            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-
-            Queue queue = session.createQueue(activeMQProps.getSharepointQueue());
-
-            // Trial
-            // Queue queue = session.createQueue("acs-repo-transform-request");
-            // Queue queue =
-            // session.createQueue("Consumer.cfd643ac-3ca4-35a9-9818-95efc887532a.VirtualTopic.alfresco.repo.events.nodes");
-            QueueBrowser browser = session.createBrowser(queue);
-
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleWithFixedDelay(() -> {
                 System.out.println("Polling SHAREPOINT messages...");
+                try {
+                    connection = createConnectionWithRetry();
+                    session = connection.createSession(true, Session.SESSION_TRANSACTED);
+                    Queue queue = session.createQueue(activeMQProps.getSharepointQueue());
+                    QueueBrowser browser = session.createBrowser(queue);
 
-                StartPoll(browser, session);
+                    StartPoll(browser, session, queue);
+                } catch (JMSException e) {
+                    System.err.println("Session/Connection error: " + e.getMessage());
+                    // will retry creating connection after outer while loop
+                }
             }, 0, PollInterval, TimeUnit.SECONDS);
 
             // Keep the main thread alive indefinitely
@@ -226,7 +245,9 @@ public class MessageBrowserPollSP {
                     connection.close();
             } catch (Exception ignored) {
             }
-        } catch (Exception e) {
+        } catch (
+
+        Exception e) {
             e.printStackTrace();
         } finally {
         }
@@ -257,7 +278,7 @@ public class MessageBrowserPollSP {
      *
      */
 
-     public void StartPoll(QueueBrowser browser, Session session) {
+    public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
             timestamp = LocalDateTime.now().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
@@ -316,7 +337,7 @@ public class MessageBrowserPollSP {
                                 }
 
                             }
-                            // consumeMessageById(session, queue, msg.getJMSMessageID());
+                            consumeMessageById(session, queue, msg.getJMSMessageID());
 
                         } catch (JMSException processingError) {
                             System.err.println("Error while processing message, ROLLBACK.");
@@ -357,9 +378,9 @@ public class MessageBrowserPollSP {
         }
     }
 
-    //=======================================================================
+    // =======================================================================
     // As more functions this should be more generic and moved to central point.
-    //=======================================================================
+    // =======================================================================
     private void SendMigrationMessage(SharepointQueMessage.Item item) {
         try {
 
@@ -393,7 +414,10 @@ public class MessageBrowserPollSP {
             session.commit();
             session.close();
             connection.close();
-
+                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_MAGENTA
+                    + timestamp + "Information object "  +  item + " sent to migrationqueue"
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+    
         } catch (Exception ex) {
             // log.error("Failed to send delta message to ActiveMQ", ex);
             throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);

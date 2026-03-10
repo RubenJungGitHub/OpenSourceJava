@@ -4,9 +4,12 @@ services:
   activemq:
     image: apache/activemq-classic:5.18.3
     container_name: activemq
+
     ports:
       - "61617:61616"
       - "8162:8161"
+    volumes:
+      - ./activemq-data:/opt/activemq/data
     networks:
       ils_ils_default:
         aliases:
