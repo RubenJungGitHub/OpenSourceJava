@@ -414,8 +414,8 @@ public class MessageBrowserPollSP {
             session.commit();
             session.close();
             connection.close();
-                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_MAGENTA
-                    + timestamp + "Information object "  +  item + " sent to migrationqueue"
+                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
+                    + timestamp + "-> Information object "  +  item + " sent to migrationqueue"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
     
         } catch (Exception ex) {
