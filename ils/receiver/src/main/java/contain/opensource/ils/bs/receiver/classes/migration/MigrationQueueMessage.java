@@ -1,4 +1,4 @@
-package contain.opensource.shared.classes;
+package contain.opensource.ils.bs.receiver.classes.migration;
 
 
 public class MigrationQueueMessage {

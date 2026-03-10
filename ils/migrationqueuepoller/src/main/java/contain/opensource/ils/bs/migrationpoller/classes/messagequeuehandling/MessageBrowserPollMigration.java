@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.sppoller.classes.messagequeuehandling;
+package contain.opensource.ils.bs.migrationpoller.classes.messagequeuehandling;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,83 +26,15 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
-import contain.opensource.shared.constants.AlfrescoConstants;
 
-/**
- * MessageBrowserPoll is a Spring component responsible for polling messages
- * from an ActiveMQ queue,
- * processing them, and interacting with Alfresco and other external systems as
- * required.
- * p>
- * This class establishes a connection to an ActiveMQ broker, creates a consumer
- * for a specific queue,
- * and periodically polls for new messages using a scheduled executor. Each
- * message is processed according
- * to its type, with support for handling node removals, updating nodes, binding
- * content, and relocating
- * information objects between platforms.
- * p>
- * Key Features:
- *
- * Configurable ActiveMQ connection via Spring properties.
- * Scheduled polling of messages from a designated queue.
- * Integration with Alfresco for node operations via
- * AlfrescoNodeController.
- * Support for message acknowledgment and transaction management.
- * Logging and error handling for message processing and external service
- * interactions.
- * Interaction with Redis for caching and deduplication of processing.
- * REST calls to external services for binding and relocating information
- * objects.
- *
- * p>
- * Note: The class contains TODOs and comments regarding handling consumer
- * closure and Alfresco server downtime.
- * Proper resource cleanup and error handling are implemented to ensure
- * reliability.
- *
- * Dependencies:
- *
- * Spring Framework (for dependency injection and configuration)
- * ActiveMQ JMS client
- * Jackson (for JSON processing)
- * AlfrescoNodeController and related domain classes
- * RedisManager for caching
- * RestTemplate for REST API calls
- *
- *
- * Usage:
- * 
- * pre>
- * 
- * @Autowired
- *            private MessageBrowserPoll messageBrowserPoll;
- *            ...
- *            messageBrowserPoll.ReadMessages(args);
- *            pre>
- *
- *            Configuration:
- *            ul>
- *            activemq.brokerUrl - URL of the ActiveMQ broker
- *            activemq.user - Username for ActiveMQ
- *            activemq.password - Password for ActiveMQ
- *            ul>
- *
- *            Thread Safety: This class is designed to be used as a singleton
- *            Spring bean.
- *
- *            Author: [Your Name or Team]
- *            Since: [Version or Date]
- */
 @Component
-public class MessageBrowserPollSP {
+public class MessageBrowserPollMigration {
 
     @Value("${activemq.brokerUrl}")
     private String brokerUrl;
@@ -126,7 +58,7 @@ public class MessageBrowserPollSP {
     // private AlfrescoNodeController aController;
 
     @Autowired
-    public MessageBrowserPollSP(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
+    public MessageBrowserPollMigration(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsProperties, GraphService graphService, ObjectMapper mapper, JmsTemplate jmsTemplate) {
         this.activeMQProps = activeMQProps;
         this.alfrescoProps = alfrescoProps;
@@ -161,7 +93,7 @@ public class MessageBrowserPollSP {
 
     // Public method to start polling
     public void startPolling() {
-        System.out.println("MessageBrowserPollSP: starting SharePoint polling in background thread...");
+        System.out.println("MessageBrowserPollSP: starting MIGRATION polling in background thread...");
 
         new Thread(() -> {
             try {
@@ -178,6 +110,8 @@ public class MessageBrowserPollSP {
             /// ================================================================================================================================
             /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
             // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
+            // Method must be made more generic because there is duplicated code over
+            /// several polling projects.
             /// ================================================================================================================================
 
             ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
@@ -190,7 +124,7 @@ public class MessageBrowserPollSP {
             // session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             // The queue you want to inspect. THIS SHOULD BE CONFIGURATIONENTRY, NOT
             // HARDCODED
-            Queue queue = session.createQueue(activeMQProps.getSharepointQueue());
+            Queue queue = session.createQueue(activeMQProps.getMigrationqueue());
 
             // Trial
             // Queue queue = session.createQueue("acs-repo-transform-request");
@@ -200,7 +134,7 @@ public class MessageBrowserPollSP {
 
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleWithFixedDelay(() -> {
-                System.out.println("Polling SHAREPOINT messages...");
+                System.out.println("Polling MIGRATION messages...");
 
                 StartPoll(consumer, session);
             }, 0, PollInterval, TimeUnit.SECONDS);
@@ -262,9 +196,9 @@ public class MessageBrowserPollSP {
     public void StartPoll(MessageConsumer consumer, Session session) {
         try {
             String timestamp = LocalDateTime.now().format(formatter);
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
-                    + timestamp + " -> New SHAREPOINT poll loop on broker : " + activeMQProps.getBrokerUrl()
-                    + " on queue " + activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
+                    + timestamp + " -> New MIGRATION poll loop on broker : " + activeMQProps.getBrokerUrl()
+                    + " on queue " + activeMQProps.getMigrationqueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Message msg;
             String json = "";
@@ -272,59 +206,58 @@ public class MessageBrowserPollSP {
             while ((msg = consumer.receive(1000)) != null) {
                 try {
                     if (msg instanceof TextMessage) {
-                        json = ((TextMessage) msg).getText();
-                        // TextMessage text = (TextMessage) msg;
                         try {
+                            json = ((TextMessage) msg).getText();
+                            // TextMessage text = (TextMessage) msg;
+                            // try {
                             System.out.println("RAW JSON: " + json);
-                            SharepointQueMessage message = mapper.readValue(json, SharepointQueMessage.class);
+                            MigrationQueueMessage message = mapper.readValue(json, MigrationQueueMessage.class);
+                            // for (MigrationQueueMessage.Item item : message.Getkey()) {
+                            System.out.println("Migrationmessage : " + message);
+                            /*
+                             * if (item.getParentReference() != null) {
+                             * System.out.println("Site ID: " + item.getParentReference().getSiteId());
+                             * }
+                             * if (item.getFields() != null) {
+                             * System.out.println("Fields: " + item.getFields());
+                             * }
+                             * String deltaLink = message.getDeltaLink().split("\\?")[0];
+                             * if (item.getDeleted() != null) {
+                             * 
+                             * String action = "IO  " + item.getId() + " deleted from platform";
+                             * IOLog.log(
+                             * "DeletedFromPlatform",
+                             * item.getId(),
+                             * "DeletedFromPlatform",
+                             * action,
+                             * AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                             * AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                             * "DeletedFromPlatform",
+                             * "DeletedFromPlatform",
+                             * deltaLink,
+                             * AlfrescoConstants.eActionPerformed.IODELETED,
+                             * "<Unknown>",
+                             * "DeletedFromPlatform",
+                             * "DeletedFromPlatform",
+                             * "DeletedFromPlatform");
+                             * } else {
+                             * boolean migrate =
+                             * this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
+                             * item.getId(), deltaLink);
+                             * if (migrate) {
+                             * SendMigrationMessage(item);
+                             * }
+                             * }
+                             */
+                            // }
 
-                            for (SharepointQueMessage.Item item : message.getItems()) {
-                                System.out.println("Item ID: " + item.getId());
-                                if (item.getParentReference() != null) {
-                                    System.out.println("Site ID: " + item.getParentReference().getSiteId());
-                                }
-                                if (item.getFields() != null) {
-                                    System.out.println("Fields: " + item.getFields());
-                                }
-                                String deltaLink = message.getDeltaLink().split("\\?")[0];
-                                if (item.getDeleted() != null) {
-
-                                    String action = "IO  " + item.getId() + " deleted from platform";
-                                    IOLog.log(
-                                            "DeletedFromPlatform",
-                                            item.getId(),
-                                            "DeletedFromPlatform",
-                                            action,
-                                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                                            "DeletedFromPlatform",
-                                            "DeletedFromPlatform",
-                                            deltaLink,
-                                            AlfrescoConstants.eActionPerformed.IODELETED,
-                                            "<Unknown>",
-                                            "DeletedFromPlatform",
-                                            "DeletedFromPlatform",
-                                            "DeletedFromPlatform");
-                                } else {
-                                    boolean migrate = this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
-                                            item.getId(), deltaLink);
-                                    if (migrate) {
-                                        SendMigrationMessage(item);
-                                    }
-                                }
-
-                            }
-
-                            session.commit();
-                            // session.rollback();
+                            //session.commit();
                             System.out.println("Message acknowledged (removed from queue).");
-
                         } catch (JMSException processingError) {
                             session.rollback();
                             System.err.println("Error while processing message, ROLLBACK.");
                             processingError.printStackTrace();
                         }
-
                     }
                 } catch (JMSException e) {
                     System.err.println("Error polling the queue:");
@@ -336,13 +269,12 @@ public class MessageBrowserPollSP {
             System.err.println("Error in StartPoll:");
             e.printStackTrace();
         }
-        System.out.println("No remaining SHAREPOINT messages on queue");
+        System.out.println("No remaining MIGRATION messages on queue");
     }
 
-
-    //=======================================================================
+    // =======================================================================
     // As more functions this should be more generic and moved to central point.
-    //=======================================================================
+    // =======================================================================
     private void SendMigrationMessage(SharepointQueMessage.Item item) {
         try {
 
