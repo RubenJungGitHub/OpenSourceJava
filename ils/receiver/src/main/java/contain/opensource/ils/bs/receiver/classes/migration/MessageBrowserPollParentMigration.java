@@ -290,12 +290,13 @@ public abstract class MessageBrowserPollParentMigration {
                     connection = createConnectionWithRetry();
                 }
             }
+            session = connection.createSession(true, Session.SESSION_TRANSACTED);
             queue = session.createQueue(queueid);
             consumer = session.createConsumer(queue, selector);
             Message msg = consumer.receive(1000);
             if (msg != null) {
                 session.commit(); // remove the message
-                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BLUE
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_GREEN
                         + timestamp + "Message acknowledged " + messageId + " (removed from queue.)"
                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             }

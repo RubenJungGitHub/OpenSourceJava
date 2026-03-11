@@ -96,7 +96,7 @@ public class IOLogBallenbakService {
                 version);
         // Update Redis
         if (actionPerformed != eActionPerformed.IODELETED) {
-            RedisManager.putHash("IOLogs", containIOUUID, pkiHash, 120);
+            RedisManager.putHash("IOLogs", containIOUUID, pkiHash, 1200);
         }
 
         try {

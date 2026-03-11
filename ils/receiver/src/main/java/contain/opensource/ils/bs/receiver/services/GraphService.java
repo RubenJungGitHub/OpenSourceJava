@@ -69,21 +69,21 @@ import io.swagger.v3.oas.annotations.Parameter;
 @Service
 public class GraphService {
 
-    ObjectMapper mapper = new ObjectMapper();
+    static ObjectMapper mapper = new ObjectMapper();
 
-    private String tenantDomain = "lls6.Sharepoint.com";
+    static String tenantDomain = "lls6.Sharepoint.com";
 
-    private String SiteID = "d155b09d-c4de-4d04-8b37-198f35e78232";
-    private String SiteName = "SP-EventReceivers-Test";
-    private String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
-    private String ListName = "Shared Documents";
+    static String SiteID = "d155b09d-c4de-4d04-8b37-198f35e78232";
+    static String SiteName = "SP-EventReceivers-Test";
+    static String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
+    static String ListName = "Shared Documents";
 
     private String newDeltaLink = "";
     private String DeltaLinkFile = null;
     private final ClientCredentialParameters parameters = ClientCredentialParameters
             .builder(AlfrescoConstants.GraphScopes).build();
-    private String accessToken;
-    private GraphServiceClient<?> graphClient;
+    static String accessToken;
+    static GraphServiceClient<?> graphClient;
     private AlfrescoConstants.eItemtype itemtype;
     private ILSRestProperties ILSProperties = null;
     // private migrationservice migrationservice;
@@ -117,6 +117,53 @@ public class GraphService {
     // this.migrationservice = migrationService;
     // }
 
+   public static byte[] getSPItemContentById(String itemId, String ListId) throws IOException, InterruptedException {
+        // First obtain SiteCollectionID
+        String sitecollectionid = "";
+        try {
+            sitecollectionid = getSitecollectionID();
+        } catch (Exception ex) {
+            System.out.println("Error retrieving sitecollectionID " + ex.getMessage());
+        }
+
+        String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/driveItem/content",
+                sitecollectionid, ListId, itemId);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Accept", "application/octet-stream")
+                .GET()
+                .build();
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+        if (response.statusCode() == 302) {
+            String redirectUrl = response.headers().firstValue("Location").orElseThrow();
+            HttpRequest redirectRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(redirectUrl))
+                    .GET()
+                    .build();
+
+            response = client.send(redirectRequest,
+                    HttpResponse.BodyHandlers.ofInputStream());
+        }
+
+        if (response.statusCode() == 200) {
+            try (InputStream is = response.body()) {
+                return is.readAllBytes();
+            }
+        } else {
+            // throw new IOException("Failed to fetch SharePoint item. Status: " +
+            // response.statusCode());
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                    + "Failed to fetch SharePoint item.  " + itemId
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            return null;
+        }
+    }
+
     public String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
         // Build confidential client application
         ConfidentialClientApplication app = ConfidentialClientApplication.builder(
@@ -135,7 +182,7 @@ public class GraphService {
 
     private static final List<String> scopes = new ArrayList<>(AlfrescoConstants.GraphScopes);
 
-    public GraphServiceClient<?> getGraphClient(String tenantId) {
+    public static GraphServiceClient<?> getGraphClient(String tenantId) {
 
         // Build the credential
         ClientSecretCredential credential = new ClientSecretCredentialBuilder()
@@ -148,11 +195,11 @@ public class GraphService {
         TokenCredentialAuthProvider authProvider = new TokenCredentialAuthProvider(scopes, credential);
 
         // Build Graph client
-        this.graphClient = GraphServiceClient.builder()
+        graphClient = GraphServiceClient.builder()
                 .authenticationProvider(authProvider)
                 .buildClient();
 
-        return this.graphClient;
+        return graphClient;
     }
 
     public String updateSharepointItemGraphAPI(
@@ -222,7 +269,7 @@ public class GraphService {
                         + "UUID assigned updated successfully to : " + listItemId
                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                 // Cahc in Redis
-                RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid, "InProcess", 240);
+                RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid, "InProcess", 2400);
                 return uuid;
             } else {
                 System.out.println("Failed to update field: " + response.body());
@@ -590,7 +637,7 @@ public class GraphService {
 
     // public SharePointItemResponse getListItemsById(String listId, String
     // listItemId,GraphServiceClient<?> graphClient)
-    public SharePointItemResponse getListItemsById(String listId, String listItemId)
+    public static SharePointItemResponse getListItemsById(String listId, String listItemId)
             throws Exception {
         try {
             boolean hasUUID = false;
@@ -648,7 +695,7 @@ public class GraphService {
                     }
 
                     // Get latest version
-                    DriveItemVersion latestVersion = graphClient.sites(this.SiteID)
+                    DriveItemVersion latestVersion = graphClient.sites(SiteID)
                             .lists(listId)
                             .items(li.id)
                             .driveItem()
@@ -710,56 +757,11 @@ public class GraphService {
         }
     }
 
-    public byte[] getSPItemContentById(String itemId, String ListId) throws IOException, InterruptedException {
-        // First obtain SiteCollectionID
-        String sitecollectionid = "";
-        try {
-            sitecollectionid = getSitecollectionID();
-        } catch (Exception ex) {
-            System.out.println("Error retrieving sitecollectionID " + ex.getMessage());
-        }
+   
 
-        String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/driveItem/content",
-                sitecollectionid, ListId, itemId);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .header("Authorization", "Bearer " + accessToken)
-                .header("Accept", "application/octet-stream")
-                .GET()
-                .build();
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
-        if (response.statusCode() == 302) {
-            String redirectUrl = response.headers().firstValue("Location").orElseThrow();
-            HttpRequest redirectRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(redirectUrl))
-                    .GET()
-                    .build();
-
-            response = client.send(redirectRequest,
-                    HttpResponse.BodyHandlers.ofInputStream());
-        }
-
-        if (response.statusCode() == 200) {
-            try (InputStream is = response.body()) {
-                return is.readAllBytes();
-            }
-        } else {
-            // throw new IOException("Failed to fetch SharePoint item. Status: " +
-            // response.statusCode());
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
-                    + "Failed to fetch SharePoint item.  " + itemId
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            return null;
-        }
-    }
-
-    private String getSitecollectionID() throws IOException, InterruptedException {
+    private static String getSitecollectionID() throws IOException, InterruptedException {
         String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s:/sites/%s",
-                this.tenantDomain.toLowerCase(), this.SiteName);
+                tenantDomain.toLowerCase(), SiteName);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(endpoint))

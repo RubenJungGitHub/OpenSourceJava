@@ -36,7 +36,7 @@ public class RedisController {
             Optional<IOLogBallenbak> Logentry = IOLog.GetLog(uuid);
             if (Logentry.isPresent()) {
                 hash = Logentry.get().getPkiHash();
-                RedisManager.putHash("IOLogs", uuid, hash, 120);
+                RedisManager.putHash("IOLogs", uuid, hash, 1200);
                 // From KVP
                 // pkiHash = RedisManager.getHashField("IOLogs", uuid);
                 // from key

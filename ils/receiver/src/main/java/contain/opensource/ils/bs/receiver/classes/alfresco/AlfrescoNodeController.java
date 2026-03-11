@@ -944,7 +944,7 @@ public class AlfrescoNodeController {
 
         if (statusCode == 200) {
           this.alfresconNodeResponse.UUID = propertyValue;
-          RedisManager.putHash("IOinHashAssigned", "IOinUUIDAssigned" + propertyValue, "InProcess", 240);
+          RedisManager.putHash("IOinHashAssigned", "IOinUUIDAssigned" + propertyValue, "InProcess", 2400);
           // Test ballenbak
           IOLog.log(
               propertyValue,
