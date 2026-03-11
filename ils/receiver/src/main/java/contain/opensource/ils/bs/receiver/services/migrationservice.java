@@ -4,22 +4,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
+import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
-import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 @Service
 public class migrationservice {
@@ -37,7 +33,7 @@ public class migrationservice {
         try {
 
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
-                    + "Move SPItem -> " + msg
+                    + "Move SPItem -> " + msg.getKey()
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
             RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);

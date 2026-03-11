@@ -80,12 +80,12 @@ public class GraphService {
 
     private String newDeltaLink = "";
     private String DeltaLinkFile = null;
-    private final ClientCredentialParameters parameters = ClientCredentialParameters
+    private static final ClientCredentialParameters parameters = ClientCredentialParameters
             .builder(AlfrescoConstants.GraphScopes).build();
     static String accessToken;
     static GraphServiceClient<?> graphClient;
-    private AlfrescoConstants.eItemtype itemtype;
-    private ILSRestProperties ILSProperties = null;
+    static AlfrescoConstants.eItemtype itemtype;
+    static ILSRestProperties ILSProperties = null;
     // private migrationservice migrationservice;
 
     /*
@@ -109,15 +109,10 @@ public class GraphService {
         this.DeltaLinkFile = ILSProperties.getDeltaLinkFile();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // this will be set later via setter
+
     }
 
-    // @Autowired
-    // public void setMigrationService(@Lazy migrationservice migrationService) {
-    // this.migrationservice = migrationService;
-    // }
-
-   public static byte[] getSPItemContentById(String itemId, String ListId) throws IOException, InterruptedException {
+    public static byte[] getSPItemContentById(String itemId, String ListId) throws IOException, InterruptedException {
         // First obtain SiteCollectionID
         String sitecollectionid = "";
         try {
@@ -164,22 +159,6 @@ public class GraphService {
         }
     }
 
-    public String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
-        // Build confidential client application
-        ConfidentialClientApplication app = ConfidentialClientApplication.builder(
-                AlfrescoConstants.clientId,
-                ClientCredentialFactory.createFromSecret(AlfrescoConstants.clientSecret))
-                .authority("https://login.microsoftonline.com/" + AlfrescoConstants.tenantId)
-                .build();
-        // Scopes for client credentials flow
-        // Set<String> scopes =
-        // Collections.singleton("https://graph.microsoft.com/.default");
-        // Acquire token
-        IAuthenticationResult result = app.acquireToken(parameters).get();
-        this.accessToken = result.accessToken();
-        return this.accessToken;
-    }
-
     private static final List<String> scopes = new ArrayList<>(AlfrescoConstants.GraphScopes);
 
     public static GraphServiceClient<?> getGraphClient(String tenantId) {
@@ -202,19 +181,15 @@ public class GraphService {
         return graphClient;
     }
 
-    public String updateSharepointItemGraphAPI(
+    public static String updateSharepointItemGraphAPI(
             @Parameter(description = "List Item ID") @RequestParam String listItemId,
             @Parameter(description = "List ID") @RequestParam String ListId) {
         try {
-            // Initially check if SP item is added because of reloaction
-            // String UID = this.SiteID + this.ListId + listItemId;
-            // if (Globals.AlfrescoItemInProcess.contains(UID)) {
-            // System.out.println("Relocated item, no update required");
-            // return "Relocated item, no update required";
-            // }
+            if (accessToken == null || accessToken.isEmpty()) {
+                accessToken = getGraphToken();
+            }
 
             // First obtain new UUID and accesstoken
-            String AccessToken = getGraphToken();
             String uuid = "";
             // String uuid =
             // UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
@@ -252,11 +227,11 @@ public class GraphService {
 
             String endpoint = String.format(
                     "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
-                    this.SiteID, ListId, listItemId);
+                    SiteID, ListId, listItemId);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
-                    .header("Authorization", "Bearer " + AccessToken)
+                    .header("Authorization", "Bearer " + accessToken)
                     .header("Content-Type", "application/json")
                     .method("PATCH", HttpRequest.BodyPublishers.ofString(json))
                     .build();
@@ -286,7 +261,9 @@ public class GraphService {
         try {
 
             // First obtain new UUID and accesstoken
-            String AccessToken = getGraphToken();
+            if (accessToken == null || accessToken.isEmpty()) {
+                accessToken = getGraphToken();
+            }
             // String uuid = GetUUID();
             HttpClient client = HttpClient.newHttpClient();
 
@@ -315,7 +292,7 @@ public class GraphService {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
-                    .header("Authorization", "Bearer " + AccessToken)
+                    .header("Authorization", "Bearer " + accessToken)
                     .header("Content-Type", "application/json")
                     .method("PATCH", HttpRequest.BodyPublishers.ofString(json))
                     .build();
@@ -339,7 +316,9 @@ public class GraphService {
 
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         try {
-            String accessToken = getGraphToken();
+            if (accessToken == null || accessToken.isEmpty()) {
+                accessToken = getGraphToken();
+            }
             byte[] fileBytes = IOobject.getContent();
             String rawFileName = IOobject.getFileName();
             String fileName = URLEncoder.encode(rawFileName, StandardCharsets.UTF_8).replace("+", "%20"); // IMPORTANT
@@ -388,7 +367,7 @@ public class GraphService {
         }
     }
 
-    private void BindObject(SharePointItemResponse SPItem) {
+    private static void BindObject(SharePointItemResponse SPItem) {
         // First sign and log
         try {
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_MAGENTA
@@ -542,7 +521,6 @@ public class GraphService {
     }
 
     private String getListItemId(String driveId, String driveItemId) {
-
         try {
             // Give SP time to process
             String listItemId = "";
@@ -635,11 +613,85 @@ public class GraphService {
         }
     }
 
+    private static String getSitecollectionID() throws IOException, InterruptedException {
+        String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s:/sites/%s",
+                tenantDomain.toLowerCase(), SiteName);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+        if (response.statusCode() == 200) {
+            try (InputStream is = response.body()) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode json = mapper.readTree(is);
+                return json.get("id").asText(); // composite siteId
+            }
+        } else {
+            throw new IOException("Failed to fetch SharePoint item. Status: " + response.statusCode());
+        }
+    }
+
+    private void deleteSPItemById(String itemId) throws Exception {
+        try {
+            String endpoint = String.format(
+                    "https://graph.microsoft.com/v1.0/sites/%s:/sites/%s:/lists/%s/items/%s",
+                    this.tenantDomain, this.SiteName, this.ListId, itemId);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endpoint))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Accept", "application/json")
+                    .DELETE()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 204) {
+                System.out.println("Document deleted successfully.");
+            } else {
+                throw new RuntimeException(
+                        "Failed to delete document. HTTP "
+                                + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception ex) {
+            System.out.println("Failed to delete SP item: " + ex.getMessage());
+        }
+    }
+
+    public static String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
+        // Build confidential client application
+        ConfidentialClientApplication app = ConfidentialClientApplication.builder(
+                AlfrescoConstants.clientId,
+                ClientCredentialFactory.createFromSecret(AlfrescoConstants.clientSecret))
+                .authority("https://login.microsoftonline.com/" + AlfrescoConstants.tenantId)
+                .build();
+        // Scopes for client credentials flow
+        // Set<String> scopes =
+        // Collections.singleton("https://graph.microsoft.com/.default");
+        // Acquire token
+        IAuthenticationResult result = app.acquireToken(parameters).get();
+        accessToken = result.accessToken();
+        return accessToken;
+    }
+
     // public SharePointItemResponse getListItemsById(String listId, String
     // listItemId,GraphServiceClient<?> graphClient)
     public static SharePointItemResponse getListItemsById(String listId, String listItemId)
             throws Exception {
         try {
+            if (accessToken == null || accessToken.isEmpty()) {
+                accessToken = getGraphToken();
+            }
             boolean hasUUID = false;
             boolean mustMove = false;
             GraphServiceClient<?> graphClient = getGraphClient(AlfrescoConstants.tenantId);
@@ -757,65 +809,8 @@ public class GraphService {
         }
     }
 
-   
-
-    private static String getSitecollectionID() throws IOException, InterruptedException {
-        String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s:/sites/%s",
-                tenantDomain.toLowerCase(), SiteName);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .header("Authorization", "Bearer " + accessToken)
-                .header("Accept", "application/json")
-                .GET()
-                .build();
-
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
-        if (response.statusCode() == 200) {
-            try (InputStream is = response.body()) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode json = mapper.readTree(is);
-                return json.get("id").asText(); // composite siteId
-            }
-        } else {
-            throw new IOException("Failed to fetch SharePoint item. Status: " + response.statusCode());
-        }
-    }
-
-    private void deleteSPItemById(String itemId) throws Exception {
-        try {
-            String endpoint = String.format(
-                    "https://graph.microsoft.com/v1.0/sites/%s:/sites/%s:/lists/%s/items/%s",
-                    this.tenantDomain, this.SiteName, this.ListId, itemId);
-
-            HttpClient client = HttpClient.newHttpClient();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(endpoint))
-                    .header("Authorization", "Bearer " + accessToken)
-                    .header("Accept", "application/json")
-                    .DELETE()
-                    .build();
-
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 204) {
-                System.out.println("Document deleted successfully.");
-            } else {
-                throw new RuntimeException(
-                        "Failed to delete document. HTTP "
-                                + response.statusCode() + " - " + response.body());
-            }
-        } catch (Exception ex) {
-            System.out.println("Failed to delete SP item: " + ex.getMessage());
-        }
-    }
-
-    public boolean ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID, String resourceValue)
-            throws MalformedURLException, Exception {
+    public static boolean ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID, String resourceValue) throws MalformedURLException, Exception 
+    {
         String siteId = null;
         String driveId = null;
         // String siteGUID = null;
@@ -823,29 +818,31 @@ public class GraphService {
         String action = "";
         boolean MustMove = false;
         try {
-            String accesstoken = getGraphToken();
+            if (accessToken == null || accessToken.isEmpty()) {
+                accessToken = getGraphToken();
+            }
             String[] parts = ItemWebUrl.split("/");
-            this.tenantDomain = parts[2];
-            this.SiteName = parts[4];
-            this.ListName = parts[5];
+            tenantDomain = parts[2];
+            SiteName = parts[4];
+            ListName = parts[5];
 
             parts = resourceValue.split("/");
-            this.ListId = parts[7];
+            ListId = parts[7];
             siteId = parts[5];
             String[] siteParts = siteId.split(",");
-            this.SiteID = siteParts[1];
+            SiteID = siteParts[1];
             // Single tennant for now
-            GraphServiceClient<?> graphClient = getGraphClient(this.tenantDomain);
+            GraphServiceClient<?> graphClient = getGraphClient(tenantDomain);
             // SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID,
             // graphClient );
-            SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID);
+            SharePointItemResponse SPItem = getListItemsById(ListId, ListItemID);
             if (SPItem != null) {
                 MustMove = SPItem.MustMove;
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
                 if (!SPItem.HasUUID) {
-                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, this.ListId);
+                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId);
                     action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
 
                     IOLog.log(
