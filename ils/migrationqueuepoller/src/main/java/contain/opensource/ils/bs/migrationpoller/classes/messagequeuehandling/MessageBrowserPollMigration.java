@@ -73,7 +73,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                         //THE MOVETO NEEDS TO BE EVALUATED LATER. FOR NOW ONLY ALFRESCO!
                          migrationservice.migrateNodeToAlfresco(queueMessage);
 
-                        //consumeMessageById(msg.getJMSMessageID());
+                        consumeMessageById(msg.getJMSMessageID(), activeMQProps.getMigrationqueue());
                         
                     }
                 } catch (Exception e) {

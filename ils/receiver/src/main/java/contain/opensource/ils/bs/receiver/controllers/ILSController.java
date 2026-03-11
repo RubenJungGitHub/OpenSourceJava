@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.ils.bs.receiver.services.GraphService;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 @RestController
 public class ILSController {
@@ -50,6 +50,8 @@ public class ILSController {
 
     @PostMapping(value = "/RelocateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
     public String RelocateIO(@RequestBody RelocateInformationObject IOobject) {
+
+        //This controller is inadeuate. If move fails there is not issue. Additional checks to be done if move was successfull
         System.out.println("in relocateIO endpoint");
         switch (IOobject.getPlatfrom()) {
             case AlfrescoConstants.ContainPlatforms.ALFRESCO:
