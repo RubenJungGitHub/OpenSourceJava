@@ -67,7 +67,7 @@ ils:
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
   base-url: http://receiver:8080
   bindendpoint: http://receiver:8080/api/Bind
-  relocateendpoint: http://receiver:8080/api/RelocateIO
+  relocateendpoint: http://receiver:8080/RelocateIO
   DeltaLinkFile: "/app/data/storeddeltalinks.csv"
 
 

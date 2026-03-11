@@ -38,6 +38,7 @@ public class migrationservice {
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
             RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
             String endpoint = this.ilsProperties.getRelocateendpoint();
+            System.out.println("Relocate endpoint: " + endpoint);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBasicAuth(

@@ -44,7 +44,7 @@ ils:
   base-url: http://localhost:55000
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
-  relocateendpoint: http://localhost:55000/api/RelocateIO
+  relocateendpoint: http://localhost:55000/RelocateIO
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"
 
 #Accept all connections inside the network

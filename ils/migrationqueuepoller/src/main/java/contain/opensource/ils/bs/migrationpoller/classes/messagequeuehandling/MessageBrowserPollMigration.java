@@ -69,6 +69,8 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                         // Process migration
                         json = ((TextMessage) msg).getText();
                         MigrationQueueMessage queueMessage =mapper.readValue(json, MigrationQueueMessage.class);
+
+                        //THE MOVETO NEEDS TO BE EVALUATED LATER. FOR NOW ONLY ALFRESCO!
                          migrationservice.migrateNodeToAlfresco(queueMessage);
 
                         //consumeMessageById(msg.getJMSMessageID());
