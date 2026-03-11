@@ -1,10 +1,9 @@
 package contain.opensource.ils.bs.receiver.services;
 
 
-import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
 import org.springframework.stereotype.Service;
 
-import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
+import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
 
 @Service
 public class migrationservice {

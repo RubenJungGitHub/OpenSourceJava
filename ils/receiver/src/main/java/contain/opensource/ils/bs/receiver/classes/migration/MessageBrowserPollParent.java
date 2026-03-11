@@ -29,7 +29,7 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
         super(activeMQProps, alfrescoProps, ilsProperties, mapper, jmsTemplate);
     }
 
-    public void SendMigrationMessage(SharepointQueMessage.Item item) {
+    public void SendMigrationMessage(SharepointQueMessage.Item item, String deltalink) {
         try {
 
             session = connection.createSession(true, Session.SESSION_TRANSACTED);
@@ -39,7 +39,7 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
             producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
             MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", "SPO",
-                    item.getFields().get("Move").toString(), item.getFields().get("id").toString());
+                    item.getFields().get("Move").toString(), item.getFields().get("id").toString(), deltalink);
             String json = objectMapper.writeValueAsString(payload);
             String correlationId = MDC.get("correlationId");
             TextMessage message = session.createTextMessage(json);

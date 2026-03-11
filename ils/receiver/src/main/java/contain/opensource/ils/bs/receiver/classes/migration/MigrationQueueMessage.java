@@ -8,28 +8,35 @@ public class MigrationQueueMessage {
     private String action;
     private String source;
     private String destination;
+    private String deltalink;
+    private String listid;
 
     // Default constructor (required for Jackson)
     public MigrationQueueMessage() {
     }
 
     // Constructor with all properties
-    public MigrationQueueMessage(String key, String action,  String source, String destination, String id) {
+    public MigrationQueueMessage(String key, String action,  String source, String destination, String id, String deltaLink) {
         this.id =id;
         this.key = key;
         this.action = action;
         this.source = source;
         this.destination = destination;
+        this.deltalink = deltaLink;
+        this.listid = this.deltalink.split("/lists/")[1].split("/")[0];
     }
 
     // Getters and setters
     public String getKey() { return key; }
-    public void setKey(String key) { this.key = key; }
+    public void setKey(String key) { 
+        this.key = key;
+     }
     
     // Getters and setters
     public String getID() { return id; }
-    public void sertIDy(String id) { this.id = id; }
-
+    
+    public String getlistid() { return listid; }
+    
     public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }
 

@@ -105,12 +105,11 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
                                     boolean migrate = this.graphservice.ProcessChangedSharepointItem(item.getWebUrl(),
                                             item.getId(), deltaLink);
                                     if (migrate) {
-                                        SendMigrationMessage(item);
+                                        SendMigrationMessage(item, deltaLink);
                                     }
                                 }
-
                             }
-                            consumeMessageById(msg.getJMSMessageID());
+                            consumeMessageById(msg.getJMSMessageID(), activeMQProps.getSharepointQueue());
 
                         } catch (JMSException processingError) {
                             System.err.println("Error while processing message" +processingError );
@@ -128,6 +127,5 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
             System.err.println("Error in StartPoll:");
             e.printStackTrace();
         }
-        System.out.println("No remaining SHAREPOINT messages on queue");
     }
 }

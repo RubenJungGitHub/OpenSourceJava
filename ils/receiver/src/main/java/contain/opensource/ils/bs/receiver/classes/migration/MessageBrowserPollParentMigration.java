@@ -1,9 +1,7 @@
 package contain.opensource.ils.bs.receiver.classes.migration;
 
-import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -13,6 +11,8 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +48,8 @@ public abstract class MessageBrowserPollParentMigration {
     public ActiveMQConnectionFactory factory;
     public QueueBrowser browser;
     public String timestamp;
+    private volatile boolean pollingActive = false;
+    private final ExecutorService pollExecutor = Executors.newSingleThreadExecutor();
 
     @Autowired
     public MessageBrowserPollParentMigration(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
@@ -83,98 +85,201 @@ public abstract class MessageBrowserPollParentMigration {
 
     // Public method to start polling
     public void startPolling(String queueid) {
-        System.out.println("MessageBrowserPollSP: starting MIGRATION polling in background thread...");
+        synchronized (this) {
+            if (pollingActive) {
+                System.out.println("Polling already active for queue: " + queueid);
+                return; // don't start another poller
+            }
+            pollingActive = true;
+        }
 
-        new Thread(() -> {
+        Thread pollerThread = new Thread(() -> {
             try {
-                ReadMessages(queueid);
+                pollLoop(queueid);
+            } finally {
+                pollingActive = false;
+                pollExecutor.shutdown();
+            }
+        }, "SPPoller-Thread");
+
+        pollerThread.setDaemon(true);
+        pollerThread.start();
+    }
+
+    private void pollLoop(String queueid) {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                // Ensure connection/session exist
+                if (connection == null) {
+                    connection = createConnectionWithRetry();
+                    session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                }
+
+                queue = session.createQueue(queueid);
+                browser = session.createBrowser(queue);
+
+                System.out.println("Polling MIGRATION messages...");
+
+                // Submit StartPoll as a Future and block until finished
+                Future<?> pollFuture = pollExecutor.submit(() -> StartPoll(browser, session, queue));
+                try {
+                    pollFuture.get(); // BLOCKS until StartPoll finishes
+                } catch (ExecutionException e) {
+                    System.err.println("Error during poll execution: " + e.getCause());
+                }
+
+            } catch (JMSException e) {
+                System.err.println("Session/Connection error: " + e.getMessage());
+                cleanupConnection();
+
+                // short delay before retry
+                sleepSilently(5000);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }, "SPPoller-Thread").start();
+
+            // Wait PollInterval seconds AFTER poll completion
+            sleepSilently(PollInterval * 1000L);
+        }
+
+        // Cleanup on thread exit
+        cleanupConnection();
     }
 
-    private Connection createConnectionWithRetry() {
+    private void cleanupConnection() {
+        try {
+            if (session != null)
+                session.close();
+        } catch (Exception ignored) {
+        }
+        try {
+            if (connection != null)
+                connection.close();
+        } catch (Exception ignored) {
+        }
+        session = null;
+        connection = null;
+    }
+
+    private void sleepSilently(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Create a JMS connection. Implement your connection/retry logic here.
+     */
+    private Connection createConnectionWithRetry() throws JMSException {
+        // Example: ActiveMQConnectionFactory connectionFactory = ...
         int retryCount = 0;
         int maxRetries = 10; // or Integer.MAX_VALUE for infinite
         int retryIntervalSec = 10;
-        while (true) {
-            try {
-                factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-                connection = factory.createConnection();
-                connection.start();
-                session = connection.createSession(true, Session.SESSION_TRANSACTED);
-                System.out.println("Connected to ActiveMQ!");
-                return connection;
-            } catch (JMSException e) {
-                retryCount++;
-                System.err.println("Failed to connect to ActiveMQ (attempt " + retryCount + "): " + e.getMessage());
+        try {
+            while (true) {
                 try {
-                    Thread.sleep(retryIntervalSec * 1000L);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Interrupted while waiting to retry ActiveMQ connection", ie);
+                    factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+                    connection = factory.createConnection();
+                    connection.start();
+                    session = connection.createSession(true, Session.SESSION_TRANSACTED);
+                    System.out.println("Connected to ActiveMQ!");
+                    return connection;
+                } catch (JMSException e) {
+                    retryCount++;
+                    System.err.println("Failed to connect to ActiveMQ (attempt " + retryCount + "): " + e.getMessage());
+                    try {
+                        Thread.sleep(retryIntervalSec * 1000L);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Interrupted while waiting to retry ActiveMQ connection", ie);
+                    }
                 }
             }
+        } catch (Exception ex) {
+            // return connectionFactory.createConnection();
+            throw new UnsupportedOperationException("Implement your connection creation here");
         }
     }
 
-    public void ReadMessages(String queueid) {
-        try {
+    /**
+     * StartPoll must be implemented by child class.
+     * It may be synchronous or asynchronous internally.
+     * Future.get() in the polling loop will wait until all work is done.
+     */
+    protected abstract void StartPoll(QueueBrowser browser, Session session, Queue queue);
+    // private void StartPoll(QueueBrowser browser, Session session, Queue queue) {
+    // Your existing poll logic override in child
+    // }
 
-            /// ================================================================================================================================
-            /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
-            // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
-            // Method must be made more generic because there is duplicated code over all
-            /// different queuepollers/
-            /// several polling projects.
-            /// ================================================================================================================================
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleWithFixedDelay(() -> {
+    public void ReadMessages(String queueid) {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
                 System.out.println("Polling MIGRATION messages...");
 
-                try {
+                if (connection == null) {
                     connection = createConnectionWithRetry();
-
-                    queue = session.createQueue(queueid);
-                    browser = session.createBrowser(queue);
-                    StartPoll(browser, session, queue);
-                } catch (JMSException e) {
-                    System.err.println("Session/Connection error: " + e.getMessage());
-                    // will retry creating connection after outer while loop
+                    session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
                 }
-            }, 0, PollInterval, TimeUnit.SECONDS);
 
-            // Keep the main thread alive indefinitely
+                queue = session.createQueue(queueid);
+                browser = session.createBrowser(queue);
 
-            try {
-                Thread.currentThread().join();
-            } catch (InterruptedException e) {
+                // Blocking poll — ensures next iteration only happens after completion
+                StartPoll(browser, session, queue);
+
+            } catch (JMSException e) {
+                System.err.println("Session/Connection error: " + e.getMessage());
+                try {
+                    if (session != null)
+                        session.close();
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (connection != null)
+                        connection.close();
+                } catch (Exception ignored) {
+                }
+                session = null;
+                connection = null;
+
+                // short delay before retrying
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            // Cleanup
-
+            // wait interval before next poll
             try {
-                if (session != null)
-                    session.close();
-            } catch (Exception ignored) {
+                Thread.sleep(PollInterval * 1000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (Exception ignored) {
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
         }
+
+        // Cleanup on exit
+        try {
+            if (session != null)
+                session.close();
+        } catch (Exception ignored) {
+        }
+        try {
+            if (connection != null)
+                connection.close();
+        } catch (Exception ignored) {
+        }
+        System.out.println("SHAREPOINT queue message processed");
+
     }
 
-    public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
-    }
 
-    public void consumeMessageById(String messageId) throws JMSException {
+    public void consumeMessageById(String messageId, String queueid) throws JMSException {
         String selector = "JMSMessageID = '" + messageId + "'";
         // Check session is open
         MessageConsumer consumer = null;
@@ -182,14 +287,15 @@ public abstract class MessageBrowserPollParentMigration {
         try {
             if (session instanceof ActiveMQSession amqSession) {
                 if (amqSession.isClosed()) {
-                  connection = createConnectionWithRetry();
+                    connection = createConnectionWithRetry();
                 }
             }
+            queue = session.createQueue(queueid);
             consumer = session.createConsumer(queue, selector);
             Message msg = consumer.receive(1000);
             if (msg != null) {
                 session.commit(); // remove the message
-                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_CYAN
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BLUE
                         + timestamp + "Message acknowledged " + messageId + " (removed from queue.)"
                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             }
