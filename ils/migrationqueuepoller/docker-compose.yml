@@ -1,11 +1,11 @@
 
-name : ils
+name : ilsqueuepollers
 services:
-  sharepointqueuepoller:
+  migrationqueupoller:
     build:
       context: C:/ContainOpenSource/Java/OpenSourceJava/ils
-      dockerfile: sharepointqueuepoller/Dockerfile
-    container_name: sharepointqueuepoller
+      dockerfile: migrationqueupoller/Dockerfile
+    container_name: migrationqueupoller
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/contAInBallenbak
       SPRING_DATASOURCE_USERNAME: contain

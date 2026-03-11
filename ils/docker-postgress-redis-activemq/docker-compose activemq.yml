@@ -1,4 +1,4 @@
-name: ils
+name: ilstools
 
 services:
   activemq:
@@ -10,6 +10,8 @@ services:
       - "8162:8161"
     volumes:
       - ./activemq-data:/opt/activemq/data
+    environment:
+    - ACTIVEMQ_MAX_CONNECTIONS=500
     networks:
       ils_ils_default:
         aliases:

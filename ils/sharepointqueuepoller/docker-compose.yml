@@ -1,5 +1,5 @@
 
-name : ils
+name : ilsqueuepollers
 services:
   sharepointqueuepoller:
     build:

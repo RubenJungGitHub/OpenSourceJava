@@ -6,26 +6,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -40,102 +28,18 @@ import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
-import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
-import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeType;
+import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParent;
 
-/**
- * MessageBrowserPoll is a Spring component responsible for polling messages
- * from an ActiveMQ queue,
- * processing them, and interacting with Alfresco and other external systems as
- * required.
- * p>
- * This class establishes a connection to an ActiveMQ broker, creates a consumer
- * for a specific queue,
- * and periodically polls for new messages using a scheduled executor. Each
- * message is processed according
- * to its type, with support for handling node removals, updating nodes, binding
- * content, and relocating
- * information objects between platforms.
- * p>
- * Key Features:
- *
- * Configurable ActiveMQ connection via Spring properties.
- * Scheduled polling of messages from a designated queue.
- * Integration with Alfresco for node operations via
- * AlfrescoNodeController.
- * Support for message acknowledgment and transaction management.
- * Logging and error handling for message processing and external service
- * interactions.
- * Interaction with Redis for caching and deduplication of processing.
- * REST calls to external services for binding and relocating information
- * objects.
- *
- * p>
- * Note: The class contains TODOs and comments regarding handling consumer
- * closure and Alfresco server downtime.
- * Proper resource cleanup and error handling are implemented to ensure
- * reliability.
- *
- * Dependencies:
- *
- * Spring Framework (for dependency injection and configuration)
- * ActiveMQ JMS client
- * Jackson (for JSON processing)
- * AlfrescoNodeController and related domain classes
- * RedisManager for caching
- * RestTemplate for REST API calls
- *
- *
- * Usage:
- * 
- * pre>
- * 
- * @Autowired
- *            private MessageBrowserPoll messageBrowserPoll;
- *            ...
- *            messageBrowserPoll.ReadMessages(args);
- *            pre>
- *
- *            Configuration:
- *            ul>
- *            activemq.brokerUrl - URL of the ActiveMQ broker
- *            activemq.user - Username for ActiveMQ
- *            activemq.password - Password for ActiveMQ
- *            ul>
- *
- *            Thread Safety: This class is designed to be used as a singleton
- *            Spring bean.
- *
- *            Author: [Your Name or Team]
- *            Since: [Version or Date]
- */
 @Component
-public class MessageBrowserPollAlfresco {
-
-    @Value("${activemq.brokerUrl}")
-    private String brokerUrl;
-
-    @Value("${activemq.user}")
-    private String user;
-
-    @Value("${activemq.password}")
-    private String password;
-
+public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
     private Integer PollInterval = 15;
 
-    private final ActiveMQProperties activeMQProps;
-    private final AlfrescoProperties alfrescoProps;
-    private final ILSRestProperties ILSProperties;
-    private final ObjectMapper objectMapper;
-    private Session session;
-    private Connection connection;
-    private String timestamp;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     @Autowired
@@ -143,11 +47,15 @@ public class MessageBrowserPollAlfresco {
 
     @Autowired
     public MessageBrowserPollAlfresco(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsProperties, ObjectMapper mapper) {
-        this.activeMQProps = activeMQProps;
-        this.alfrescoProps = alfrescoProps;
-        this.ILSProperties = ilsProperties;
-        this.objectMapper = mapper;
+            ILSRestProperties ilsProperties, ObjectMapper objectMapper) {
+              super(
+            activeMQProps,
+            alfrescoProps,
+            ilsProperties,
+            objectMapper,
+            null,
+            null
+        );
     }
 
     /**
@@ -172,121 +80,6 @@ public class MessageBrowserPollAlfresco {
      * @param args Command-line arguments (currently unused).
      */
 
-    // Public method to start polling
-    public void startPolling() {
-        System.out.println("MessageBrowserPollAlfresco: starting ALFRESCO in background thread...");
-
-        new Thread(() -> {
-            try {
-                ReadMessages();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, "AlfrescoPoller-Thread").start();
-    }
-
-    private Connection createConnectionWithRetry() {
-        int retryCount = 0;
-        int maxRetries = 10; // or Integer.MAX_VALUE for infinite
-        int retryIntervalSec = 10;
-
-        while (true) {
-            try {
-                ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-                connection = factory.createConnection();
-                connection.start();
-                System.out.println("Connected to ActiveMQ!");
-                return connection;
-            } catch (JMSException e) {
-                retryCount++;
-                System.err.println("Failed to connect to ActiveMQ (attempt " + retryCount + "): " + e.getMessage());
-                try {
-                    Thread.sleep(retryIntervalSec * 1000L);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw new IllegalStateException("Interrupted while waiting to retry ActiveMQ connection", ie);
-                }
-            }
-        }
-    }
-
-    public void ReadMessages() {
-        try {
-
-            /// ================================================================================================================================
-            /// TODO. HANGS ON CONSUMER CLOSED IF ALFRESCO SERVER IS BROUGHT DOWN. CHECK
-            // MUST BE IMPLEMENTED AND CONSUMER REINITIATED IF SO!!!
-            /// ================================================================================================================================
-
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleWithFixedDelay(() -> {
-                System.out.println("Polling ALFRESCO messages...");
-                try {
-                    connection = createConnectionWithRetry();
-                    session = connection.createSession(true, Session.SESSION_TRANSACTED);
-                    Queue queue = session.createQueue(activeMQProps.getSharepointQueue());
-                    QueueBrowser browser = session.createBrowser(queue);
-
-                    StartPoll(browser, session, queue);
-                } catch (JMSException e) {
-                    System.err.println("Session/Connection error: " + e.getMessage());
-                    // will retry creating connection after outer while loop
-                }
-            }, 0, PollInterval, TimeUnit.SECONDS);
-
-            // Keep the main thread alive indefinitely
-
-            try {
-                Thread.currentThread().join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            // Cleanup
-
-            try {
-                if (session != null)
-                    session.close();
-            } catch (Exception ignored) {
-            }
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (Exception ignored) {
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-        }
-    }
-
-    /**
-     * Starts polling messages from the provided JMS consumer and processes each
-     * message.
-     * p>
-     * This method continuously receives messages from the given
-     * {@link MessageConsumer}
-     * without waiting, processes each message according to its type, and performs
-     * actions such as logging, updating, binding, and relocating information
-     * objects.
-     * It handles both text and non-text messages, commits the session after
-     * successful
-     * processing, and rolls back the session in case of processing errors.
-     * p>
-     * For text messages, it parses the message content as JSON, maps it to an
-     * {@code AlfrescoQueMessage}, and performs actions based on the node type,
-     * including logging deletions, updating nodes, binding, and relocating objects
-     * between platforms. It also interacts with Redis for caching and duplicate
-     * prevention.
-     * p>
-     * Exceptions during message processing are caught and logged, and the session
-     * is
-     * rolled back to ensure message integrity.
-     *
-     * @param consumer the {@link MessageConsumer} to poll messages from
-     * @param session  the JMS {@link Session} used for message acknowledgment and
-     *                 transaction management
-     */
     private String BindIO(String IOUUID, AlfrescoQueMessage QMessage, Object secondPath) {
         // First sign and log
 
@@ -515,7 +308,7 @@ public class MessageBrowserPollAlfresco {
                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
 
-                    // consumeMessageById(session, queue, msg.getJMSMessageID());
+                    //consumeMessageById(msg.getJMSMessageID());
 
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");
@@ -529,68 +322,5 @@ public class MessageBrowserPollAlfresco {
             e.printStackTrace();
         }
         System.out.println("No remaining ALFRESCO messages on queue");
-    }
-
-    private void consumeMessageById(Session session, Queue queue, String messageId) throws JMSException {
-        String selector = "JMSMessageID = '" + messageId + "'";
-        MessageConsumer consumer = session.createConsumer(queue, selector);
-        try {
-            Message msg = consumer.receive(1000);
-            if (msg != null) {
-                timestamp = LocalDateTime.now().format(formatter);
-                session.commit(); // remove the message
-                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
-                        + timestamp + ("Message " + messageId + " acknowledged (removed from queue.")
-                        + activeMQProps.getSharepointQueue() + ". Interval : " + PollInterval + " seconds"
-                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
-            }
-        } catch (Exception ex) {
-        } finally {
-            consumer.close();
-        }
-    }
-
-    // =======================================================================
-    // As more functions this should be more generic and moved to central point.
-    // =======================================================================
-    private void SendMigrationMessage(SharepointQueMessage.Item item) {
-        try {
-
-            ConnectionFactory factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-
-            // Create a connection
-            Connection connection = factory.createConnection();
-            connection.start();
-
-            // Create a session (non-transacted, auto-acknowledge)
-            Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-
-            // Create the queue (migration queue)
-            Queue queue = session.createQueue(activeMQProps.getMigrationqueue());
-
-            // Create a message producer
-            MessageProducer producer = session.createProducer(queue);
-            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-            MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", "SPO",
-                    item.getFields().get("Move").toString());
-            String json = objectMapper.writeValueAsString(payload);
-            String correlationId = MDC.get("correlationId");
-            TextMessage message = session.createTextMessage(json);
-
-            // Send the message
-            producer.send(message);
-
-            // Clean up
-            producer.close();
-            session.commit();
-            session.close();
-            connection.close();
-
-        } catch (Exception ex) {
-            // log.error("Failed to send delta message to ActiveMQ", ex);
-            throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);
-        }
     }
 }

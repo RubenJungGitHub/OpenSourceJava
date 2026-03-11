@@ -1,4 +1,4 @@
-name: ils
+name: ilstools
 
 services:
   redis:

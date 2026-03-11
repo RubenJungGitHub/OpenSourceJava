@@ -23,7 +23,7 @@ spring:
     show-sql: true
 # ---------------- ActiveMQ ----------------
 activemq:
-  brokerUrl: tcp://localhost:61616
+  brokerUrl: tcp://localhost:61617
   user: admin
   password: admin
   sharepoint-queue: sharepoint.delta.queue
