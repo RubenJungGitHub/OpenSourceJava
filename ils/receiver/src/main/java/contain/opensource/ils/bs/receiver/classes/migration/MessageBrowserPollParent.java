@@ -2,9 +2,9 @@ package contain.opensource.ils.bs.receiver.classes.migration;
 
 import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.MDC;
 import org.springframework.jms.core.JmsTemplate;
 
@@ -15,6 +15,7 @@ import contain.opensource.ils.bs.receiver.services.migrationservice;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
+
 public abstract class MessageBrowserPollParent extends MessageBrowserPollParentMigration {
 
     public MessageBrowserPollParent(
@@ -28,16 +29,17 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
         super(activeMQProps, alfrescoProps, ilsProperties, mapper, jmsTemplate);
     }
 
-   public void SendMigrationMessage(SharepointQueMessage.Item item) {
+    public void SendMigrationMessage(SharepointQueMessage.Item item) {
         try {
 
-            factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+            session = connection.createSession(true, Session.SESSION_TRANSACTED);
             // Create a message producer
+            queue = session.createQueue(activeMQProps.getMigrationqueue());
             MessageProducer producer = session.createProducer(queue);
             producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
             MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", "SPO",
-                    item.getFields().get("Move").toString());
+                    item.getFields().get("Move").toString(), item.getFields().get("id").toString());
             String json = objectMapper.writeValueAsString(payload);
             String correlationId = MDC.get("correlationId");
             TextMessage message = session.createTextMessage(json);
@@ -49,11 +51,10 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
             producer.close();
             session.commit();
             session.close();
-            connection.close();
-                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
-                    + timestamp + "-> Information object "  +  item + " sent to migrationqueue"
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
+                    + timestamp + "-> Information object " + item + " sent to migrationqueue"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-    
+
         } catch (Exception ex) {
             // log.error("Failed to send delta message to ActiveMQ", ex);
             throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);

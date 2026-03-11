@@ -1,12 +1,15 @@
 package contain.opensource.ils.bs.receiver.services;
 
+
+import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
 import org.springframework.stereotype.Service;
+
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 
 @Service
 public class migrationservice {
 
-    public void migrateNodeToAlfresco() {
+    public void migrateNodeToAlfresco(MigrationQueueMessage  msg) {
 
         // alfrescoController.fetchNode(object.getId());
         try {
@@ -18,7 +21,7 @@ public class migrationservice {
         // additional coordination logic
     }
 
-    public void migrateNodeToSP() {
+    public void migrateNodeToSP(MigrationQueueMessage  msg) {
 
         // alfrescoController.fetchNode(object.getId());
         try {

@@ -42,17 +42,12 @@ public abstract class MessageBrowserPollParentMigration {
     public final ActiveMQProperties activeMQProps;
     public final AlfrescoProperties alfrescoProps;
     public final ILSRestProperties ILSProperties;
-    // private final GraphService graphService;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     public Session session;
     public Connection connection;
     public Queue queue;
     public ActiveMQConnectionFactory factory;
     public QueueBrowser browser;
     public String timestamp;
-
-    // @Autowired
-    // private AlfrescoNodeController aController;
 
     @Autowired
     public MessageBrowserPollParentMigration(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,

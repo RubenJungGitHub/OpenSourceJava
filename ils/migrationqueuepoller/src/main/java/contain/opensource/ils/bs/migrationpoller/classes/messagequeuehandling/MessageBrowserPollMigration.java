@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParentMigration;
+import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
 import contain.opensource.ils.bs.receiver.services.migrationservice;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
@@ -67,8 +68,9 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                     if (msg instanceof TextMessage) {
                         // Process migration
                         json = ((TextMessage) msg).getText();
-                        // Continue here.
-                        int a = 1;
+                        MigrationQueueMessage queueMessage =mapper.readValue(json, MigrationQueueMessage.class);
+                         migrationservice.migrateNodeToAlfresco(queueMessage);
+
                         //consumeMessageById(msg.getJMSMessageID());
                         
                     }
