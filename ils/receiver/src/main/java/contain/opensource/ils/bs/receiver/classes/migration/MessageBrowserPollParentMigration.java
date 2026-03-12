@@ -1,7 +1,9 @@
 package contain.opensource.ils.bs.receiver.classes.migration;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -11,8 +13,6 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
-import java.util.concurrent.Future;
-import java.util.concurrent.ExecutionException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public abstract class MessageBrowserPollParentMigration {
     public final ObjectMapper objectMapper;
     public final ActiveMQProperties activeMQProps;
     public final AlfrescoProperties alfrescoProps;
-    public final ILSRestProperties ILSProperties;
+//    public final ILSRestProperties ILSProperties;
     public Session session;
     public Connection connection;
     public Queue queue;
@@ -50,7 +50,8 @@ public abstract class MessageBrowserPollParentMigration {
     public String timestamp;
     private volatile boolean pollingActive = false;
     private final ExecutorService pollExecutor = Executors.newSingleThreadExecutor();
-
+    protected ILSRestProperties ILSProperties;
+    
     @Autowired
     public MessageBrowserPollParentMigration(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsProperties, ObjectMapper mapper, JmsTemplate jmsTemplate) {

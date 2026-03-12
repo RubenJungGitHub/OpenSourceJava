@@ -18,6 +18,7 @@ import contain.opensource.shared.configurationproperties.ILSRestProperties;
 
 public abstract class MessageBrowserPollParent extends MessageBrowserPollParentMigration {
 
+    
     public MessageBrowserPollParent(
             ActiveMQProperties activeMQProps,
             AlfrescoProperties alfrescoProps,

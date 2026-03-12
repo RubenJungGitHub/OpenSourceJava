@@ -37,8 +37,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
-//import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.AlfrescoProperties;
-//import contain.opensource.ils.bs.receiver.classes.ConfigurationProperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -48,59 +46,6 @@ import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 
-
-/**
- * AlfrescoNodeController is a Spring component that manages interactions with
- * the Alfresco Content Management System.
- * It provides functionality to upload, retrieve, update, and delete documents
- * in Alfresco, as well as handle metadata
- * management and document relocation between platforms.
- *
- * h2>Key Responsibilities:</h2>
- *
- * Authentication with Alfresco REST API using Basic Auth
- * Upload SharePoint items to Alfresco with metadata
- * Retrieve node information, content, and properties from Alfresco
- * Update node metadata including custom properties (UUID, MARKING,
- * classification)
- * Delete nodes from Alfresco
- * Manage cross-platform document relocation (Alfresco to SharePoint and
- * vice versa)
- * Poll for UUID assignment and handle asynchronous node creation
- * 
- *
- * h2>Configuration:</h2>
- * This component is autowired with {@link AlfrescoProperties} and
- * {@link ILSRestProperties} to obtain
- * Alfresco endpoint URL, username, and password credentials.
- *
- * h2>Important Notes:</h2>
- *
- * Document upload and metadata update cannot be performed in a single
- * operation in Alfresco;
- * they require sequential API calls
- * The controller implements polling mechanisms to wait for asynchronous
- * operations (e.g., UUID assignment)
- * All HTTP communication uses CloseableHttpClient with proper resource
- * management
- * Alfresco site name and other constants are obtained from
- * {@link AlfrescoConstants}
- * 
- *
- * h2>Error Handling:</h2>
- * Most methods use try-catch blocks with logging to System.err and
- * printStackTrace() for debugging.
- * Consider implementing proper logging framework (SLF4J, Log4j) for production
- * use.
- *
- * @author [Author Name]
- * @version 1.0
- * @see AlfrescoProperties
- * @see ILSRestProperties
- * @see AlfrescoConstants
- * @see RelocateInformationObject
- * @see AlfrescoNodeResponse
- */
 @Component
 public class AlfrescoNodeController {
   public String nodeId;

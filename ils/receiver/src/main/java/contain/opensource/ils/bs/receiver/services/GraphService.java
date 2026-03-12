@@ -54,6 +54,7 @@ import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
+import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
@@ -86,29 +87,17 @@ public class GraphService {
     static GraphServiceClient<?> graphClient;
     static AlfrescoConstants.eItemtype itemtype;
     static ILSRestProperties ILSProperties = null;
-    // private migrationservice migrationservice;
+    static AlfrescoNodeController acontroller = null;
 
-    /*
-     * @Autowired
-     * public GraphService(ILSRestProperties ilsProperties, @Lazy migrationservice
-     * migrationService) {
-     * System.out.println("GraphService autowired constructor called!");
-     * this.ILSProperties = ilsProperties;
-     * this.DeltaLinkFile = ILSProperties.getDeltaLinkFile();
-     * this.migrationservice = migrationService;
-     * mapper = new ObjectMapper();
-     * mapper.registerModule(new JavaTimeModule());
-     * mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-     * }
-     */
 
     @Autowired
-    public GraphService(ILSRestProperties ilsProperties) {
+    public GraphService(ILSRestProperties ilsProperties, AlfrescoNodeController alfresconodecontroller) {
         this.ILSProperties = ilsProperties;
         mapper = new ObjectMapper();
         this.DeltaLinkFile = ILSProperties.getDeltaLinkFile();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        this.acontroller = alfresconodecontroller;
 
     }
 
@@ -435,9 +424,9 @@ public class GraphService {
                     " from "
                     + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
 
-            // Upload to Alfrewsco
-            // migrationservice.migrateNodeToAlfresco(ROobject);
-
+            // Upload to Alfresco
+            this.acontroller.uploadSPItemToAlfresco(ROobject);
+            
             // log
             IOLog.log(
                     ROobject.getUuid(),
