@@ -52,8 +52,11 @@ public class ILSController {
 
     @PostMapping(value = "/MIgrateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void MIgrateIO(@RequestBody MigrationQueueMessage msg) throws Exception {
-
         System.out.println("in migrate IO endpoint");
+        if (msg == null) {
+            throw new IllegalArgumentException("MigrationQueueMessage is null!");
+        }
+
         try {
             migrationservice.migrateio(msg);
         } catch (Exception ex) {
