@@ -5,6 +5,10 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisConfigProperties;
+import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
+import contain.opensource.ils.startreceiver;
+
 @SpringBootApplication(scanBasePackages = {
         "contain.opensource.uuidutil",
         "contain.opensource.uuidutil.controllers",
@@ -18,6 +22,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class StartSPPoller {
 
     public static void main(String[] args) {
-        SpringApplication.run(StartSPPoller.class, args);
+
+		var context = SpringApplication.run(startreceiver.class, args);
+		RedisConfigProperties redisConfig = context.getBean(RedisConfigProperties.class);
+		// GenerateKeyPair();
+		RedisManager.init(redisConfig);
     }
 }
