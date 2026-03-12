@@ -15,16 +15,15 @@ import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.ils.bs.receiver.services.migrationservice;
 import contain.opensource.shared.constants.AlfrescoConstants;
 
-
 @RestController
 public class ILSController {
     private final GraphService graphService;
     private final AlfrescoNodeController alfrescoNodeController;
     private final migrationservice migrationservice;
 
-
     @Autowired
-    public ILSController(GraphService graphService, AlfrescoNodeController alfrescoNodeController, migrationservice migrationservice) {
+    public ILSController(GraphService graphService, AlfrescoNodeController alfrescoNodeController,
+            migrationservice migrationservice) {
         this.graphService = graphService;
         this.alfrescoNodeController = alfrescoNodeController;
         this.migrationservice = migrationservice;
@@ -53,59 +52,14 @@ public class ILSController {
         }
     }
 
-    @PostMapping(value = "/RelocateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String RelocateIO(@RequestBody RelocateInformationObject IOobject) {
-
-        //This controller is inadeuate. If move fails there is not issue. Additional checks to be done if move was successfull
-        System.out.println("in relocateIO endpoint");
-        switch (IOobject.getPlatfrom()) {
-            case AlfrescoConstants.ContainPlatforms.ALFRESCO:
-                if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.SPO) {
-                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_BLUE
-                            + ("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  "
-                                    + IOobject.getPlatformTo().toString())
-                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                    this.alfrescoNodeController.RelocateIO(IOobject);
-                }
-            case AlfrescoConstants.ContainPlatforms.SPO:
-                if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.ALFRESCO) {
-                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_MAGENTA
-                            + ("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  "
-                                    + IOobject.getPlatformTo().toString())
-                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                    this.graphService.RelocateIO(IOobject);
-                }
-        }
-        return "Success";
-    }
-
-
-    
     @PostMapping(value = "/MIgrateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String MIgrateIO(@RequestBody MigrationQueueMessage msg) {
+    public void MIgrateIO(@RequestBody MigrationQueueMessage msg) throws Exception {
 
-       System.out.println("in migrate IO endpoint");
-       migrationservice.migrateio(msg);
-       /*  switch (IOobject.getPlatfrom()) {
-            case AlfrescoConstants.ContainPlatforms.ALFRESCO:
-                if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.SPO) {
-                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_BLUE
-                            + ("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  "
-                                    + IOobject.getPlatformTo().toString())
-                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                    this.alfrescoNodeController.RelocateIO(IOobject);
-                }
-            case AlfrescoConstants.ContainPlatforms.SPO:
-                if (IOobject.getPlatformTo() == AlfrescoConstants.ContainPlatforms.ALFRESCO) {
-                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_MAGENTA
-                            + ("Relocate " + IOobject.getUuid() + " from " + IOobject.getPlatfrom().toString() + " to  "
-                                    + IOobject.getPlatformTo().toString())
-                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                    this.graphService.RelocateIO(IOobject);
-                }
-                 */
-        //}
-
-        return "Success";
+        System.out.println("in migrate IO endpoint");
+        try {
+            migrationservice.migrateio(msg);
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 }

@@ -33,13 +33,7 @@ public class startreceiver {
 		RedisConfigProperties redisConfig = context.getBean(RedisConfigProperties.class);
 		// GenerateKeyPair();
 		RedisManager.init(redisConfig);
-		// try {
-		// PKCS12KeyLoader.loadPrivateKey();
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
 		System.out.println("Listening.....");
-
 	}
 
 	private static void GenerateKeyPair() {

@@ -417,7 +417,8 @@ public class GraphService {
         }
     }
 
-    public void RelocateIO(RelocateInformationObject ROobject) {
+    public void RelocateIO(RelocateInformationObject ROobject) throws Exception
+    {
         try {
 
             String action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() +
@@ -468,8 +469,9 @@ public class GraphService {
                     ROobject.classification,
                     ROobject.version);
         } catch (Exception ex) {
-            System.out.println("Failed to relocate IO: " + ex.getMessage());
-            ex.printStackTrace();
+            //System.out.println("Failed to relocate IO: " + ex.getMessage());
+            //ex.printStackTrace();
+            throw ex;
         }
     }
 
@@ -851,58 +853,6 @@ public class GraphService {
                             SPItem.version);
                     return MustMove;
                 }
-
-                // ========================================================================
-                // MOVE TO MIGRATIONSERVICE
-                // ========================================================================
-                /**/
-                /*
-                 * if (SPItem.MustMove) {
-                 * // Relocate item
-                 * try {
-                 * System.out.println(contain.opensource.shared.constants.AlfrescoConstants.
-                 * GREEN
-                 * + "SPItem mustmove?" + SPItem.MustMove
-                 * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                 * // Add to relocation cache
-                 * // RedisManager.putHash("IOinProcess", redisentryInRelocation, "InProcess",
-                 * // 240);
-                 * RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-                 * // ROobject.setHash(bindresponse.getBody());
-                 * // String endpoint = String.format(
-                 * // "%s/RelocateIO",
-                 * // this.ILSProperties.getBaseUrl());
-                 * String endpoint = this.ILSProperties.getRelocateendpoint();
-                 * HttpHeaders headers = new HttpHeaders();
-                 * headers.setContentType(MediaType.APPLICATION_JSON);
-                 * headers.setBasicAuth(
-                 * AlfrescoConstants.username,
-                 * AlfrescoConstants.password,
-                 * StandardCharsets.UTF_8);
-                 * RestTemplate restTemplate = new RestTemplate();
-                 * HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
-                 * headers);
-                 * 
-                 * ResponseEntity<String> response = restTemplate.postForEntity(endpoint,
-                 * entitymove,
-                 * String.class);
-                 * 
-                 * System.out.println("Status: " + response.getStatusCodeValue());
-                 * System.out.println("Body: " + response.getBody());
-                 * 
-                 * int status = response.getStatusCode().value();
-                 * if (status != 200) {
-                 * throw new IOException("HTTP error " + status);
-                 * }
-                 * 
-                 * } catch (Exception e) {
-                 * System.out.println("Failed to delete SP item after move: " + e.getMessage());
-                 * }
-                 * } else {
-                 * // Bind
-                 * BindObject(SPItem);
-                 * }
-                 */
                 BindObject(SPItem);
                 return MustMove;
             }
