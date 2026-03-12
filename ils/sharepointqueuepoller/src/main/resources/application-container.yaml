@@ -8,10 +8,10 @@ name: ils
 #debug: true
 
 spring:
-
   redis:
     host: Redis-service
     port: 6379
+
   
   # ---------- SQL DataSource ----------
   datasource:

@@ -8,11 +8,10 @@ name: ils
 #debug: true
 
 spring:
-
   redis:
     host: Redis-service
     port: 6379
-  
+
   # ---------- SQL DataSource ----------
   datasource:
  #   url: jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
@@ -51,7 +50,7 @@ activemq:
 
 ils:
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
-  base-url: http://receiver:55000
-  bindendpoint: http://receiver:55000/api/Bind
-  relocateendpoint: http://receiver:55000/MIgrateIO
+  base-url: http://receiver:8080
+  bindendpoint: http://receiver:8080/api/Bind
+  relocateendpoint: http://receiver:8080/MigrateIO
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"

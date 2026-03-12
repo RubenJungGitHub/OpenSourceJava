@@ -233,7 +233,7 @@ public class GraphService {
                         + "UUID assigned updated successfully to : " + listItemId
                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                 // Cahc in Redis
-                RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid, "InProcess", 2400);
+             //   RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid, "InProcess", 2400);
                 return uuid;
             } else {
                 System.out.println("Failed to update field: " + response.body());

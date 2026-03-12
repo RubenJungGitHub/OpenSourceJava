@@ -20,7 +20,7 @@
     </parent>
 
     <groupId>contain.opensource.java</groupId>
-    <artifactId>nigrationqueuepoller</artifactId>
+    <artifactId>migrationqueuepoller</artifactId>
     <version>3.3.0</version>
     <packaging>jar</packaging>
 
@@ -82,7 +82,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>contain.opensource.ils.bs.sppoller.StartSPPoller</mainClass>
+                    <mainClass>contain.opensource.ils.bs.migrationpoller.StartMigrationPoller</mainClass>
                 </configuration>
             </plugin>
             <plugin>

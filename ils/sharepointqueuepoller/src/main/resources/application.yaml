@@ -5,20 +5,19 @@
 #debug: true
 name: ils
 spring:
+# ---------- Redis ----------
+  redis:
+    host: localhost
+    port: 6379
+
   profiles:
     active: sp
 
   flyway:
       enabled: false
 
-  # ---------- Redis ----------
-  data:
-    redis:
-      host: ${SPRING_REDIS_HOST:Redis-service}
-      port: ${SPRING_REDIS_PORT:8001}
-      password: ""
-
-  # ---------- SQL DataSource ----------
+  
+   # ---------- SQL DataSource ----------
 # datasource:
  #   url: jdbc:sqlserver://localhost:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
  #   username: sa

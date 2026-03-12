@@ -5,6 +5,10 @@
 #debug: true
 name: ils
 spring:
+  redis:
+    host: localhost
+    port: 6379
+
   profiles:
     active: sp
 
@@ -81,5 +85,5 @@ ils:
   base-url: http://localhost:55000
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
-  relocateendpoint: http://localhost:55000/MIgrateIO
+  relocateendpoint: http://localhost:55000/MigrateIO
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"

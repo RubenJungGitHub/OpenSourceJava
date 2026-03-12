@@ -8,12 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.ils.bs.receiver.services.migrationservice;
-import contain.opensource.shared.constants.AlfrescoConstants;
 
 @RestController
 public class ILSController {

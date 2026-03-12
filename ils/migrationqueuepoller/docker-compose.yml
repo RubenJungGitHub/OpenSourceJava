@@ -1,18 +1,18 @@
 
 name : ilsqueuepollers
 services:
-  migrationqueupoller:
+  migrationqueuepoller:
     build:
       context: C:/ContainOpenSource/Java/OpenSourceJava/ils
-      dockerfile: migrationqueupoller/Dockerfile
-    container_name: migrationqueupoller
+      dockerfile: migrationqueuepoller/Dockerfile
+    container_name: migrationqueuepoller
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/contAInBallenbak
       SPRING_DATASOURCE_USERNAME: contain
       SPRING_DATASOURCE_PASSWORD: contain
       SPRING_CONFIG_LOCATION: /app/data/application.yaml
     ports:
-      - "3001:3001"
+      - "3003:3003"
     networks:
       - ils_ils_default
 
