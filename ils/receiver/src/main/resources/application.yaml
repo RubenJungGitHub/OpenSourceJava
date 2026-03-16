@@ -1,4 +1,5 @@
 spring:
+
   redis:
     host: localhost
     port: 6379
@@ -29,7 +30,9 @@ activemq:
   sharepoint-queue: sharepoint.delta.queue
   alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
 
-
+mongodb:
+      uri: mongodb://admin:admin@127.0.0.1:27017/ilstools?authSource=admin
+      
 # ---------------- Custom App ----------------
 app:
   keystore:
@@ -46,6 +49,7 @@ ils:
   bindendpoint: http://localhost:55000/api/Bind
   relocateendpoint: http://localhost:55000/RelocateIO
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"
+
 
 #Accept all connections inside the network
 server:

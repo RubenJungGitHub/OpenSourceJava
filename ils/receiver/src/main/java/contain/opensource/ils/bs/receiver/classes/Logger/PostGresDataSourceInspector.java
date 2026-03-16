@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 
-@Component
-public class DataSourceInspector implements CommandLineRunner {
+//@Component
+public class PostGresDataSourceInspector implements CommandLineRunner {
 
     @Autowired
     private DataSource dataSource;
@@ -35,6 +35,9 @@ public class DataSourceInspector implements CommandLineRunner {
         }
     }
 
+
+
+    
     @Override
     public void run(String... args) throws Exception {
         System.out.println("======================================");
