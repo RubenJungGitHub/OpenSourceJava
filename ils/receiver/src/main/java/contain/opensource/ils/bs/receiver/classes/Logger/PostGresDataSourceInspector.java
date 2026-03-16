@@ -28,7 +28,9 @@ public class PostGresDataSourceInspector implements CommandLineRunner {
     @PostConstruct
     public void checkConnection() {
         try (Connection conn = dataSource.getConnection()) {
-            System.out.println("DB reachable: " + conn.getMetaData().getURL());
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
+                    + ("POSTGRESS DB reachable: " + conn.getMetaData().getURL())
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
         } catch (Exception e) {
             System.err.println("Cannot connect to DB: " + e.getMessage());
             e.printStackTrace();

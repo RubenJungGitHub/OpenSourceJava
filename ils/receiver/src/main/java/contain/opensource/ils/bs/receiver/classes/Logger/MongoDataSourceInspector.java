@@ -21,18 +21,6 @@ public class MongoDataSourceInspector implements CommandLineRunner {
     @Autowired
     private MongoClient mongoClient;
 
-    @PostConstruct
-    public void checkConnection() {
-        try {
-            System.out.println("MongoClient class: " + mongoClient.getClass());
-            MongoDatabase db = mongoClient.getDatabase("ilstools");
-            System.out.println("Database name: " + db.getName());
-            System.out.println("Collections: " + db.listCollectionNames().into(new java.util.ArrayList<>()));
-        } catch (Exception e) {
-            System.err.println("Cannot connect to DB: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -40,10 +28,15 @@ public class MongoDataSourceInspector implements CommandLineRunner {
             System.out.println("======================================");
             // 2️⃣ Test JDBC connection
             // try (Connection conn = dataSource.getConnection()) {
+            
             System.out.println("MongoClient class: " + mongoClient.getClass());
             MongoDatabase db = mongoClient.getDatabase("ilstools");
             System.out.println("Database name: " + db.getName());
             System.out.println("Collections: " + db.listCollectionNames().into(new java.util.ArrayList<>()));
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
+                    + ("MOGNO DB reachable: " + db.getName())
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
         } catch (Exception e) {
             System.err.println("Failed to obtain database connection via JDBC: " + e.getMessage());
             e.printStackTrace();
