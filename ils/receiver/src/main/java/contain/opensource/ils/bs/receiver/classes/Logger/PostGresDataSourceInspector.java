@@ -1,21 +1,19 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 
+
+//Disable bean for now because MongoDB is now in scope and not postgress
 //@Component
 public class PostGresDataSourceInspector implements CommandLineRunner {
 
-    @Autowired
+  //  @Autowired
     private DataSource dataSource;
 
     //Hardcoded for now

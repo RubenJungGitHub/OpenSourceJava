@@ -25,38 +25,35 @@ class MongoConnectionTest {
 
     @Test
     void checkConnection() {
+
         System.out.println("MongoClient class: " + mongoClient.getClass());
         MongoDatabase db = mongoClient.getDatabase("ilstools");
         System.out.println("Database name: " + db.getName());
         System.out.println("Collections: " + db.listCollectionNames().into(new java.util.ArrayList<>()));
-
-IOLogBallenbakMongo log =
-    IOLogBallenbakMongo.builder()
-        .id("test-uuid")
-        .containIoUuid("io-123")
-        .platformId("platform-A")
-        .path("/home/path")
-        .ioAction("READ")
-        .ioSource("source")
-        .ioDestination("dest")
-        .pkiHash("hash")
-        .ioReference("ref")
-        .additionalInfo("info")
-        .actionPerformed(eActionPerformed.ASSIGNUUID)
-        .actionPerformedBy("admin")
-        .marking("marking")
-        .classification("class")
-        .version("1.0")
-        .logDateTime(java.time.LocalDateTime.now())
-        .build();
-
-   //     IOLogBallenbakMongo log = new IOLogBallenbakMongo("test-uuid", "platform-A", "path","Marking", "classification", "version", "containuuid", "IOAction", "source", "dest", "hash", "ref", " additionalinfo",LocalDateTime.now();, eActionPerformed.ASSIGNUUID, "actionpreformedby");
+        String ID = "Test-UUID_Ruben";
+        IOLogBallenbakMongo log = new IOLogBallenbakMongo();
+        log.setId(ID); // generates a new UUID
+        log.setContainIoUuid("containIOUUID");
+        log.setPlatformId("PlatformID");
+        log.setPath("IOpath");
+        log.setIoAction("action");
+        log.setIoSource("source");
+        log.setIoDestination("destination");
+        log.setPkiHash("pkiHash");
+        log.setIoReference("reference");
+        log.setAdditionalInfo("info");
+        log.setLogDateTime(LocalDateTime.now());
+        log.setActionPerformed(eActionPerformed.ASSIGNUUID);
+        log.setActionPerformedBy("ActionPerformedBy");
+        log.setMarking("Marking");
+        log.setClassification("Classification");
+        log.setVersion("version");
 
         // Save to Mongo
         repository.save(log);
 
         // Retrieve from Mongo
-        var found = repository.findById("test-uuid");
+        var found = repository.findById(ID);
         assert (found.isPresent());
         System.out.println("Connection Successful! Found: " + found.get());
         System.out.println("Test completed");

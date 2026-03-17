@@ -145,7 +145,7 @@ public final class RedisManager {
         // init();
         if (redis != null) {
             // This returns value from key
-            redis.expire(uuid, 60); // reset TTL to 60 seconds
+            redis.expire(uuid, 1200); // reset TTL
             return redis.get(uuid);
         }
         return null;
@@ -222,8 +222,8 @@ public final class RedisManager {
         value = fallback.get();
 
         if (value != null) {
-            putHash(hashKey, uuid, Hash, 120); // cache in Redis
-            redis.setex(uuid, 120, value); // TTL 10 minutes
+            putHash(hashKey, uuid, Hash, 1200); // cache in Redis
+            redis.setex(uuid, 1200, value); // TTL 10 minutes
             value = fallback.get();
         }
         return value;

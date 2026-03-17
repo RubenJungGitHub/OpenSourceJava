@@ -1,6 +1,8 @@
 package contain.opensource.ils.bs.receiver.Interfaces;
 
 import org.springframework.stereotype.Repository;
+import java.util.Optional;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbakMongo;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbakMongo;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
@@ -12,4 +14,6 @@ public interface IOLogBallenbakRepositoryMongo extends MongoRepository<IOLogBall
     List<IOLogBallenbakMongo> findByPlatformId(String platformId);
     
     List<IOLogBallenbakMongo> findByActionPerformedBy(String user);
+
+    Optional<IOLogBallenbakMongo> findTopByContainIoUuidOrderByLogDateTimeDesc(String containIoUuid);
 }

@@ -1,11 +1,5 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.sql.Connection;
-
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
