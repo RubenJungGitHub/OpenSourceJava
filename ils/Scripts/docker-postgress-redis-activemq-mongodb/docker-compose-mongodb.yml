@@ -14,6 +14,19 @@ services:
     volumes:
       - mongo_storage:/data/db
 
+
+  mongobi:
+    image: mongo:latest
+    container_name: mongo_bi
+    command: >
+      mongosqld --mongodb-uri "mongodb://admin:admin@mongo_db:27017/ilstools?authSource=admin" --port 3307
+    depends_on:
+      - mongodb
+    ports:
+      - "3307:3307"
+    networks:
+      - ils_ils_default
+
 networks:
   ils_ils_default:
     external: true
