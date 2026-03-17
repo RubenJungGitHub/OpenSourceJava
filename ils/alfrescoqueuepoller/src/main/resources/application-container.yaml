@@ -13,13 +13,13 @@ spring:
     host: Redis-service
     port: 6379
   
-  # ---------- SQL DataSource ----------
-  datasource:
- #   url: jdbc:sqlserver://sql-express:1433;databaseName=contAInBallenbak;encrypt=false;trustServerCertificate=true
- #   username: sa
- #   password: contAIn123!
- #   driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  # ---------- Mongo DataSource ----------
+  data:
+    mongodb:
+      uri: mongodb://admin:admin@mongo_db:27017/ilstools?authSource=admin
 
+  
+  datasource:
  #------------PostGress datasource -------------
     url: jdbc:postgresql://postgres-db:5432/contAInBallenbak
     username: contain

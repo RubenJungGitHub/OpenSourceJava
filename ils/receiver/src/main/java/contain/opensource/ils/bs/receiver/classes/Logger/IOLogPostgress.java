@@ -5,18 +5,18 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
-import contain.opensource.ils.bs.receiver.services.IOLogBallenbakServiceMongo;
+import contain.opensource.ils.bs.receiver.services.IOLogBallenbakService;
 
 @Component
-public class IOLog {
+public class IOLogPostgress {
 
-    private static IOLogBallenbakServiceMongo delegate;
+    private static IOLogBallenbakService delegate;
 
-    public IOLog(IOLogBallenbakServiceMongo service) {
-        IOLog.delegate = service;
+    public IOLogPostgress(IOLogBallenbakService service) {
+        IOLogPostgress.delegate = service;
     }
 
-    public static Optional<IOLogBallenbakMongo> GetLog(String uuid) 
+    public static Optional<IOLogBallenbak> GetLog(String uuid) 
     {
         if (delegate == null) {
             throw new IllegalStateException("IOLog not initialized yet");

@@ -1,4 +1,5 @@
 package contain.opensource.ils.bs.receiver.services;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -22,8 +23,6 @@ public class IOLogBallenbakService {
     // @Autowired
     private final IOLogBallenbakRepository repository;
     private final ILSRestProperties ilsrestproperties;
-    
-
 
     @Autowired
     public IOLogBallenbakService(IOLogBallenbakRepository repository, ILSRestProperties ilsrestproperties) {
@@ -37,7 +36,7 @@ public class IOLogBallenbakService {
         repository.save(log);
     }
 
-       private String getloguuid() {
+    private String getloguuid() {
         String uuid = "";
         try {
             // String uuid =
@@ -67,7 +66,6 @@ public class IOLogBallenbakService {
         return uuid;
     }
 
-
     // Delegate method to get the most recent entry
     public Optional<IOLogBallenbak> GetLog(String uuid) {
         return repository.findTopByContainIoUuidOrderByLogDateTimeDesc(uuid);
@@ -77,7 +75,8 @@ public class IOLogBallenbakService {
     @Transactional
     public void log(String containIOUUID, String PlatformID, String IOpath, String action, String source,
             String destination,
-            String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Classification,String version) {
+            String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy,
+            String Marking, String Classification, String version) {
         IOLogBallenbak log = new IOLogBallenbak(
                 getloguuid(),
                 containIOUUID,
@@ -96,7 +95,7 @@ public class IOLogBallenbakService {
                 version);
         // Update Redis
         if (actionPerformed != eActionPerformed.IODELETED) {
-            //RedisManager.putHash("IOLogs", containIOUUID, containIOUUID, 1200);
+            // RedisManager.putHash("IOLogs", containIOUUID, containIOUUID, 1200);
             RedisManager.putHash("IOLog", containIOUUID, pkiHash, 2400);
 
         }

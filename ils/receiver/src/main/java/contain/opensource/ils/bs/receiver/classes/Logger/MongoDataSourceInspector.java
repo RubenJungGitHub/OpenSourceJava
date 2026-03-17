@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
-import jakarta.annotation.PostConstruct;
 
 @Component
 public class MongoDataSourceInspector implements CommandLineRunner {
@@ -28,7 +27,7 @@ public class MongoDataSourceInspector implements CommandLineRunner {
             System.out.println("Database name: " + db.getName());
             System.out.println("Collections: " + db.listCollectionNames().into(new java.util.ArrayList<>()));
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
-                    + ("MOGNO DB reachable: " + db.getName())
+                    + ("MONGO DB reachable: " + db.getName())
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
         } catch (Exception e) {

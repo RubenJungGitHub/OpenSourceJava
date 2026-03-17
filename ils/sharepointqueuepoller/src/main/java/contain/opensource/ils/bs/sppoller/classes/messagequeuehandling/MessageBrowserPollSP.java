@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParent;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
 import contain.opensource.ils.bs.receiver.services.GraphService;
@@ -86,7 +86,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
                                 if (item.getDeleted() != null) {
 
                                     String action = "IO  " + item.getId() + " deleted from platform";
-                                    IOLog.log(
+                                    IOLogPostgress.log(
                                             "DeletedFromPlatform",
                                             item.getId(),
                                             "DeletedFromPlatform",
@@ -102,8 +102,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    boolean migrate = this.graphservice.ProcessChangedSharepointItem(item.getWebUrl(),
-                                            item.getId(), deltaLink);
+                                    boolean migrate = this.graphservice.ProcessChangedSharepointItem(item.getWebUrl(),item.getId(), deltaLink);
                                     if (migrate) {
                                         SendMigrationMessage(item, deltaLink);
                                     }

@@ -37,7 +37,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 
@@ -361,7 +361,7 @@ public class AlfrescoNodeController {
    * properties.
    * 
    * If the update is successful, an action log is created using
-   * {@link IOLog#log}. If the update fails, a {@link RuntimeException}
+   * {@link IOLogPostgress#log}. If the update fails, a {@link RuntimeException}
    * is thrown with details of the failure.
    *
    * param nodeId the ID of the Alfresco node to update
@@ -448,7 +448,7 @@ public class AlfrescoNodeController {
           String action = "Overwrite new IO UUID ingenerated in Alfresco for " + IOobject.getFileName() + " with UUID "
               + IOobject.getUuid() + "  generated in SPO ";
 
-          IOLog.log(
+          IOLogPostgress.log(
               IOobject.getUuid(),
               "",
               "",
@@ -891,7 +891,7 @@ public class AlfrescoNodeController {
           this.alfresconNodeResponse.UUID = propertyValue;
        //   RedisManager.putHash("IOinHashAssigned", "IOinUUIDAssigned" + propertyValue, "InProcess", 2400);
           // Test ballenbak
-          IOLog.log(
+          IOLogPostgress.log(
               propertyValue,
               this.alfresconNodeResponse.entry.id,
               Path,
@@ -960,7 +960,7 @@ public class AlfrescoNodeController {
         + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
 
    // this.migrationservice.migrateNodeToSP(IOobject);
-    IOLog.log(
+    IOLogPostgress.log(
         IOobject.getUuid(),
         "",
         "",

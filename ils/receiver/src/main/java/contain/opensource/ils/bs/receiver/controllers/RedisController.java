@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.Optional;
 // The `import java.util.Optional;` statement in Java is used to import the `Optional` class from the `java.util` package. `Optional` is a container object that may or may not contain a non-null value. It is often used to avoid `NullPointerException` by providing a way to handle potentially null values more effectively. By using `Optional`, you can explicitly handle the presence or absence of a value without directly dealing with null references.
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbak;
 import org.springframework.web.bind.annotation.RequestParam;
 @RestController
@@ -33,7 +33,7 @@ public class RedisController {
                     + " timespan in MS : " + durationMs);
         } else {
             // retrieve UUID from Datastore and cache in redis
-            Optional<IOLogBallenbak> Logentry = IOLog.GetLog(uuid);
+            Optional<IOLogBallenbak> Logentry = IOLogPostgress.GetLog(uuid);
             if (Logentry.isPresent()) {
                 hash = Logentry.get().getPkiHash();
                 RedisManager.putHash("IOLogs", uuid, hash, 1200);
