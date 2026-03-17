@@ -1,6 +1,8 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 import jakarta.persistence.Column;
@@ -93,7 +95,7 @@ public class IOLogBallenbak {
         this.marking = Marking;
         this.Classification = Classification;
         this.version = version;
-        this.logDateTime = LocalDateTime.now();
+        this.logDateTime = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime();
     }
 
     // Getters and Setters

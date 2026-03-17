@@ -1,6 +1,8 @@
 package contain.opensource.ils.bs.alfrescopoller.classes.messagequeuehandling;
 
 import java.net.URL;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
@@ -144,7 +146,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
 
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
-            String timestamp = LocalDateTime.now().format(formatter);
+            String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
                     + timestamp + " -> New ALFREASCO poll loop on broker : " + activeMQProps.getBrokerUrl()
                     + " on queue " + activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"

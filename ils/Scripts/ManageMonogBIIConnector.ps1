@@ -20,7 +20,7 @@ $mongoHost      = "localhost"
 $mongoPort      = 27017
 $authDB         = "admin"
 $mongoUser      = "admin"
-$mongoPwd       = "changeitsosecure"
+$mongoPwd       = "admin"
 $bindAddr       = "0.0.0.0:3307"
 $bindHost = "0.0.0.0"
 $bindPort = 3307
@@ -99,19 +99,37 @@ Write-Host "Stopping temporary MongoDB..."
 Stop-Process -Id $mongoProcess.Id -Force
 Start-Sleep -Seconds 5
 
-# -------------------------------
-# 5️⃣ Start mongosqld with SSL (or without SSL if you want simpler)
-# -------------------------------
-Write-Host "`nStarting mongosqld..."
-Start-Process -FilePath $mongosqldExe -ArgumentList @(
-    "--mongo-uri", "mongodb://${mongoUser}:${mongoPwd}@127.0.0.1:27017/?authSource=${authDB}&authMechanism=SCRAM-SHA-1",
-    "--addr", $bindAddr,
-    "--sslMode", "disable",                # optional: disable SSL if simpler
-    "--auth"
-) -NoNewWindow
 
+# Set the auth source as an environment variable
+$env:MONGO_AUTH_SOURCE = "admin"
+
+$mongosqldExe = "C:\Program Files\MongoDB\Connector for BI\2.14\bin\mongosqld.exe"
+$configFile   = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\src\main\resources\mongosqld.conf"
+
+Write-Host "Starting mongosqld with injected environment variables..."
+& "$mongosqldExe" --config "$configFile" --mongo-username "admin" --mongo-password "admin"
+
+# Check log for success
+Start-Sleep -Seconds 2
+Get-Content "C:\Users\NL07428\mongosqld.log" -Tail 5
+
+Start-Sleep -Seconds 3
+netstat -ano | findstr 3307
 
 Write-Host "`n✅ mongosqld started successfully on port ${bindAddr}"
 Write-Host "You can now connect Power BI using MySQL ODBC 9.6 driver."
 
 Test-NetConnection -ComputerName 127.0.0.1 -Port 27017
+
+C:\Shell\Mongo\bin\mongosh.exe "mongodb://admin:admin@127.0.0.1:27017/ilstools?authSource=admin&authMechanism=SCRAM-SHA-256&directConnection=true"
+
+C:\Shell\Mongo\bin\mongosh.exe "mongodb://admin:admin@127.0.0.1:27017/ilstools?authSource=admin&authMechanism=SCRAM-SHA-1&directConnection=true"
+
+C:\Shell\Mongo\bin\mongosh.exe "mongodb://127.0.0.1:27017/?directConnection=true"
+
+C:\Shell\Mongo\bin\mongosh.exe "mongodb://admin:admin@127.0.0.1:27017/ilstools?authSource=admin&authMechanism=SCRAM-SHA-256&directConnection=true"
+
+C:\Shell\Mongo\bin\mongosh.exe "mongodb://admin:admin@host.docker.internal:27017/ilstools?authSource=admin&authMechanism=SCRAM-SHA-256"
+
+netstat -ano | findstr 3307
+netstat -ano | findstr 27017

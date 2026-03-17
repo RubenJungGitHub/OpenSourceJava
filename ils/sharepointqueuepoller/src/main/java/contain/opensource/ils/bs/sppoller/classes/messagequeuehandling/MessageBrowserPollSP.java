@@ -1,5 +1,6 @@
 package contain.opensource.ils.bs.sppoller.classes.messagequeuehandling;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 
@@ -53,7 +54,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
     @Override
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
-            timestamp = LocalDateTime.now().format(formatter);
+            timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
                     + timestamp + " -> New SHAREPOINT poll loop on broker : " + activeMQProps.getBrokerUrl()
                     + " on queue " + activeMQProps.getSharepointQueue() + ". Interval : " + PollInterval + " seconds"

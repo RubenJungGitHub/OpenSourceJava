@@ -1,8 +1,13 @@
 package contain.opensource.ils.bs.receiver.classes.Logger;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "tbl_sp_deltalink_repository")
@@ -27,7 +32,7 @@ public class IOLogDeltaLink {
         this.sourceId = sourceId;
         this.tokenId = tokenId;
         this.lastDeltaLink = lastDeltaLink;
-        this.logDateTime = LocalDateTime.now();
+        this.logDateTime = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime();
     }
 
     public String getSourceId() { return sourceId; }

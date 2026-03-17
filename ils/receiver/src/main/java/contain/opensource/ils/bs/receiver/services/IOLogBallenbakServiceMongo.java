@@ -3,7 +3,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,7 +93,7 @@ public class IOLogBallenbakServiceMongo {
         log.setPkiHash(pkiHash);
         log.setIoReference(reference);
         log.setAdditionalInfo(info);
-        log.setLogDateTime(LocalDateTime.now());
+        log.setLogDateTime(ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime());
         log.setActionPerformed(actionPerformed);
         log.setActionPerformedBy(ActionPerformedBy);
         log.setMarking(Marking);

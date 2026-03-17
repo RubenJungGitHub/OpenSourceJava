@@ -2,6 +2,8 @@ package contain.opensource.ils.bs.migrationpoller.classes.messagequeuehandling;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
@@ -51,7 +53,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
     @Override
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
-            timestamp = LocalDateTime.now().format(formatter);
+            timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
                     + timestamp + " -> New MIGRATION poll loop on broker : " + browser
                     + " on queue " + queue + ". Interval : " + PollInterval + " seconds"
