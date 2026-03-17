@@ -24,7 +24,8 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
+//import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
@@ -114,7 +115,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
             String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : "
                     + QMessage.getName();
             if (response.getStatusCode().value() == 200) {
-                IOLogPostgress.log(
+                IOLog.log(
                         IOUUID,
                         QMessage.getId(),
                         secondPath.toString(),
@@ -181,7 +182,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             + " deleted from Alfresco by user " + QMessage.getUsername();
                                     // Remove from Redis. For SPO this is going to be a challenge
                                     // RedisManager.deleteHashField("IOLogs", type);
-                                    IOLogPostgress.log(
+                                    IOLog.log(
                                             "DeletedFromPlatform",
                                             "",
                                             secondPath.toString(),

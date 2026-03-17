@@ -25,20 +25,17 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
+//import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 
 import contain.opensource.shared.constants.AlfrescoConstants;
@@ -448,7 +445,7 @@ public class AlfrescoNodeController {
           String action = "Overwrite new IO UUID ingenerated in Alfresco for " + IOobject.getFileName() + " with UUID "
               + IOobject.getUuid() + "  generated in SPO ";
 
-          IOLogPostgress.log(
+          IOLog.log(
               IOobject.getUuid(),
               "",
               "",
@@ -891,7 +888,7 @@ public class AlfrescoNodeController {
           this.alfresconNodeResponse.UUID = propertyValue;
        //   RedisManager.putHash("IOinHashAssigned", "IOinUUIDAssigned" + propertyValue, "InProcess", 2400);
           // Test ballenbak
-          IOLogPostgress.log(
+          IOLog.log(
               propertyValue,
               this.alfresconNodeResponse.entry.id,
               Path,
@@ -960,7 +957,7 @@ public class AlfrescoNodeController {
         + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
 
    // this.migrationservice.migrateNodeToSP(IOobject);
-    IOLogPostgress.log(
+    IOLog.log(
         IOobject.getUuid(),
         "",
         "",
