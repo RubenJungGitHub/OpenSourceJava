@@ -68,12 +68,12 @@ public class migrationservice {
 
                 if (containerList != null && containerList.getContainers() != null) {
                     List<KieContainerResource> containers = containerList.getContainers();
-                    String projectName = ilsProperties.getRuleenginecontainerendpoint();
+                    String projectName = ilsProperties.getRuleengineprojectname();
                     // Print them out to verify
                     containers.forEach(c -> System.out.println("Found Container: " + c.getContainerId()));
 
                     // 2. Filter for the one that starts with your project name
-                    return response.getResult().getContainers().stream()
+                    actualId = response.getResult().getContainers().stream()
                             .map(KieContainerResource::getContainerId)
                             .filter(id -> id.startsWith(projectName))
                             .findFirst()
@@ -83,11 +83,11 @@ public class migrationservice {
             } else {
                 System.err.println("Failed to list containers: " + response.getMsg());
             }
-
-        } catch (Exception ex) {
+        } 
+        catch (Exception ex) {
             throw ex;
         }
-        return "bla";
+        return actualId;
     }
 
     public void migrateSPObjectToAlfresco(MigrationQueueMessage msg) throws Exception {
