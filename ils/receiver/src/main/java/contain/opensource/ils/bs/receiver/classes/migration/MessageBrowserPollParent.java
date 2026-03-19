@@ -1,9 +1,10 @@
 package contain.opensource.ils.bs.receiver.classes.migration;
 
-import javax.jms.DeliveryMode;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
+// ... and any other javax.jms imports;
 
 import org.slf4j.MDC;
 import org.springframework.jms.core.JmsTemplate;

@@ -10,6 +10,14 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemRespo
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 
+import org.kie.server.api.model.KieContainerResource;
+import org.kie.server.client.KieServicesClient;
+import org.kie.server.client.KieServicesConfiguration;
+import org.kie.server.client.KieServicesFactory;
+import contain.opensource.shared.constants.AlfrescoConstants;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class migrationservice {
 
@@ -30,7 +38,7 @@ public class migrationservice {
         try {
 
             //First het the rules from the ruleengine
-
+            String containerid = getRuleEnigineProjectContainerID();
             
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                     + "Migrate information object -> " + msg.getKey() + " : Source  -> " + msg.getSource()
@@ -48,6 +56,26 @@ public class migrationservice {
         } catch (Exception ex) {
             throw ex;
         }
+    }
+
+    public String getRuleEnigineProjectContainerID()
+    {
+
+    // 1. Setup the config
+    KieServicesConfiguration config = KieServicesFactory.newRestConfiguration(
+            this.ilsProperties.getRuleenginecontainerendpoint(), 
+            AlfrescoConstants.rhpamusername,
+            AlfrescoConstants.rhpampassword
+    );
+
+    // 2. Create the client
+    KieServicesClient client = KieServicesFactory.newKieServicesClient(config);
+
+    // 3. One line of code to get the list
+    List<KieContainerResource> containers = client.listContainers().getResult().getContainers();
+
+    // 4. Extract just the IDs
+      return "bla";
     }
 
     public void migrateSPObjectToAlfresco(MigrationQueueMessage msg) throws Exception {

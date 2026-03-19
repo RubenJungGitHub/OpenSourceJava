@@ -66,11 +66,9 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		<!-- ActiveMQ client for JMS -->
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
-			<version>5.18.4</version>
+			<artifactId>artemis-jakarta-client</artifactId>
 		</dependency>
 		<!-- Optional: Spring Boot test -->
 		<dependency>
@@ -110,11 +108,6 @@
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
 			<version>2.17.0</version> <!-- match your jackson-databind version -->
-		</dependency>
-		<dependency>
-			<groupId>javax.jms</groupId>
-			<artifactId>javax.jms-api</artifactId>
-			<version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents.core5</groupId>
@@ -171,13 +164,31 @@
 			<artifactId>spring-boot-starter-activemq</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.kie</groupId>
-			<artifactId>kie-dmn-core</artifactId>
+			<groupId>org.kie.server</groupId>
+			<artifactId>kie-server-api</artifactId>
 			<version>7.73.0.Final</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.kie.server</groupId>
+			<artifactId>kie-server-client</artifactId>
+			<version>7.73.0.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.kie</groupId>
-			<artifactId>kie-ci</artifactId>
+			<artifactId>kie-api</artifactId>
 			<version>7.73.0.Final</version>
 		</dependency>
 	</dependencies>

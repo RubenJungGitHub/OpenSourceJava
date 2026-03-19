@@ -53,7 +53,6 @@ import com.microsoft.graph.serializer.AdditionalDataManager;
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 //import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
