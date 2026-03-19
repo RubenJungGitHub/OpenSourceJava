@@ -74,7 +74,7 @@ public class ILSRestProperties {
         this.ruleengineendpoint = ruleengineendpoint;
     }
 
-    public String getuleengineprojectname() {
+    public String getRuleengineprojectname() {
         return ruleengineprojectname;
     }
 
@@ -90,5 +90,8 @@ public class ILSRestProperties {
         System.out.println("uudiutilendpoint = " + uudiutilendpoint);
         System.out.println("bindendpoint = " + bindendpoint);
         System.out.println("relocateendpoint = " + relocateendpoint);
+        System.out.println("ruleengineendpoint = " + ruleengineendpoint);
+        System.out.println("ruleenginecontainerendpoint = " + ruleenginecontainerendpoint);
+        System.out.println("ruleengineprojectname = " + ruleengineprojectname);
     }
 }

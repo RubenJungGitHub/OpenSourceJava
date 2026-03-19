@@ -1,5 +1,11 @@
 package contain.opensource.ils.bs.receiver.services;
 
+import java.util.List;
+
+import org.kie.server.api.model.KieContainerResource;
+import org.kie.server.api.model.KieContainerResourceList;
+import org.kie.server.api.model.ServiceResponse;
+import org.kie.server.client.KieServicesClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,36 +16,30 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemRespo
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 
-import org.kie.server.api.model.KieContainerResource;
-import org.kie.server.client.KieServicesClient;
-import org.kie.server.client.KieServicesConfiguration;
-import org.kie.server.client.KieServicesFactory;
-import contain.opensource.shared.constants.AlfrescoConstants;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 public class migrationservice {
 
     private ILSRestProperties ilsProperties;
     private GraphService graphservice;
     private AlfrescoNodeController AlfrescoNodeController;
+    private KieServicesClient Kieserviceclient;
 
     @Autowired
     public migrationservice(ILSRestProperties ilsProperties, GraphService graphservice,
-            AlfrescoNodeController alfresconodecontroller) {
+            AlfrescoNodeController alfresconodecontroller, KieServicesClient kieserviceclient) {
         this.ilsProperties = ilsProperties;
         this.graphservice = graphservice;
         this.AlfrescoNodeController = alfresconodecontroller;
+        this.Kieserviceclient = kieserviceclient;
     }
 
     public void migrateio(MigrationQueueMessage msg) throws Exception {
 
         try {
 
-            //First het the rules from the ruleengine
+            // First het the rules from the ruleengine
             String containerid = getRuleEnigineProjectContainerID();
-            
+
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                     + "Migrate information object -> " + msg.getKey() + " : Source  -> " + msg.getSource()
                     + " destination  -> "
@@ -58,24 +58,36 @@ public class migrationservice {
         }
     }
 
-    public String getRuleEnigineProjectContainerID()
-    {
+    public String getRuleEnigineProjectContainerID() {
+        String actualId = null;
+        try {
+            ServiceResponse<KieContainerResourceList> response = Kieserviceclient.listContainers();
+            if (response.getType() == ServiceResponse.ResponseType.SUCCESS) {
+                // 3. This is where the list actually lives
+                KieContainerResourceList containerList = response.getResult();
 
-    // 1. Setup the config
-    KieServicesConfiguration config = KieServicesFactory.newRestConfiguration(
-            this.ilsProperties.getRuleenginecontainerendpoint(), 
-            AlfrescoConstants.rhpamusername,
-            AlfrescoConstants.rhpampassword
-    );
+                if (containerList != null && containerList.getContainers() != null) {
+                    List<KieContainerResource> containers = containerList.getContainers();
+                    String projectName = ilsProperties.getRuleenginecontainerendpoint();
+                    // Print them out to verify
+                    containers.forEach(c -> System.out.println("Found Container: " + c.getContainerId()));
 
-    // 2. Create the client
-    KieServicesClient client = KieServicesFactory.newKieServicesClient(config);
+                    // 2. Filter for the one that starts with your project name
+                    return response.getResult().getContainers().stream()
+                            .map(KieContainerResource::getContainerId)
+                            .filter(id -> id.startsWith(projectName))
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException(
+                                    "No active container found for project: " + projectName));
+                }
+            } else {
+                System.err.println("Failed to list containers: " + response.getMsg());
+            }
 
-    // 3. One line of code to get the list
-    List<KieContainerResource> containers = client.listContainers().getResult().getContainers();
-
-    // 4. Extract just the IDs
-      return "bla";
+        } catch (Exception ex) {
+            throw ex;
+        }
+        return "bla";
     }
 
     public void migrateSPObjectToAlfresco(MigrationQueueMessage msg) throws Exception {
@@ -93,10 +105,9 @@ public class migrationservice {
 
     public void migrateAlfrescoObjectToSP(MigrationQueueMessage msg) {
 
-        
         try {
             int a = 1;
-            //to do. waiting for new Alfresco license
+            // to do. waiting for new Alfresco license
             // alfrescoController.fetchNode(object.getId());
             // graphService.uploadAlfrescoNodeToSP(robject);
         } catch (Exception ex) {

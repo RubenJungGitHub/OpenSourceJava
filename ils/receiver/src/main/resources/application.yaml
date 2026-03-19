@@ -48,8 +48,7 @@ ils:
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
   relocateendpoint: http://localhost:55000/RelocateIO
-  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server/containers
-  ruleengineprojectname: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
   RuleEngineProjectName: contAlnMigrationRuleset
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"
 

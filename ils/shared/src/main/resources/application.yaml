@@ -45,5 +45,5 @@ ils:
   relocateendpoint: http://localhost:5000/api/RelocateIO
   DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"
   ruleengineprojectname: contAlnMigrationRuleset
-  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server/containers
+  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
   ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
