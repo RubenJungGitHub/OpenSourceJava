@@ -1,0 +1,22 @@
+name: RHBAPBC
+
+services:
+  business-central:
+    image: quay.io/kiegroup/business-central-workbench-showcase:7.73.0.Final
+    container_name: business-central
+    ports:
+      - "8280:8080" 
+      - "9001:8001" 
+    volumes:
+      # This folder saves your projects and DMN files permanently
+      - ./bc-git-data:/opt/jboss/wildfly/bin/.niogit
+    environment:
+      - KIE_ADMIN_USER=admin
+      - KIE_ADMIN_PWD=admin
+      - JAVA_OPTS=-Xms512m -Xmx2048m -Djava.net.preferIPv4Stack=true
+    networks:
+      - ils_ils_default
+
+networks:
+  ils_ils_default:
+    external: true

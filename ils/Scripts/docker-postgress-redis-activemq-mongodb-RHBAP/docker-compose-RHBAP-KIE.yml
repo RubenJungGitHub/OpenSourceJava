@@ -1,0 +1,26 @@
+name: RHBAPKIE
+
+services:
+  kie-server:
+    image: quay.io/kiegroup/kie-server-showcase:7.73.0.Final
+    container_name: kie-server
+    ports:
+      - "8180:8080"
+    volumes:
+      # Persists the server state and downloaded KJARs
+      - ./kie-data:/opt/jboss/wildfly/standalone/data 
+    environment:
+      - KIE_ADMIN_USER=admin
+      - KIE_ADMIN_PWD=admin
+      - KIE_SERVER_ID=rhpam-poc-server
+      # The "Handshake": Tell KIE where to find BC's controller
+      - KIE_SERVER_CONTROLLER=http://business-central:8080/business-central/rest/controller
+      # Tell BC where this server is actually located
+      - KIE_SERVER_LOCATION=http://kie-server:8080/kie-server/services/rest/server
+      - KIE_MAVEN_REPO=http://business-central:8080/business-central/maven2
+    networks:
+      - ils_ils_default
+
+networks:
+  ils_ils_default:
+    external: true

@@ -1,5 +1,5 @@
 package contain.opensource.ils;
-
+import java.util.UUID;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ class MongoConnectionTest {
         MongoDatabase db = mongoClient.getDatabase("ilstools");
         System.out.println("Database name: " + db.getName());
         System.out.println("Collections: " + db.listCollectionNames().into(new java.util.ArrayList<>()));
-        String ID = "Test-UUID_Ruben";
+        String ID = UUID.randomUUID().toString();
         IOLogBallenbakMongo log = new IOLogBallenbakMongo();
         log.setId(ID); // generates a new UUID
         log.setContainIoUuid("containIOUUID");

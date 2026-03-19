@@ -6,11 +6,12 @@ services:
     networks:
       - ils_ils_default
     ports:
-    - "27017:27017"
+      - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-      MONGO_INITDB_DATABASE: ilstools
+      TZ: "Europe/Amsterdam"
+      MONGO_INITDB_ROOT_USERNAME: "admin"
+      MONGO_INITDB_ROOT_PASSWORD: "admin"
+      MONGO_INITDB_DATABASE: "ilstools"
     volumes:
       - mongo_storage:/data/db
 

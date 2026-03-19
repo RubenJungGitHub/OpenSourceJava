@@ -13,6 +13,9 @@ public class ILSRestProperties {
     private String uudiutilendpoint;
     private String bindendpoint;
     private String relocateendpoint;
+    private String ruleenginecontainerendpoint;
+    private String ruleengineendpoint;
+    private String ruleengineprojectname;
 
     // ----------------- Getters & Setters -----------------
     public String getBaseUrl() {
@@ -53,6 +56,30 @@ public class ILSRestProperties {
 
     public void setRelocateendpoint(String relocateendpoint) {
         this.relocateendpoint = relocateendpoint;
+    }
+
+    public String getRuleenginecontainerendpoint() {
+        return ruleenginecontainerendpoint;
+    }
+
+    public void setRuleenginecontainerendpoint(String ruleenginecontainerendpoint) {
+        this.ruleenginecontainerendpoint = ruleenginecontainerendpoint;
+    }
+
+    public String getRuleengineendpoint() {
+        return ruleengineendpoint;
+    }
+
+    public void setRuleengineendpoint(String ruleengineendpoint) {
+        this.ruleengineendpoint = ruleengineendpoint;
+    }
+
+    public String getuleengineprojectname() {
+        return ruleengineprojectname;
+    }
+
+    public void setRuleengineprojectname(String ruleengineprojectname) {
+        this.ruleengineprojectname = ruleengineprojectname;
     }
 
     @PostConstruct

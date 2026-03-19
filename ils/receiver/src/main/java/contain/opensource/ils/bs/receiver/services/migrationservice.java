@@ -28,6 +28,10 @@ public class migrationservice {
     public void migrateio(MigrationQueueMessage msg) throws Exception {
 
         try {
+
+            //First het the rules from the ruleengine
+
+            
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                     + "Migrate information object -> " + msg.getKey() + " : Source  -> " + msg.getSource()
                     + " destination  -> "

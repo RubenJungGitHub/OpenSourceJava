@@ -69,7 +69,11 @@ ils:
   base-url: http://receiver:8080
   bindendpoint: http://receiver:8080/api/Bind
   relocateendpoint: http://receiver:8080/RelocateIO
+  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server/containers
+  ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+  ruleengineprojectname: contAlnMigrationRuleset
   DeltaLinkFile: "/app/data/storeddeltalinks.csv"
+
 
 
 #Accept all connections inside the network
