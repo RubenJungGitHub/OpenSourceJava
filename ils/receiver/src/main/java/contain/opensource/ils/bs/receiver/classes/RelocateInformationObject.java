@@ -12,8 +12,9 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 //======================================================
 public class RelocateInformationObject  extends IOObjectProperies  {
 
-    public RelocateInformationObject() {
+     public RelocateInformationObject() {
         // needed for Jackson
+
     }
 
     // Constructor for Alfresco
@@ -49,5 +50,6 @@ public class RelocateInformationObject  extends IOObjectProperies  {
         this.marking  = SPItem.marking;
         this.classification = SPItem.classification;
         this.version = SPItem.version;
+        //For Business centrail this MUST be a string in order to serialize
     }
 }

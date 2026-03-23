@@ -1,14 +1,18 @@
 package contain.opensource.ils.bs.receiver.services;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.kie.server.api.model.KieContainerResource;
 import org.kie.server.api.model.KieContainerResourceList;
 import org.kie.server.api.model.ServiceResponse;
+import org.kie.server.client.DMNServicesClient;
 import org.kie.server.client.KieServicesClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.kie.dmn.api.core.DMNContext;
+import org.kie.dmn.api.core.DMNResult;
+import java.io.Serializable;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
@@ -19,10 +23,31 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 @Service
 public class migrationservice {
 
-    private ILSRestProperties ilsProperties;
-    private GraphService graphservice;
-    private AlfrescoNodeController AlfrescoNodeController;
-    private KieServicesClient Kieserviceclient;
+    private final ILSRestProperties ilsProperties;
+    private final GraphService graphservice;
+    private final AlfrescoNodeController AlfrescoNodeController;
+    private final KieServicesClient Kieserviceclient;
+
+
+    public class RelocateInformationDTO implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        // Use plain Strings to match your BC Data Types exactly
+        public String containplatformfrom;
+        public String classification;
+        public String marking;
+
+        // Standard empty constructor
+        public RelocateInformationDTO() {
+        }
+
+        // Convenience constructor
+        public RelocateInformationDTO(String platform, String classification, String marking) {
+            this.containplatformfrom = platform;
+            this.classification = classification;
+            this.marking = marking;
+        }
+    }
 
     @Autowired
     public migrationservice(ILSRestProperties ilsProperties, GraphService graphservice,
@@ -38,8 +63,8 @@ public class migrationservice {
         try {
 
             // First het the rules from the ruleengine
-            String containerid = getRuleEnigineProjectContainerID();
-            Integer a = 1;
+            // String containerid = getRuleEnigineProjectContainerID();
+            // Integer a = 1;
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                     + "Migrate information object -> " + msg.getKey() + " : Source  -> " + msg.getSource()
                     + " destination  -> "
@@ -57,6 +82,36 @@ public class migrationservice {
             throw ex;
         }
     }
+
+    public void migrateSPObjectToAlfresco(MigrationQueueMessage msg) throws Exception {
+        try {
+
+            SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
+            // SPitem shoud get COnvertTorelocateObkject like it has for secureobject.
+            RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+
+            // What to do with the relocation object
+            executeDMN(ROobject);
+
+            this.graphservice.RelocateIO(ROobject);
+        } catch (Exception e) {
+            System.out.println("Failed to migrate SP item : " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public void migrateAlfrescoObjectToSP(MigrationQueueMessage msg) {
+
+        try {
+            int a = 1;
+            // to do. waiting for new Alfresco license
+            // alfrescoController.fetchNode(object.getId());
+            // graphService.uploadAlfrescoNodeToSP(robject);
+        } catch (Exception ex) {
+            // to do
+        }
+    }
+    // additional coordination logic}
 
     public String getRuleEnigineProjectContainerID() {
         String actualId = null;
@@ -83,66 +138,43 @@ public class migrationservice {
             } else {
                 System.err.println("Failed to list containers: " + response.getMsg());
             }
-        } 
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw ex;
         }
         return actualId;
     }
 
-    public void migrateSPObjectToAlfresco(MigrationQueueMessage msg) throws Exception {
-        try {
+    public void executeDMN(RelocateInformationObject ROobject) {
+        //Convert to serializable type for Business central for fields must map 
+        RelocateInformationDTO RuleEngineDTO = new RelocateInformationDTO(
+        ROobject.containplatformfrom != null ? ROobject.containplatformfrom.toString() : null,
+        ROobject.classification,
+        ROobject.marking);
+        // 1. Get the DMN Client from your existing Kieserviceclient
+        DMNServicesClient dmnClient = Kieserviceclient.getServicesClient(DMNServicesClient.class);
 
-            SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
-            // SPitem shoud get COnvertTorelocateObkject like it has for secureobject.
-            RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-            //What to do with  the relocation object
+        // 2. Get the Container ID (using your existing method)
+        String containerId = getRuleEnigineProjectContainerID();
 
-            this.graphservice.RelocateIO(ROobject);
-        } catch (Exception e) {
-            System.out.println("Failed to migrate SP item : " + e.getMessage());
-            throw e;
+        // 3. Create the DMN Context and "Source" must match the DMN Node Name
+        DMNContext dmnContext = dmnClient.newContext();
+        dmnContext.set("source", RuleEngineDTO); // "source" is the ID of the Input Node in your DMN
+
+        // 4. Call the server
+        // Replace "YourNamespace" and "YourModelName" with values from DMN 'Overview'
+        // tab
+        ServiceResponse<DMNResult> serverResponse = dmnClient.evaluateAll(containerId, dmnContext);
+
+        if (serverResponse.getType() == ServiceResponse.ResponseType.SUCCESS) {
+            DMNResult dmnResult = serverResponse.getResult();
+
+            // 5. Get the output of your decision node
+            // Replace "dcsSource..." with the exact name of your Decision box
+            Object result = dmnResult.getDecisionResultByName("dcsSource.containplatformto").getResult();
+
+            System.out.println("DMN Output: " + result);
+        } else {
+            System.err.println("DMN Error: " + serverResponse.getMsg());
         }
     }
-
-    public void migrateAlfrescoObjectToSP(MigrationQueueMessage msg) {
-
-        try {
-            int a = 1;
-            // to do. waiting for new Alfresco license
-            // alfrescoController.fetchNode(object.getId());
-            // graphService.uploadAlfrescoNodeToSP(robject);
-        } catch (Exception ex) {
-            // to do
-        }
-        // additional coordination logic
-    }
-
-/*
-    public Object executeMigrationRules(Object mySourceObject) {
-    // 1. Get the specialized DMN Client from your Bean
-    DMNServicesClient dmnClient = kieServicesClient.getServicesClient(DMNServicesClient.class);
-
-    // 2. Create the "Envelope" for your data
-    DMNContext dmnContext = dmnClient.newContext();
-    
-    // CRITICAL: "MigrationInput" must match the NAME of the 
-    // Input Data node in your DMN Diagram exactly.
-    dmnContext.set("MigrationInput", mySourceObject);
-
-    // 3. Send to the Container ID we found earlier
-    String containerId = "contAlnMigrationRuleset_1.0.0-SNAPSHOT";
-    
-    ServiceResponse<DMNResult> response = dmnClient.evaluateAll(containerId, dmnContext);
-
-    if (response.getType() == ServiceResponse.ResponseType.SUCCESS) {
-        DMNResult result = response.getResult();
-        
-        // 4. Get the specific Decision outcome
-        // Replace "FinalDecision" with the name of your Decision node
-        return result.getDecisionResultByName("FinalDecision").getResult();
-    } else {
-        throw new RuntimeException("DMN Error: " + response.getMsg());
-}
-        */
 }
