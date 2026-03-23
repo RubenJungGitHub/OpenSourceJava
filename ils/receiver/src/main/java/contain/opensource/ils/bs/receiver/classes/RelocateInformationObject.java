@@ -12,7 +12,7 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 //======================================================
 public class RelocateInformationObject extends IOObjectProperies {
 
-    private Object containplatformcontainerfrom;
+    private String containfromcontainer;
     private Object containplatformcontainerto;
 
     public RelocateInformationObject() {
@@ -62,6 +62,15 @@ public class RelocateInformationObject extends IOObjectProperies {
 
     public Object getcontainplatformcontainerto() {
         return this.containplatformcontainerto;
+    }
+
+
+    public void setcontainfromcontainer(String containfromcontainer) {
+        this.containfromcontainer = containfromcontainer;
+    }
+
+    public String getcontainfromcontainer() {
+        return this.containfromcontainer;
     }
 
 }

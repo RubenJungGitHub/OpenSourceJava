@@ -3,6 +3,9 @@ package contain.opensource.ils.bs.receiver.services;
 import java.io.Serializable;
 import java.util.List;
 
+import org.kie.dmn.api.core.DMNContext;
+import org.kie.dmn.api.core.DMNDecisionResult;
+import org.kie.dmn.api.core.DMNResult;
 import org.kie.server.api.model.KieContainerResource;
 import org.kie.server.api.model.KieContainerResourceList;
 import org.kie.server.api.model.ServiceResponse;
@@ -10,9 +13,7 @@ import org.kie.server.client.DMNServicesClient;
 import org.kie.server.client.KieServicesClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.kie.dmn.api.core.DMNContext;
-import org.kie.dmn.api.core.DMNResult;
-import java.io.Serializable;
+
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
@@ -28,13 +29,14 @@ public class migrationservice {
     private final AlfrescoNodeController AlfrescoNodeController;
     private final KieServicesClient Kieserviceclient;
 
-
     public class RelocateInformationDTO implements Serializable {
         private static final long serialVersionUID = 1L;
 
         // Use plain Strings to match your BC Data Types exactly
         public String containplatformfrom;
+        public String containfromcontainer;
         public String classification;
+
         public String marking;
 
         // Standard empty constructor
@@ -42,10 +44,12 @@ public class migrationservice {
         }
 
         // Convenience constructor
-        public RelocateInformationDTO(String platform, String classification, String marking) {
+        public RelocateInformationDTO(String platform, String classification, String marking,
+                String containfromcontainer) {
             this.containplatformfrom = platform;
             this.classification = classification;
             this.marking = marking;
+            this.containfromcontainer = containfromcontainer;
         }
     }
 
@@ -146,11 +150,13 @@ public class migrationservice {
 
     public Object executeDMN(RelocateInformationObject ROobject) {
         Object result = null;
-        //Convert to serializable type for Business central for fields must map 
+        // Convert to serializable type for Business central for fields must map
         RelocateInformationDTO RuleEngineDTO = new RelocateInformationDTO(
-        ROobject.containplatformfrom != null ? ROobject.containplatformfrom.toString() : null,
-        ROobject.classification,
-        ROobject.marking);
+                ROobject.containplatformfrom != null ? ROobject.containplatformfrom.toString() : null,
+                ROobject.classification,
+                ROobject.marking,
+                ROobject.getcontainfromcontainer());
+
         // 1. Get the DMN Client from your existing Kieserviceclient
         DMNServicesClient dmnClient = Kieserviceclient.getServicesClient(DMNServicesClient.class);
 
@@ -171,7 +177,14 @@ public class migrationservice {
 
             // 5. Get the output of your decision node
             // Replace "dcsSource..." with the exact name of your Decision box
-            result = dmnResult.getDecisionResultByName("dcsSource.containplatformto").getResult();
+            for (DMNDecisionResult dr : dmnResult.getDecisionResults()) {
+                if (dr.getDecisionName().equals("destination")) {
+                    result = dr.getResult().toString();
+                    break;
+                }
+            }
+            // result =
+            // dmnResult.getDecisionResultByName("dcsSource.containplatformto").getResult();
 
             System.out.println("DMN Output: " + result);
 
