@@ -39,7 +39,7 @@ public class migrationservice {
 
             // First het the rules from the ruleengine
             String containerid = getRuleEnigineProjectContainerID();
-
+            Integer a = 1;
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                     + "Migrate information object -> " + msg.getKey() + " : Source  -> " + msg.getSource()
                     + " destination  -> "
@@ -96,6 +96,8 @@ public class migrationservice {
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
             // SPitem shoud get COnvertTorelocateObkject like it has for secureobject.
             RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+            //What to do with  the relocation object
+
             this.graphservice.RelocateIO(ROobject);
         } catch (Exception e) {
             System.out.println("Failed to migrate SP item : " + e.getMessage());
@@ -116,4 +118,31 @@ public class migrationservice {
         // additional coordination logic
     }
 
+/*
+    public Object executeMigrationRules(Object mySourceObject) {
+    // 1. Get the specialized DMN Client from your Bean
+    DMNServicesClient dmnClient = kieServicesClient.getServicesClient(DMNServicesClient.class);
+
+    // 2. Create the "Envelope" for your data
+    DMNContext dmnContext = dmnClient.newContext();
+    
+    // CRITICAL: "MigrationInput" must match the NAME of the 
+    // Input Data node in your DMN Diagram exactly.
+    dmnContext.set("MigrationInput", mySourceObject);
+
+    // 3. Send to the Container ID we found earlier
+    String containerId = "contAlnMigrationRuleset_1.0.0-SNAPSHOT";
+    
+    ServiceResponse<DMNResult> response = dmnClient.evaluateAll(containerId, dmnContext);
+
+    if (response.getType() == ServiceResponse.ResponseType.SUCCESS) {
+        DMNResult result = response.getResult();
+        
+        // 4. Get the specific Decision outcome
+        // Replace "FinalDecision" with the name of your Decision node
+        return result.getDecisionResultByName("FinalDecision").getResult();
+    } else {
+        throw new RuntimeException("DMN Error: " + response.getMsg());
+}
+        */
 }
