@@ -5,15 +5,15 @@ services:
     image: quay.io/kiegroup/business-central-workbench-showcase:7.73.0.Final
     container_name: business-central
     ports:
-      - "8280:8080" 
-      - "9001:8001" 
+      - "8280:8080"
+      - "9001:8001"
     volumes:
-      # This folder saves your projects and DMN files permanently
-      - ./bc-git-data:/opt/jboss/wildfly/bin/.niogit
+      # Direct bind mount to the external folder
+      - C:\rhbap-data:/opt/jboss/wildfly/bin/.niogit
     environment:
       - KIE_ADMIN_USER=admin
       - KIE_ADMIN_PWD=admin
-      - JAVA_OPTS=-Xms512m -Xmx2048m -Djava.net.preferIPv4Stack=true
+      - JAVA_OPTS=-Xms512m -Xmx2048m -Djava.net.preferIPv4Stack=true -Dorg.kie.demo=false -Dorg.kie.example=false
     networks:
       - ils_ils_default
 
