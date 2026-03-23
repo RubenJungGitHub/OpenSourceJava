@@ -128,7 +128,7 @@
           <dmn:text>"Internal discussion"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_F8BE68ED-531F-41D4-9135-2BC9A8E93A15">
-          <dmn:text>"PublicSPOSPOMedical Confidentieel"</dmn:text>
+          <dmn:text>"PublicSPOSPOInternal discussion"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
           <dmn:text></dmn:text>
