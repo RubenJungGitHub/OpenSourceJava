@@ -10,15 +10,19 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 
 //Generic IO object Class for move between environments 
 //======================================================
-public class RelocateInformationObject  extends IOObjectProperies  {
+public class RelocateInformationObject extends IOObjectProperies {
 
-     public RelocateInformationObject() {
+    private Object containplatformcontainerfrom;
+    private Object containplatformcontainerto;
+
+    public RelocateInformationObject() {
         // needed for Jackson
 
     }
 
     // Constructor for Alfresco
-    public RelocateInformationObject(AlfrescoNodeResponse Anode,  String hash, AlfrescoConstants.ContainPlatforms containplatformfrom,
+    public RelocateInformationObject(AlfrescoNodeResponse Anode, String hash,
+            AlfrescoConstants.ContainPlatforms containplatformfrom,
             AlfrescoConstants.ContainPlatforms containPlatFormTo) {
         // Map to this object
         this.UUID = Anode.UUID;
@@ -30,7 +34,7 @@ public class RelocateInformationObject  extends IOObjectProperies  {
         this.filename = Anode.entry.filename;
         this.containplatformfrom = containplatformfrom;
         this.containplatformto = containPlatFormTo;
-        this.marking  = Anode.marking;
+        this.marking = Anode.marking;
         this.classification = Anode.classification;
         this.version = Anode.version;
     }
@@ -47,9 +51,17 @@ public class RelocateInformationObject  extends IOObjectProperies  {
         this.content = SPItem.filecontent;
         this.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
         this.containplatformto = SPItem.MoveTo;
-        this.marking  = SPItem.marking;
+        this.marking = SPItem.marking;
         this.classification = SPItem.classification;
         this.version = SPItem.version;
-        //For Business centrail this MUST be a string in order to serialize
     }
+
+    public void setcontainplatformcontainerto(Object containerID) {
+        this.containplatformcontainerto = containerID;
+    }
+
+    public Object getcontainplatformcontainerto() {
+        return this.containplatformcontainerto;
+    }
+
 }

@@ -144,7 +144,8 @@ public class migrationservice {
         return actualId;
     }
 
-    public void executeDMN(RelocateInformationObject ROobject) {
+    public Object executeDMN(RelocateInformationObject ROobject) {
+        Object result = null;
         //Convert to serializable type for Business central for fields must map 
         RelocateInformationDTO RuleEngineDTO = new RelocateInformationDTO(
         ROobject.containplatformfrom != null ? ROobject.containplatformfrom.toString() : null,
@@ -170,11 +171,14 @@ public class migrationservice {
 
             // 5. Get the output of your decision node
             // Replace "dcsSource..." with the exact name of your Decision box
-            Object result = dmnResult.getDecisionResultByName("dcsSource.containplatformto").getResult();
+            result = dmnResult.getDecisionResultByName("dcsSource.containplatformto").getResult();
 
             System.out.println("DMN Output: " + result);
+
         } else {
             System.err.println("DMN Error: " + serverResponse.getMsg());
         }
+        ROobject.setcontainplatformcontainerto(result);
+        return result;
     }
 }
