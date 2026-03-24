@@ -96,7 +96,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
             // Create request WITHOUT key
             BindRequest request = new BindRequest(aController.alfresconNodeResponse.ToSecuredDocument());
 
-            String endPoint = ILSProperties.getBindendpoint();
+            String endPoint = ILSProperties.getbindendpoint();
             System.out
                     .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "
@@ -205,7 +205,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                     if (!aController.alfresconNodeResponse.HasUUID) {
                                         // Set UUID
                                         IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
-                                                ILSProperties.getUudiutilendpoint(),
+                                                ILSProperties.getuudiutilendpoint(),
                                                 Optional.ofNullable(secondPath.toString()), Optional.empty());
                                         // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID
                                         // ,Optional.ofNullable(secondPath.toString()), Optional.empty());

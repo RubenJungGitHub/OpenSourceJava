@@ -27,7 +27,7 @@ public class KieServerConfig {
         // String serverUrl = "http://localhost:8180/kie-server/services/rest/server";
 
         KieServicesConfiguration config = KieServicesFactory.newRestConfiguration(
-                this.ilsProperties.getRuleenginecontainerendpoint(),
+                this.ilsProperties.getruleenginecontainerendpoint(),
                 AlfrescoConstants.rhpamusername,
                 AlfrescoConstants.rhpampassword);
 

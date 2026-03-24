@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
-import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
+import contain.opensource.shared.classes.IOObjectProperties;
 
 /**
  * Represents the response from Alfresco for a node (file or folder).
@@ -42,10 +42,10 @@ import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
  * {@link Properties} - Node properties, including custom ones
  *
  * 
- * b>Note:</b> This class extends {@code IOObjectProperies} (possible typo,
+ * b>Note:</b> This class extends {@code IOObjectProperties} (possible typo,
  * should be "IOObjectProperties").
  */
-public class AlfrescoNodeResponse extends IOObjectProperies {
+public class AlfrescoNodeResponse extends IOObjectProperties {
     public Entry entry;
 
     public static class Entry {

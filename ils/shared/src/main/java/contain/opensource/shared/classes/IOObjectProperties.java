@@ -8,11 +8,12 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 
 import contain.opensource.shared.constants.AlfrescoConstants;
 
-public abstract class IOObjectProperies {
+public abstract class IOObjectProperties {
 
     public boolean HasUUID = false;
     public boolean MustMove = false;
     public String UUID;
+    public String containfromcontainer;
     public AlfrescoConstants.ContainPlatforms MoveTo;
 
     @JsonProperty("name")

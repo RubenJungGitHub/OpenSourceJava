@@ -46,16 +46,16 @@ public class IOLogBallenbakServiceMongo {
             //
             System.out.println(
                     AlfrescoConstants.RED + "Get UUID for logging @ endpoint  : "
-                            + ilsrestproperties.getUudiutilendpoint() + AlfrescoConstants.RESET);
+                            + ilsrestproperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
 
-            String urlString = ilsrestproperties.getUudiutilendpoint();
+            String urlString = ilsrestproperties.getuudiutilendpoint();
 
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
 
             int status = conn.getResponseCode();
-            System.out.println("Accessing uuid rest url on " + ilsrestproperties.getUudiutilendpoint() +
+            System.out.println("Accessing uuid rest url on " + ilsrestproperties.getuudiutilendpoint() +
                     " return code -> " + status);
 
             if (status == 200) {

@@ -64,7 +64,7 @@ public class ruleengineservice {
 
                 if (containerList != null && containerList.getContainers() != null) {
                     List<KieContainerResource> containers = containerList.getContainers();
-                    String projectName = ilsProperties.getRuleengineprojectname();
+                    String projectName = ilsProperties.getruleengineprojectname();
                     // Print them out to verify
                     containers.forEach(c -> System.out.println("Found Container: " + c.getContainerId()));
 

@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import com.google.gson.JsonPrimitive;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -95,7 +94,7 @@ public class GraphService {
     public GraphService(ILSRestProperties ilsProperties, AlfrescoNodeController alfresconodecontroller) {
         this.ILSProperties = ilsProperties;
         mapper = new ObjectMapper();
-        this.DeltaLinkFile = ILSProperties.getDeltaLinkFile();
+        this.DeltaLinkFile = ILSProperties.getdeltalinkfile();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         this.acontroller = alfresconodecontroller;
@@ -184,11 +183,11 @@ public class GraphService {
             // UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
             System.out.println(
                     AlfrescoConstants.RED + "Get UUID endpoint  : "
-                            + ILSProperties.getUudiutilendpoint() + AlfrescoConstants.RESET);
+                            + ILSProperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
 
             String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.SPO;
 
-            String urlString = ILSProperties.getUudiutilendpoint() + query;
+            String urlString = ILSProperties.getuudiutilendpoint() + query;
 
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -196,7 +195,7 @@ public class GraphService {
 
             int status = conn.getResponseCode();
             System.out.println(
-                    "Accessing uuid rest url on " + ILSProperties.getUudiutilendpoint() + " return code -> " + status);
+                    "Accessing uuid rest url on " + ILSProperties.getuudiutilendpoint() + " return code -> " + status);
 
             if (status == 200) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -370,7 +369,7 @@ public class GraphService {
             BindRequest request = new BindRequest(
                     SPItem.ToSecuredDocument());
 
-            String endPoint = ILSProperties.getBindendpoint();
+            String endPoint = ILSProperties.getbindendpoint();
             System.out
                     .println(contain.opensource.shared.constants.AlfrescoConstants.RED
                             + "Binding endpoint  : "
@@ -675,25 +674,27 @@ public class GraphService {
         return accessToken;
     }
 
-    private static boolean itemmustmigrate(ListItem li) {
+    private static boolean itemmustmigrate(SharePointItemResponse SPItem) {
         String endpoint = ILSProperties.getruleenginemoveendpoint();
 
         // Haal de raw JSON primitives uit de additionalDataManager
-        JsonPrimitive markingJson = (JsonPrimitive) li.fields.additionalDataManager().get("Marking");
-        JsonPrimitive classificationJson = (JsonPrimitive) li.fields.additionalDataManager().get("Classification");
-        String cleanClassification = (classificationJson != null)
-                ? classificationJson.getAsString().replace("\"", "").trim()
-                : "";
-        String cleanMarking = (markingJson != null)
-                ? markingJson.getAsString().replace("\"", "").trim()
-                : "";
+        // JsonPrimitive markingJson = (JsonPrimitive)
+        // li.fields.additionalDataManager().get("Marking");
+        // JsonPrimitive classificationJson = (JsonPrimitive)
+        // li.fields.additionalDataManager().get("Classification");
+        // String cleanClassification = (classificationJson != null)
+        // ? classificationJson.getAsString().replace("\"", "").trim()
+        // : "";
+        // String cleanMarking = (markingJson != null)
+        // ? markingJson.getAsString().replace("\"", "").trim()
+        // : "";
 
         // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
-                .queryParam("platformfrom", AlfrescoConstants.ContainPlatforms.SPO.toString())
+                .queryParam("platformfrom", SPItem.containplatformfrom)
                 .queryParam("containerfrom", "SPO")
-                .queryParam("classification", cleanClassification)
-                .queryParam("marking", cleanMarking)
+                .queryParam("classification", SPItem.classification)
+                .queryParam("marking", SPItem.marking)
                 .build()
                 .encode()
                 .toUri();
@@ -708,12 +709,13 @@ public class GraphService {
         // 2. Verstuur de aanvraag en vang de response op
         // Let op: client.send gooit Checked Exceptions (IOException,
         // InterruptedException)
+          String responseBody = null;
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             // 3. Controleer de statuscode
             int statusCode = response.statusCode();
-            String responseBody = response.body();
+            responseBody = response.body();
 
             if (statusCode == 200) {
                 System.out.println("Succes! Response: " + responseBody);
@@ -724,7 +726,7 @@ public class GraphService {
             // Log de fout als de Rule Engine onbereikbaar is
             e.printStackTrace();
         }
-        return true;
+        return !responseBody.equals(null);
     }
 
     // public SharePointItemResponse getListItemsById(String listId, String
@@ -775,22 +777,7 @@ public class GraphService {
                             : null;
 
                     hasUUID = uuidValue != null && !uuidValue.isEmpty();
-                    mustMove = itemmustmigrate(li);
-                    // for (AlfrescoConstants.ContainPlatforms type :
-                    // AlfrescoConstants.ContainPlatforms.values()) {
-                    // System.out.println("Check if " + type + " matches" + moveStr + " for itemid
-                    // "+ li.id);
-                    // if (type.name().equalsIgnoreCase(moveStr)) {
-                    // System.out.println("Found matching platform: " + type + " for itemid " +
-                    // li.id);
-                    // moveTo = type;
-                    // mustMove = true;
-                    // }
-                    // }
 
-                    if (mustMove) {
-                        System.out.println("Item " + li.id + " marked for move to " + moveTo);
-                    }
 
                     // Get latest version
                     DriveItemVersion latestVersion = graphClient.sites(SiteID)
@@ -822,19 +809,26 @@ public class GraphService {
                         SPItem.mimetype = mimeType;
                         SPItem.Path = driveItem.webUrl;
                         SPItem.UUID = uuidValue;
+                        SPItem.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
+                        SPItem.containfromcontainer = tenantDomain + "/" + SiteName + "/" + ListId;
                         // String description = (String) fields.get("Description");
                         // To do get file content
                         SPItem.HasUUID = hasUUID;
                         SPItem.version = latestVersion.id;
                         SPItem.marking = marking;
                         SPItem.classification = classification;
-                        SPItem.MustMove = mustMove;
-                        SPItem.MoveTo = moveTo;
                         SPItem.filecontent = getSPItemContentById(li.id, listId);
                     } catch (Exception e) {
                         System.err.println("Failed to fetch item ID: " + li + " -> " + e.getMessage());
                         throw e;
                     }
+                }
+                // Validate if item should move
+                // mustMove = itemmustmigrate(li);
+                SPItem.MustMove = itemmustmigrate(SPItem);
+
+                if (mustMove) {
+                    System.out.println("Item " + li.id + " marked for move to " + moveTo);
                 }
                 return SPItem;
             }

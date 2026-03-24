@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
-import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
+import contain.opensource.shared.classes.IOObjectProperties;
 
 /**
  * Represents a SharePoint item response from the SharePoint API.
@@ -47,7 +47,9 @@ import contain.opensource.ils.bs.receiver.classes.IOObjectProperies;
  * @see IdentitySet
  */
 @JsonIgnoreProperties(ignoreUnknown = true) // top-level
-public class SharePointItemResponse extends IOObjectProperies {
+public class SharePointItemResponse extends IOObjectProperties {
+
+
 
     @JsonProperty("title") // <-- map directly
     public String title;

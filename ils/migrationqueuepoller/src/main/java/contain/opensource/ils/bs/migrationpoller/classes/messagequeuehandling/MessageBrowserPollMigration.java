@@ -73,7 +73,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                         // Process migration
                         json = ((TextMessage) msg).getText();
                         MigrationQueueMessage queueMessage = mapper.readValue(json, MigrationQueueMessage.class);
-                        String endpoint = ILSProperties.getRelocateendpoint();
+                        String endpoint = ILSProperties.getrelocateendpoint();
                         System.out.println("Relocate endpoint: " + endpoint);
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);

@@ -7,10 +7,11 @@ package contain.opensource.ils.bs.receiver.classes;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeResponse;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.shared.constants.AlfrescoConstants;
+import contain.opensource.shared.classes.IOObjectProperties;
 
 //Generic IO object Class for move between environments 
 //======================================================
-public class RelocateInformationObject extends IOObjectProperies {
+public class RelocateInformationObject extends IOObjectProperties {
 
     private String containfromcontainer;
     private String containplatformcontainerto;

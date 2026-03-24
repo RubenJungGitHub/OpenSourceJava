@@ -1,11 +1,11 @@
 package contain.opensource.shared.classes;
-import contain.opensource.shared.classes.IOObjectProperies;
+import contain.opensource.shared.classes.IOObjectProperties;
 import java.time.Instant;
 
 /**
  * A secured document class that encapsulates document metadata and content with timestamp information.
  * 
- * This class extends {@link IOObjectProperies} and represents a document entity with security properties,
+ * This class extends {@link IOObjectProperties} and represents a document entity with security properties,
  * including creation and modification timestamps. It maintains immutability for temporal attributes through
  * final fields.
  * 
@@ -13,7 +13,7 @@ import java.time.Instant;
  * @version 1.0
  * @since [Date]
  */
-public final class SecuredDocument extends IOObjectProperies {
+public final class SecuredDocument extends IOObjectProperties {
 
     private final Instant created;
     private final Instant lastModified;
