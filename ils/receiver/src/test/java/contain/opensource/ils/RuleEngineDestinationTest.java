@@ -5,15 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-import contain.opensource.ils.bs.receiver.services.migrationservice;
+import contain.opensource.ils.bs.receiver.services.ruleengineservice;
 import contain.opensource.shared.constants.AlfrescoConstants;
-import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
+//import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 
 @SpringBootTest
 class RuleEngineDestinationTest {
 
     @Autowired
-    migrationservice migservice;
+    ruleengineservice reservice;
 
     @Test
     void CheckDestinationsFromRuleEngine() {
@@ -38,7 +38,7 @@ class RuleEngineDestinationTest {
                         Message = "Looking for expectedresult -> " + expectedresult;
                         System.out.println(Message);
 
-                        migservice.executeDMN(request);
+                        reservice.executeDMN(request);
                         if (!request.getcontainplatformcontainerto().equals(expectedresult)
                                 || !request.getPlatformTo().equals(AlfrescoConstants.ContainPlatforms.TEST)) {
                             Message = String.format(

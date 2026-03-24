@@ -1,33 +1,28 @@
 package contain.opensource.ils.bs.receiver.services;
 
 import java.io.Serializable;
-//import java.util.List;
-//import java.util.Map;
-//import org.kie.dmn.api.core.DMNContext;
-//import org.kie.dmn.api.core.DMNDecisionResult;
-//import org.kie.dmn.api.core.DMNResult;
-//import org.kie.server.api.model.KieContainerResource;
-//import org.kie.server.api.model.KieContainerResourceList;
-//import org.kie.server.api.model.ServiceResponse;
-//import org.kie.server.client.DMNServicesClient;
-//import org.kie.server.client.KieServicesClient;
+import java.util.List;
+import java.util.Map;
+import org.kie.dmn.api.core.DMNContext;
+import org.kie.dmn.api.core.DMNDecisionResult;
+import org.kie.dmn.api.core.DMNResult;
+import org.kie.server.api.model.KieContainerResource;
+import org.kie.server.api.model.KieContainerResourceList;
+import org.kie.server.api.model.ServiceResponse;
+import org.kie.server.client.DMNServicesClient;
+import org.kie.server.client.KieServicesClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
-import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 
 @Service
-public class migrationservice {
+public class ruleengineservice {
 
     private final ILSRestProperties ilsProperties;
-    private final GraphService graphservice;
-    private final AlfrescoNodeController AlfrescoNodeController;
-  //  private final KieServicesClient Kieserviceclient;
+    private final KieServicesClient Kieserviceclient;
 
     public class RelocateInformationDTO implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -54,70 +49,10 @@ public class migrationservice {
     }
 
     @Autowired
-    public migrationservice(ILSRestProperties ilsProperties, GraphService graphservice,
-            AlfrescoNodeController alfresconodecontroller) {
+    public ruleengineservice(ILSRestProperties ilsProperties, KieServicesClient kieserviceclient) {
         this.ilsProperties = ilsProperties;
-        this.graphservice = graphservice;
-        this.AlfrescoNodeController = alfresconodecontroller;
-    //    this.Kieserviceclient = kieserviceclient;
+        this.Kieserviceclient = kieserviceclient;
     }
-
-    public void migrateio(MigrationQueueMessage msg) throws Exception {
-
-        try {
-
-            // First het the rules from the ruleengine
-            // String containerid = getRuleEnigineProjectContainerID();
-            // Integer a = 1;
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
-                    + "Migrate information object -> " + msg.getKey() + " : Source  -> " + msg.getSource()
-                    + " destination  -> "
-                    + msg.getDestination()
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            if (AlfrescoConstants.ContainPlatforms.SPO.toString().equalsIgnoreCase(msg.getSource()) &&
-                    AlfrescoConstants.ContainPlatforms.ALFRESCO.toString().equalsIgnoreCase(msg.getDestination())) {
-                migrateSPObjectToAlfresco(msg);
-            }
-            if (AlfrescoConstants.ContainPlatforms.ALFRESCO.toString().equalsIgnoreCase(msg.getSource()) &&
-                    AlfrescoConstants.ContainPlatforms.SPO.toString().equalsIgnoreCase(msg.getDestination())) {
-                migrateAlfrescoObjectToSP(msg);
-            }
-        } catch (Exception ex) {
-            throw ex;
-        }
-    }
-
-    public void migrateSPObjectToAlfresco(MigrationQueueMessage msg) throws Exception {
-        try {
-
-            SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
-            // SPitem shoud get COnvertTorelocateObkject like it has for secureobject.
-            RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-
-            // What to do with the relocation object
-           // executeDMN(ROobject);
-
-            this.graphservice.RelocateIO(ROobject);
-        } catch (Exception e) {
-            System.out.println("Failed to migrate SP item : " + e.getMessage());
-            throw e;
-        }
-    }
-
-    public void migrateAlfrescoObjectToSP(MigrationQueueMessage msg) {
-
-        try {
-            int a = 1;
-            // to do. waiting for new Alfresco license
-            // alfrescoController.fetchNode(object.getId());
-            // graphService.uploadAlfrescoNodeToSP(robject);
-        } catch (Exception ex) {
-            // to do
-        }
-    }
-    // additional coordination logic}
-
-/*
 
     public String getRuleEnigineProjectContainerID() {
         String actualId = null;
@@ -151,7 +86,6 @@ public class migrationservice {
     }
 
     public void executeDMN(RelocateInformationObject ROobject) {
-
        // Convert to serializable type for Business central for fields must map
         RelocateInformationDTO RuleEngineDTO = new RelocateInformationDTO(
                 ROobject.containplatformfrom != null ? ROobject.containplatformfrom.toString() : null,
@@ -195,5 +129,4 @@ public class migrationservice {
             System.err.println("DMN Error: " + serverResponse.getMsg());
         }
     }
-        */
 }

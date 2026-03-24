@@ -13,6 +13,7 @@ public class ILSRestProperties {
     private String uudiutilendpoint;
     private String bindendpoint;
     private String relocateendpoint;
+    private String ruleenginemoveendpoint;
     private String ruleenginecontainerendpoint;
     private String ruleengineendpoint;
     private String ruleengineprojectname;
@@ -50,6 +51,15 @@ public class ILSRestProperties {
         this.bindendpoint = bindendpoint;
     }
 
+    public String getruleenginemoveendpoint() {
+        return ruleenginemoveendpoint;
+    }
+
+    public void setruleenginemoveendpoint(String ruleenginemoveendpoint) {
+        this.ruleenginemoveendpoint = ruleenginemoveendpoint;
+    }
+
+    
     public String getRelocateendpoint() {
         return relocateendpoint;
     }
@@ -93,5 +103,6 @@ public class ILSRestProperties {
         System.out.println("ruleengineendpoint = " + ruleengineendpoint);
         System.out.println("ruleenginecontainerendpoint = " + ruleenginecontainerendpoint);
         System.out.println("ruleengineprojectname = " + ruleengineprojectname);
+        System.out.println("ruleendpoint = " + ruleenginemoveendpoint);
     }
 }

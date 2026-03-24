@@ -89,7 +89,6 @@ public class GraphService {
     static ILSRestProperties ILSProperties = null;
     static AlfrescoNodeController acontroller = null;
 
-
     @Autowired
     public GraphService(ILSRestProperties ilsProperties, AlfrescoNodeController alfresconodecontroller) {
         this.ILSProperties = ilsProperties;
@@ -232,7 +231,8 @@ public class GraphService {
                         + "UUID assigned updated successfully to : " + listItemId
                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                 // Cahc in Redis
-             //   RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid, "InProcess", 2400);
+                // RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid,
+                // "InProcess", 2400);
                 return uuid;
             } else {
                 System.out.println("Failed to update field: " + response.body());
@@ -416,8 +416,7 @@ public class GraphService {
         }
     }
 
-    public void RelocateIO(RelocateInformationObject ROobject) throws Exception
-    {
+    public void RelocateIO(RelocateInformationObject ROobject) throws Exception {
         try {
 
             String action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() +
@@ -426,7 +425,7 @@ public class GraphService {
 
             // Upload to Alfresco
             this.acontroller.uploadSPItemToAlfresco(ROobject);
-            
+
             // log
             IOLog.log(
                     ROobject.getUuid(),
@@ -468,8 +467,8 @@ public class GraphService {
                     ROobject.classification,
                     ROobject.version);
         } catch (Exception ex) {
-            //System.out.println("Failed to relocate IO: " + ex.getMessage());
-            //ex.printStackTrace();
+            // System.out.println("Failed to relocate IO: " + ex.getMessage());
+            // ex.printStackTrace();
             throw ex;
         }
     }
@@ -674,6 +673,32 @@ public class GraphService {
         return accessToken;
     }
 
+    private static boolean itemmustmigrate(ListItem li) {
+        String endpoint = ILSProperties.getruleenginemoveendpoint();
+        //String platform = li.getPlatform();
+      //  String classification = li.getClassification();
+       // String marking = li.getMarking();
+       
+   /*    String url = String.format("%s?platform=%s&classification=%s&marking=%s",
+                ILSProperties.getruleenginemoveendpoint(),
+                URLEncoder.encode(platform != null ? platform : "", StandardCharsets.UTF_8),
+                URLEncoder.encode(classification != null ? classification : "", StandardCharsets.UTF_8),
+                URLEncoder.encode(marking != null ? marking : "", StandardCharsets.UTF_8)
+        );
+       HttpClient client = HttpClient.newHttpClient();
+
+        
+// 3. Build the GET request
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer " + accessToken)
+                .header("Accept", "application/json")
+                .GET() // Explicitly GET
+                .build();
+                */
+        return true;
+    }
+
     // public SharePointItemResponse getListItemsById(String listId, String
     // listItemId,GraphServiceClient<?> graphClient)
     public static SharePointItemResponse getListItemsById(String listId, String listItemId)
@@ -713,24 +738,27 @@ public class GraphService {
                             }
                         }
                     }
-                    Object moveValue = adm.get("Move");
-                    String moveStr = moveValue != null ? moveValue.toString().replace("\"", "") : "";
+                    // Object moveValue = adm.get("Move");
+                    // String moveStr = moveValue != null ? moveValue.toString().replace("\"", "") :
+                    // "";
                     String uuidValue = adm.get("ContAInUUID") != null ? adm.get("ContAInUUID").toString() : "";
                     DriveItem driveItem = li.driveItem;
                     String mimeType = (driveItem != null && driveItem.file != null) ? driveItem.file.mimeType
                             : null;
 
                     hasUUID = uuidValue != null && !uuidValue.isEmpty();
-                    mustMove = false;
-                    for (AlfrescoConstants.ContainPlatforms type : AlfrescoConstants.ContainPlatforms.values()) {
-                        // System.out.println("Check if " + type + " matches" + moveStr + " for itemid
-                        // "+ li.id);
-                        if (type.name().equalsIgnoreCase(moveStr)) {
-                            System.out.println("Found matching platform: " + type + " for itemid " + li.id);
-                            moveTo = type;
-                            mustMove = true;
-                        }
-                    }
+                    mustMove = itemmustmigrate(li);
+                    // for (AlfrescoConstants.ContainPlatforms type :
+                    // AlfrescoConstants.ContainPlatforms.values()) {
+                    // System.out.println("Check if " + type + " matches" + moveStr + " for itemid
+                    // "+ li.id);
+                    // if (type.name().equalsIgnoreCase(moveStr)) {
+                    // System.out.println("Found matching platform: " + type + " for itemid " +
+                    // li.id);
+                    // moveTo = type;
+                    // mustMove = true;
+                    // }
+                    // }
 
                     if (mustMove) {
                         System.out.println("Item " + li.id + " marked for move to " + moveTo);
@@ -799,8 +827,8 @@ public class GraphService {
         }
     }
 
-    public static boolean ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID, String resourceValue) throws MalformedURLException, Exception 
-    {
+    public static boolean ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID, String resourceValue)
+            throws MalformedURLException, Exception {
         String siteId = null;
         String driveId = null;
         // String siteGUID = null;
@@ -828,6 +856,8 @@ public class GraphService {
             SharePointItemResponse SPItem = getListItemsById(ListId, ListItemID);
             if (SPItem != null) {
                 MustMove = SPItem.MustMove;
+                // Check if this item is to me migrated based on ruleengine
+
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
