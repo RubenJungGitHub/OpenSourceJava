@@ -52,7 +52,6 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
-//import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
@@ -692,7 +691,7 @@ public class GraphService {
         // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
                 .queryParam("platformfrom", SPItem.containplatformfrom)
-                .queryParam("containerfrom", "SPO")
+                .queryParam("containerfrom", SPItem.containfromcontainer)
                 .queryParam("classification", SPItem.classification)
                 .queryParam("marking", SPItem.marking)
                 .build()
@@ -709,7 +708,7 @@ public class GraphService {
         // 2. Verstuur de aanvraag en vang de response op
         // Let op: client.send gooit Checked Exceptions (IOException,
         // InterruptedException)
-          String responseBody = null;
+        String responseBody = null;
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -726,7 +725,8 @@ public class GraphService {
             // Log de fout als de Rule Engine onbereikbaar is
             e.printStackTrace();
         }
-        return !responseBody.equals(null);
+
+        return responseBody != null && !responseBody.isEmpty();
     }
 
     // public SharePointItemResponse getListItemsById(String listId, String
@@ -777,7 +777,6 @@ public class GraphService {
                             : null;
 
                     hasUUID = uuidValue != null && !uuidValue.isEmpty();
-
 
                     // Get latest version
                     DriveItemVersion latestVersion = graphClient.sites(SiteID)
