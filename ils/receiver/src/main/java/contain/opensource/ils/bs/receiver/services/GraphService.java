@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import com.google.gson.JsonPrimitive;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -28,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.azure.identity.ClientSecretCredential;
 import com.azure.identity.ClientSecretCredentialBuilder;
@@ -675,27 +677,53 @@ public class GraphService {
 
     private static boolean itemmustmigrate(ListItem li) {
         String endpoint = ILSProperties.getruleenginemoveendpoint();
-        //String platform = li.getPlatform();
-      //  String classification = li.getClassification();
-       // String marking = li.getMarking();
-       
-   /*    String url = String.format("%s?platform=%s&classification=%s&marking=%s",
-                ILSProperties.getruleenginemoveendpoint(),
-                URLEncoder.encode(platform != null ? platform : "", StandardCharsets.UTF_8),
-                URLEncoder.encode(classification != null ? classification : "", StandardCharsets.UTF_8),
-                URLEncoder.encode(marking != null ? marking : "", StandardCharsets.UTF_8)
-        );
-       HttpClient client = HttpClient.newHttpClient();
 
-        
-// 3. Build the GET request
+        // Haal de raw JSON primitives uit de additionalDataManager
+        JsonPrimitive markingJson = (JsonPrimitive) li.fields.additionalDataManager().get("Marking");
+        JsonPrimitive classificationJson = (JsonPrimitive) li.fields.additionalDataManager().get("Classification");
+        String cleanClassification = (classificationJson != null)
+                ? classificationJson.getAsString().replace("\"", "").trim()
+                : "";
+        String cleanMarking = (markingJson != null)
+                ? markingJson.getAsString().replace("\"", "").trim()
+                : "";
+
+        // Bouw de URL exact zoals Swagger het doet
+        URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
+                .queryParam("platformfrom", AlfrescoConstants.ContainPlatforms.SPO.toString())
+                .queryParam("containerfrom", "SPO")
+                .queryParam("classification", cleanClassification)
+                .queryParam("marking", cleanMarking)
+                .build()
+                .encode()
+                .toUri();
+
+        HttpClient client = HttpClient.newHttpClient();
+        // 1. Bouw de Request (gebruik de URL die je net hebt samengesteld)
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Authorization", "Bearer " + accessToken)
-                .header("Accept", "application/json")
-                .GET() // Explicitly GET
+                .uri(targetUri)
+                .GET() // Of .POST(BodyPublishers.noBody()) afhankelijk van je endpoint
                 .build();
-                */
+
+        // 2. Verstuur de aanvraag en vang de response op
+        // Let op: client.send gooit Checked Exceptions (IOException,
+        // InterruptedException)
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // 3. Controleer de statuscode
+            int statusCode = response.statusCode();
+            String responseBody = response.body();
+
+            if (statusCode == 200) {
+                System.out.println("Succes! Response: " + responseBody);
+            } else {
+                System.err.println("Fout van Rule Engine: " + statusCode + " - " + responseBody);
+            }
+        } catch (IOException | InterruptedException e) {
+            // Log de fout als de Rule Engine onbereikbaar is
+            e.printStackTrace();
+        }
         return true;
     }
 

@@ -110,7 +110,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
                                     }
                                 }
                             }
-                            consumeMessageById(msg.getJMSMessageID(), activeMQProps.getSharepointQueue());
+                          //  consumeMessageById(msg.getJMSMessageID(), activeMQProps.getSharepointQueue());
 
                         } catch (JMSException processingError) {
                             System.err.println("Error while processing message" +processingError );
