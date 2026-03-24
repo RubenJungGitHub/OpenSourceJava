@@ -18,7 +18,7 @@
 -->
     <groupId>contain.opensource.java</groupId>
     <artifactId>uuidutil</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>3.3.0</version>
     <packaging>jar</packaging>
 
 

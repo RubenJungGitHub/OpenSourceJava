@@ -6,7 +6,7 @@
 
     <groupId>contain.opensource.java</groupId>
     <artifactId>shared</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>3.3.0</version>
     <packaging>jar</packaging>
 
     <name>shared</name>

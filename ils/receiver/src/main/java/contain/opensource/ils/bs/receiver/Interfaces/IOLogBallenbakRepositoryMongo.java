@@ -3,7 +3,6 @@ package contain.opensource.ils.bs.receiver.Interfaces;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbakMongo;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbakMongo;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 

@@ -8,8 +8,8 @@ import jakarta.annotation.PostConstruct;
 @ConfigurationProperties(prefix = "ils")
 public class ILSRestProperties {
 
-    private String baseUrl;
-    private String deltaLinkFile;
+    private String baseurl;
+    private String deltalinkfile;
     private String uudiutilendpoint;
     private String bindendpoint;
     private String relocateendpoint;
@@ -19,35 +19,35 @@ public class ILSRestProperties {
     private String ruleengineprojectname;
 
     // ----------------- Getters & Setters -----------------
-    public String getBaseUrl() {
-        return baseUrl;
+    public String getbaseurl() {
+        return baseurl;
     }
 
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public void setbaseurl(String baseurl) {
+        this.baseurl = baseurl;
     }
 
-    public String getDeltaLinkFile() {
-        return deltaLinkFile;
+    public String getdeltalinkfile() {
+        return deltalinkfile;
     }
 
-    public void setDeltaLinkFile(String deltaLinkFile) {
-        this.deltaLinkFile = deltaLinkFile;
+    public void setdeltalinkfile(String deltalinkfile) {
+        this.deltalinkfile = deltalinkfile;
     }
 
-    public String getUudiutilendpoint() {
+    public String getuudiutilendpoint() {
         return uudiutilendpoint;
     }
 
-    public void setUudiutilendpoint(String uudiutilendpoint) {
+    public void setuudiutilendpoint(String uudiutilendpoint) {
         this.uudiutilendpoint = uudiutilendpoint;
     }
 
-    public String getBindendpoint() {
+    public String getbindendpoint() {
         return bindendpoint;
     }
 
-    public void setBindendpoint(String bindendpoint) {
+    public void setbindendpoint(String bindendpoint) {
         this.bindendpoint = bindendpoint;
     }
 
@@ -60,43 +60,43 @@ public class ILSRestProperties {
     }
 
     
-    public String getRelocateendpoint() {
+    public String getrelocateendpoint() {
         return relocateendpoint;
     }
 
-    public void setRelocateendpoint(String relocateendpoint) {
+    public void setrelocateendpoint(String relocateendpoint) {
         this.relocateendpoint = relocateendpoint;
     }
 
-    public String getRuleenginecontainerendpoint() {
+    public String getruleenginecontainerendpoint() {
         return ruleenginecontainerendpoint;
     }
 
-    public void setRuleenginecontainerendpoint(String ruleenginecontainerendpoint) {
+    public void setruleenginecontainerendpoint(String ruleenginecontainerendpoint) {
         this.ruleenginecontainerendpoint = ruleenginecontainerendpoint;
     }
 
-    public String getRuleengineendpoint() {
+    public String getruleengineendpoint() {
         return ruleengineendpoint;
     }
 
-    public void setRuleengineendpoint(String ruleengineendpoint) {
+    public void setruleengineendpoint(String ruleengineendpoint) {
         this.ruleengineendpoint = ruleengineendpoint;
     }
 
-    public String getRuleengineprojectname() {
+    public String getruleengineprojectname() {
         return ruleengineprojectname;
     }
 
-    public void setRuleengineprojectname(String ruleengineprojectname) {
+    public void setruleengineprojectname(String ruleengineprojectname) {
         this.ruleengineprojectname = ruleengineprojectname;
     }
 
     @PostConstruct
     public void init() {
         System.out.println("ILSRestProperties loaded:");
-        System.out.println("baseUrl = " + baseUrl);
-        System.out.println("deltaLinkFile = " + deltaLinkFile);
+        System.out.println("baseurl = " + baseurl);
+        System.out.println("deltalinkfile = " + deltalinkfile);
         System.out.println("uudiutilendpoint = " + uudiutilendpoint);
         System.out.println("bindendpoint = " + bindendpoint);
         System.out.println("relocateendpoint = " + relocateendpoint);

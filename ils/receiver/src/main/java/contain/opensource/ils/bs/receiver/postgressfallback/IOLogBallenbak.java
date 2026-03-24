@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.Logger;
+package contain.opensource.ils.bs.receiver.postgressfallback;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;

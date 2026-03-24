@@ -43,9 +43,9 @@ Write-Host "mongosqld started with SSL (self-signed) on $bindAddr"
 $openssl        = "C:\Program Files\OpenSSL-Win64\bin\openssl.exe"
 $p12File        = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\src\main\resources\Containselfsigned_cert.p12"
 $p12Password    = "changeitsosecure"
-$certPem        = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\cert.pem"
-$keyPem         = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\key.pem"
-$combinedPem    = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\mongosqld.pem"
+$certPem        = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\src\main\resources\cert.pem"
+$keyPem         = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\src\main\resources\key.pem"
+$combinedPem    = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\src\main\resources\mongosqld.pem"
 $mongoExe = "C:\Program Files\MongoDB\Server\8.2\bin\mongod.exe"
 $mongoShell = "C:\Shell\Mongo\bin\mongosh.exe"
 $mongoDataPath = "C:\MongoData"
@@ -106,8 +106,15 @@ $env:MONGO_AUTH_SOURCE = "admin"
 $mongosqldExe = "C:\Program Files\MongoDB\Connector for BI\2.14\bin\mongosqld.exe"
 $configFile   = "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\src\main\resources\mongosqld.conf"
 
-Write-Host "Starting mongosqld with injected environment variables..."
-& "$mongosqldExe" --config "$configFile" --mongo-username "admin" --mongo-password "admin"
+Write-Host "Starting mongosqld with Professional Reporting User..."
+
+& "C:\Program Files\MongoDB\Connector for BI\2.14\bin\mongosqld.exe" --config "C:\ContainOpenSource\Java\OpenSourceJava\ils\receiver\src\main\resources\mongosqld.conf" --sampleNamespaces "ilstools.tbl_iolog" --sampleSize 1000
+
+& "$mongosqldExe" --config "$configFile" `
+  --mongo-username "reportUser" `
+  --mongo-password "password123" `
+  --mongo-authenticationSource "admin" `
+  --mongo-authenticationMechanism "SCRAM-SHA-256"
 
 # Check log for success
 Start-Sleep -Seconds 2
@@ -131,5 +138,7 @@ C:\Shell\Mongo\bin\mongosh.exe "mongodb://admin:admin@127.0.0.1:27017/ilstools?a
 
 C:\Shell\Mongo\bin\mongosh.exe "mongodb://admin:admin@host.docker.internal:27017/ilstools?authSource=admin&authMechanism=SCRAM-SHA-256"
 
-netstat -ano | findstr 3307
+netstat -ano | findstr 3003
 netstat -ano | findstr 27017
+
+taskkill /F /PID 26676

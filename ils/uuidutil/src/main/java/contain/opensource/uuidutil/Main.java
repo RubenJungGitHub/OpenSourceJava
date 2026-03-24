@@ -2,12 +2,18 @@ package contain.opensource.uuidutil;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication(scanBasePackages = {
-        "contain.opensource.uuidutil",           // main app
-        "contain.opensource.uuidutil.controllers",   // your controllers package
-        "contain.opensource.ils.shared",
-        "contain.opensource.shared.configurationproperties"
+        "contain.opensource.uuidutil",
+        "contain.opensource.uuidutil.controllers",
+        "contain.opensource.ils.shared"
+})
+// This is the missing link! 
+// It finds ILSRestProperties and any other config beans.
+@ConfigurationPropertiesScan(basePackages = {
+        "contain.opensource.shared.configurationproperties",
+        "contain.opensource.uuidutil" 
 })
 public class Main {
     public static void main(String[] args) {

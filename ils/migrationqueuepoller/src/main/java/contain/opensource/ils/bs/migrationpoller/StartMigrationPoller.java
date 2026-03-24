@@ -1,32 +1,40 @@
 package contain.opensource.ils.bs.migrationpoller;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import contain.opensource.ils.startreceiver;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisConfigProperties;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 
-@SpringBootApplication(scanBasePackages = {
-        "contain.opensource.uuidutil",
-        "contain.opensource.uuidutil.controllers",
-        "contain.opensource.ils.bs.receiver",
-        "contain.opensource.ils.bs.migrationpoller"
+@SpringBootApplication(exclude = {
+    DataSourceAutoConfiguration.class, 
+    HibernateJpaAutoConfiguration.class 
 })
-@ConfigurationPropertiesScan(basePackages = "contain.opensource.shared.configurationproperties")
-@EnableJpaRepositories(basePackages = "contain.opensource.ils.bs.receiver.Interfaces")
-@EntityScan(basePackages = "contain.opensource.ils.bs.receiver.classes.Logger")
-
+@EnableMongoRepositories(basePackages = "contain.opensource.ils.bs.receiver.Interfaces")
+@ComponentScan(basePackages = {
+    "contain.opensource.uuidutil",
+    "contain.opensource.ils.bs.receiver",
+    "contain.opensource.ils.bs.migrationpoller" 
+})
 public class StartMigrationPoller {
 
+    // FORCEER DE BEAN HIER HANDMATIG
+    @Bean
+    public RedisConfigProperties redisConfigProperties() {
+        return new RedisConfigProperties();
+    }
+
     public static void main(String[] args) {
-        var context = SpringApplication.run(startreceiver.class, args);
-        RedisConfigProperties redisConfig = context.getBean(RedisConfigProperties.class);
+
+        ConfigurableApplicationContext context = SpringApplication.run(StartMigrationPoller.class, args);
         
-        // GenerateKeyPair();
+        // Nu MOET hij hem vinden, want we hebben hem hierboven zelf gedefinieerd
+        RedisConfigProperties redisConfig = context.getBean(RedisConfigProperties.class);
         RedisManager.init(redisConfig);
     }
 }

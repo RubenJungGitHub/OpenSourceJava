@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.Logger;
+package contain.opensource.ils.bs.receiver.postgressfallback;
 
 import java.sql.Connection;
 
@@ -12,7 +12,7 @@ import jakarta.annotation.PostConstruct;
 
 
 //Disable bean for now because MongoDB is now in scope and not postgress
-@Component
+//@Component
 public class PostGresDataSourceInspector implements CommandLineRunner {
 
     @Autowired

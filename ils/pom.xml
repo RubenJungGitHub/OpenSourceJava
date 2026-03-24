@@ -12,7 +12,7 @@
 
 	<groupId>contain.opensource.java</groupId>
 	<artifactId>ils</artifactId> <!-- lowercase to match folder -->
-	<version>0.0.1-SNAPSHOT</version>
+    <version>3.3.0</version>
 	<name>ils App</name>
 	<packaging>pom</packaging>
 	<modules>

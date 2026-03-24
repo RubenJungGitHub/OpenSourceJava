@@ -1,11 +1,10 @@
-package contain.opensource.ils.bs.receiver.classes.Logger;
+package contain.opensource.ils.bs.receiver.postgressfallback;
 
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
-import contain.opensource.ils.bs.receiver.services.IOLogBallenbakService;
 
 @Component
 public class IOLogPostgress {

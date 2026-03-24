@@ -5,14 +5,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import jakarta.jms.Connection;
-import jakarta.jms.JMSException;
-import jakarta.jms.Message;
-import jakarta.jms.MessageConsumer;
-import jakarta.jms.Queue;
-import jakarta.jms.QueueBrowser;
-import jakarta.jms.Session;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +16,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
+import jakarta.jms.Connection;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.MessageConsumer;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
 
 public abstract class MessageBrowserPollParentMigration {
 
@@ -119,7 +118,7 @@ public abstract class MessageBrowserPollParentMigration {
                 queue = session.createQueue(queueid);
                 browser = session.createBrowser(queue);
 
-                System.out.println("Polling MIGRATION messages...");
+                System.out.println("Polling queue messages...");
 
                 // Submit StartPoll as a Future and block until finished
                 Future<?> pollFuture = pollExecutor.submit(() -> StartPoll(browser, session, queue));
@@ -218,7 +217,7 @@ public abstract class MessageBrowserPollParentMigration {
     public void ReadMessages(String queueid) {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                System.out.println("Polling MIGRATION messages...");
+                System.out.println("Polling queue messages...");
 
                 if (connection == null) {
                     connection = createConnectionWithRetry();

@@ -5,9 +5,11 @@
 #debug: true
 name: ils
 spring:
+# ---------- Redis ----------
   redis:
     host: localhost
     port: 6379
+
 
   profiles:
     active: sp
@@ -15,12 +17,8 @@ spring:
   flyway:
       enabled: false
 
-  # ---------- Redis ----------
-  data:
-    redis:
-      host: ${SPRING_REDIS_HOST:Redis-service}
-      port: ${SPRING_REDIS_PORT:8001}
-      password: ""
+
+
 
   # ---------- SQL DataSource ----------
 # datasource:
@@ -82,8 +80,12 @@ server:
 
 
 ils:
-  base-url: http://localhost:55000
+  baseurl: http://localhost:55000
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
   relocateendpoint: http://localhost:55000/MigrateIO
-  DeltaLinkFile: "C:\\Temp\\storeddeltalinks.csv"
+  ruleenginemoveendpoint: http://localhost:55000/rules
+  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
+  ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+  ruleengineprojectName: contAlnMigrationRuleset
+  deltalinkfile: "C:\\Temp\\storeddeltalinks.csv"

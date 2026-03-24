@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.services;
+package contain.opensource.ils.bs.receiver.postgressfallback;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import contain.opensource.ils.bs.receiver.Interfaces.IOLogBallenbakRepository;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbak;
 import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
@@ -21,19 +19,22 @@ import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 public class IOLogBallenbakService {
 
     // @Autowired
-    private final IOLogBallenbakRepository repository;
+    //private final IOLogBallenbakRepository repository;
     private final ILSRestProperties ilsrestproperties;
 
+
+    
     @Autowired
-    public IOLogBallenbakService(IOLogBallenbakRepository repository, ILSRestProperties ilsrestproperties) {
-        this.repository = repository;
+    //public IOLogBallenbakService(IOLogBallenbakRepository repository, ILSRestProperties ilsrestproperties) {
+    public IOLogBallenbakService(ILSRestProperties ilsrestproperties) {
+        //this.repository = repository;
         this.ilsrestproperties = ilsrestproperties;
 
     }
 
     @Transactional
     public void saveLog(IOLogBallenbak log) {
-        repository.save(log);
+     //   repository.save(log);
     }
 
     private String getloguuid() {
@@ -68,7 +69,8 @@ public class IOLogBallenbakService {
 
     // Delegate method to get the most recent entry
     public Optional<IOLogBallenbak> GetLog(String uuid) {
-        return repository.findTopByContainIoUuidOrderByLogDateTimeDesc(uuid);
+       // return repository.findTopByContainIoUuidOrderByLogDateTimeDesc(uuid);
+       return null;
     }
 
     // Optional helper method to create and save in one step
@@ -101,7 +103,7 @@ public class IOLogBallenbakService {
         }
 
         try {
-            repository.save(log);
+ //           repository.save(log);
         } catch (Exception ex) {
             System.out.println("Error saving IOLogBallenbak: " + ex.getMessage());
         }

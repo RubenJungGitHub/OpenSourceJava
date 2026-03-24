@@ -1,9 +1,8 @@
-package contain.opensource.ils.bs.receiver.Interfaces;
+package contain.opensource.ils.bs.receiver.postgressfallback;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLogBallenbak;
 
 @Repository
 public interface IOLogBallenbakRepository extends JpaRepository<IOLogBallenbak, String> {
