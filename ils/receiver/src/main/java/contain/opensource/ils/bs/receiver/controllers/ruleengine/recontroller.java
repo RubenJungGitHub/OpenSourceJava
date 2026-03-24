@@ -37,7 +37,8 @@ public class recontroller {
              ROobject.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
              ROobject.classification= "Secret";
              ROobject.marking= "HR confidential";
-             return migservice.executeDMN(ROobject).toString();
+             migservice.executeDMN(ROobject);
+             return ROobject.getcontainplatformcontainerto();
         } catch (Exception e) {
             e.printStackTrace();
             return "Error acquiring token: " + e.getMessage();

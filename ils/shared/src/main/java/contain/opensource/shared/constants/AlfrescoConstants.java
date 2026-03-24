@@ -89,7 +89,8 @@ public class AlfrescoConstants {
 
     public enum ContainPlatforms {
         ALFRESCO,
-        SPO
+        SPO,
+        TEST
     }
 
     public enum NodeType {

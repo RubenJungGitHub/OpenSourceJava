@@ -13,8 +13,7 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 public class RelocateInformationObject extends IOObjectProperies {
 
     private String containfromcontainer;
-    private Object containplatformcontainerto;
-
+    private String containplatformcontainerto;
     public RelocateInformationObject() {
         // needed for Jackson
 
@@ -56,11 +55,11 @@ public class RelocateInformationObject extends IOObjectProperies {
         this.version = SPItem.version;
     }
 
-    public void setcontainplatformcontainerto(Object containerID) {
+    public void setcontainplatformcontainerto(String containerID) {
         this.containplatformcontainerto = containerID;
     }
 
-    public Object getcontainplatformcontainerto() {
+    public String getcontainplatformcontainerto() {
         return this.containplatformcontainerto;
     }
 

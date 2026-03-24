@@ -2,7 +2,7 @@ package contain.opensource.ils.bs.receiver.services;
 
 import java.io.Serializable;
 import java.util.List;
-
+import java.util.Map;
 import org.kie.dmn.api.core.DMNContext;
 import org.kie.dmn.api.core.DMNDecisionResult;
 import org.kie.dmn.api.core.DMNResult;
@@ -148,9 +148,8 @@ public class migrationservice {
         return actualId;
     }
 
-    public Object executeDMN(RelocateInformationObject ROobject) {
-        Object result = null;
-        // Convert to serializable type for Business central for fields must map
+    public void executeDMN(RelocateInformationObject ROobject) {
+       // Convert to serializable type for Business central for fields must map
         RelocateInformationDTO RuleEngineDTO = new RelocateInformationDTO(
                 ROobject.containplatformfrom != null ? ROobject.containplatformfrom.toString() : null,
                 ROobject.classification,
@@ -173,25 +172,24 @@ public class migrationservice {
         ServiceResponse<DMNResult> serverResponse = dmnClient.evaluateAll(containerId, dmnContext);
 
         if (serverResponse.getType() == ServiceResponse.ResponseType.SUCCESS) {
-            DMNResult dmnResult = serverResponse.getResult();
+            DMNDecisionResult dr = serverResponse.getResult().getDecisionResultByName("destination");
+            // 2. Access the Map inside the result
+            if (dr != null && dr.getResult() instanceof Map) {
+                Map<String, Object> resultMap = (Map<String, Object>) dr.getResult();
 
-            // 5. Get the output of your decision node
-            // Replace "dcsSource..." with the exact name of your Decision box
-            for (DMNDecisionResult dr : dmnResult.getDecisionResults()) {
-                if (dr.getDecisionName().equals("destination")) {
-                    result = dr.getResult().toString();
-                    break;
-                }
+                // 3. Use the keys exactly as they appear in your debug output
+                String containerto = (String) resultMap.get("containtocontainer");
+                String platformto = (String) resultMap.get("containplatformto");
+
+                System.out.println("Target Container: " + containerto);
+                System.out.println("Target Platform: " + platformto);
+
+                // Now you can map these back to your original ROobject if needed
+                ROobject.setPlatformTo(AlfrescoConstants.ContainPlatforms.valueOf(platformto));
+                ROobject.setcontainplatformcontainerto(containerto);
             }
-            // result =
-            // dmnResult.getDecisionResultByName("dcsSource.containplatformto").getResult();
-
-            System.out.println("DMN Output: " + result);
-
         } else {
             System.err.println("DMN Error: " + serverResponse.getMsg());
         }
-        ROobject.setcontainplatformcontainerto(result);
-        return result;
     }
 }
