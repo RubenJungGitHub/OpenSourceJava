@@ -688,12 +688,17 @@ public class GraphService {
         // ? markingJson.getAsString().replace("\"", "").trim()
         // : "";
 
+        String cleanPlatformFrom = SPItem.containplatformfrom.name().replace("\"", "");
+        String cleanClassification = SPItem.classification.replace("\"", "");
+        String cleanMarking = SPItem.marking.replace("\"", "");
+        String cleancontainfromcontainer = SPItem.containfromcontainer.replace("\"", "");
+
         // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
-                .queryParam("platformfrom", SPItem.containplatformfrom)
-                .queryParam("containerfrom", SPItem.containfromcontainer)
-                .queryParam("classification", SPItem.classification)
-                .queryParam("marking", SPItem.marking)
+                .queryParam("platformfrom", cleanPlatformFrom)
+                .queryParam("containerfrom", cleancontainfromcontainer)
+                .queryParam("classification", cleanClassification)
+                .queryParam("marking", cleanMarking)
                 .build()
                 .encode()
                 .toUri();
