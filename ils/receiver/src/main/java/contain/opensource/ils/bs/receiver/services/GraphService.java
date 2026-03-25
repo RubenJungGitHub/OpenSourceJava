@@ -419,7 +419,9 @@ public class GraphService {
     public void RelocateIO(RelocateInformationObject ROobject) throws Exception {
         try {
 
-            String action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() + " from " + ROobject.getplatformfrom() + ":" +  ROobject.getcontainerfrom()  + " -> " + ROobject.getplatformto() + " : " + ROobject.getcontainerto();
+            String action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() + " from "
+                    + ROobject.getplatformfrom() + ":" + ROobject.getcontainerfrom() + " -> " + ROobject.getplatformto()
+                    + " : " + ROobject.getcontainerto();
 
             // Upload to Alfresco
             this.acontroller.uploadSPItemToAlfresco(ROobject);
@@ -673,19 +675,6 @@ public class GraphService {
 
     private static boolean itemmustmigrate(SharePointItemResponse SPItem) {
         String endpoint = ILSProperties.getruleenginemoveendpoint();
-
-        // Haal de raw JSON primitives uit de additionalDataManager
-        // JsonPrimitive markingJson = (JsonPrimitive)
-        // li.fields.additionalDataManager().get("Marking");
-        // JsonPrimitive classificationJson = (JsonPrimitive)
-        // li.fields.additionalDataManager().get("Classification");
-        // String cleanClassification = (classificationJson != null)
-        // ? classificationJson.getAsString().replace("\"", "").trim()
-        // : "";
-        // String cleanMarking = (markingJson != null)
-        // ? markingJson.getAsString().replace("\"", "").trim()
-        // : "";
-
         String cleanPlatformFrom = SPItem.platformfrom.name().replace("\"", "");
         String cleanClassification = SPItem.classification.replace("\"", "");
         String cleanMarking = SPItem.marking.replace("\"", "");
@@ -721,8 +710,18 @@ public class GraphService {
 
             if (statusCode == 200) {
                 System.out.println("Succes! Response: " + responseBody);
+                ObjectMapper mapper = new ObjectMapper();
+
+                // Map de JSON direct naar je bestaande object
+                // Dit vult automatisch platformto (Enum) en containerto (String)
+                RelocateInformationObject result = mapper.readValue(responseBody, RelocateInformationObject.class);
+                SPItem.setplatformto(result.getplatformto());
+                SPItem.setcontainerto(result.getcontainerto());
+
+                System.out.println("Destination platform: " + SPItem.getplatformto());
+                System.out.println("Destination container  " + SPItem.getcontainerto());
             } else {
-                System.err.println("Fout van Rule Engine: " + statusCode + " - " + responseBody);
+                System.err.println("Fout van Rule Engine of geen resultaat: " + statusCode + " - " + responseBody);
             }
         } catch (IOException | InterruptedException e) {
             // Log de fout als de Rule Engine onbereikbaar is

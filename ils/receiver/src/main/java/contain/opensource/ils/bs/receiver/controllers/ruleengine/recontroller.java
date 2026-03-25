@@ -1,5 +1,8 @@
 package contain.opensource.ils.bs.receiver.controllers.ruleengine;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +37,7 @@ public class recontroller {
     }
 
     @GetMapping("/rules")
-    public ResponseEntity<RelocateInformationObject> getRules(
+    public ResponseEntity<?> getRules(
             @RequestParam AlfrescoConstants.ContainPlatforms platformfrom,
             @RequestParam String containerfrom,
             @RequestParam String classification,
@@ -50,6 +53,10 @@ public class recontroller {
         // Execute logic
         reservice.executeDMN(roObject);
 
-        return ResponseEntity.ok(roObject);
+        // TEST: Stuur een simpele Map terug in plaats van het complexe object
+        Map<String, String> Result = new HashMap<>();
+        Result.put("containerto", roObject.getcontainerto());
+        Result.put("platformto", (roObject.getplatformto() != null) ? roObject.getplatformto().name() : "UNKNOWN");
+        return ResponseEntity.ok(Result);
     }
 }

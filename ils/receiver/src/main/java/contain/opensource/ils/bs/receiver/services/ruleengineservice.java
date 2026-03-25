@@ -86,46 +86,50 @@ public class ruleengineservice {
     }
 
     public void executeDMN(RelocateInformationObject ROobject) {
-       // Convert to serializable type for Business central for fields must map
+        // Convert to serializable type for Business central for fields must map
         RelocateInformationDTO RuleEngineDTO = new RelocateInformationDTO(
                 ROobject.platformfrom != null ? ROobject.platformfrom.toString() : null,
                 ROobject.classification,
                 ROobject.marking,
                 ROobject.containerfrom);
         // 1. Get the DMN Client from your existing Kieserviceclient
-        DMNServicesClient dmnClient = Kieserviceclient.getServicesClient(DMNServicesClient.class);
+        try {
+            DMNServicesClient dmnClient = Kieserviceclient.getServicesClient(DMNServicesClient.class);
 
-        // 2. Get the Container ID (using your existing method)
-        String containerId = getRuleEnigineProjectContainerID();
+            // 2. Get the Container ID (using your existing method)
+            String containerId = getRuleEnigineProjectContainerID();
 
-        // 3. Create the DMN Context and "Source" must match the DMN Node Name
-        DMNContext dmnContext = dmnClient.newContext();
-        dmnContext.set("source", RuleEngineDTO); // "source" is the ID of the Input Node in your DMN
+            // 3. Create the DMN Context and "Source" must match the DMN Node Name
+            DMNContext dmnContext = dmnClient.newContext();
+            dmnContext.set("source", RuleEngineDTO); // "source" is the ID of the Input Node in your DMN
 
-        // 4. Call the server
-        // Replace "YourNamespace" and "YourModelName" with values from DMN 'Overview'
-        // tab
-        ServiceResponse<DMNResult> serverResponse = dmnClient.evaluateAll(containerId, dmnContext);
+            // 4. Call the server
+            // Replace "YourNamespace" and "YourModelName" with values from DMN 'Overview'
+            // tab
+            ServiceResponse<DMNResult> serverResponse = dmnClient.evaluateAll(containerId, dmnContext);
 
-        if (serverResponse.getType() == ServiceResponse.ResponseType.SUCCESS) {
-            DMNDecisionResult dr = serverResponse.getResult().getDecisionResultByName("destination");
-            // 2. Access the Map inside the result
-            if (dr != null && dr.getResult() instanceof Map) {
-                Map<String, Object> resultMap = (Map<String, Object>) dr.getResult();
+            if (serverResponse.getType() == ServiceResponse.ResponseType.SUCCESS) {
+                DMNDecisionResult dr = serverResponse.getResult().getDecisionResultByName("destination");
+                // 2. Access the Map inside the result
+                if (dr != null && dr.getResult() instanceof Map) {
+                    Map<String, Object> resultMap = (Map<String, Object>) dr.getResult();
 
-                // 3. Use the keys exactly as they appear in your debug output
-                String containerto = (String) resultMap.get("containtocontainer");
-                String platformto = (String) resultMap.get("containplatformto");
+                    // 3. Use the keys exactly as they appear in your debug output
+                    String containerto = (String) resultMap.get("containerto");
+                    String platformto = (String) resultMap.get("platformto");
 
-                System.out.println("Target Container: " + containerto);
-                System.out.println("Target Platform: " + platformto);
+                    System.out.println("Target Container: " + containerto);
+                    System.out.println("Target Platform: " + platformto);
 
-                // Now you can map these back to your original ROobject if needed
-                ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(platformto));
-                ROobject.setcontainerto(containerto);
+                    // Now you can map these back to your original ROobject if needed
+                    ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(platformto));
+                    ROobject.setcontainerto(containerto);
+                }
+            } else {
+                System.err.println("DMN Error: " + serverResponse.getMsg());
             }
-        } else {
-            System.err.println("DMN Error: " + serverResponse.getMsg());
+        } catch (Exception ex) {
+                System.err.println("DMN Error: " + ex);
         }
     }
 }

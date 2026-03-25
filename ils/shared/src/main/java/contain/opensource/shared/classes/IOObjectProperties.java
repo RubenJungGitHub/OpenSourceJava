@@ -52,6 +52,13 @@ public abstract class IOObjectProperties {
     @JsonProperty("containerfrom")
     public String containerfrom;
 
+    @JsonProperty("platformto")
+    public AlfrescoConstants.ContainPlatforms platformto;
+
+    @JsonProperty("containerto")
+    public String containerto;
+
+
     // getters and setters
     public String getId() {
         return id;
@@ -152,5 +159,22 @@ public abstract class IOObjectProperties {
 
     public void setcontainerfrom(String containerfrom) {
         this.containerfrom = containerfrom;
+    }
+
+
+    public AlfrescoConstants.ContainPlatforms getplatformto() {
+        return platformto;
+    }
+
+    public void setplatformto(AlfrescoConstants.ContainPlatforms platformto) {
+        this.platformto = platformto;
+    }
+
+    public String getcontainerto() {
+        return containerto;
+    }
+
+    public void setcontainerto(String containerto) {
+        this.containerto = containerto;
     }
 }
