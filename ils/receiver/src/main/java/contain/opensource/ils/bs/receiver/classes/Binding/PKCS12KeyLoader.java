@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.nio.file.Paths;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -44,11 +46,20 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 
 @Component
 public class PKCS12KeyLoader {
-    private final String keyStorePath;
+    private String keyStorePath;
     private PrivateKey cachedKey;
 
+    //Hard coded. this should be derived from propertiess
     public PKCS12KeyLoader(@Value("${APP_KEYSTORE_PATH:/app/config/Containselfsigned_cert.p12}") String keyStorePath) {
+        System.out.println(System.getProperty("user.dir"));
         this.keyStorePath = keyStorePath;
+        //Quick and dirty 
+
+        if (Paths.get(System.getProperty("user.dir"))
+        .equals(Paths.get("c:/ContainOpenSource/Java/OpenSourceJava/ils"))) {
+              this.keyStorePath = System.getProperty("user.dir") +  keyStorePath;
+        }
+
         System.out.println("[PKCS12] resolved keystore path: " + this.keyStorePath);
     }
 

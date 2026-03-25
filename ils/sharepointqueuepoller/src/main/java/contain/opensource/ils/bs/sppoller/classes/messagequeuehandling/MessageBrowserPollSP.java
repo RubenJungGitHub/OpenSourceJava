@@ -6,13 +6,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import jakarta.jms.JMSException;
-import jakarta.jms.Message;
-import jakarta.jms.Queue;
-import jakarta.jms.QueueBrowser;
-import jakarta.jms.Session;
-import jakarta.jms.TextMessage;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jms.core.JmsTemplate;
@@ -22,15 +15,19 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-//import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-//import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.shared.classes.MessageBrowserPollParent;
 import contain.opensource.shared.classes.SharepointQueMessage;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 @Component
 public class MessageBrowserPollSP extends MessageBrowserPollParent {
@@ -102,15 +99,6 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    /*
-                                        Hashtable<String, String> migrateinfo = this.graphservice
-                                            .ProcessChangedSharepointItem(item.getWebUrl(), item.getId(), deltaLink);
-                                    // Check 'platformto' in plaats van 'containerto'
-                                    if (migrateinfo.get("platformto") != null
-                                            && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
-                                        SendMigrationMessage(item, deltaLink,
-                                                AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
-*/
 
                                     // 1. Maak een RestTemplate aan (of @Autowired deze)
                                     RestTemplate restTemplate = new RestTemplate();
@@ -127,18 +115,24 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
 
                                     // 4. Verstuur het bericht (de 'message' is je SharepointQueMessage)
                                     try {
-                                        ResponseEntity<String> response = restTemplate.postForEntity(
+                                        ResponseEntity<Hashtable> response = restTemplate.postForEntity(
                                                 builder.toUriString(),
-                                                message, // De volledige SharepointQueMessage als JSON body
-                                                String.class);
+                                                message,
+                                                Hashtable.class);
                                         System.out.println("Receiver antwoordde met: " + response.getStatusCode());
+                                        Hashtable<String, String> migrateinfo = response.getBody();
+                                        // Check 'platformto' in plaats van 'containerto'
+                                        if (migrateinfo.get("platformto") != null
+                                                && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
+                                            SendMigrationMessage(item, deltaLink,
+                                                    AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
+                                        }
                                     } catch (Exception e) {
                                         System.err.println("Fout bij aanroepen Receiver: " + e.getMessage());
                                     }
                                 }
                             }
                             consumeMessageById(msg.getJMSMessageID(), activeMQProps.getSharepointQueue());
-
                         } catch (JMSException processingError) {
                             System.err.println("Error while processing message" + processingError);
                             processingError.printStackTrace();

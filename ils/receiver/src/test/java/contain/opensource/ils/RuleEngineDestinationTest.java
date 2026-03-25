@@ -39,7 +39,7 @@ class RuleEngineDestinationTest {
                         System.out.println(Message);
 
                         reservice.executeDMN(request);
-                        if (!request.getcontainerfrom().equals(expectedresult)
+                        if (!request.getcontainerto().equals(expectedresult)
                                 || !request.getplatformto().equals(AlfrescoConstants.ContainPlatforms.TEST)) {
                             Message = String.format(
                                     "FAILED: Input[%s, %s] | Expected platformto : [%s] | Got: [%s] | Expectedcontainerto : [%s] | Got: [%s]",

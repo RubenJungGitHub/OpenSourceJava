@@ -79,7 +79,7 @@ public class ILSController {
             @RequestParam String ListItemID,
             @RequestParam String resourceValue
 ) {
-        System.out.println("Endpoint geraakt voor item: " + ItemWebUrl);
+        System.out.println("ProcessChangedSharepointItem Endpoint geraakt voor item: " + ItemWebUrl);
 
         try {
             // Hier roep je de oude logica aan die voorheen in de Poller zat
