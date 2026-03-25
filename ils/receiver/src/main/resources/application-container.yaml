@@ -67,9 +67,9 @@ ils:
   #password: admin
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
   baseurl: http://receiver:8080
-  bindendpoint: http://receiver:8080/api/Bind
-  ruleenginemoveendpoint: http://receiver:8080/rules
-  relocateendpoint: http://receiver:8080/MigrateIO
+  bindendpoint: http://receiver:55000/api/Bind
+  ruleenginemoveendpoint: http://receiver:55000/rules
+  relocateendpoint: http://receiver:55000/MigrateIO
   ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
   ruleengineendpoint: http://kie-server:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
   ruleengineprojectname: contAlnMigrationRuleset

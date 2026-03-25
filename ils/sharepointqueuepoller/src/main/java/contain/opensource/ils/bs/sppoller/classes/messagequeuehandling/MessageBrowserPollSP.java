@@ -107,12 +107,15 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                 } else {
                                     Hashtable<String, String> migrateinfo = this.graphservice
                                             .ProcessChangedSharepointItem(item.getWebUrl(), item.getId(), deltaLink);
-                                    if (!migrateinfo.get("containerto").equals("<NO MOVE>")) {
-                                        SendMigrationMessage(item, deltaLink, AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
+                                    // Check 'platformto' in plaats van 'containerto'
+                                    if (migrateinfo.get("platformto") != null
+                                            && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
+                                        SendMigrationMessage(item, deltaLink,
+                                                AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
                                     }
                                 }
                             }
-                             consumeMessageById(msg.getJMSMessageID(),activeMQProps.getSharepointQueue());
+                            consumeMessageById(msg.getJMSMessageID(), activeMQProps.getSharepointQueue());
 
                         } catch (JMSException processingError) {
                             System.err.println("Error while processing message" + processingError);

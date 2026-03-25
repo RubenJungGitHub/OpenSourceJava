@@ -30,7 +30,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @ComponentScan(basePackages = {
     "contain.opensource.uuidutil",
     "contain.opensource.ils.bs.receiver",
-    "contain.opensource.ils.bs.sppoller" ,
+    "contain.opensource.ils.bs.alfrescoqueuepoller" ,
     "contain.opensource.shared"
 })public class StartAlfrescoPoller {
 

@@ -14,6 +14,7 @@ import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
+import org.springframework.context.annotation.FilterType;
 
 
 @SpringBootApplication(exclude = {
@@ -29,12 +30,26 @@ import contain.opensource.shared.configurationproperties.ActiveMQProperties;
     ActiveMQProperties.class 
 })
 
-@ComponentScan(basePackages = {
-    "contain.opensource.uuidutil",
-    "contain.opensource.ils.bs.receiver",
-    "contain.opensource.ils.bs.sppoller" ,
-    "contain.opensource.shared"
-})
+@ComponentScan(
+    basePackages = "contain.opensource.ils",
+    excludeFilters = {
+        // 1. Weg met de controllers (om poort-cloning te voorkomen)
+        @ComponentScan.Filter(
+            type = FilterType.ANNOTATION, 
+            classes = org.springframework.web.bind.annotation.RestController.class
+        ),
+        // 2. Weg met de KIE configuratie
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE, 
+            classes = contain.opensource.ils.bs.receiver.classes.migration.KieServerConfig.class
+        ),
+        // 3. NIEUW: Weg met de service die de KIE client nodig heeft
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE, 
+            classes = contain.opensource.ils.bs.receiver.services.ruleengineservice.class
+        )
+    }
+)
 public class StartSPPoller {
 
         // FORCEER DE BEAN HIER HANDMATIG

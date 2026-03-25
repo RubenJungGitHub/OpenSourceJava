@@ -30,16 +30,10 @@ import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 @ComponentScan(basePackages = {
     "contain.opensource.uuidutil",
     "contain.opensource.ils.bs.receiver",
-    "contain.opensource.ils.bs.sppoller" ,
+    "contain.opensource.ils.bs.migrationpoller" ,
     "contain.opensource.shared"
 })
 public class StartMigrationPoller {
-
-    // FORCEER DE BEAN HIER HANDMATIG
-    @Bean
-    public RedisConfigProperties redisConfigProperties() {
-        return new RedisConfigProperties();
-    }
 
     public static void main(String[] args) {
 

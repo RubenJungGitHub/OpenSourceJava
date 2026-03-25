@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.ComponentScan;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.TestCreateSelfGeneratedCertificate;
 import contain.opensource.ils.bs.receiver.classes.redis.RedisConfigProperties;
