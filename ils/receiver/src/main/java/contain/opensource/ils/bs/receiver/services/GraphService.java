@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -849,13 +850,15 @@ public class GraphService {
         }
     }
 
-    public static boolean ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID, String resourceValue)
+    public static Hashtable<String, String> ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID,
+            String resourceValue)
             throws MalformedURLException, Exception {
         String siteId = null;
         String driveId = null;
         // String siteGUID = null;
         // String listId = null;
         String action = "";
+        Hashtable<String, String> migrationinfo = new Hashtable<>();
         boolean MustMove = false;
         try {
             if (accessToken == null || accessToken.isEmpty()) {
@@ -876,10 +879,10 @@ public class GraphService {
             // SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID,
             // graphClient );
             SharePointItemResponse SPItem = getListItemsById(ListId, ListItemID);
-            if (SPItem != null) {
-                MustMove = SPItem.MustMove;
-                // Check if this item is to me migrated based on ruleengine
+            migrationinfo.put("platformto", (SPItem.getplatformto() != null) ? SPItem.getplatformto().name() : "<NO MOVE>");
+            migrationinfo.put("containerto", SPItem.getcontainerto() != null ? SPItem.getcontainerto() : "");
 
+            if (SPItem != null) {
                 if (!SPItem.MustMove && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
@@ -902,16 +905,16 @@ public class GraphService {
                             SPItem.marking,
                             SPItem.classification,
                             SPItem.version);
-                    return MustMove;
+                    return migrationinfo;
                 }
                 BindObject(SPItem);
-                return MustMove;
+                return migrationinfo;
             }
         } catch (Exception ex) {
             System.err.println("Failed to process changed SP item: " + ex);
             ex.printStackTrace();
             throw ex;
         }
-        return MustMove;
+        return migrationinfo;
     }
 }

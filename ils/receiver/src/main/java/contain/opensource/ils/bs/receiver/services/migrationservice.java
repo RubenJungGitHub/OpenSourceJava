@@ -72,14 +72,14 @@ public class migrationservice {
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                     + "Migrate information object -> " + msg.getKey() + " : Source  -> " + msg.getSource()
                     + " destination  -> "
-                    + msg.getDestination()
+                    + msg.getplatformto()
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            if (AlfrescoConstants.ContainPlatforms.SPO.toString().equalsIgnoreCase(msg.getSource()) &&
-                    AlfrescoConstants.ContainPlatforms.ALFRESCO.toString().equalsIgnoreCase(msg.getDestination())) {
+            if (AlfrescoConstants.ContainPlatforms.SPO.name().equalsIgnoreCase(msg.getSource()) &&
+                    AlfrescoConstants.ContainPlatforms.ALFRESCO.name().equalsIgnoreCase(msg.getplatformto())) {
                 migrateSPObjectToAlfresco(msg);
             }
-            if (AlfrescoConstants.ContainPlatforms.ALFRESCO.toString().equalsIgnoreCase(msg.getSource()) &&
-                    AlfrescoConstants.ContainPlatforms.SPO.toString().equalsIgnoreCase(msg.getDestination())) {
+            if (AlfrescoConstants.ContainPlatforms.ALFRESCO.name().equalsIgnoreCase(msg.getSource()) &&
+                    AlfrescoConstants.ContainPlatforms.SPO.name().equalsIgnoreCase(msg.getplatformto())) {
                 migrateAlfrescoObjectToSP(msg);
             }
         } catch (Exception ex) {
@@ -115,85 +115,4 @@ public class migrationservice {
             // to do
         }
     }
-    // additional coordination logic}
-
-/*
-
-    public String getRuleEnigineProjectContainerID() {
-        String actualId = null;
-        try {
-            ServiceResponse<KieContainerResourceList> response = Kieserviceclient.listContainers();
-            if (response.getType() == ServiceResponse.ResponseType.SUCCESS) {
-                // 3. This is where the list actually lives
-                KieContainerResourceList containerList = response.getResult();
-
-                if (containerList != null && containerList.getContainers() != null) {
-                    List<KieContainerResource> containers = containerList.getContainers();
-                    String projectName = ilsProperties.getruleengineprojectname();
-                    // Print them out to verify
-                    containers.forEach(c -> System.out.println("Found Container: " + c.getContainerId()));
-
-                    // 2. Filter for the one that starts with your project name
-                    actualId = response.getResult().getContainers().stream()
-                            .map(KieContainerResource::getContainerId)
-                            .filter(id -> id.startsWith(projectName))
-                            .findFirst()
-                            .orElseThrow(() -> new RuntimeException(
-                                    "No active container found for project: " + projectName));
-                }
-            } else {
-                System.err.println("Failed to list containers: " + response.getMsg());
-            }
-        } catch (Exception ex) {
-            throw ex;
-        }
-        return actualId;
-    }
-
-    public void executeDMN(RelocateInformationObject ROobject) {
-
-       // Convert to serializable type for Business central for fields must map
-        RelocateInformationDTO RuleEngineDTO = new RelocateInformationDTO(
-                ROobject.containplatformfrom != null ? ROobject.containplatformfrom.toString() : null,
-                ROobject.classification,
-                ROobject.marking,
-                ROobject.getcontainfromcontainer());
-
-        // 1. Get the DMN Client from your existing Kieserviceclient
-        DMNServicesClient dmnClient = Kieserviceclient.getServicesClient(DMNServicesClient.class);
-
-        // 2. Get the Container ID (using your existing method)
-        String containerId = getRuleEnigineProjectContainerID();
-
-        // 3. Create the DMN Context and "Source" must match the DMN Node Name
-        DMNContext dmnContext = dmnClient.newContext();
-        dmnContext.set("source", RuleEngineDTO); // "source" is the ID of the Input Node in your DMN
-
-        // 4. Call the server
-        // Replace "YourNamespace" and "YourModelName" with values from DMN 'Overview'
-        // tab
-        ServiceResponse<DMNResult> serverResponse = dmnClient.evaluateAll(containerId, dmnContext);
-
-        if (serverResponse.getType() == ServiceResponse.ResponseType.SUCCESS) {
-            DMNDecisionResult dr = serverResponse.getResult().getDecisionResultByName("destination");
-            // 2. Access the Map inside the result
-            if (dr != null && dr.getResult() instanceof Map) {
-                Map<String, Object> resultMap = (Map<String, Object>) dr.getResult();
-
-                // 3. Use the keys exactly as they appear in your debug output
-                String containerto = (String) resultMap.get("containtocontainer");
-                String platformto = (String) resultMap.get("containplatformto");
-
-                System.out.println("Target Container: " + containerto);
-                System.out.println("Target Platform: " + platformto);
-
-                // Now you can map these back to your original ROobject if needed
-                ROobject.setPlatformTo(AlfrescoConstants.ContainPlatforms.valueOf(platformto));
-                ROobject.setcontainplatformcontainerto(containerto);
-            }
-        } else {
-            System.err.println("DMN Error: " + serverResponse.getMsg());
-        }
-    }
-        */
 }

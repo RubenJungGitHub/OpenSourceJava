@@ -1,6 +1,5 @@
 package contain.opensource.ils.bs.alfrescopoller.classes.messagequeuehandling;
 
-import java.net.URL;
 import java.time.ZonedDateTime;
 import java.time.ZoneId;
 
@@ -102,8 +101,6 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                             + "Binding endpoint  : "
                             + endPoint
                             + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
-            URL url = new URL(endPoint);
 
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();

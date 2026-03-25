@@ -4,6 +4,7 @@ import jakarta.jms.DeliveryMode;
 import jakarta.jms.MessageProducer;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
+import java.util.Hashtable;
 // ... and any other javax.jms imports;
 
 import org.slf4j.MDC;
@@ -30,8 +31,7 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
 
         super(activeMQProps, alfrescoProps, ilsProperties, mapper, jmsTemplate);
     }
-
-    public void SendMigrationMessage(SharepointQueMessage.Item item, String deltalink) {
+    public void SendMigrationMessage(SharepointQueMessage.Item item, String deltalink,  String platformfrom,  Hashtable<String, String> migrateinfo ) {
         try {
 
             session = connection.createSession(true, Session.SESSION_TRANSACTED);
@@ -40,8 +40,8 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
             MessageProducer producer = session.createProducer(queue);
             producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-            MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", "SPO",
-                    item.getFields().get("Move").toString(), item.getFields().get("id").toString(), deltalink);
+            MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", platformfrom, 
+                    item.getFields().get("id").toString(), deltalink, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
             String json = objectMapper.writeValueAsString(payload);
             String correlationId = MDC.get("correlationId");
             TextMessage message = session.createTextMessage(json);

@@ -1,9 +1,10 @@
 package contain.opensource.ils.bs.sppoller.classes.messagequeuehandling;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
-
+import java.util.Hashtable;
 
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
@@ -20,7 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParent;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
-import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
+//import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.ils.bs.receiver.services.migrationservice;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
@@ -29,7 +31,7 @@ import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 
 @Component
-public class MessageBrowserPollSP extends MessageBrowserPollParent{
+public class MessageBrowserPollSP extends MessageBrowserPollParent {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     private GraphService graphservice;
 
@@ -42,13 +44,12 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
             migrationservice migrationService,
             GraphService graphService) {
         super(
-            activeMQProps,
-            alfrescoProps,
-            ilsProperties,
-            objectMapper,
-            jmsTemplate,
-            migrationService
-        );
+                activeMQProps,
+                alfrescoProps,
+                ilsProperties,
+                objectMapper,
+                jmsTemplate,
+                migrationService);
         this.graphservice = graphService;
     }
 
@@ -88,7 +89,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
                                 if (item.getDeleted() != null) {
 
                                     String action = "IO  " + item.getId() + " deleted from platform";
-                                    IOLogPostgress.log(
+                                    IOLog.log(
                                             "DeletedFromPlatform",
                                             item.getId(),
                                             "DeletedFromPlatform",
@@ -104,16 +105,17 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent{
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    boolean migrate = this.graphservice.ProcessChangedSharepointItem(item.getWebUrl(),item.getId(), deltaLink);
-                                    if (migrate) {
-                                        SendMigrationMessage(item, deltaLink);
+                                    Hashtable<String, String> migrateinfo = this.graphservice
+                                            .ProcessChangedSharepointItem(item.getWebUrl(), item.getId(), deltaLink);
+                                    if (!migrateinfo.get("containerto").equals("<NO MOVE>")) {
+                                        SendMigrationMessage(item, deltaLink, AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
                                     }
                                 }
                             }
-                          //  consumeMessageById(msg.getJMSMessageID(), activeMQProps.getSharepointQueue());
+                             consumeMessageById(msg.getJMSMessageID(),activeMQProps.getSharepointQueue());
 
                         } catch (JMSException processingError) {
-                            System.err.println("Error while processing message" +processingError );
+                            System.err.println("Error while processing message" + processingError);
                             processingError.printStackTrace();
                         }
 
