@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisConfigProperties;
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
+import contain.opensource.ils.bs.receiver.classes.redis.RedisConfigProperties;
+import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 
 @SpringBootApplication(exclude = {
     DataSourceAutoConfiguration.class, 

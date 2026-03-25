@@ -419,9 +419,7 @@ public class GraphService {
     public void RelocateIO(RelocateInformationObject ROobject) throws Exception {
         try {
 
-            String action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() +
-                    " from "
-                    + ROobject.getPlatfrom() + " to " + ROobject.getPlatformTo();
+            String action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() + " from " + ROobject.getplatformfrom() + ":" +  ROobject.getcontainerfrom()  + " -> " + ROobject.getplatformto() + " : " + ROobject.getcontainerto();
 
             // Upload to Alfresco
             this.acontroller.uploadSPItemToAlfresco(ROobject);
@@ -432,8 +430,8 @@ public class GraphService {
                     ROobject.getId(),
                     "",
                     action,
-                    ROobject.getPlatfrom().toString(),
-                    ROobject.getPlatformTo().toString(),
+                    ROobject.getplatformfrom().toString(),
+                    ROobject.getplatformto().toString(),
                     // ROobject.getHash(),
                     "BOUND ON DESTINATION PLATFORM",
                     ROobject.getFileName(),
@@ -450,14 +448,14 @@ public class GraphService {
             // Log
             action = "Deleted  UUID " + ROobject.getUuid() + " : " + ROobject.getFileName()
                     + " from "
-                    + ROobject.getPlatfrom();
+                    + ROobject.getplatformfrom();
             IOLog.log(
                     "DeletedFromPlatform",
                     ROobject.getId(),
                     "",
                     action,
-                    ROobject.getPlatfrom().toString(),
-                    ROobject.getPlatfrom().toString(),
+                    ROobject.getplatformfrom().toString(),
+                    ROobject.getplatformfrom().toString(),
                     "DeletedFromPlatform",
                     ROobject.getFileName(),
                     "",
@@ -688,15 +686,15 @@ public class GraphService {
         // ? markingJson.getAsString().replace("\"", "").trim()
         // : "";
 
-        String cleanPlatformFrom = SPItem.containplatformfrom.name().replace("\"", "");
+        String cleanPlatformFrom = SPItem.platformfrom.name().replace("\"", "");
         String cleanClassification = SPItem.classification.replace("\"", "");
         String cleanMarking = SPItem.marking.replace("\"", "");
-        String cleancontainfromcontainer = SPItem.containfromcontainer.replace("\"", "");
+        String cleancontainerfrom = SPItem.containerfrom.replace("\"", "");
 
         // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
                 .queryParam("platformfrom", cleanPlatformFrom)
-                .queryParam("containerfrom", cleancontainfromcontainer)
+                .queryParam("containerfrom", cleancontainerfrom)
                 .queryParam("classification", cleanClassification)
                 .queryParam("marking", cleanMarking)
                 .build()
@@ -813,8 +811,8 @@ public class GraphService {
                         SPItem.mimetype = mimeType;
                         SPItem.Path = driveItem.webUrl;
                         SPItem.UUID = uuidValue;
-                        SPItem.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
-                        SPItem.containfromcontainer = tenantDomain + "/" + SiteName + "/" + ListId;
+                        SPItem.platformfrom = AlfrescoConstants.ContainPlatforms.SPO;
+                        SPItem.containerfrom = tenantDomain + "/" + SiteName + "/" + ListId;
                         // String description = (String) fields.get("Description");
                         // To do get file content
                         SPItem.HasUUID = hasUUID;
@@ -828,7 +826,6 @@ public class GraphService {
                     }
                 }
                 // Validate if item should move
-                // mustMove = itemmustmigrate(li);
                 SPItem.MustMove = itemmustmigrate(SPItem);
 
                 if (mustMove) {

@@ -23,7 +23,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>contain.opensource.ils.bs</groupId>
+            <groupId>contain.opensource.java</groupId>
             <artifactId>receiver</artifactId>
             <version>3.3.0</version>
         </dependency>

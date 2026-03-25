@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
+import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;

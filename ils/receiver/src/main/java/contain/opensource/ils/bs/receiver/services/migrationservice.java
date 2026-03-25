@@ -66,7 +66,7 @@ public class migrationservice {
 
         try {
 
-            // First het the rules from the ruleengine
+            // First get the rules from the ruleengine based on 
             // String containerid = getRuleEnigineProjectContainerID();
             // Integer a = 1;
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN

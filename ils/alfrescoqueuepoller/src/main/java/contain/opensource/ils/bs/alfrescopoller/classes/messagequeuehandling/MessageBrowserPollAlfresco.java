@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 //import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
@@ -38,6 +37,7 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeType;
 import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParent;
+import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 
 @Component
 public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {

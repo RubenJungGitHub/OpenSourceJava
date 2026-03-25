@@ -92,7 +92,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                             throw new IOException("HTTP error " + status);
                         }
                     }
-                    consumeMessageById(msg.getJMSMessageID(), activeMQProps.getMigrationqueue());
+           //         consumeMessageById(msg.getJMSMessageID(), activeMQProps.getMigrationqueue());
                 }
             } catch (Exception e) {
                 System.err.println("Error in StartPoll:");

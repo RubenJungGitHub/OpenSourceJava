@@ -9,8 +9,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.ComponentScan;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.TestCreateSelfGeneratedCertificate;
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisConfigProperties;
-import contain.opensource.ils.bs.receiver.classes.Redis.RedisManager;
+import contain.opensource.ils.bs.receiver.classes.redis.RedisConfigProperties;
+import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;

@@ -30,8 +30,8 @@ class RuleEngineDestinationTest {
                 for (String mark : marking) {
                     RelocateInformationObject request = new RelocateInformationObject();
                     expectedresult = classif + "TEST" + platform + mark;
-                    request.containplatformfrom = platform;
-                    request.setcontainfromcontainer("TEST");
+                    request.platformfrom = platform;
+                    request.setcontainerfrom("TEST");
                     request.classification = classif;
                     request.marking = mark;
                     try {
@@ -39,12 +39,12 @@ class RuleEngineDestinationTest {
                         System.out.println(Message);
 
                         reservice.executeDMN(request);
-                        if (!request.getcontainplatformcontainerto().equals(expectedresult)
-                                || !request.getPlatformTo().equals(AlfrescoConstants.ContainPlatforms.TEST)) {
+                        if (!request.getcontainerfrom().equals(expectedresult)
+                                || !request.getplatformto().equals(AlfrescoConstants.ContainPlatforms.TEST)) {
                             Message = String.format(
                                     "FAILED: Input[%s, %s] | Expected platformto : [%s] | Got: [%s] | Expectedcontainerto : [%s] | Got: [%s]",
-                                    classif, mark, expectedresult, request.getcontainplatformcontainerto(), "TEST",
-                                    request.getcontainplatformcontainerto());
+                                    classif, mark, expectedresult, request.getcontainerfrom(), "TEST",
+                                    request.getcontainerfrom());
                             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
                                     + Message
                                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
@@ -53,8 +53,8 @@ class RuleEngineDestinationTest {
                         } else {
                             Message = String.format(
                                     "SUCCESS: Input[%s, %s] | Expected platformto : [%s] | Got: [%s] | Expectedcontainerto : [%s] | Got: [%s]",
-                                    classif, mark, expectedresult, request.getcontainplatformcontainerto(), "TEST",
-                                    request.getcontainplatformcontainerto());
+                                    classif, mark, expectedresult, request.getcontainerfrom(), "TEST",
+                                    request.getcontainerfrom());
 
                             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                                     + Message

@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.Redis;
+package contain.opensource.ils.bs.receiver.classes.redis;
 
 import java.util.HashMap;
 import java.util.Map;

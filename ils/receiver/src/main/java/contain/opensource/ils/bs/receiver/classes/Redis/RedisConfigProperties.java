@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.Redis;
+package contain.opensource.ils.bs.receiver.classes.redis;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

@@ -36,6 +36,7 @@ import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
 //import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+//import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 
 import contain.opensource.shared.constants.AlfrescoConstants;
@@ -452,8 +453,8 @@ public class AlfrescoNodeController {
               action,
               // AlfrescoConstants.ContainPlatforms.SPO.toString(),
               // AlfrescoConstants.ContainPlatforms.SPO.toString(),
-              IOobject.getPlatfrom().toString(),
-              IOobject.getPlatformTo().toString(),
+              IOobject.getplatformfrom().toString(),
+              IOobject.getplatformto().toString(),
               "BOUND ON DESTINATION PLATFORM",
               IOobject.getFileName(),
               "",
@@ -671,10 +672,9 @@ public class AlfrescoNodeController {
               alfresconNodeResponse.UUID = ioUUIDValue.toString();
             }
             Object value = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOMOVE");
-            if (!Objects.equals(value, "<NO MOVE>")) {
-              alfresconNodeResponse.MoveTo = ContainPlatforms.valueOf(value.toString().toUpperCase());
-              ;
-            }
+            //if (!Objects.equals(value, "<NO MOVE>")) {
+            //  alfresconNodeResponse.setplatformto(ContainPlatforms.valueOf(value.toString().toUpperCase()));
+           // }
             // Get node content
             GetNodeContent();
             try {
@@ -686,7 +686,7 @@ public class AlfrescoNodeController {
               e.printStackTrace();
             }
             try {
-              alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO MOVE>")); // IMPROVE!! SHOULD
+       //       alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO MOVE>")); // IMPROVE!! SHOULD
                                                                                                     // ALSO CHECK IF NOT
                                                                                                     // FROM ALFRESCO TO
                                                                                                     // ALFRESCO!!!!
@@ -953,8 +953,7 @@ public class AlfrescoNodeController {
     this.nodeId = IOobject.getId();
     // For now assumed only happy path. If something goes wrong rollback in
     // ballenbak and complete transacton`
-    String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
-        + IOobject.getPlatfrom() + " to " + IOobject.getPlatformTo();
+    String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from " + IOobject.getplatformfrom();
 
    // this.migrationservice.migrateNodeToSP(IOobject);
     IOLog.log(
@@ -962,8 +961,8 @@ public class AlfrescoNodeController {
         "",
         "",
         action,
-        IOobject.getPlatfrom().toString(),
-        IOobject.getPlatformTo().toString(),
+        IOobject.getplatformfrom().toString(),
+        IOobject.getplatformto().toString(),
         IOobject.getHash(),
         IOobject.getFileName(),
         "",

@@ -13,8 +13,6 @@ public abstract class IOObjectProperties {
     public boolean HasUUID = false;
     public boolean MustMove = false;
     public String UUID;
-    public String containfromcontainer;
-    public AlfrescoConstants.ContainPlatforms MoveTo;
 
     @JsonProperty("name")
     public String filename;
@@ -48,13 +46,11 @@ public abstract class IOObjectProperties {
 
     public String objectId;
 
-    @JsonProperty("containplatformfrom")
-    public AlfrescoConstants.ContainPlatforms containplatformfrom;
+    @JsonProperty("platformfrom")
+    public AlfrescoConstants.ContainPlatforms platformfrom;
 
-    @JsonProperty("containplatformto")
-    public AlfrescoConstants.ContainPlatforms containplatformto;
-
-    // Public getters/setters are void as long as members are public
+    @JsonProperty("containerfrom")
+    public String containerfrom;
 
     // getters and setters
     public String getId() {
@@ -141,19 +137,20 @@ public abstract class IOObjectProperties {
         this.version = version;
     }
 
-    public AlfrescoConstants.ContainPlatforms getPlatfrom() {
-        return containplatformfrom;
+    public AlfrescoConstants.ContainPlatforms getplatformfrom() {
+        return platformfrom;
     }
 
-    public void setPlatfrom(AlfrescoConstants.ContainPlatforms pf) {
-        this.containplatformfrom = pf;
+    public void setplatformfrom(AlfrescoConstants.ContainPlatforms platformfrom) {
+        this.platformfrom = platformfrom;
     }
 
-    public AlfrescoConstants.ContainPlatforms getPlatformTo() {
-        return containplatformto;
+
+    public String getcontainerfrom() {
+        return containerfrom;
     }
 
-    public void setPlatformTo(AlfrescoConstants.ContainPlatforms pt) {
-        this.containplatformto = pt;
+    public void setcontainerfrom(String containerfrom) {
+        this.containerfrom = containerfrom;
     }
 }

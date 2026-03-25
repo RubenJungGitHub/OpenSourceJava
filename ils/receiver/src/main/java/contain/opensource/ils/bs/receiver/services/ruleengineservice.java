@@ -3,6 +3,7 @@ package contain.opensource.ils.bs.receiver.services;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+
 import org.kie.dmn.api.core.DMNContext;
 import org.kie.dmn.api.core.DMNDecisionResult;
 import org.kie.dmn.api.core.DMNResult;
@@ -28,10 +29,9 @@ public class ruleengineservice {
         private static final long serialVersionUID = 1L;
 
         // Use plain Strings to match your BC Data Types exactly
-        public String containplatformfrom;
-        public String containfromcontainer;
+        public String platformfrom;
+        public String containerfrom;
         public String classification;
-
         public String marking;
 
         // Standard empty constructor
@@ -40,11 +40,11 @@ public class ruleengineservice {
 
         // Convenience constructor
         public RelocateInformationDTO(String platform, String classification, String marking,
-                String containfromcontainer) {
-            this.containplatformfrom = platform;
+                String containerfrom) {
+            this.platformfrom = platform;
             this.classification = classification;
             this.marking = marking;
-            this.containfromcontainer = containfromcontainer;
+            this.containerfrom = containerfrom;
         }
     }
 
@@ -88,11 +88,10 @@ public class ruleengineservice {
     public void executeDMN(RelocateInformationObject ROobject) {
        // Convert to serializable type for Business central for fields must map
         RelocateInformationDTO RuleEngineDTO = new RelocateInformationDTO(
-                ROobject.containplatformfrom != null ? ROobject.containplatformfrom.toString() : null,
+                ROobject.platformfrom != null ? ROobject.platformfrom.toString() : null,
                 ROobject.classification,
                 ROobject.marking,
-                ROobject.getcontainfromcontainer());
-
+                ROobject.containerfrom);
         // 1. Get the DMN Client from your existing Kieserviceclient
         DMNServicesClient dmnClient = Kieserviceclient.getServicesClient(DMNServicesClient.class);
 
@@ -122,8 +121,8 @@ public class ruleengineservice {
                 System.out.println("Target Platform: " + platformto);
 
                 // Now you can map these back to your original ROobject if needed
-                ROobject.setPlatformTo(AlfrescoConstants.ContainPlatforms.valueOf(platformto));
-                ROobject.setcontainplatformcontainerto(containerto);
+                ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(platformto));
+                ROobject.setcontainerto(containerto);
             }
         } else {
             System.err.println("DMN Error: " + serverResponse.getMsg());

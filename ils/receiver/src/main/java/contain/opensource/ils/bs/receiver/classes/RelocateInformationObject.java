@@ -1,29 +1,26 @@
 package contain.opensource.ils.bs.receiver.classes;
 
-//import com.fasterxml.jackson.annotation.JsonGetter;
-//import com.fasterxml.jackson.annotation.JsonProperty;
-//import com.fasterxml.jackson.annotation.JsonSetter;
-
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeResponse;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
-import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.classes.IOObjectProperties;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 //Generic IO object Class for move between environments 
 //======================================================
 public class RelocateInformationObject extends IOObjectProperties {
 
-    private String containfromcontainer;
-    private String containplatformcontainerto;
+
+    public String containerto;
+    public AlfrescoConstants.ContainPlatforms platformto;
+
     public RelocateInformationObject() {
         // needed for Jackson
 
     }
 
     // Constructor for Alfresco
-    public RelocateInformationObject(AlfrescoNodeResponse Anode, String hash,
-            AlfrescoConstants.ContainPlatforms containplatformfrom,
-            AlfrescoConstants.ContainPlatforms containPlatFormTo) {
+    public RelocateInformationObject(AlfrescoNodeResponse Anode, String hash)
+    {
         // Map to this object
         this.UUID = Anode.UUID;
         this.HASH = hash;
@@ -32,10 +29,9 @@ public class RelocateInformationObject extends IOObjectProperties {
         this.content = Anode.content;
         this.Description = Anode.Description;
         this.filename = Anode.entry.filename;
-        this.containplatformfrom = containplatformfrom;
-        this.containplatformto = containPlatFormTo;
         this.marking = Anode.marking;
         this.classification = Anode.classification;
+        this.platformfrom = AlfrescoConstants.ContainPlatforms.ALFRESCO;
         this.version = Anode.version;
     }
 
@@ -49,28 +45,27 @@ public class RelocateInformationObject extends IOObjectProperties {
         this.Description = SPItem.description;
         this.mimeType = SPItem.mimetype;
         this.content = SPItem.filecontent;
-        this.containplatformfrom = AlfrescoConstants.ContainPlatforms.SPO;
-        this.containplatformto = SPItem.MoveTo;
         this.marking = SPItem.marking;
         this.classification = SPItem.classification;
         this.version = SPItem.version;
+        this.platformfrom = AlfrescoConstants.ContainPlatforms.SPO;
+     }
+
+    public void setcontainerto(String containerto) {
+        this.containerto = containerto;
     }
 
-    public void setcontainplatformcontainerto(String containerID) {
-        this.containplatformcontainerto = containerID;
-    }
-
-    public String getcontainplatformcontainerto() {
-        return this.containplatformcontainerto;
+    public String getcontainerto() {
+        return this.containerto;
     }
 
 
-    public void setcontainfromcontainer(String containfromcontainer) {
-        this.containfromcontainer = containfromcontainer;
+    public void setplatformto(AlfrescoConstants.ContainPlatforms platformto) {
+        this.platformto = platformto;
     }
 
-    public String getcontainfromcontainer() {
-        return this.containfromcontainer;
+    public AlfrescoConstants.ContainPlatforms  getplatformto() {
+        return this.platformto;
     }
 
 }

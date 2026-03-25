@@ -10,7 +10,7 @@
 		<relativePath />
 	</parent>
 
-	<groupId>contain.opensource.ils.bs</groupId>
+	<groupId>contain.opensource.java</groupId>
 	<artifactId>receiver</artifactId>
 	<version>3.3.0</version>
 	<packaging>jar</packaging>
@@ -208,10 +208,6 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
@@ -222,6 +218,23 @@
 						</manifest>
 					</archive>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>repackage</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<classifier>spring-boot</classifier>
+							<mainClass>contain.opensource.ils.startreceiver</mainClass>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
