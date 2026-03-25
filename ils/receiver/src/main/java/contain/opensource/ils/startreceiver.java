@@ -27,7 +27,7 @@ import contain.opensource.shared.configurationproperties.ILSRestProperties;
         HibernateJpaAutoConfiguration.class 
     }
 )
-@ComponentScan(basePackages = "contain.opensource.ils")
+//@ComponentScan(basePackages = "contain.opensource.ils")
 @EnableConfigurationProperties({ ActiveMQProperties.class, AlfrescoProperties.class, ILSRestProperties.class, RedisConfigProperties.class })
 @ConfigurationPropertiesScan
 public class startreceiver {

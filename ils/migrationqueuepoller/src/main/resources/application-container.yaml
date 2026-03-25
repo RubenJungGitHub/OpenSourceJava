@@ -54,7 +54,7 @@ ils:
   bindendpoint: http://receiver:8080/api/Bind
   ruleenginemoveendpoint: http://receiver:8080/rules
   relocateendpoint: http://receiver:8080/MigrateIO
-  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
-  ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+  ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
+  ruleengineendpoint: http://kie-server:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
   ruleengineprojectname: contAlnMigrationRuleset
   deltalinkfile: "/app/data/storeddeltalinks.csv"
