@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.migration;
+package contain.opensource.shared.classes;
 
 import jakarta.jms.DeliveryMode;
 import jakarta.jms.MessageProducer;
@@ -12,8 +12,8 @@ import org.springframework.jms.core.JmsTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
-import contain.opensource.ils.bs.receiver.services.migrationservice;
+//import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParentMigration;
+//import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;/
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
@@ -26,8 +26,8 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
             AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsProperties,
             ObjectMapper mapper,
-            JmsTemplate jmsTemplate,
-            migrationservice migservice) {
+            JmsTemplate jmsTemplate
+            ) {
 
         super(activeMQProps, alfrescoProps, ilsProperties, mapper, jmsTemplate);
     }

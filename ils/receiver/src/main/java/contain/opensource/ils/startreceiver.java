@@ -16,9 +16,8 @@ import contain.opensource.shared.configurationproperties.ILSRestProperties;
 
 @SpringBootApplication(
     scanBasePackages = {
-        "contain.opensource.ils.receiver.sharepoint",
-        "contain.opensource.ils.receiver.services",
-        "contain.opensource.shared.configurationproperties",
+        "contain.opensource.ils",
+        "contain.opensource.shared",
         "contain.opensource.uuidutil"
     },
     exclude = { 

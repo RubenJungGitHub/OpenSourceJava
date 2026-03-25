@@ -1,19 +1,28 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.ils.bs.receiver.services.migrationservice;
+import contain.opensource.shared.classes.MigrationQueueMessage;
+import contain.opensource.shared.classes.SharepointQueMessage;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 @RestController
+@RequestMapping("/api")
 public class ILSController {
     private final GraphService graphService;
     private final AlfrescoNodeController alfrescoNodeController;
@@ -61,6 +70,27 @@ public class ILSController {
             migrationservice.migrateio(msg);
         } catch (Exception ex) {
             throw ex;
+        }
+    }
+
+    @PostMapping(value = "/ProcessChangedSharepointItem", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> ProcessChangedSharepointItem(
+            @RequestParam String ItemWebUrl,
+            @RequestParam String ListItemID,
+            @RequestParam String resourceValue
+) {
+        System.out.println("Endpoint geraakt voor item: " + ItemWebUrl);
+
+        try {
+            // Hier roep je de oude logica aan die voorheen in de Poller zat
+             var result = graphService.ProcessChangedSharepointItem(
+             ItemWebUrl,
+             ListItemID,
+             resourceValue
+            );
+            return ResponseEntity.ok(result);
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(ex.getMessage());
         }
     }
 }

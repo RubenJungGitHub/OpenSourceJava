@@ -1,18 +1,11 @@
 package contain.opensource.ils.bs.alfrescopoller.classes.messagequeuehandling;
 
-import java.time.ZonedDateTime;
 import java.time.ZoneId;
-
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
-import jakarta.jms.Message;
-import jakarta.jms.Queue;
-import jakarta.jms.QueueBrowser;
-import jakarta.jms.Session;
-import jakarta.jms.TextMessage;
-import jakarta.jms.JMSException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -25,18 +18,23 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
-//import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
+import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
+import contain.opensource.shared.classes.MessageBrowserPollParent;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeType;
-import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParent;
-import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 @Component
 public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
@@ -44,20 +42,17 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
-    @Autowired
-    private AlfrescoNodeController aController;
-
+    // @Autowired
+    // private AlfrescoNodeController aController;
     @Autowired
     public MessageBrowserPollAlfresco(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsProperties, ObjectMapper objectMapper) {
-              super(
-            activeMQProps,
-            alfrescoProps,
-            ilsProperties,
-            objectMapper,
-            null,
-            null
-        );
+        super(
+                activeMQProps,
+                alfrescoProps,
+                ilsProperties,
+                objectMapper,
+                null);
     }
 
     /**
@@ -85,60 +80,70 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
     private String BindIO(String IOUUID, AlfrescoQueMessage QMessage, Object secondPath) {
         // First sign and log
 
-        // IN the future store as actual byte in Redis and datastore. For POC store as
-        try {
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_CYAN
-                    + contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_RED
-                    + ("Binding ALFRESCO NODE IO " + IOUUID)
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
-            // Create request WITHOUT key
-            BindRequest request = new BindRequest(aController.alfresconNodeResponse.ToSecuredDocument());
-
-            String endPoint = ILSProperties.getbindendpoint();
-            System.out
-                    .println(contain.opensource.shared.constants.AlfrescoConstants.RED
-                            + "Binding endpoint  : "
-                            + endPoint
-                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(endPoint, entity,
-                    String.class);
-
-            // Move log to binding function
-            String action = "Content and-or metadata changed : REBIND IO " + IOUUID + " : "
-                    + QMessage.getName();
-            if (response.getStatusCode().value() == 200) {
-                IOLog.log(
-                        IOUUID,
-                        QMessage.getId(),
-                        secondPath.toString(),
-                        action,
-                        AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                        AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                        response.getBody(),
-                        QMessage.getName(),
-                        "",
-                        AlfrescoConstants.eActionPerformed.IOBOUND,
-                        QMessage.getUsername(),
-                        aController.alfresconNodeResponse.marking,
-                        aController.alfresconNodeResponse.classification,
-                        aController.alfresconNodeResponse.version);
-                // ==========================================================================================
-            }
-            return response.getBody();
-        } catch (Exception e) {
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
-                    + "Error during binding: " + e.getMessage()
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            e.printStackTrace();
-            return "Binding failed" + e.getMessage();
-        }
+        /*
+         * // IN the future store as actual byte in Redis and datastore. For POC store
+         * as
+         * try {
+         * System.out.println(contain.opensource.shared.constants.AlfrescoConstants.
+         * BG_CYAN
+         * + contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_RED
+         * + ("Binding ALFRESCO NODE IO " + IOUUID)
+         * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+         * 
+         * // Create request WITHOUT key
+         * BindRequest request = new
+         * BindRequest(aController.alfresconNodeResponse.ToSecuredDocument());
+         * 
+         * String endPoint = ILSProperties.getbindendpoint();
+         * System.out
+         * .println(contain.opensource.shared.constants.AlfrescoConstants.RED
+         * + "Binding endpoint  : "
+         * + endPoint
+         * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+         * 
+         * RestTemplate restTemplate = new RestTemplate();
+         * HttpHeaders headers = new HttpHeaders();
+         * headers.setContentType(MediaType.APPLICATION_JSON);
+         * 
+         * HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
+         * ResponseEntity<String> response = restTemplate.postForEntity(endPoint,
+         * entity,
+         * String.class);
+         * 
+         * // Move log to binding function
+         * String action = "Content and-or metadata changed : REBIND IO " + IOUUID +
+         * " : "
+         * + QMessage.getName();
+         * if (response.getStatusCode().value() == 200) {
+         * IOLog.log(
+         * IOUUID,
+         * QMessage.getId(),
+         * secondPath.toString(),
+         * action,
+         * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+         * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+         * response.getBody(),
+         * QMessage.getName(),
+         * "",
+         * AlfrescoConstants.eActionPerformed.IOBOUND,
+         * QMessage.getUsername(),
+         * aController.alfresconNodeResponse.marking,
+         * aController.alfresconNodeResponse.classification,
+         * aController.alfresconNodeResponse.version);
+         * //
+         * =============================================================================
+         * =============
+         * }
+         * return response.getBody();
+         * } catch (Exception e) {
+         * System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+         * + "Error during binding: " + e.getMessage()
+         * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+         * e.printStackTrace();
+         * 
+         * return "Binding failed" + e.getMessage();
+         */
+        return "bla";
     }
 
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
@@ -174,7 +179,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                             NodeType nodeType = NodeType.fromString(type);
                             if (nodeType != null) {
                                 // Call Alfresco object controller
-                                aController.nodeId = QMessage.getNodeId();
+                                // aController.nodeId = QMessage.getNodeId();
                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
                                     // Only for ballenbak
                                     String action = QMessage.getId() + " : " + QMessage.getName()
@@ -197,19 +202,19 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    aController.GetNode();
+                                    // aController.GetNode();
                                     String IOUUID = "";
-                                    if (!aController.alfresconNodeResponse.HasUUID) {
-                                        // Set UUID
-                                        IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
-                                                ILSProperties.getuudiutilendpoint(),
-                                                Optional.ofNullable(secondPath.toString()), Optional.empty());
-                                        // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID
-                                        // ,Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                    // if (!aController.alfresconNodeResponse.HasUUID) {
+                                    // // Set UUID
+                                    // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
+                                    // ILSProperties.getuudiutilendpoint(),
+                                    // Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                    // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID
+                                    // ,Optional.ofNullable(secondPath.toString()), Optional.empty());
 
-                                    } else {
-                                        IOUUID = aController.alfresconNodeResponse.UUID;
-                                    }
+                                    // } else {
+                                    // IOUUID = aController.alfresconNodeResponse.UUID;
+                                    // }
 
                                     // redis redindant. To memcollection?
                                     String redisLogId = IOUUID;
@@ -224,11 +229,11 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                         RedisManager.deleteEntry(redisentryInRelocation);
                                         return;
                                     }
-                                    if (RedisManager.getHashField(redisentryUUIDAssigned) != null
-                                            && aController.alfresconNodeResponse.HasUUID) {
-                                        RedisManager.deleteEntry(redisentryUUIDAssigned);
-                                        return;
-                                    }
+                                    // if (RedisManager.getHashField(redisentryUUIDAssigned) != null
+                                    // && aController.alfresconNodeResponse.HasUUID) {
+                                    // RedisManager.deleteEntry(redisentryUUIDAssigned);
+                                    // return;
+                                    // }
 
                                     // ========================================================================
                                     // To be moved to migration service
@@ -308,7 +313,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
 
-                    //consumeMessageById(msg.getJMSMessageID());
+                    // consumeMessageById(msg.getJMSMessageID());
 
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");

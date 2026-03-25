@@ -4,7 +4,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import jakarta.annotation.PostConstruct;
 
-
 @ConfigurationProperties(prefix = "ils")
 public class ILSRestProperties {
 
@@ -17,6 +16,7 @@ public class ILSRestProperties {
     private String ruleenginecontainerendpoint;
     private String ruleengineendpoint;
     private String ruleengineprojectname;
+    private String processspitemsendpoint;
 
     // ----------------- Getters & Setters -----------------
     public String getbaseurl() {
@@ -59,7 +59,6 @@ public class ILSRestProperties {
         this.ruleenginemoveendpoint = ruleenginemoveendpoint;
     }
 
-    
     public String getrelocateendpoint() {
         return relocateendpoint;
     }
@@ -92,6 +91,14 @@ public class ILSRestProperties {
         this.ruleengineprojectname = ruleengineprojectname;
     }
 
+    public String getprocessspitemsendpoint() {
+        return processspitemsendpoint;
+    }
+
+    public void setprocessspitemsendpoint(String processspitemsendpoint) {
+        this.processspitemsendpoint = processspitemsendpoint;
+    }
+
     @PostConstruct
     public void init() {
         System.out.println("ILSRestProperties loaded:");
@@ -104,5 +111,6 @@ public class ILSRestProperties {
         System.out.println("ruleenginecontainerendpoint = " + ruleenginecontainerendpoint);
         System.out.println("ruleengineprojectname = " + ruleengineprojectname);
         System.out.println("ruleendpoint = " + ruleenginemoveendpoint);
+        System.out.println("processspitemsendpoint = " + processspitemsendpoint);
     }
 }

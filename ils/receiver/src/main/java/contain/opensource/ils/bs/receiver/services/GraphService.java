@@ -850,7 +850,7 @@ public class GraphService {
         }
     }
 
-    public static Hashtable<String, String> ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID,
+    public Hashtable<String, String> ProcessChangedSharepointItem(String ItemWebUrl, String ListItemID,
             String resourceValue)
             throws MalformedURLException, Exception {
         String siteId = null;

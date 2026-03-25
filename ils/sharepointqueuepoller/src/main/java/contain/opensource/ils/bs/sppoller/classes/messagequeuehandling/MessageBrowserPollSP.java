@@ -14,17 +14,19 @@ import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParent;
-import contain.opensource.ils.bs.receiver.classes.sharepoint.SharepointQueMessage;
 //import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.services.GraphService;
-import contain.opensource.ils.bs.receiver.services.migrationservice;
+//import contain.opensource.ils.bs.receiver.services.GraphService;
+import contain.opensource.shared.classes.MessageBrowserPollParent;
+import contain.opensource.shared.classes.SharepointQueMessage;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
@@ -33,24 +35,19 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 @Component
 public class MessageBrowserPollSP extends MessageBrowserPollParent {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-    private GraphService graphservice;
 
     @Autowired
     public MessageBrowserPollSP(ActiveMQProperties activeMQProps,
             AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsProperties,
             ObjectMapper objectMapper,
-            JmsTemplate jmsTemplate,
-            migrationservice migrationService,
-            GraphService graphService) {
+            JmsTemplate jmsTemplate) {
         super(
                 activeMQProps,
                 alfrescoProps,
                 ilsProperties,
                 objectMapper,
-                jmsTemplate,
-                migrationService);
-        this.graphservice = graphService;
+                jmsTemplate);
     }
 
     @Override
@@ -105,13 +102,38 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    Hashtable<String, String> migrateinfo = this.graphservice
+                                    /*
+                                        Hashtable<String, String> migrateinfo = this.graphservice
                                             .ProcessChangedSharepointItem(item.getWebUrl(), item.getId(), deltaLink);
                                     // Check 'platformto' in plaats van 'containerto'
                                     if (migrateinfo.get("platformto") != null
                                             && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
                                         SendMigrationMessage(item, deltaLink,
                                                 AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
+*/
+
+                                    // 1. Maak een RestTemplate aan (of @Autowired deze)
+                                    RestTemplate restTemplate = new RestTemplate();
+
+                                    // 2. De URL van je nieuwe endpoint (haal dit idealiter uit ILSRestProperties)
+                                    String url = ILSProperties.getprocessspitemsendpoint();
+
+                                    // 3. De parameters (als je ze als Query Params houdt zoals in je huidige
+                                    // skeleton)
+                                    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                                            .queryParam("ItemWebUrl", item.getWebUrl())
+                                            .queryParam("ListItemID", item.getId())
+                                            .queryParam("resourceValue", deltaLink);
+
+                                    // 4. Verstuur het bericht (de 'message' is je SharepointQueMessage)
+                                    try {
+                                        ResponseEntity<String> response = restTemplate.postForEntity(
+                                                builder.toUriString(),
+                                                message, // De volledige SharepointQueMessage als JSON body
+                                                String.class);
+                                        System.out.println("Receiver antwoordde met: " + response.getStatusCode());
+                                    } catch (Exception e) {
+                                        System.err.println("Fout bij aanroepen Receiver: " + e.getMessage());
                                     }
                                 }
                             }
@@ -134,4 +156,5 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
             e.printStackTrace();
         }
     }
+
 }

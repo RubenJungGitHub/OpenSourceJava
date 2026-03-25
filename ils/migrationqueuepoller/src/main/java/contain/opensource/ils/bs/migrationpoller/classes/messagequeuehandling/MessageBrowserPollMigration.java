@@ -22,8 +22,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParentMigration;
-import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;
+import contain.opensource.shared.classes.MessageBrowserPollParentMigration;
+import contain.opensource.shared.classes.MigrationQueueMessage;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;

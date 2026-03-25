@@ -14,25 +14,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import contain.opensource.ils.bs.receiver.classes.redis.RedisConfigProperties;
 import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 
-@SpringBootApplication(exclude = {
-    DataSourceAutoConfiguration.class, 
-    HibernateJpaAutoConfiguration.class 
+@SpringBootApplication(scanBasePackages = {
+    "contain.opensource.ils.bs.sppoller", // De poller logica zelf
+    "contain.opensource.shared"           // Voor de shared config/properties
 })
-@EnableMongoRepositories(basePackages = "contain.opensource.ils.bs.receiver.Interfaces")
-// HIER horen de properties thuis:
-@EnableConfigurationProperties({ 
-    ILSRestProperties.class, 
-    AlfrescoProperties.class,
-    RedisConfigProperties.class,
-    ActiveMQProperties.class 
-})
-
-@ComponentScan(basePackages = {
-    "contain.opensource.uuidutil",
-    "contain.opensource.ils.bs.receiver",
-    "contain.opensource.ils.bs.migrationpoller" ,
-    "contain.opensource.shared"
-})
+@EnableConfigurationProperties({ ActiveMQProperties.class, ILSRestProperties.class, AlfrescoProperties.class})
 public class StartMigrationPoller {
 
     public static void main(String[] args) {

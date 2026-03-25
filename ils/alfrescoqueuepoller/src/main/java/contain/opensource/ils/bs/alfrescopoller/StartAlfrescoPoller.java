@@ -14,25 +14,13 @@ import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@SpringBootApplication(exclude = {
-    DataSourceAutoConfiguration.class, 
-    HibernateJpaAutoConfiguration.class 
+@SpringBootApplication(scanBasePackages = {
+    "contain.opensource.ils.bs.sppoller", // De poller logica zelf
+    "contain.opensource.shared"           // Voor de shared config/properties
 })
-@EnableMongoRepositories(basePackages = "contain.opensource.ils.bs.receiver.Interfaces")
-// HIER horen de properties thuis:
-@EnableConfigurationProperties({ 
-    ILSRestProperties.class, 
-    AlfrescoProperties.class,
-    RedisConfigProperties.class,
-    ActiveMQProperties.class 
-})
+@EnableConfigurationProperties({ ActiveMQProperties.class, ILSRestProperties.class, AlfrescoProperties.class})
 
-@ComponentScan(basePackages = {
-    "contain.opensource.uuidutil",
-    "contain.opensource.ils.bs.receiver",
-    "contain.opensource.ils.bs.alfrescoqueuepoller" ,
-    "contain.opensource.shared"
-})public class StartAlfrescoPoller {
+public class StartAlfrescoPoller {
 
     // FORCEER DE BEAN HIER HANDMATIG
     @Bean

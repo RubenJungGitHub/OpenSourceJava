@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.services.GraphService;
+import contain.opensource.shared.classes.MigrationQueueMessage;
 import jakarta.annotation.PostConstruct;
 
 @Component

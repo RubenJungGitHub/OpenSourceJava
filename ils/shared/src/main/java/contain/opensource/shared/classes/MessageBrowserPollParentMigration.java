@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.migration;
+package contain.opensource.shared.classes;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -40,7 +40,6 @@ public abstract class MessageBrowserPollParentMigration {
     public final ObjectMapper objectMapper;
     public final ActiveMQProperties activeMQProps;
     public final AlfrescoProperties alfrescoProps;
-//    public final ILSRestProperties ILSProperties;
     public Session session;
     public Connection connection;
     public Queue queue;
@@ -49,7 +48,7 @@ public abstract class MessageBrowserPollParentMigration {
     public String timestamp;
     private volatile boolean pollingActive = false;
     private final ExecutorService pollExecutor = Executors.newSingleThreadExecutor();
-    protected ILSRestProperties ILSProperties;
+    public ILSRestProperties ILSProperties;
     
     @Autowired
     public MessageBrowserPollParentMigration(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,

@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.sharepoint;
+package contain.opensource.shared.classes;
 
 import java.util.List;
 import java.util.Map;
