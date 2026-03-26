@@ -20,6 +20,7 @@ import contain.opensource.ils.bs.receiver.services.migrationservice;
 import contain.opensource.shared.classes.MigrationQueueMessage;
 import contain.opensource.shared.classes.SharepointQueMessage;
 import contain.opensource.shared.constants.AlfrescoConstants;
+import contain.opensource.shared.classes.AlfrescoNodeResponse;
 
 @RestController
 @RequestMapping("/api")
@@ -76,18 +77,27 @@ public class ILSController {
     public ResponseEntity<?> ProcessChangedSharepointItem(
             @RequestParam String ItemWebUrl,
             @RequestParam String ListItemID,
-            @RequestParam String resourceValue
-) {
+            @RequestParam String resourceValue) {
         System.out.println("in ProcessChangedSharepointItem endpoint voor item: " + ItemWebUrl);
 
         try {
-            // Hier roep je de oude logica aan die voorheen in de Poller zat
-             var result = graphService.ProcessChangedSharepointItem(
-             ItemWebUrl,
-             ListItemID,
-             resourceValue
-            );
+            var result = graphService.ProcessChangedSharepointItem(
+                    ItemWebUrl,
+                    ListItemID,
+                    resourceValue);
             return ResponseEntity.ok(result);
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(ex.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/GetAfrescoIOUUID", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> GetAfrescoIOUUID(
+            @RequestParam String nodeid) {
+        System.out.println("in GetAfrescoIOUUID endpoint voor item: " + nodeid);
+        try {
+            AlfrescoNodeResponse nodeinfo = alfrescoNodeController.GetNode();
+            return ResponseEntity.ok(true);
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body(ex.getMessage());
         }

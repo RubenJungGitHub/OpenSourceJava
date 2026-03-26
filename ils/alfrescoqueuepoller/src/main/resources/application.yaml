@@ -60,7 +60,7 @@ spring:
 
   # ---------- ActiveMQ ----------
 activemq:
-  brokerUrl: tcp://localhost:61617
+  brokerUrl: tcp://localhost:61616
   user: admin
   password: admin
   sharepoint-queue: sharepoint.delta.queue
@@ -80,6 +80,7 @@ ils:
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
   processspitemsendpoint: http://localhost:55000/api/ProcessChangedSharepointItem
+  validatealfrescouuidendpoint: http://localhost:55000/api/GetAfrescoIOUUID
   relocateendpoint: http://localhost:55000/api/MigrateIO
   ruleenginemoveendpoint: http://localhost:55000/api/rules
   ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server

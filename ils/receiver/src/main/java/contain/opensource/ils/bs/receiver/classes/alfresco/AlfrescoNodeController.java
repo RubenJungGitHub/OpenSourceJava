@@ -8,7 +8,6 @@ import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.Objects;
 import java.net.URL;
 
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
@@ -32,15 +31,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
+import contain.opensource.shared.classes.AlfrescoNodeResponse;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
 //import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 //import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 
 import contain.opensource.shared.constants.AlfrescoConstants;
-import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 
@@ -55,7 +55,7 @@ public class AlfrescoNodeController {
   private ILSRestProperties ilsRestProperties;
   private AlfrescoProperties alfrescoProperties;
 
-  //private migrationservice migrationservice;
+  // private migrationservice migrationservice;
 
   @Autowired
   public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsProperties) {
@@ -66,10 +66,10 @@ public class AlfrescoNodeController {
     this.password = alfrescoProperties.getPassword();
   }
 
-  //@Autowired
-  //public void setMigrationService(@Lazy migrationservice migrationService) {
-  //  this.migrationservice = migrationService;
- // }
+  // @Autowired
+  // public void setMigrationService(@Lazy migrationservice migrationService) {
+  // this.migrationservice = migrationService;
+  // }
 
   public AlfrescoNodeController() {
   }
@@ -613,7 +613,7 @@ public class AlfrescoNodeController {
    * and expects the {@code AlfrescoNodeResponse} and {@code ContainPlatforms}
    * classes to be defined elsewhere in the codebase.
    */
-  public void GetNode() {
+  public AlfrescoNodeResponse GetNode() {
     try {
       String endpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
@@ -672,9 +672,9 @@ public class AlfrescoNodeController {
               alfresconNodeResponse.UUID = ioUUIDValue.toString();
             }
             Object value = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOMOVE");
-            //if (!Objects.equals(value, "<NO MOVE>")) {
-            //  alfresconNodeResponse.setplatformto(ContainPlatforms.valueOf(value.toString().toUpperCase()));
-           // }
+            // if (!Objects.equals(value, "<NO MOVE>")) {
+            // alfresconNodeResponse.setplatformto(ContainPlatforms.valueOf(value.toString().toUpperCase()));
+            // }
             // Get node content
             GetNodeContent();
             try {
@@ -686,12 +686,13 @@ public class AlfrescoNodeController {
               e.printStackTrace();
             }
             try {
-       //       alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO MOVE>")); // IMPROVE!! SHOULD
-                                                                                                    // ALSO CHECK IF NOT
-                                                                                                    // FROM ALFRESCO TO
-                                                                                                    // ALFRESCO!!!!
-                                                                                                    // (Unless different
-                                                                                                    // instance)
+              // alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO
+              // MOVE>")); // IMPROVE!! SHOULD
+              // ALSO CHECK IF NOT
+              // FROM ALFRESCO TO
+              // ALFRESCO!!!!
+              // (Unless different
+              // instance)
               //
             } catch (java.lang.NullPointerException e) {
               // No action. UUID not present
@@ -714,6 +715,7 @@ public class AlfrescoNodeController {
       System.err.println("Exception getting node : " + e);
       e.printStackTrace();
     }
+    return alfresconNodeResponse;
   }
 
   /**
@@ -886,7 +888,8 @@ public class AlfrescoNodeController {
 
         if (statusCode == 200) {
           this.alfresconNodeResponse.UUID = propertyValue;
-       //   RedisManager.putHash("IOinHashAssigned", "IOinUUIDAssigned" + propertyValue, "InProcess", 2400);
+          // RedisManager.putHash("IOinHashAssigned", "IOinUUIDAssigned" + propertyValue,
+          // "InProcess", 2400);
           // Test ballenbak
           IOLog.log(
               propertyValue,
@@ -953,9 +956,10 @@ public class AlfrescoNodeController {
     this.nodeId = IOobject.getId();
     // For now assumed only happy path. If something goes wrong rollback in
     // ballenbak and complete transacton`
-    String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from " + IOobject.getplatformfrom();
+    String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
+        + IOobject.getplatformfrom();
 
-   // this.migrationservice.migrateNodeToSP(IOobject);
+    // this.migrationservice.migrateNodeToSP(IOobject);
     IOLog.log(
         IOobject.getUuid(),
         "",

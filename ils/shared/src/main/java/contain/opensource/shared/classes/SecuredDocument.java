@@ -1,7 +1,6 @@
 package contain.opensource.shared.classes;
-import contain.opensource.shared.classes.IOObjectProperties;
-import java.time.Instant;
 
+import java.time.Instant;
 /**
  * A secured document class that encapsulates document metadata and content with timestamp information.
  * 

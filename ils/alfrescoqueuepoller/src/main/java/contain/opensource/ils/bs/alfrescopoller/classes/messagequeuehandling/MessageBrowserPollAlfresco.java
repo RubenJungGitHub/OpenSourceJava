@@ -4,6 +4,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -20,8 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoQueMessage;
 import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
+import contain.opensource.shared.classes.AlfrescoQueMessage;
 import contain.opensource.shared.classes.MessageBrowserPollParent;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
@@ -150,7 +152,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
         try {
             String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
-                    + timestamp + " -> New ALFREASCO poll loop on broker : " + activeMQProps.getBrokerUrl()
+                    + timestamp + " -> New ALFRESCO poll loop on broker : " + activeMQProps.getBrokerUrl()
                     + " on queue " + activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Enumeration<?> messages = browser.getEnumeration();
@@ -202,7 +204,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    // aController.GetNode();
+
                                     String IOUUID = "";
                                     // if (!aController.alfresconNodeResponse.HasUUID) {
                                     // // Set UUID
@@ -327,5 +329,34 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
             e.printStackTrace();
         }
         System.out.println("No remaining ALFRESCO messages on queue");
+    }
+
+    private boolean checknodehasduuid(String nodeid) {
+
+        // 1. Maak een RestTemplate aan (of @Autowired deze)
+        RestTemplate restTemplate = new RestTemplate();
+
+        // 1. De basis URL (Zorg dat ILSProperties verwijst naar http://localhost:8081)
+        // Of naar http://share:8080 als je code ook in Docker draait
+        String url = ILSProperties.getvalidatealfrescouuidendpoint();
+
+        // 2. Bouw de URL op met Query Parameters
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("nodeid", nodeid); 
+        try {
+            // 3. Gebruik getForEntity omdat je controller @GetMapping gebruikt
+            ResponseEntity<Boolean> response = restTemplate.getForEntity(
+                    builder.toUriString(),
+                    Boolean.class);
+
+            System.out.println("Endpoint aangeroepen. Status: " + response.getStatusCode());
+            System.out.println("Resultaat: " + response.getBody());
+
+        } catch (Exception ex) {
+            System.err.println("Fout bij aanroepen Alfresco endpoint: " + ex.getMessage());
+        }
+
+        // Check returnvalue
+        return false;
     }
 }

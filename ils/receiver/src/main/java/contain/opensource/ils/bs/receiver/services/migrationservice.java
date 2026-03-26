@@ -135,27 +135,8 @@ public class migrationservice {
     }
 
     public void migrateAlfrescoObjectToSP(MigrationQueueMessage msg) {
-
-        try {
-            int a = 1;
-            // to do. waiting for new Alfresco license
-            // alfrescoController.fetchNode(object.getId());
-            // graphService.uploadAlfrescoNodeToSP(robject);
-        } catch (Exception ex) {
-            // to do
-        }
     }
 
     public void migrateAlfrescoObjectToAlfresco(MigrationQueueMessage msg) {
-
-        try {
-            int a = 1;
-            // to do. waiting for new Alfresco license
-            // alfrescoController.fetchNode(object.getId());
-            // graphService.uploadAlfrescoNodeToSP(robject);
-        } catch (Exception ex) {
-            // to do
-        }
     }
-
 }

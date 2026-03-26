@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.receiver.classes.alfresco;
+package contain.opensource.shared.classes;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -10,8 +10,8 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
-import contain.opensource.shared.classes.IOObjectProperties;
+import contain.opensource.shared.classes.SecuredDocument;
+
 
 /**
  * Represents the response from Alfresco for a node (file or folder).
