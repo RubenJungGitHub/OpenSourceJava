@@ -65,7 +65,6 @@ public class ILSController {
         if (msg == null) {
             throw new IllegalArgumentException("MigrationQueueMessage is null!");
         }
-
         try {
             migrationservice.migrateio(msg);
         } catch (Exception ex) {
@@ -79,7 +78,7 @@ public class ILSController {
             @RequestParam String ListItemID,
             @RequestParam String resourceValue
 ) {
-        System.out.println("ProcessChangedSharepointItem Endpoint geraakt voor item: " + ItemWebUrl);
+        System.out.println("in ProcessChangedSharepointItem endpoint voor item: " + ItemWebUrl);
 
         try {
             // Hier roep je de oude logica aan die voorheen in de Poller zat
