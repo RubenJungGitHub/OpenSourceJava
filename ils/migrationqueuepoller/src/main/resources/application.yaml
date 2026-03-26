@@ -83,8 +83,9 @@ ils:
   baseurl: http://localhost:55000
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
-  relocateendpoint: http://localhost:55000/MigrateIO
-  ruleenginemoveendpoint: http://localhost:55000/rules
+  processspitemsendpoint: http://localhost:55000/api/ProcessChangedSharepointItem
+  relocateendpoint: http://localhost:55000/api/MigrateIO
+  ruleenginemoveendpoint: http://localhost:55000/api/rules
   ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
   ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
   ruleengineprojectName: contAlnMigrationRuleset
