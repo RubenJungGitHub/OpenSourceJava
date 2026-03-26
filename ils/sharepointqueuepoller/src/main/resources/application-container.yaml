@@ -54,8 +54,8 @@ ils:
   baseurl: http://receiver:8080
   bindendpoint: http://receiver:8080/api/Bind
   processspitemsendpoint: http://receiver:8080/api/ProcessChangedSharepointItem
-  ruleenginemoveendpoint: http://receiver:8080/rules
-  relocateendpoint: http://receiver:8080/MigrateIO
+  ruleenginemoveendpoint: http://receiver:8080/api/rules
+  relocateendpoint: http://receiver:8080/api/MigrateIO
   ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
   ruleengineendpoint: http://kie-server:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
   ruleengineprojectname: contAlnMigrationRuleset
