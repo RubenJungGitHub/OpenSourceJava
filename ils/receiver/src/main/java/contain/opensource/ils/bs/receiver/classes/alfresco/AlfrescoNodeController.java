@@ -618,9 +618,11 @@ public class AlfrescoNodeController {
     try {
       this.nodeId = nodeid;
       AlfrescoNodeResponse alfrescoresponse= GetNode();
-      if(!alfrescoresponse.HASUUID)
+      if(!alfrescoresponse.HasUUID )
       {
-        String a = "a"; 
+        //Assign UUID
+          boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID ,Optional.ofNullable(secondpath), Optional.empty());
+          //Bind IO AND LOG THERE 
       }
       return true;
     } catch (Exception ex) {
@@ -824,7 +826,7 @@ public class AlfrescoNodeController {
    * 
    * @throws IllegalArgumentException if the specified field is not supported.
    */
-  public String UpdateNode(NodeTypeFields field, String uuidutilendpoint, Optional<String> IOPath,
+  private boolean UpdateNode(NodeTypeFields field, Optional<String> IOPath,
       Optional<String> fieldValue) {
     try {
       String endpoint = String.format(
@@ -845,18 +847,18 @@ public class AlfrescoNodeController {
           propertyName = "contain:IOUUID"; // custom aspect property
           System.out.println(
               AlfrescoConstants.RED + "Get UUID endpoint  : "
-                  + uuidutilendpoint + AlfrescoConstants.RESET);
+                  + ilsRestProperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
 
           String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.ALFRESCO;
 
-          String urlString = uuidutilendpoint + query;
+          String urlString = ilsRestProperties.getuudiutilendpoint() + query;
 
           URL url = new URL(urlString);
           HttpURLConnection conn = (HttpURLConnection) url.openConnection();
           conn.setRequestMethod("GET");
 
           int status = conn.getResponseCode();
-          System.out.println("Accessing uuid rest url on " + uuidutilendpoint + " return code -> " + status);
+          System.out.println("Accessing uuid rest url on " + ilsRestProperties.getuudiutilendpoint() + " return code -> " + status);
 
           if (status == 200) {
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -925,17 +927,17 @@ public class AlfrescoNodeController {
 
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);
-          return propertyValue;
+          return true;
         } else {
           System.err.println("Failed to update node. Status code: " + statusCode);
           System.err.println(responseJson);
-          return "Failed";
+          return false;
         }
       }
     } catch (Exception e) {
       System.err.println("Exception updating field:");
       e.printStackTrace();
-      return "Failed";
+      return false;
     }
   }
 

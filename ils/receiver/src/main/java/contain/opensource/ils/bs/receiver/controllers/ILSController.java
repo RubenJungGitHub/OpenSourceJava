@@ -1,7 +1,11 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +20,6 @@ import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeControlle
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.ils.bs.receiver.services.migrationservice;
 import contain.opensource.shared.classes.MigrationQueueMessage;
-import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api")
@@ -94,7 +97,8 @@ public class ILSController {
         System.out.println("in GetAfrescoIOUUID endpoint voor item: " + nodeid);
         boolean retval = false;
         try {
-            retval = alfrescoNodeController.processalfresconodepoint(nodeid, secondpath );
+            String descodesecondpath = URLDecoder.decode(secondpath, StandardCharsets.UTF_8);
+            retval = alfrescoNodeController.processalfresconodepoint(nodeid, descodesecondpath );
             return ResponseEntity.ok(retval);
         } catch (Exception ex) {
             // return ResponseEntity.internalServerError().body(ex.getMessage());
