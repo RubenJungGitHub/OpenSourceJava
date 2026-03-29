@@ -4,32 +4,26 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
-import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 import contain.opensource.shared.classes.AlfrescoQueMessage;
 import contain.opensource.shared.classes.MessageBrowserPollParent;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
-import contain.opensource.shared.constants.AlfrescoConstants.ContainPlatforms;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeType;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
@@ -204,9 +198,6 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
-                                    // DO IT THE SHAREPOINT PROCESSITEMS WAY.. ALL IN NODECONTROLLER. NOTHING
-                                    // HERE!!!!!
-
                                     processalfresconodepoint(QMessage.getNodeId(), secondpath.toString());
                                     /*
                                      * String IOUUID = "";
