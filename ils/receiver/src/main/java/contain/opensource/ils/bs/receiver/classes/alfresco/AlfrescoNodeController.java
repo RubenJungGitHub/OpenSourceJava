@@ -613,7 +613,18 @@ public class AlfrescoNodeController {
    * and expects the {@code AlfrescoNodeResponse} and {@code ContainPlatforms}
    * classes to be defined elsewhere in the codebase.
    */
-  public AlfrescoNodeResponse GetNode() {
+
+  public boolean processalfresconodepoint(String nodeid) {
+    try {
+      this.nodeId = nodeid;
+      GetNode();
+      return true;
+    } catch (Exception ex) {
+      return false;
+    }
+  }
+
+  private AlfrescoNodeResponse GetNode() {
     try {
       String endpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",

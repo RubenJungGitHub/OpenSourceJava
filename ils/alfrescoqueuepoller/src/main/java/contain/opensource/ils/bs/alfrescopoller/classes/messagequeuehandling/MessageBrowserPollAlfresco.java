@@ -204,43 +204,47 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
                                 } else {
+                                    // DO IT THE SHAREPOINT PROCESSITEMS WAY.. ALL IN NODECONTROLLER. NOTHING
+                                    // HERE!!!!!
 
-                                    String IOUUID = "";
-                                    // if (!aController.alfresconNodeResponse.HasUUID) {
-                                    // // Set UUID
-                                    // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
-                                    // ILSProperties.getuudiutilendpoint(),
-                                    // Optional.ofNullable(secondPath.toString()), Optional.empty());
-                                    // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID
-                                    // ,Optional.ofNullable(secondPath.toString()), Optional.empty());
-
-                                    // } else {
-                                    // IOUUID = aController.alfresconNodeResponse.UUID;
-                                    // }
-
-                                    // redis redindant. To memcollection?
-                                    String redisLogId = IOUUID;
-                                    // Add to Redis cache to avoid double binding.
-                                    for (ContainPlatforms platform : ContainPlatforms.values()) {
-                                        redisLogId = redisLogId.replace(platform.toString(), "");
-                                    }
-                                    String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
-                                    String redisentryUUIDAssigned = "IOinUUIDAssigned" + IOUUID;
-
-                                    if (RedisManager.getHashField(redisentryInRelocation) != null) {
-                                        RedisManager.deleteEntry(redisentryInRelocation);
-                                        return;
-                                    }
-                                    // if (RedisManager.getHashField(redisentryUUIDAssigned) != null
-                                    // && aController.alfresconNodeResponse.HasUUID) {
-                                    // RedisManager.deleteEntry(redisentryUUIDAssigned);
-                                    // return;
-                                    // }
-
-                                    // ========================================================================
-                                    // To be moved to migration service
-                                    // ========================================================================
+                                    processalfresconodepoint(QMessage.getNodeId());
                                     /*
+                                     * String IOUUID = "";
+                                     * // if (!aController.alfresconNodeResponse.HasUUID) {
+                                     * // // Set UUID
+                                     * // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
+                                     * // ILSProperties.getuudiutilendpoint(),
+                                     * // Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                     * // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID
+                                     * // ,Optional.ofNullable(secondPath.toString()), Optional.empty());
+                                     * 
+                                     * // } else {
+                                     * // IOUUID = aController.alfresconNodeResponse.UUID;
+                                     * // }
+                                     * 
+                                     * // redis redindant. To memcollection?
+                                     * String redisLogId = IOUUID;
+                                     * // Add to Redis cache to avoid double binding.
+                                     * for (ContainPlatforms platform : ContainPlatforms.values()) {
+                                     * redisLogId = redisLogId.replace(platform.toString(), "");
+                                     * }
+                                     * String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
+                                     * String redisentryUUIDAssigned = "IOinUUIDAssigned" + IOUUID;
+                                     * 
+                                     * if (RedisManager.getHashField(redisentryInRelocation) != null) {
+                                     * RedisManager.deleteEntry(redisentryInRelocation);
+                                     * return;
+                                     * }
+                                     * // if (RedisManager.getHashField(redisentryUUIDAssigned) != null
+                                     * // && aController.alfresconNodeResponse.HasUUID) {
+                                     * // RedisManager.deleteEntry(redisentryUUIDAssigned);
+                                     * // return;
+                                     * // }
+                                     * 
+                                     * // ========================================================================
+                                     * // To be moved to migration service
+                                     * // ========================================================================
+                                     * /*
                                      * // Moveobject, binding in new environment.
                                      * if (aController.alfresconNodeResponse.MustMove) {
                                      * System.out.println(
@@ -294,7 +298,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                      * }
                                      */
 
-                                    BindIO(IOUUID, QMessage, secondPath);
+                                    // BindIO(IOUUID, QMessage, secondPath);
                                     // boolean migrate =
                                     // this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
                                     // item.getId(), deltaLink);
@@ -331,32 +335,35 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
         System.out.println("No remaining ALFRESCO messages on queue");
     }
 
-    private boolean checknodehasduuid(String nodeid) {
-
-        // 1. Maak een RestTemplate aan (of @Autowired deze)
+    private boolean processalfresconodepoint(String nodeid) {
         RestTemplate restTemplate = new RestTemplate();
+        String url = ILSProperties.getprocessalfresconodepoint();
 
-        // 1. De basis URL (Zorg dat ILSProperties verwijst naar http://localhost:8081)
-        // Of naar http://share:8080 als je code ook in Docker draait
-        String url = ILSProperties.getvalidatealfrescouuidendpoint();
-
-        // 2. Bouw de URL op met Query Parameters
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("nodeid", nodeid); 
+                .queryParam("nodeid", nodeid);
+
         try {
-            // 3. Gebruik getForEntity omdat je controller @GetMapping gebruikt
-            ResponseEntity<Boolean> response = restTemplate.getForEntity(
+            // 1. Create headers and set Content-Type to JSON
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // 2. Create an HttpEntity with a null body but including the headers
+            HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+            // 3. Use the entity in the postForEntity call
+            ResponseEntity<Boolean> response = restTemplate.postForEntity(
                     builder.toUriString(),
+                    entity,
                     Boolean.class);
 
             System.out.println("Endpoint aangeroepen. Status: " + response.getStatusCode());
-            System.out.println("Resultaat: " + response.getBody());
+
+            // Return the actual body from the response
+            return response.getBody() != null && response.getBody();
 
         } catch (Exception ex) {
             System.err.println("Fout bij aanroepen Alfresco endpoint: " + ex.getMessage());
+            return false;
         }
-
-        // Check returnvalue
-        return false;
     }
 }

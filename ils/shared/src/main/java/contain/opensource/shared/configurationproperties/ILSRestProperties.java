@@ -17,7 +17,7 @@ public class ILSRestProperties {
     private String ruleengineendpoint;
     private String ruleengineprojectname;
     private String processspitemsendpoint;
-    private String validatealfrescouuidendpoint;
+    private String processalfresconodepoint;
 
     // ----------------- Getters & Setters -----------------
     public String getbaseurl() {
@@ -101,12 +101,12 @@ public class ILSRestProperties {
     }
 
     
-    public String getvalidatealfrescouuidendpoint() {
-        return validatealfrescouuidendpoint;
+    public String getprocessalfresconodepoint() {
+        return processalfresconodepoint;
     }
 
-    public void setvalidatealfrescouuidendpoint(String validatealfrescouuidendpoint) {
-        this.validatealfrescouuidendpoint = validatealfrescouuidendpoint;
+    public void setprocessalfresconodepoint(String processalfresconodepoint) {
+        this.processalfresconodepoint = processalfresconodepoint;
     }
 
 
@@ -124,7 +124,7 @@ public class ILSRestProperties {
         System.out.println("ruleengineprojectname = " + ruleengineprojectname);
         System.out.println("ruleendpoint = " + ruleenginemoveendpoint);
         System.out.println("processspitemsendpoint = " + processspitemsendpoint);
-        System.out.println("validatealfrescouuidendpoint = " + validatealfrescouuidendpoint);
+        System.out.println("processalfresconodepoint = " + processalfresconodepoint);
         
     }
 }

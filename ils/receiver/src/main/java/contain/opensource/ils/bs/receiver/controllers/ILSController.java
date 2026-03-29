@@ -1,7 +1,5 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
-import java.util.Map;
-import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,9 +16,7 @@ import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeControlle
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.ils.bs.receiver.services.migrationservice;
 import contain.opensource.shared.classes.MigrationQueueMessage;
-import contain.opensource.shared.classes.SharepointQueMessage;
-import contain.opensource.shared.constants.AlfrescoConstants;
-import contain.opensource.shared.classes.AlfrescoNodeResponse;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api")
@@ -91,15 +87,19 @@ public class ILSController {
         }
     }
 
-    @GetMapping(value = "/GetAfrescoIOUUID", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/ProcessChangedAlfrescoNode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> GetAfrescoIOUUID(
             @RequestParam String nodeid) {
         System.out.println("in GetAfrescoIOUUID endpoint voor item: " + nodeid);
+        boolean retval = false;
         try {
-            AlfrescoNodeResponse nodeinfo = alfrescoNodeController.GetNode();
-            return ResponseEntity.ok(true);
+            retval = alfrescoNodeController.processalfresconodepoint(nodeid);
+            return ResponseEntity.ok(retval);
         } catch (Exception ex) {
-            return ResponseEntity.internalServerError().body(ex.getMessage());
+            // return ResponseEntity.internalServerError().body(ex.getMessage());
+            // To do log error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(retval);
         }
     }
 }

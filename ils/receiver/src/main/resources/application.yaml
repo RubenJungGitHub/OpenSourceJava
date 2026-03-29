@@ -41,7 +41,7 @@ app:
 alfresco:
   username: admin
   password: admin
-  baseUrl: http://localhost:8080
+  baseUrl: http://localhost:8081
 
 ils:
   baseurl: http://localhost:55000

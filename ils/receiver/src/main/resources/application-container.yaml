@@ -55,7 +55,7 @@ app:
 alfresco:
   username: admin
   password: admin
-  baseUrl: http://end-user-alfresco-1:8080
+  baseUrl: http://end-user-alfresco-1:8081
   
 
 mongodb:
