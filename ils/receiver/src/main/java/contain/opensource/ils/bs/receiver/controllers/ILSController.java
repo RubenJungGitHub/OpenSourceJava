@@ -89,11 +89,12 @@ public class ILSController {
 
     @PostMapping(value = "/ProcessChangedAlfrescoNode", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> GetAfrescoIOUUID(
-            @RequestParam String nodeid) {
+            @RequestParam String nodeid,
+            @RequestParam String secondpath) {
         System.out.println("in GetAfrescoIOUUID endpoint voor item: " + nodeid);
         boolean retval = false;
         try {
-            retval = alfrescoNodeController.processalfresconodepoint(nodeid);
+            retval = alfrescoNodeController.processalfresconodepoint(nodeid, secondpath );
             return ResponseEntity.ok(retval);
         } catch (Exception ex) {
             // return ResponseEntity.internalServerError().body(ex.getMessage());

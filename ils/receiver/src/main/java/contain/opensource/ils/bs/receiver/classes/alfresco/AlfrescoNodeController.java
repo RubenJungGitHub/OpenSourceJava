@@ -614,10 +614,14 @@ public class AlfrescoNodeController {
    * classes to be defined elsewhere in the codebase.
    */
 
-  public boolean processalfresconodepoint(String nodeid) {
+  public boolean processalfresconodepoint(String nodeid, String secondpath) {
     try {
       this.nodeId = nodeid;
-      GetNode();
+      AlfrescoNodeResponse alfrescoresponse= GetNode();
+      if(!alfrescoresponse.HASUUID)
+      {
+        String a = "a"; 
+      }
       return true;
     } catch (Exception ex) {
       return false;

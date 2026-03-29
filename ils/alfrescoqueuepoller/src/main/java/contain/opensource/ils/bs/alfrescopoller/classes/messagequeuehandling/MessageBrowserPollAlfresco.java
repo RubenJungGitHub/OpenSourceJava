@@ -169,10 +169,10 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                         ObjectMapper mapper = new ObjectMapper();
                         try {
                             AlfrescoQueMessage QMessage = mapper.readValue(json, AlfrescoQueMessage.class);
-                            Object secondPath = "";
+                            Object secondpath = "";
                             List<Object> paths = QMessage.getPaths();
                             if (paths != null && paths.size() > 1) {
-                                secondPath = paths.get(1);
+                                secondpath = paths.get(1);
                             }
                             String type = QMessage.getType();
                             // ===========================================================================================
@@ -191,7 +191,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                     IOLog.log(
                                             "DeletedFromPlatform",
                                             "",
-                                            secondPath.toString(),
+                                            secondpath.toString(),
                                             action,
                                             AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                                             AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
@@ -207,7 +207,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                     // DO IT THE SHAREPOINT PROCESSITEMS WAY.. ALL IN NODECONTROLLER. NOTHING
                                     // HERE!!!!!
 
-                                    processalfresconodepoint(QMessage.getNodeId());
+                                    processalfresconodepoint(QMessage.getNodeId(), secondpath.toString());
                                     /*
                                      * String IOUUID = "";
                                      * // if (!aController.alfresconNodeResponse.HasUUID) {
@@ -335,12 +335,13 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
         System.out.println("No remaining ALFRESCO messages on queue");
     }
 
-    private boolean processalfresconodepoint(String nodeid) {
+    private boolean processalfresconodepoint(String nodeid, String secondpath) {
         RestTemplate restTemplate = new RestTemplate();
         String url = ILSProperties.getprocessalfresconodepoint();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("nodeid", nodeid);
+                .queryParam("nodeid", nodeid)
+                .queryParam("secondpath", secondpath);
 
         try {
             // 1. Create headers and set Content-Type to JSON
