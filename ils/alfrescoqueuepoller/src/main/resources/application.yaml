@@ -65,6 +65,7 @@ activemq:
   password: admin
   sharepoint-queue: sharepoint.delta.queue
   alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+  
 
 # ---------- SERVER PORT ----------
 server:
