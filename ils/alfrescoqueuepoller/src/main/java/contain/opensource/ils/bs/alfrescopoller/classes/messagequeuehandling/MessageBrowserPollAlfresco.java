@@ -12,10 +12,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -183,23 +182,24 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             + " deleted from Alfresco by user " + QMessage.getUsername();
                                     // Remove from Redis. For SPO this is going to be a challenge
                                     // RedisManager.deleteHashField("IOLogs", type);
-                                    /*IOLog.log(
-                                            "DeletedFromPlatform",
-                                            "",
-                                            secondpath.toString(),
-                                            action,
-                                            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                            "DeletedFromPlatform",
-                                            QMessage.getName(),
-                                            "",
-                                            AlfrescoConstants.eActionPerformed.IODELETED,
-                                            QMessage.getUsername(),
-                                            "DeletedFromPlatform",
-                                            "DeletedFromPlatform",
-                                            "DeletedFromPlatform");
-                                            */
-                                    //logalfrescoiodeletedendpoint(QMessage, secondpath.toString());
+                                    /*
+                                     * IOLog.log(
+                                     * "DeletedFromPlatform",
+                                     * "",
+                                     * secondpath.toString(),
+                                     * action,
+                                     * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                                     * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                                     * "DeletedFromPlatform",
+                                     * QMessage.getName(),
+                                     * "",
+                                     * AlfrescoConstants.eActionPerformed.IODELETED,
+                                     * QMessage.getUsername(),
+                                     * "DeletedFromPlatform",
+                                     * "DeletedFromPlatform",
+                                     * "DeletedFromPlatform");
+                                     */
+                                    logalfrescoiodeletedendpoint(QMessage, secondpath.toString());
 
                                 } else {
                                     processalfresconodepoint(QMessage.getNodeId(), secondpath.toString());
@@ -314,7 +314,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
 
-                consumeMessageById(msg.getJMSMessageID(), activeMQProps.getAlfrescoQueue());
+                    consumeMessageById(msg.getJMSMessageID(), activeMQProps.getAlfrescoQueue());
 
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");
@@ -363,13 +363,14 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
         }
     }
 
-
-        private boolean logalfrescoiodeletedendpoint( AlfrescoQueMessage QMessage, String secondpath) {
-        RestTemplate restTemplate = new RestTemplate();
-        String url = ilsproperties.getlogalfrescoiodeletedendpoint();
-
+    private boolean logalfrescoiodeletedendpoint( AlfrescoQueMessage QMessage, String secondpath) {
+       RestTemplate restTemplate = new RestTemplate();
+       String url = ilsproperties.getlogiodeletedfromplatformendpoint();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("msg", QMessage)
+                .queryParam("platform", AlfrescoConstants.ContainPlatforms.ALFRESCO.name())
+                .queryParam("id", QMessage.getId())
+                .queryParam("filename", QMessage.getName())
+                .queryParam("deletedby", QMessage.getUsername())
                 .queryParam("secondpath", secondpath);
 
         try {
