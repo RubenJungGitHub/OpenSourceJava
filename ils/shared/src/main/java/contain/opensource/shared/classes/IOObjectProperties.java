@@ -189,7 +189,7 @@ public abstract class IOObjectProperties {
     public void setcontainerto(String containerto) {
         this.containerto = containerto;
     }
-    public void setmustmove() {
+    public void setmustmove () {
         this.MustMove  =  (this.containerto != null && !this.containerto.isEmpty());
     }
 

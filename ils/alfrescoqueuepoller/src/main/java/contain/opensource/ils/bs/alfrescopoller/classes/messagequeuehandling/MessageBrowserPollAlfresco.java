@@ -4,6 +4,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,10 +183,19 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                     logalfrescoiodeletedendpoint(QMessage, secondpath.toString());
 
                                 } else {
-                                    processalfresconodepoint(QMessage.getNodeId(), secondpath.toString());
+                                    Hashtable<String, String> migrateinfo = processalfresconode(QMessage.getNodeId(),
+                                            secondpath.toString());
+                                    // Check 'platformto' in plaats van 'containerto'
+                                    //To do source <> destination
+                                    if (migrateinfo.get("platformto") != null
+                                            && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
+                                    //    SendMigrationMessage(item, deltaLink,
+                                        //        AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
+                                    }
+
                                     /*
                                      * String IOUUID = "";
-                                     * // if (!aController.alfresconNodeResponse.HasUUID) {
+                                     * // if (!aController.alfresconNodeResponse.HasUUID) {cd..
                                      * // // Set UUID
                                      * // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
                                      * // ilsproperties.getuudiutilendpoint(),
@@ -310,7 +320,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
         System.out.println("No remaining ALFRESCO messages on queue");
     }
 
-    private boolean processalfresconodepoint(String nodeid, String secondpath) {
+    private Hashtable<String, String> processalfresconode(String nodeid, String secondpath) {
         RestTemplate restTemplate = new RestTemplate();
         String url = ilsproperties.getprocessalfresconodepoint();
 
@@ -327,25 +337,26 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
             HttpEntity<String> entity = new HttpEntity<>(null, headers);
 
             // 3. Use the entity in the postForEntity call
-            ResponseEntity<Boolean> response = restTemplate.postForEntity(
+            ResponseEntity<Hashtable> response = restTemplate.postForEntity(
                     builder.toUriString(),
                     entity,
-                    Boolean.class);
+                    Hashtable.class);
 
             System.out.println("Endpoint aangeroepen. Status: " + response.getStatusCode());
 
             // Return the actual body from the response
-            return response.getBody() != null && response.getBody();
+            // return response.getBody() != null && response.getBody();
+            return response.getBody();
 
         } catch (Exception ex) {
             System.err.println("Fout bij aanroepen Alfresco endpoint: " + ex.getMessage());
-            return false;
+            return null;
         }
     }
 
-    private boolean logalfrescoiodeletedendpoint( AlfrescoQueMessage QMessage, String secondpath) {
-       RestTemplate restTemplate = new RestTemplate();
-       String url = ilsproperties.getlogiodeletedfromplatformendpoint();
+    private boolean logalfrescoiodeletedendpoint(AlfrescoQueMessage QMessage, String secondpath) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = ilsproperties.getlogiodeletedfromplatformendpoint();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("platform", AlfrescoConstants.ContainPlatforms.ALFRESCO.name())
                 .queryParam("id", QMessage.getId())

@@ -58,7 +58,7 @@ public class recontroller {
         // TEST: Stuur een simpele Map terug in plaats van het complexe object
         Map<String, String> Result = new HashMap<>();
         Result.put("containerto", roObject.getcontainerto());
-        Result.put("platformto", (roObject.getplatformto() != null) ? roObject.getplatformto().name() : "UNKNOWN");
+        Result.put("platformto", (roObject.getplatformto() != null) ? roObject.getplatformto().name() : null);
         return ResponseEntity.ok(Result);
     }
 }

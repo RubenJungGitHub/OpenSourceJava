@@ -90,6 +90,7 @@ public class AlfrescoConstants {
     public enum ContainPlatforms {
         ALFRESCO,
         SPO,
+        UNKNOWN,
         TEST
     }
 

@@ -85,6 +85,8 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                 if (item.getDeleted() != null) {
                                     logalfrescoiodeletedendpoint(item, "DeletedFromPlatform");
                                 } else {
+
+                                    /*
                                     // 1. Maak een RestTemplate aan (of @Autowired deze)
                                     RestTemplate restTemplate = new RestTemplate();
 
@@ -105,8 +107,12 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                                 message,
                                                 Hashtable.class);
                                         System.out.println("Receiver antwoordde met: " + response.getStatusCode());
-                                        Hashtable<String, String> migrateinfo = response.getBody();
+                                        */
+                                       try
+                                       {
+                                        Hashtable<String, String> migrateinfo = processharepointitem(message, item, deltaLink);
                                         // Check 'platformto' in plaats van 'containerto'
+                                        //To do source <> destination
                                         if (migrateinfo.get("platformto") != null
                                                 && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
                                             SendMigrationMessage(item, deltaLink,
@@ -133,6 +139,32 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
         } catch (Exception e) {
             System.err.println("Error in StartPoll:");
             e.printStackTrace();
+        }
+    }
+
+        private Hashtable<String, String> processharepointitem(SharepointQueMessage message, SharepointQueMessage.Item item, String deltaLink) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        // 2. De URL van je nieuwe endpoint (haal dit idealiter uit ILSRestProperties)
+        String url = ilsproperties.getprocessspitemsendpoint();
+                // 3. De parameters (als je ze als Query Params houdt zoals in je huidige
+        // skeleton)
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("ItemWebUrl", item.getWebUrl())
+                .queryParam("ListItemID", item.getId())
+                .queryParam("resourceValue", deltaLink);
+
+        // 4. Verstuur het bericht (de 'message' is je SharepointQueMessage)
+        try {
+            ResponseEntity<Hashtable> response = restTemplate.postForEntity(
+                    builder.toUriString(),
+                    message,
+                    Hashtable.class);
+            System.out.println("Receiver antwoordde met: " + response.getStatusCode());
+            return  response.getBody();
+        } catch (Exception e) {
+            System.err.println("Fout bij aanroepen Receiver: " + e.getMessage());
+            return null;
         }
     }
 
