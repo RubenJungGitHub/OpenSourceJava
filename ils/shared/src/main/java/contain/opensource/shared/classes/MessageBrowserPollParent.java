@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 public abstract class MessageBrowserPollParent extends MessageBrowserPollParentMigration {
 
@@ -31,7 +32,7 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
 
         super(activeMQProps, alfrescoProps, ilsproperties, mapper, jmsTemplate);
     }
-    public void SendMigrationMessage(SharepointQueMessage.Item item, String deltalink,  String platformfrom,  Hashtable<String, String> migrateinfo ) {
+    public void SendMigrationMessage(String weburl, String id, String deltalink,  String platformfrom,  Hashtable<String, String> migrateinfo ) {
         try {
 
             session = connection.createSession(true, Session.SESSION_TRANSACTED);
@@ -40,8 +41,8 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
             MessageProducer producer = session.createProducer(queue);
             producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-            MigrationQueueMessage payload = new MigrationQueueMessage(item.getWebUrl(), "Migrate", platformfrom, 
-                    item.getFields().get("id").toString(), deltalink, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
+            MigrationQueueMessage payload = new MigrationQueueMessage(weburl, "Migrate", platformfrom, 
+                    id, deltalink, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
             String json = objectMapper.writeValueAsString(payload);
             String correlationId = MDC.get("correlationId");
             TextMessage message = session.createTextMessage(json);
@@ -54,7 +55,7 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
             session.commit();
             session.close();
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
-                    + timestamp + "-> Information object " + item + " sent to migrationqueue"
+                    + timestamp + "-> Information object " + weburl + " sent to migrationqueue"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
         } catch (Exception ex) {

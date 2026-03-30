@@ -73,75 +73,6 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
      * @param args Command-line arguments (currently unused).
      */
 
-    private String BindIO(String IOUUID, AlfrescoQueMessage QMessage, Object secondPath) {
-        // First sign and log
-
-        /*
-         * // IN the future store as actual byte in Redis and datastore. For POC store
-         * as
-         * try {
-         * System.out.println(contain.opensource.shared.constants.AlfrescoConstants.
-         * BG_CYAN
-         * + contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_RED
-         * + ("Binding ALFRESCO NODE IO " + IOUUID)
-         * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-         * 
-         * // Create request WITHOUT key
-         * BindRequest request = new
-         * BindRequest(aController.alfresconNodeResponse.ToSecuredDocument());
-         * 
-         * String endPoint = ilsproperties.getbindendpoint();
-         * System.out
-         * .println(contain.opensource.shared.constants.AlfrescoConstants.RED
-         * + "Binding endpoint  : "
-         * + endPoint
-         * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-         * 
-         * RestTemplate restTemplate = new RestTemplate();
-         * HttpHeaders headers = new HttpHeaders();
-         * headers.setContentType(MediaType.APPLICATION_JSON);
-         * 
-         * HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
-         * ResponseEntity<String> response = restTemplate.postForEntity(endPoint,
-         * entity,
-         * String.class);
-         * 
-         * // Move log to binding function
-         * String action = "Content and-or metadata changed : REBIND IO " + IOUUID +
-         * " : "
-         * + QMessage.getName();
-         * if (response.getStatusCode().value() == 200) {
-         * IOLog.log(
-         * IOUUID,
-         * QMessage.getId(),
-         * secondPath.toString(),
-         * action,
-         * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-         * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-         * response.getBody(),
-         * QMessage.getName(),
-         * "",
-         * AlfrescoConstants.eActionPerformed.IOBOUND,
-         * QMessage.getUsername(),
-         * aController.alfresconNodeResponse.marking,
-         * aController.alfresconNodeResponse.classification,
-         * aController.alfresconNodeResponse.version);
-         * //
-         * =============================================================================
-         * =============
-         * }
-         * return response.getBody();
-         * } catch (Exception e) {
-         * System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
-         * + "Error during binding: " + e.getMessage()
-         * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-         * e.printStackTrace();
-         * 
-         * return "Binding failed" + e.getMessage();
-         */
-        return "bla";
-    }
-
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
             String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
@@ -186,11 +117,30 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                     Hashtable<String, String> migrateinfo = processalfresconode(QMessage.getNodeId(),
                                             secondpath.toString());
                                     // Check 'platformto' in plaats van 'containerto'
-                                    //To do source <> destination
+                                    // To do source <> destination
                                     if (migrateinfo.get("platformto") != null
                                             && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
-                                    //    SendMigrationMessage(item, deltaLink,
-                                        //        AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
+
+                                        String rawPath = QMessage.getPaths().get(1).toString();
+
+                                        // 1. Remove the brackets
+                                        String cleanPath = rawPath.replace("[", "").replace("]", "");
+
+                                        // 2. Find the position of the last forward slash
+                                        int lastSlashIndex = cleanPath.lastIndexOf("/");
+
+                                        // 3. Extract everything from the start up to (but not including) the last slash
+                                        String folderOnly = (lastSlashIndex != -1)
+                                                ? cleanPath.substring(0, lastSlashIndex)
+                                                : cleanPath;
+
+                                        System.out.println(folderOnly);
+                                        // Output: "/Company Home/Sites/ontobind/documentLibrary"
+
+                                        SendMigrationMessage(QMessage.getPaths().get(1).toString(),
+                                                QMessage.getId().toString(),
+                                                "deltalink",
+                                                AlfrescoConstants.ContainPlatforms.ALFRESCO.name(), migrateinfo);
                                     }
 
                                     /*
@@ -303,8 +253,8 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                 + "Processing non-text message: " + msg
                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
-
-                    consumeMessageById(msg.getJMSMessageID(), activeMQProps.getAlfrescoQueue());
+                    // To do transaction and persistance
+                    // consumeMessageById(msg.getJMSMessageID(), activeMQProps.getAlfrescoQueue());
 
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");

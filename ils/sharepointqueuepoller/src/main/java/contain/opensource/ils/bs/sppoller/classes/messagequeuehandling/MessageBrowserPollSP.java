@@ -115,7 +115,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                         //To do source <> destination
                                         if (migrateinfo.get("platformto") != null
                                                 && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
-                                            SendMigrationMessage(item, deltaLink,
+                                            SendMigrationMessage(item.getWebUrl(), item.getFields().get("id").toString(), deltaLink,
                                                     AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
                                         }
                                     } catch (Exception e) {
