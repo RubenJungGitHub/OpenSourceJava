@@ -81,19 +81,22 @@ public class ILSController {
             @RequestParam String deletedby,
             @RequestParam String secondpath) {
         try {
+            String decodesecondpath = URLDecoder.decode(secondpath, StandardCharsets.UTF_8);
+            String decodefilename  = URLDecoder.decode(filename, StandardCharsets.UTF_8);
+            String decodeeletedby = URLDecoder.decode(deletedby, StandardCharsets.UTF_8);
             String action = id + " : " + filename + " deleted from " + platform + " by user " + deletedby;
             IOLog.log(
                     "DeletedFromPlatform",
                     id,
-                    secondpath,
+                    decodesecondpath,
                     action,
-                    AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                    AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                    platform,
+                    platform,
                     "DeletedFromPlatform",
-                    filename,
+                    decodefilename,
                     "",
                     AlfrescoConstants.eActionPerformed.IODELETED,
-                    deletedby,
+                    decodeeletedby,
                     "DeletedFromPlatform",
                     "DeletedFromPlatform",
                     "DeletedFromPlatform");
@@ -126,8 +129,8 @@ public class ILSController {
         System.out.println("in GetAfrescoIOUUID endpoint voor item: " + nodeid);
         boolean retval = false;
         try {
-            String descodesecondpath = URLDecoder.decode(secondpath, StandardCharsets.UTF_8);
-            retval = alfrescoNodeController.processalfresconodepoint(nodeid, descodesecondpath);
+            String decodesecondpath = URLDecoder.decode(secondpath, StandardCharsets.UTF_8);
+            retval = alfrescoNodeController.processalfresconodepoint(nodeid, decodesecondpath);
             return ResponseEntity.ok(retval);
         } catch (Exception ex) {
             // return ResponseEntity.internalServerError().body(ex.getMessage());

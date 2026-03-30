@@ -6,8 +6,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -80,26 +83,8 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                 }
                                 String deltaLink = message.getDeltaLink().split("\\?")[0];
                                 if (item.getDeleted() != null) {
-
-                                    String action = "IO  " + item.getId() + " deleted from platform";
-                                /*     IOLog.log(
-                                            "DeletedFromPlatform",
-                                            item.getId(),
-                                            "DeletedFromPlatform",
-                                            action,
-                                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                                            AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                                            "DeletedFromPlatform",
-                                            "DeletedFromPlatform",
-                                            deltaLink,
-                                            AlfrescoConstants.eActionPerformed.IODELETED,
-                                            "<Unknown>",
-                                            "DeletedFromPlatform",
-                                            "DeletedFromPlatform",
-                                            "DeletedFromPlatform");
-                                            */
+                                    logalfrescoiodeletedendpoint(item, "DeletedFromPlatform");
                                 } else {
-
                                     // 1. Maak een RestTemplate aan (of @Autowired deze)
                                     RestTemplate restTemplate = new RestTemplate();
 
@@ -151,4 +136,38 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
         }
     }
 
+    private boolean logalfrescoiodeletedendpoint(SharepointQueMessage.Item item, String secondpath) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = ilsproperties.getlogiodeletedfromplatformendpoint();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("platform", AlfrescoConstants.ContainPlatforms.SPO.name())
+                .queryParam("id", item.getId())
+                .queryParam("filename", "<Unknown>")
+                .queryParam("deletedby", "<Unknown>")
+                .queryParam("secondpath", secondpath);
+
+        try {
+            // 1. Create headers and set Content-Type to JSON
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // 2. Create an HttpEntity with a null body but including the headers
+            HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+            // 3. Use the entity in the postForEntity call
+            ResponseEntity<Boolean> response = restTemplate.postForEntity(
+                    builder.toUriString(),
+                    entity,
+                    Boolean.class);
+
+            System.out.println("Endpoint aangeroepen. Status: " + response.getStatusCode());
+
+            // Return the actual body from the response
+            return response.getBody() != null && response.getBody();
+
+        } catch (Exception ex) {
+            System.err.println("Fout bij aanroepen Alfresco endpoint: " + ex.getMessage());
+            return false;
+        }
+    }
 }

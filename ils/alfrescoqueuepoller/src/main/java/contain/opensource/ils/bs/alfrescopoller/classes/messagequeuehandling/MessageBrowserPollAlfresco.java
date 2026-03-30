@@ -12,7 +12,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -180,25 +179,6 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                     // Only for ballenbak
                                     String action = QMessage.getId() + " : " + QMessage.getName()
                                             + " deleted from Alfresco by user " + QMessage.getUsername();
-                                    // Remove from Redis. For SPO this is going to be a challenge
-                                    // RedisManager.deleteHashField("IOLogs", type);
-                                    /*
-                                     * IOLog.log(
-                                     * "DeletedFromPlatform",
-                                     * "",
-                                     * secondpath.toString(),
-                                     * action,
-                                     * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                     * AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                                     * "DeletedFromPlatform",
-                                     * QMessage.getName(),
-                                     * "",
-                                     * AlfrescoConstants.eActionPerformed.IODELETED,
-                                     * QMessage.getUsername(),
-                                     * "DeletedFromPlatform",
-                                     * "DeletedFromPlatform",
-                                     * "DeletedFromPlatform");
-                                     */
                                     logalfrescoiodeletedendpoint(QMessage, secondpath.toString());
 
                                 } else {
