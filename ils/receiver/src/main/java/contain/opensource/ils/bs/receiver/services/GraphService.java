@@ -57,7 +57,7 @@ import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
-import contain.opensource.shared.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -1,6 +1,5 @@
 package contain.opensource.ils.bs.receiver.controllers;
 
-
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
@@ -16,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.services.GraphService;
 import contain.opensource.ils.bs.receiver.services.migrationservice;
 import contain.opensource.shared.classes.MigrationQueueMessage;
+import contain.opensource.shared.constants.AlfrescoConstants;
 
 @RestController
 @RequestMapping("/api")
@@ -72,9 +73,40 @@ public class ILSController {
         }
     }
 
+    @PostMapping(value = "/logiodeletedfromplatform", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void logalfrescoiodeleted(
+            @RequestBody String platform,
+            @RequestBody String filename,
+            @RequestBody String deletedby,
+            @RequestParam String secondpath) {
+        try {
+            String action = "action";
+            // String action = msg.getId() + " : " + msg.getName() + " deleted from Alfresco
+            // by user " + msg.getUsername();
+            /*
+            IOLog.log(
+                    "DeletedFromPlatform",
+                    "",
+                    secondpath.toString(),
+                    action,
+                    AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                    AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                    "DeletedFromPlatform",
+                    msg.getName(),
+                    "",
+                    AlfrescoConstants.eActionPerformed.IODELETED,
+                    msg.getUsername(),
+                    "DeletedFromPlatform",
+                    "DeletedFromPlatform",
+                    "DeletedFromPlatform");
+                    */
+        } catch (Exception ex) {
+            throw ex;
+        }
+    }
+
     @PostMapping(value = "/ProcessChangedSharepointItem", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> ProcessChangedSharepointItem(
-            @RequestParam String ItemWebUrl,
+    public ResponseEntity<?> ProcessChangedSharepointItem(@RequestParam String ItemWebUrl,
             @RequestParam String ListItemID,
             @RequestParam String resourceValue) {
         System.out.println("in ProcessChangedSharepointItem endpoint voor item: " + ItemWebUrl);
@@ -98,7 +130,7 @@ public class ILSController {
         boolean retval = false;
         try {
             String descodesecondpath = URLDecoder.decode(secondpath, StandardCharsets.UTF_8);
-            retval = alfrescoNodeController.processalfresconodepoint(nodeid, descodesecondpath );
+            retval = alfrescoNodeController.processalfresconodepoint(nodeid, descodesecondpath);
             return ResponseEntity.ok(retval);
         } catch (Exception ex) {
             // return ResponseEntity.internalServerError().body(ex.getMessage());

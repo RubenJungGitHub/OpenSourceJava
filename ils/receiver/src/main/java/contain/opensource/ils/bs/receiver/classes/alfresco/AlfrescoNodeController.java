@@ -37,7 +37,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
-import contain.opensource.shared.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 //import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -671,7 +672,7 @@ public class AlfrescoNodeController {
                     String.class);
 
             // Move log to binding function
-            String action = "IO MODIFIED. BIND IO " + Alfrescoitem.UUID + "  to ALFRESCO IO " + Alfrescoitem.filename;
+            String action = "IO MODIFIED. BIND IO " + Alfrescoitem.UUID + "  to ALFRESCO IO " +  Alfrescoitem.entry.filename;
             if (bindresponse.getStatusCode().value() == 200) {
                 IOLog.log(
                         Alfrescoitem.UUID,

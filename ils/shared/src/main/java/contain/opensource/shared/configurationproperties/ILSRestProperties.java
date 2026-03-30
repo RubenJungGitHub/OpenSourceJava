@@ -18,8 +18,20 @@ public class ILSRestProperties {
     private String ruleengineprojectname;
     private String processspitemsendpoint;
     private String processalfresconodepoint;
+    private String logalfrescoiodeletedendpoint;
 
     // ----------------- Getters & Setters -----------------
+    
+// The `getbaseurl()` method is a getter method for the `baseurl` property in the `ILSRestProperties` class. It simply returns the current value of the `baseurl` property.
+
+    public String getlogalfrescoiodeletedendpoint() {
+        return logalfrescoiodeletedendpoint;
+    }
+
+    public void setlogalfrescoiodeletedendpoint(String logalfrescoiodeletedendpoint) {
+        this.logalfrescoiodeletedendpoint = logalfrescoiodeletedendpoint;
+    }
+
     public String getbaseurl() {
         return baseurl;
     }

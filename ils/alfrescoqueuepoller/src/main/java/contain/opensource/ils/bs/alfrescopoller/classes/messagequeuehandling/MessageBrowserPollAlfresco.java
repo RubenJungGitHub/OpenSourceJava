@@ -19,7 +19,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-//import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.shared.classes.AlfrescoQueMessage;
 import contain.opensource.shared.classes.MessageBrowserPollParent;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
@@ -44,11 +43,11 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
     // private AlfrescoNodeController aController;
     @Autowired
     public MessageBrowserPollAlfresco(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsProperties, ObjectMapper objectMapper) {
+            ILSRestProperties ilsproperties, ObjectMapper objectMapper) {
         super(
                 activeMQProps,
                 alfrescoProps,
-                ilsProperties,
+                ilsproperties,
                 objectMapper,
                 null);
     }
@@ -92,7 +91,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
          * BindRequest request = new
          * BindRequest(aController.alfresconNodeResponse.ToSecuredDocument());
          * 
-         * String endPoint = ILSProperties.getbindendpoint();
+         * String endPoint = ilsproperties.getbindendpoint();
          * System.out
          * .println(contain.opensource.shared.constants.AlfrescoConstants.RED
          * + "Binding endpoint  : "
@@ -184,7 +183,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             + " deleted from Alfresco by user " + QMessage.getUsername();
                                     // Remove from Redis. For SPO this is going to be a challenge
                                     // RedisManager.deleteHashField("IOLogs", type);
-                                    IOLog.log(
+                                    /*IOLog.log(
                                             "DeletedFromPlatform",
                                             "",
                                             secondpath.toString(),
@@ -199,6 +198,9 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
+                                            */
+                                    //logalfrescoiodeletedendpoint(QMessage, secondpath.toString());
+
                                 } else {
                                     processalfresconodepoint(QMessage.getNodeId(), secondpath.toString());
                                     /*
@@ -206,7 +208,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                      * // if (!aController.alfresconNodeResponse.HasUUID) {
                                      * // // Set UUID
                                      * // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
-                                     * // ILSProperties.getuudiutilendpoint(),
+                                     * // ilsproperties.getuudiutilendpoint(),
                                      * // Optional.ofNullable(secondPath.toString()), Optional.empty());
                                      * // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID
                                      * // ,Optional.ofNullable(secondPath.toString()), Optional.empty());
@@ -262,8 +264,8 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                      * RestTemplate restTemplate = new RestTemplate();
                                      * // String endpoint = String.format(
                                      * // "%s/RelocateIO",
-                                     * // this.ILSProperties.getBaseUrl());
-                                     * String endpoint = this.ILSProperties.getBaseUrl();
+                                     * // this.ilsproperties.getBaseUrl());
+                                     * String endpoint = this.ilsproperties.getBaseUrl();
                                      * HttpHeaders headers = new HttpHeaders();
                                      * headers.setContentType(MediaType.APPLICATION_JSON);
                                      * headers.setBasicAuth(
@@ -330,10 +332,44 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
 
     private boolean processalfresconodepoint(String nodeid, String secondpath) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = ILSProperties.getprocessalfresconodepoint();
+        String url = ilsproperties.getprocessalfresconodepoint();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("nodeid", nodeid)
+                .queryParam("secondpath", secondpath);
+
+        try {
+            // 1. Create headers and set Content-Type to JSON
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // 2. Create an HttpEntity with a null body but including the headers
+            HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+            // 3. Use the entity in the postForEntity call
+            ResponseEntity<Boolean> response = restTemplate.postForEntity(
+                    builder.toUriString(),
+                    entity,
+                    Boolean.class);
+
+            System.out.println("Endpoint aangeroepen. Status: " + response.getStatusCode());
+
+            // Return the actual body from the response
+            return response.getBody() != null && response.getBody();
+
+        } catch (Exception ex) {
+            System.err.println("Fout bij aanroepen Alfresco endpoint: " + ex.getMessage());
+            return false;
+        }
+    }
+
+
+        private boolean logalfrescoiodeletedendpoint( AlfrescoQueMessage QMessage, String secondpath) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = ilsproperties.getlogalfrescoiodeletedendpoint();
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParam("msg", QMessage)
                 .queryParam("secondpath", secondpath);
 
         try {

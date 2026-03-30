@@ -48,14 +48,14 @@ public abstract class MessageBrowserPollParentMigration {
     public String timestamp;
     private volatile boolean pollingActive = false;
     private final ExecutorService pollExecutor = Executors.newSingleThreadExecutor();
-    public ILSRestProperties ILSProperties;
+    public ILSRestProperties ilsproperties;
     
     @Autowired
     public MessageBrowserPollParentMigration(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsProperties, ObjectMapper mapper, JmsTemplate jmsTemplate) {
+            ILSRestProperties ilsproperties, ObjectMapper mapper, JmsTemplate jmsTemplate) {
         this.activeMQProps = activeMQProps;
         this.alfrescoProps = alfrescoProps;
-        this.ILSProperties = ilsProperties;
+        this.ilsproperties = ilsproperties;
         this.objectMapper = mapper;
         this.jmsTemplate = jmsTemplate;
     }

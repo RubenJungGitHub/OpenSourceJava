@@ -24,12 +24,12 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
     public MessageBrowserPollParent(
             ActiveMQProperties activeMQProps,
             AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsProperties,
+            ILSRestProperties ilsproperties,
             ObjectMapper mapper,
             JmsTemplate jmsTemplate
             ) {
 
-        super(activeMQProps, alfrescoProps, ilsProperties, mapper, jmsTemplate);
+        super(activeMQProps, alfrescoProps, ilsproperties, mapper, jmsTemplate);
     }
     public void SendMigrationMessage(SharepointQueMessage.Item item, String deltalink,  String platformfrom,  Hashtable<String, String> migrateinfo ) {
         try {

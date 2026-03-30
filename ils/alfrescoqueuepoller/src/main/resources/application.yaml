@@ -81,6 +81,7 @@ ils:
   bindendpoint: http://localhost:55000/api/Bind
   processspitemsendpoint: http://localhost:55000/api/ProcessChangedSharepointItem
   processalfresconodepoint: http://localhost:55000/api/ProcessChangedAlfrescoNode
+  logalfrescoiodeletedendpoint: http://localhost:55000/api/logalfrescoiodeleted
   relocateendpoint: http://localhost:55000/api/MigrateIO
   ruleenginemoveendpoint: http://localhost:55000/api/rules
   ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server

@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import contain.opensource.shared.classes.MessageBrowserPollParent;
 import contain.opensource.shared.classes.SharepointQueMessage;
-import contain.opensource.shared.classes.Logger.IOLog;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
@@ -36,13 +35,13 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
     @Autowired
     public MessageBrowserPollSP(ActiveMQProperties activeMQProps,
             AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsProperties,
+            ILSRestProperties ilsproperties,
             ObjectMapper objectMapper,
             JmsTemplate jmsTemplate) {
         super(
                 activeMQProps,
                 alfrescoProps,
-                ilsProperties,
+                ilsproperties,
                 objectMapper,
                 jmsTemplate);
     }
@@ -83,7 +82,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                 if (item.getDeleted() != null) {
 
                                     String action = "IO  " + item.getId() + " deleted from platform";
-                                    IOLog.log(
+                                /*     IOLog.log(
                                             "DeletedFromPlatform",
                                             item.getId(),
                                             "DeletedFromPlatform",
@@ -98,13 +97,14 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform",
                                             "DeletedFromPlatform");
+                                            */
                                 } else {
 
                                     // 1. Maak een RestTemplate aan (of @Autowired deze)
                                     RestTemplate restTemplate = new RestTemplate();
 
                                     // 2. De URL van je nieuwe endpoint (haal dit idealiter uit ILSRestProperties)
-                                    String url = ILSProperties.getprocessspitemsendpoint();
+                                    String url = ilsproperties.getprocessspitemsendpoint();
 
                                     // 3. De parameters (als je ze als Query Params houdt zoals in je huidige
                                     // skeleton)

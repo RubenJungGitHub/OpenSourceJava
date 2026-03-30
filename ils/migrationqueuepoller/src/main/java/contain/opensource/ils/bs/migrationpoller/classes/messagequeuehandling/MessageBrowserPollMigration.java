@@ -35,13 +35,13 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
     public MessageBrowserPollMigration(
             ActiveMQProperties activeMQProps,
             AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsProperties,
+            ILSRestProperties ilsproperties,
             ObjectMapper objectMapper,
             JmsTemplate jmsTemplate) {
         super(
                 activeMQProps,
                 alfrescoProps,
-                ilsProperties,
+                ilsproperties,
                 objectMapper,
                 jmsTemplate);
 
@@ -73,7 +73,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                         // Process migration
                         json = ((TextMessage) msg).getText();
                         MigrationQueueMessage queueMessage = mapper.readValue(json, MigrationQueueMessage.class);
-                        String endpoint = ILSProperties.getrelocateendpoint();
+                        String endpoint = ilsproperties.getrelocateendpoint();
                         System.out.println("Relocate endpoint: " + endpoint);
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
