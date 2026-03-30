@@ -11,7 +11,7 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 public abstract class IOObjectProperties {
 
     public boolean HasUUID = false;
-    public boolean MustMove = false;
+    private boolean MustMove = false;
     public String UUID;
 
     @JsonProperty("name")
@@ -188,5 +188,12 @@ public abstract class IOObjectProperties {
 
     public void setcontainerto(String containerto) {
         this.containerto = containerto;
+    }
+    public void setmustmove() {
+        this.MustMove  =  (this.containerto != null && !this.containerto.isEmpty());
+    }
+
+        public boolean getmustmove() {
+        return this.MustMove;
     }
 }

@@ -674,7 +674,7 @@ public class GraphService {
         return accessToken;
     }
 
-    private static boolean itemmustmigrate(SharePointItemResponse SPItem) {
+    private static void itemmustmigrate(SharePointItemResponse SPItem) {
         String endpoint = ILSProperties.getruleenginemoveendpoint();
         String cleanPlatformFrom = SPItem.platformfrom.name().replace("\"", "");
         String cleanClassification = SPItem.classification.replace("\"", "");
@@ -728,8 +728,7 @@ public class GraphService {
             // Log de fout als de Rule Engine onbereikbaar is
             e.printStackTrace();
         }
-
-        return responseBody != null && !responseBody.isEmpty();
+        SPItem.setmustmove();
     }
 
     // public SharePointItemResponse getListItemsById(String listId, String
@@ -826,9 +825,10 @@ public class GraphService {
                     }
                 }
                 // Validate if item should move
-                SPItem.MustMove = itemmustmigrate(SPItem);
+                itemmustmigrate(SPItem);
 
-                if (mustMove) {
+
+                if (SPItem.getmustmove()) {
                     System.out.println("Item " + li.id + " marked for move to " + moveTo);
                 }
                 return SPItem;
@@ -883,7 +883,7 @@ public class GraphService {
             migrationinfo.put("containerto", SPItem.getcontainerto() != null ? SPItem.getcontainerto() : "");
 
             if (SPItem != null) {
-                if (!SPItem.MustMove && SPItem.HasUUID) {
+                if (!SPItem.getmustmove() && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
                 if (!SPItem.HasUUID) {

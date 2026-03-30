@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import contain.opensource.shared.classes.IOObjectProperties;
@@ -49,6 +50,8 @@ import contain.opensource.ils.bs.receiver.classes.Binding.SecuredDocument;
 public class AlfrescoNodeResponse extends IOObjectProperties {
     public Entry entry;
 
+    
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Entry {
         public boolean isFile;
         public CreatedByUser createdByUser;

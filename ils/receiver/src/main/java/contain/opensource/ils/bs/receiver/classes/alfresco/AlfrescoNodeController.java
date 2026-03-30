@@ -12,11 +12,16 @@ import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Optional;
 import java.net.URL;
+import java.net.URI;
 
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -39,6 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 //import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
@@ -621,8 +627,7 @@ public class AlfrescoNodeController {
     Hashtable<String, String> migrationinfo = new Hashtable<>();
     try {
 
-      this.nodeId = nodeid;
-
+      this.nodeId = nodeid; 
       AlfrescoNodeResponse alfrescoresponse = GetNode();
 
       migrationinfo.put("platformto",
@@ -630,7 +635,11 @@ public class AlfrescoNodeController {
       migrationinfo.put("containerto",
           alfrescoresponse.getcontainerto() != null ? alfrescoresponse.getcontainerto() : "");
       alfrescoresponse.setpath(secondpath);
-      if (!alfrescoresponse.HasUUID) {
+      if (alfresconNodeResponse.getmustmove()){
+            System.out.println("Item " + alfresconNodeResponse.getcontainerfrom() + " marked for move to " + alfrescoresponse.getplatformto()  + " ->" + alfrescoresponse.getcontainerto() )  ;
+        }
+
+   if (!alfrescoresponse.HasUUID) {
         // Assign UUID
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
@@ -643,6 +652,64 @@ public class AlfrescoNodeController {
       throw ex;
     }
     return migrationinfo;
+  }
+
+  private void itemmustmigrate(AlfrescoNodeResponse aitem) {
+    String endpoint = ilsproperties.getruleenginemoveendpoint();
+    String cleanPlatformFrom = aitem.platformfrom.name().replace("\"", "");
+    String cleanClassification = aitem.classification.replace("\"", "");
+    String cleanMarking = aitem.marking.replace("\"", "");
+    String cleancontainerfrom = aitem.containerfrom.replace("\"", "");
+
+    // Bouw de URL exact zoals Swagger het doet
+    URI targetUri = UriComponentsBuilder.fromHttpUrl(ilsproperties.getruleenginemoveendpoint())
+        .queryParam("platformfrom", cleanPlatformFrom)
+        .queryParam("containerfrom", cleancontainerfrom)
+        .queryParam("classification", cleanClassification)
+        .queryParam("marking", cleanMarking)
+        .build()
+        .encode()
+        .toUri();
+
+    HttpClient client = HttpClient.newHttpClient();
+    // 1. Bouw de Request (gebruik de URL die je net hebt samengesteld)
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(targetUri)
+        .GET() // Of .POST(BodyPublishers.noBody()) afhankelijk van je endpoint
+        .build();
+
+    // 2. Verstuur de aanvraag en vang de response op
+    // Let op: client.send gooit Checked Exceptions (IOException,
+    // InterruptedException)
+    String responseBody = null;
+    try {
+      HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+      // 3. Controleer de statuscode
+      int statusCode = response.statusCode();
+      responseBody = response.body();
+
+      if (statusCode == 200) {
+        System.out.println("Succes! Response: " + responseBody);
+        ObjectMapper mapper = new ObjectMapper();
+
+        // Map de JSON direct naar je bestaande object
+        // Dit vult automatisch platformto (Enum) en containerto (String)
+        RelocateInformationObject result = mapper.readValue(responseBody, RelocateInformationObject.class);
+        aitem.setplatformto(result.getplatformto());
+        aitem.setcontainerto(result.getcontainerto());
+
+        System.out.println("Destination platform: " + aitem.getplatformto());
+        System.out.println("Destination container  " + aitem.getcontainerto());
+      } else {
+        System.err.println("Fout van Rule Engine of geen resultaat: " + statusCode + " - " + responseBody);
+      }
+    } catch (IOException | InterruptedException e) {
+      // Log de fout als de Rule Engine onbereikbaar is
+      e.printStackTrace();
+    }
+    aitem.setmustmove();
+    
   }
 
   private void BindObject(AlfrescoNodeResponse Alfrescoitem) {
@@ -708,8 +775,9 @@ public class AlfrescoNodeController {
 
   private AlfrescoNodeResponse GetNode() {
     try {
+
       String endpoint = String.format(
-          "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
+          "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s?include=path",
           this.endpoint, this.nodeId);
       System.out.println("Alfresco endpoint applied : " + endpoint);
 
@@ -731,7 +799,7 @@ public class AlfrescoNodeController {
 
           try {
             alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
-
+            alfresconNodeResponse.setplatformfrom(AlfrescoConstants.ContainPlatforms.ALFRESCO);
             // Navigate to the title and description
             alfresconNodeResponse.Title = rootNode.path("entry")
                 .path("properties")
@@ -758,6 +826,13 @@ public class AlfrescoNodeController {
                 .path("contain:CLASSIFICATION")
                 .asText();
 
+            alfresconNodeResponse.setcontainerfrom(rootNode.path("entry")
+                .path("path")
+                .path("name")
+                .asText());
+
+
+
             // Check if UUID present
             // Get node content
             Object ioUUIDValue = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
@@ -779,6 +854,8 @@ public class AlfrescoNodeController {
               e.printStackTrace();
             }
             try {
+              itemmustmigrate(alfresconNodeResponse);
+
               // alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO
               // MOVE>")); // IMPROVE!! SHOULD
               // ALSO CHECK IF NOT
