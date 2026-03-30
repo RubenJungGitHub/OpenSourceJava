@@ -4,7 +4,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -82,7 +81,7 @@ public class ILSController {
             @RequestParam String secondpath) {
         try {
             String decodesecondpath = URLDecoder.decode(secondpath, StandardCharsets.UTF_8);
-            String decodefilename  = URLDecoder.decode(filename, StandardCharsets.UTF_8);
+            String decodefilename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
             String decodeeletedby = URLDecoder.decode(deletedby, StandardCharsets.UTF_8);
             String action = id + " : " + filename + " deleted from " + platform + " by user " + deletedby;
             IOLog.log(
@@ -123,20 +122,16 @@ public class ILSController {
     }
 
     @PostMapping(value = "/ProcessChangedAlfrescoNode", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> GetAfrescoIOUUID(
+    public ResponseEntity<?> ProcessChangedAlfrescoNode(
             @RequestParam String nodeid,
             @RequestParam String secondpath) {
-        System.out.println("in GetAfrescoIOUUID endpoint voor item: " + nodeid);
-        boolean retval = false;
+        System.out.println("in ProcessChangedAlfrescoNode endpoint voor item: " + nodeid);
         try {
             String decodesecondpath = URLDecoder.decode(secondpath, StandardCharsets.UTF_8);
-            retval = alfrescoNodeController.processalfresconodepoint(nodeid, decodesecondpath);
-            return ResponseEntity.ok(retval);
+            var result = alfrescoNodeController.processalfresconodepoint(nodeid, decodesecondpath);
+            return ResponseEntity.ok(result);
         } catch (Exception ex) {
-            // return ResponseEntity.internalServerError().body(ex.getMessage());
-            // To do log error
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(retval);
+            return ResponseEntity.internalServerError().body(ex.getMessage());
         }
     }
 }

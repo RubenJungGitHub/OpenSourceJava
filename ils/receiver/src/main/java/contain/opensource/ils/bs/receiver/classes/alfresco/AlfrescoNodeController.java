@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.util.Base64;
+import java.util.Hashtable;
 import java.util.Optional;
 import java.net.URL;
-
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -58,7 +59,6 @@ public class AlfrescoNodeController {
   private ILSRestProperties ilsproperties;
   private AlfrescoProperties alfrescoProperties;
 
-  
   @Autowired
   public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsproperties) {
     this.alfrescoProperties = alfrescoProperties;
@@ -616,86 +616,94 @@ public class AlfrescoNodeController {
    * classes to be defined elsewhere in the codebase.
    */
 
-  public boolean processalfresconodepoint(String nodeid, String secondpath) {
+  public Hashtable<String, String> processalfresconodepoint(String nodeid, String secondpath)
+      throws MalformedURLException, Exception {
+    Hashtable<String, String> migrationinfo = new Hashtable<>();
     try {
+
       this.nodeId = nodeid;
-      AlfrescoNodeResponse alfrescoresponse= GetNode();
+
+      AlfrescoNodeResponse alfrescoresponse = GetNode();
+
+      migrationinfo.put("platformto",(alfrescoresponse.getplatformto() != null) ? alfrescoresponse.getplatformto().name() : "<NO MOVE>");
+    //  migrationinfo.put("containerto"alfrescoresponse.getcontainerto() != null ? alfrescoresponse.getcontainerto() : "");
       alfrescoresponse.setpath(secondpath);
-      if(!alfrescoresponse.HasUUID )
-      {
-        //Assign UUID
-          boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID ,Optional.ofNullable(secondpath), Optional.empty());
-          //Bind IO AND LOG THERE 
-          return true;
+      if (!alfrescoresponse.HasUUID) {
+        // Assign UUID
+        boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
+            Optional.empty());
+        // Bind IO AND LOG THERE
       }
       BindObject(alfrescoresponse);
-      return true;
     } catch (Exception ex) {
-      return false;
+      System.err.println("Failed to process changed SP item: " + ex);
+      ex.printStackTrace();
+      throw ex;
+    }
+    return migrationinfo;
+  }
+
+  private void BindObject(AlfrescoNodeResponse Alfrescoitem) {
+    // First sign and log
+    try {
+      System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_MAGENTA
+          + contain.opensource.shared.constants.AlfrescoConstants.RED
+          + ("Binding SP IO " + Alfrescoitem.UUID)
+          + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+      // PrivateKey key = PKCS12KeyLoader.PK;
+      PrivateKey key;
+      // Create request WITHOUT key
+      BindRequest request = new BindRequest(
+          Alfrescoitem.ToSecuredDocument());
+
+      String endPoint = ilsproperties.getbindendpoint();
+      System.out
+          .println(contain.opensource.shared.constants.AlfrescoConstants.RED
+              + "Binding endpoint  : "
+              + endPoint
+              + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
+      URL url = new URL(endPoint);
+      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+      conn.setRequestMethod("POST");
+
+      int status = conn.getResponseCode();
+      System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
+
+      RestTemplate restTemplate = new RestTemplate();
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
+      ResponseEntity<String> bindresponse = restTemplate.postForEntity(endPoint, entity,
+          String.class);
+
+      // Move log to binding function
+      String action = "IO MODIFIED. BIND IO " + Alfrescoitem.UUID + "  to ALFRESCO IO " + Alfrescoitem.entry.filename;
+      if (bindresponse.getStatusCode().value() == 200) {
+        IOLog.log(
+            Alfrescoitem.UUID,
+            Alfrescoitem.id,
+            Alfrescoitem.getpath(),
+            action,
+            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+            AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+            bindresponse.getBody(),
+            Alfrescoitem.entry.filename,
+            "",
+            AlfrescoConstants.eActionPerformed.IOBOUND,
+            "System",
+            Alfrescoitem.marking,
+            Alfrescoitem.classification,
+            Alfrescoitem.version);
+        // ==========================================================================================
+      }
+    } catch (Exception ex) {
+      System.err.println("Failed to bind object: " + ex);
+      ex.printStackTrace();
     }
   }
 
-  
-    private void BindObject(AlfrescoNodeResponse Alfrescoitem) {
-        // First sign and log
-        try {
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_MAGENTA
-                    + contain.opensource.shared.constants.AlfrescoConstants.RED
-                    + ("Binding SP IO " + Alfrescoitem.UUID)
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            // PrivateKey key = PKCS12KeyLoader.PK;
-            PrivateKey key;
-            // Create request WITHOUT key
-            BindRequest request = new BindRequest(
-                    Alfrescoitem.ToSecuredDocument());
-
-            String endPoint = ilsproperties.getbindendpoint();
-            System.out
-                    .println(contain.opensource.shared.constants.AlfrescoConstants.RED
-                            + "Binding endpoint  : "
-                            + endPoint
-                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
-            URL url = new URL(endPoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-
-            int status = conn.getResponseCode();
-            System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
-
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
-            ResponseEntity<String> bindresponse = restTemplate.postForEntity(endPoint, entity,
-                    String.class);
-
-            // Move log to binding function
-            String action = "IO MODIFIED. BIND IO " + Alfrescoitem.UUID + "  to ALFRESCO IO " +  Alfrescoitem.entry.filename;
-            if (bindresponse.getStatusCode().value() == 200) {
-                IOLog.log(
-                        Alfrescoitem.UUID,
-                        Alfrescoitem.id,
-                        Alfrescoitem.getpath(),
-                        action,
-                        AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                        AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                        bindresponse.getBody(),
-                        Alfrescoitem.entry.filename,
-                        "",
-                        AlfrescoConstants.eActionPerformed.IOBOUND,
-                        "System",
-                        Alfrescoitem.marking,
-                        Alfrescoitem.classification,
-                        Alfrescoitem.version);
-                // ==========================================================================================
-            }
-        } catch (Exception ex) {
-            System.err.println("Failed to bind object: " + ex);
-            ex.printStackTrace();
-        }
-    }
   private AlfrescoNodeResponse GetNode() {
     try {
       String endpoint = String.format(
@@ -924,7 +932,8 @@ public class AlfrescoNodeController {
           conn.setRequestMethod("GET");
 
           int status = conn.getResponseCode();
-          System.out.println("Accessing uuid rest url on " + ilsproperties.getuudiutilendpoint() + " return code -> " + status);
+          System.out.println(
+              "Accessing uuid rest url on " + ilsproperties.getuudiutilendpoint() + " return code -> " + status);
 
           if (status == 200) {
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
