@@ -88,7 +88,7 @@ public class GraphService {
     static GraphServiceClient<?> graphClient;
     static AlfrescoConstants.eItemtype itemtype;
     static ILSRestProperties ILSProperties = null;
-    static AlfrescoNodeController acontroller = null;
+    //static AlfrescoNodeController acontroller = null;
 
     @Autowired
     public GraphService(ILSRestProperties ilsProperties, AlfrescoNodeController alfresconodecontroller) {
@@ -97,7 +97,7 @@ public class GraphService {
         this.DeltaLinkFile = ILSProperties.getdeltalinkfile();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        this.acontroller = alfresconodecontroller;
+        //this.acontroller = alfresconodecontroller;
     }
 
     public static byte[] getSPItemContentById(String itemId, String ListId) throws IOException, InterruptedException {
@@ -397,7 +397,7 @@ public class GraphService {
                 IOLog.log(
                         SPItem.UUID,
                         SPItem.id,
-                        SPItem.Path,
+                        SPItem.getpath(),
                         action,
                         AlfrescoConstants.ContainPlatforms.SPO.toString(),
                         AlfrescoConstants.ContainPlatforms.SPO.toString(),
@@ -425,7 +425,7 @@ public class GraphService {
                     + " : " + ROobject.getcontainerto();
 
             // Upload to Alfresco
-            this.acontroller.uploadSPItemToAlfresco(ROobject);
+           // this.acontroller.uploadSPItemToAlfresco(ROobject);
 
             // log
             IOLog.log(
@@ -809,7 +809,7 @@ public class GraphService {
                         SPItem.filename = filenameStr;
                         SPItem.description = descriptionStr;
                         SPItem.mimetype = mimeType;
-                        SPItem.Path = driveItem.webUrl;
+                        SPItem.setpath(driveItem.webUrl);
                         SPItem.UUID = uuidValue;
                         SPItem.platformfrom = AlfrescoConstants.ContainPlatforms.SPO;
                         SPItem.containerfrom = tenantDomain + "/" + SiteName + "/" + ListId;
@@ -893,7 +893,7 @@ public class GraphService {
                     IOLog.log(
                             SPItem.UUID,
                             SPItem.id,
-                            SPItem.Path,
+                            SPItem.getpath(),
                             action,
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),
                             AlfrescoConstants.ContainPlatforms.SPO.toString(),

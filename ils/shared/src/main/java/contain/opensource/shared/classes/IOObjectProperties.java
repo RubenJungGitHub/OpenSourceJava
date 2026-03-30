@@ -58,6 +58,9 @@ public abstract class IOObjectProperties {
     @JsonProperty("containerto")
     public String containerto;
 
+    @JsonProperty("path")
+    public String path;
+
 
     // getters and setters
     public String getId() {
@@ -142,6 +145,15 @@ public abstract class IOObjectProperties {
 
     public void setversion(String version) {
         this.version = version;
+    }
+
+    
+    public String getpath() {
+        return this.path;
+    }
+
+    public void setpath(String path) {
+        this.path = path;
     }
 
     public AlfrescoConstants.ContainPlatforms getplatformfrom() {

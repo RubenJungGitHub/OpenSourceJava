@@ -62,7 +62,7 @@ public class SharePointItemResponse extends IOObjectProperties {
     @JsonProperty("mimetype") // <-- map directly
     public String mimetype;
 
-    public String Path;
+
 
     @JsonProperty("containIOdescription") // <-- map directly
     public String description;

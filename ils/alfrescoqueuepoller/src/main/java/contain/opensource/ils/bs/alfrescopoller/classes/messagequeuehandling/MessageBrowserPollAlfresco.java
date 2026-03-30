@@ -310,7 +310,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
 
-                    // consumeMessageById(msg.getJMSMessageID());
+                consumeMessageById(msg.getJMSMessageID(), activeMQProps.getAlfrescoQueue());
 
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");

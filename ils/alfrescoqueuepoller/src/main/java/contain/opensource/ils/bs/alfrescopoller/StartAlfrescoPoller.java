@@ -4,7 +4,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import contain.opensource.ils.bs.receiver.classes.redis.RedisConfigProperties;
-import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;

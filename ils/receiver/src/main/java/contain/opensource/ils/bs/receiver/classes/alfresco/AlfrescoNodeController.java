@@ -36,14 +36,10 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
-import contain.opensource.shared.classes.AlfrescoNodeResponse;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
-//import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 //import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -631,6 +627,8 @@ public class AlfrescoNodeController {
         //Assign UUID
           boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID ,Optional.ofNullable(secondpath), Optional.empty());
           //Bind IO AND LOG THERE 
+          BindObject(alfrescoresponse);
+
       }
       return true;
     } catch (Exception ex) {
@@ -639,18 +637,18 @@ public class AlfrescoNodeController {
   }
 
   
-    private void BindObject(SharePointItemResponse SPItem) {
+    private void BindObject(AlfrescoNodeResponse Alfrescoitem) {
         // First sign and log
         try {
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_MAGENTA
                     + contain.opensource.shared.constants.AlfrescoConstants.RED
-                    + ("Binding SP IO " + SPItem.UUID)
+                    + ("Binding SP IO " + Alfrescoitem.UUID)
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             // PrivateKey key = PKCS12KeyLoader.PK;
             PrivateKey key;
             // Create request WITHOUT key
             BindRequest request = new BindRequest(
-                    SPItem.ToSecuredDocument());
+                    Alfrescoitem.ToSecuredDocument());
 
             String endPoint = ilsproperties.getbindendpoint();
             System.out
@@ -675,23 +673,23 @@ public class AlfrescoNodeController {
                     String.class);
 
             // Move log to binding function
-            String action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+            String action = "IO MODIFIED. BIND IO " + Alfrescoitem.UUID + "  to new SharePoint IO " + Alfrescoitem.filename;
             if (bindresponse.getStatusCode().value() == 200) {
                 IOLog.log(
-                        SPItem.UUID,
-                        SPItem.id,
-                        SPItem.Path,
+                        Alfrescoitem.UUID,
+                        Alfrescoitem.id,
+                        Alfrescoitem.getpath(),
                         action,
-                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
-                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
+                        AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                         bindresponse.getBody(),
-                        SPItem.filename,
+                        Alfrescoitem.filename,
                         "",
                         AlfrescoConstants.eActionPerformed.IOBOUND,
                         "System",
-                        SPItem.marking,
-                        SPItem.classification,
-                        SPItem.version);
+                        Alfrescoitem.marking,
+                        Alfrescoitem.classification,
+                        Alfrescoitem.version);
                 // ==========================================================================================
             }
         } catch (Exception ex) {

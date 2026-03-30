@@ -1,7 +1,7 @@
 package contain.opensource.ils.bs.receiver.classes;
 
+import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeResponse;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
-import contain.opensource.shared.classes.AlfrescoNodeResponse;
 import contain.opensource.shared.classes.IOObjectProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 
