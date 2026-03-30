@@ -6,10 +6,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
 import java.util.Base64;
 import java.util.Optional;
 import java.net.URL;
 
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestTemplate;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -24,6 +30,7 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,10 +43,11 @@ import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 
 //import contain.opensource.ils.bs.receiver.classes.Logger.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 //import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
-
+import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
@@ -52,15 +60,15 @@ public class AlfrescoNodeController {
   private String endpoint;
 
   public AlfrescoNodeResponse alfresconNodeResponse;
-  private ILSRestProperties ilsRestProperties;
+  private ILSRestProperties ilsproperties;
   private AlfrescoProperties alfrescoProperties;
 
   // private migrationservice migrationservice;
 
   @Autowired
-  public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsProperties) {
+  public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsproperties) {
     this.alfrescoProperties = alfrescoProperties;
-    this.ilsRestProperties = ilsProperties;
+    this.ilsproperties = ilsproperties;
     this.endpoint = alfrescoProperties.getBaseUrl();
     this.username = alfrescoProperties.getUsername();
     this.password = alfrescoProperties.getPassword();
@@ -630,6 +638,67 @@ public class AlfrescoNodeController {
     }
   }
 
+  
+    private void BindObject(SharePointItemResponse SPItem) {
+        // First sign and log
+        try {
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_MAGENTA
+                    + contain.opensource.shared.constants.AlfrescoConstants.RED
+                    + ("Binding SP IO " + SPItem.UUID)
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            // PrivateKey key = PKCS12KeyLoader.PK;
+            PrivateKey key;
+            // Create request WITHOUT key
+            BindRequest request = new BindRequest(
+                    SPItem.ToSecuredDocument());
+
+            String endPoint = ilsproperties.getbindendpoint();
+            System.out
+                    .println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                            + "Binding endpoint  : "
+                            + endPoint
+                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
+            URL url = new URL(endPoint);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+
+            int status = conn.getResponseCode();
+            System.out.println("Accessing uuid rest url on " + endPoint + " return code -> " + status);
+
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<BindRequest> entity = new HttpEntity<>(request, headers);
+            ResponseEntity<String> bindresponse = restTemplate.postForEntity(endPoint, entity,
+                    String.class);
+
+            // Move log to binding function
+            String action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+            if (bindresponse.getStatusCode().value() == 200) {
+                IOLog.log(
+                        SPItem.UUID,
+                        SPItem.id,
+                        SPItem.Path,
+                        action,
+                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        bindresponse.getBody(),
+                        SPItem.filename,
+                        "",
+                        AlfrescoConstants.eActionPerformed.IOBOUND,
+                        "System",
+                        SPItem.marking,
+                        SPItem.classification,
+                        SPItem.version);
+                // ==========================================================================================
+            }
+        } catch (Exception ex) {
+            System.err.println("Failed to bind object: " + ex);
+            ex.printStackTrace();
+        }
+    }
   private AlfrescoNodeResponse GetNode() {
     try {
       String endpoint = String.format(
@@ -847,18 +916,18 @@ public class AlfrescoNodeController {
           propertyName = "contain:IOUUID"; // custom aspect property
           System.out.println(
               AlfrescoConstants.RED + "Get UUID endpoint  : "
-                  + ilsRestProperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
+                  + ilsproperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
 
           String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.ALFRESCO;
 
-          String urlString = ilsRestProperties.getuudiutilendpoint() + query;
+          String urlString = ilsproperties.getuudiutilendpoint() + query;
 
           URL url = new URL(urlString);
           HttpURLConnection conn = (HttpURLConnection) url.openConnection();
           conn.setRequestMethod("GET");
 
           int status = conn.getResponseCode();
-          System.out.println("Accessing uuid rest url on " + ilsRestProperties.getuudiutilendpoint() + " return code -> " + status);
+          System.out.println("Accessing uuid rest url on " + ilsproperties.getuudiutilendpoint() + " return code -> " + status);
 
           if (status == 200) {
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
