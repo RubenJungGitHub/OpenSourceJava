@@ -625,8 +625,10 @@ public class AlfrescoNodeController {
 
       AlfrescoNodeResponse alfrescoresponse = GetNode();
 
-      migrationinfo.put("platformto",(alfrescoresponse.getplatformto() != null) ? alfrescoresponse.getplatformto().name() : "<NO MOVE>");
-    //  migrationinfo.put("containerto"alfrescoresponse.getcontainerto() != null ? alfrescoresponse.getcontainerto() : "");
+      migrationinfo.put("platformto",
+          (alfrescoresponse.getplatformto() != null) ? alfrescoresponse.getplatformto().name() : "<NO MOVE>");
+      migrationinfo.put("containerto",
+          alfrescoresponse.getcontainerto() != null ? alfrescoresponse.getcontainerto() : "");
       alfrescoresponse.setpath(secondpath);
       if (!alfrescoresponse.HasUUID) {
         // Assign UUID
