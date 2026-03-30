@@ -75,31 +75,28 @@ public class ILSController {
 
     @PostMapping(value = "/logiodeletedfromplatform", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void logalfrescoiodeleted(
-            @RequestBody String platform,
-            @RequestBody String filename,
-            @RequestBody String deletedby,
+            @RequestParam String platform,
+            @RequestParam String id,
+            @RequestParam String filename,
+            @RequestParam String deletedby,
             @RequestParam String secondpath) {
         try {
-            String action = "action";
-            // String action = msg.getId() + " : " + msg.getName() + " deleted from Alfresco
-            // by user " + msg.getUsername();
-            /*
+            String action = id + " : " + filename + " deleted from " + platform + " by user " + deletedby;
             IOLog.log(
                     "DeletedFromPlatform",
-                    "",
-                    secondpath.toString(),
+                    id,
+                    secondpath,
                     action,
                     AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                     AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                     "DeletedFromPlatform",
-                    msg.getName(),
+                    filename,
                     "",
                     AlfrescoConstants.eActionPerformed.IODELETED,
-                    msg.getUsername(),
+                    deletedby,
                     "DeletedFromPlatform",
                     "DeletedFromPlatform",
                     "DeletedFromPlatform");
-                    */
         } catch (Exception ex) {
             throw ex;
         }

@@ -53,6 +53,7 @@ ils:
   baseurl: http://receiver:8080
   bindendpoint: http://receiver:8080/api/Bind
   processspitemsendpoint: http://receiver:8080/api/ProcessChangedSharepointItem
+  logiodeletedfromplatformendpoint: http://receiver:8080/api/logiodeletedfromplatform
   ruleenginemoveendpoint: http://receiver:8080/api/rules
   relocateendpoint: http://receiver:8080/api/MigrateIO
   ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
