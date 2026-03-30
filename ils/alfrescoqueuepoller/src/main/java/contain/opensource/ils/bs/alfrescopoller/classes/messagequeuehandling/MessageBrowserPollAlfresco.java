@@ -15,9 +15,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+//import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.shared.classes.AlfrescoQueMessage;
 import contain.opensource.shared.classes.MessageBrowserPollParent;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;

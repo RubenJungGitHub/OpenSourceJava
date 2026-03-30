@@ -37,10 +37,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
+import contain.opensource.shared.classes.Logger.IOLog;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
-
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 //import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
@@ -59,8 +57,7 @@ public class AlfrescoNodeController {
   private ILSRestProperties ilsproperties;
   private AlfrescoProperties alfrescoProperties;
 
-  // private migrationservice migrationservice;
-
+  
   @Autowired
   public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsproperties) {
     this.alfrescoProperties = alfrescoProperties;
@@ -622,14 +619,15 @@ public class AlfrescoNodeController {
     try {
       this.nodeId = nodeid;
       AlfrescoNodeResponse alfrescoresponse= GetNode();
+      alfrescoresponse.setpath(secondpath);
       if(!alfrescoresponse.HasUUID )
       {
         //Assign UUID
           boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID ,Optional.ofNullable(secondpath), Optional.empty());
           //Bind IO AND LOG THERE 
-          BindObject(alfrescoresponse);
-
+          return true;
       }
+      BindObject(alfrescoresponse);
       return true;
     } catch (Exception ex) {
       return false;
@@ -673,7 +671,7 @@ public class AlfrescoNodeController {
                     String.class);
 
             // Move log to binding function
-            String action = "IO MODIFIED. BIND IO " + Alfrescoitem.UUID + "  to new SharePoint IO " + Alfrescoitem.filename;
+            String action = "IO MODIFIED. BIND IO " + Alfrescoitem.UUID + "  to ALFRESCO IO " + Alfrescoitem.filename;
             if (bindresponse.getStatusCode().value() == 200) {
                 IOLog.log(
                         Alfrescoitem.UUID,
@@ -683,7 +681,7 @@ public class AlfrescoNodeController {
                         AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                         AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                         bindresponse.getBody(),
-                        Alfrescoitem.filename,
+                        Alfrescoitem.entry.filename,
                         "",
                         AlfrescoConstants.eActionPerformed.IOBOUND,
                         "System",

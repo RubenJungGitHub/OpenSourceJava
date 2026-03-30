@@ -15,9 +15,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.shared.classes.MessageBrowserPollParent;
 import contain.opensource.shared.classes.SharepointQueMessage;
+import contain.opensource.shared.classes.Logger.IOLog;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;

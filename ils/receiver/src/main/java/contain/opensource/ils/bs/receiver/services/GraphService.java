@@ -53,11 +53,11 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
+import contain.opensource.shared.classes.Logger.IOLog;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -392,7 +392,7 @@ public class GraphService {
                     String.class);
 
             // Move log to binding function
-            String action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+            String action = "IO MODIFIED. BIND IO " + SPItem.UUID + "  to SharePoint IO " + SPItem.filename;
             if (bindresponse.getStatusCode().value() == 200) {
                 IOLog.log(
                         SPItem.UUID,
