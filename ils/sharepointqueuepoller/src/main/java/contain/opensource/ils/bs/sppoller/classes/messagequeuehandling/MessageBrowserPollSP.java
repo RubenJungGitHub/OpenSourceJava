@@ -54,13 +54,11 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
     @Override
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
-            timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
-            String feeback = timestamp + " -> New SHAREPOINT poll loop on broker : "
-                    + activeMQProps.getMigrationHub().getBrokerUrl()
-                    + " on queue " + activeMQProps.getMigrationHub().getSharepointQueue() + ". Interval : "
-                    + PollInterval + " seconds";
+            String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
+            String feedback = timestamp + " -> New SHAREPOINT poll loop on broker : " + this.currentSource.getBrokerUrl()
+                    + " on queue " + this.queuetopoll + ". Interval : " + PollInterval + " seconds";
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
-                    + feeback
+                    + feedback
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             String json = "";
             int count = 0;

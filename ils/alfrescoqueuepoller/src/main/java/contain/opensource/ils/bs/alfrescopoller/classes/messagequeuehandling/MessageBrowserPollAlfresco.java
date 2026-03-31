@@ -50,7 +50,8 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                 objectMapper,
                 null,
                 activeMQProps.getAlfrescoSource().getQueue().toString(),
-                activeMQProps.getAlfrescoSource());;
+                activeMQProps.getAlfrescoSource());
+        ;
     }
 
     /**
@@ -78,10 +79,10 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
             String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
-            String feedback = timestamp + " -> New ALFRESCO poll loop on broker : " + (activeMQProps.getAlfrescoSource().getBrokerUrl())
-                                        + " on queue " + activeMQProps.getAlfrescoSource().getQueue() + ". Interval : " + PollInterval + " seconds";
+            String feedback = timestamp + " -> New ALFRESCO poll loop on broker : " + this.currentSource.getBrokerUrl()
+                    + " on queue " + this.queuetopoll + ". Interval : " + PollInterval + " seconds";
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
-                    + feedback 
+                    + feedback
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Enumeration<?> messages = browser.getEnumeration();
             int count = 0;
@@ -95,9 +96,9 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                         TextMessage text = (TextMessage) msg;
                         json = text.getText();
                         ObjectMapper mapper = new ObjectMapper();
-                        //To do additional checkslike contenttype
+                        // To do additional checkslike contenttype
                         try {
-                            //to do validation on content type
+                            // to do validation on content type
                             AlfrescoQueMessage QMessage = mapper.readValue(json, AlfrescoQueMessage.class);
                             Object secondpath = "";
                             List<Object> paths = QMessage.getPaths();

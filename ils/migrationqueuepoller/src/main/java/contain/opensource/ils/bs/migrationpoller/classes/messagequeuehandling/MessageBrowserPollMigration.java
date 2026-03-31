@@ -51,58 +51,50 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
 
     @Override
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
+
+        timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
+        String feedback = timestamp + " -> New MIGRATION poll loop on broker : " + this.currentSource.getBrokerUrl()
+                + " on queue " + this.queuetopoll + ". Interval : " + PollInterval + " seconds";
+        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
+                + feedback
+                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
         try {
+            String json = "";
+            int count = 0;
+            ObjectMapper mapper = new ObjectMapper();
+            Enumeration<?> messages = browser.getEnumeration();
 
-            timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
-            String feedback = timestamp + " -> New MIGRATION poll loop on broker : "
-                    + activeMQProps.getMigrationHub().getBrokerUrl()
-                    + " on queue " + activeMQProps.getMigrationHub().getMigrationQueue() + ". Interval : "
-                    + PollInterval + " seconds";
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
-                    + feeback
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
-            try {
-                String json = "";
-                int count = 0;
-                ObjectMapper mapper = new ObjectMapper();
-                Enumeration<?> messages = browser.getEnumeration();
-
-                while (messages.hasMoreElements()) {
-                    count++;
-                    Message msg = (Message) messages.nextElement();
-                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.YELLOW
-                            + timestamp + " -> Processing  message # " + count + " " + msg + "from queue"
-                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                    if (msg instanceof TextMessage) {
-                        // Process migration
-                        json = ((TextMessage) msg).getText();
-                        MigrationQueueMessage queueMessage = mapper.readValue(json, MigrationQueueMessage.class);
-                        String endpoint = ilsproperties.getrelocateendpoint();
-                        System.out.println("Relocate endpoint: " + endpoint);
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        headers.setBasicAuth(
-                                AlfrescoConstants.username,
-                                AlfrescoConstants.password,
-                                StandardCharsets.UTF_8);
-                        RestTemplate restTemplate = new RestTemplate();
-                        // HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
-                        // headers);
-                        ResponseEntity<String> response = restTemplate.postForEntity(endpoint, queueMessage,
-                                String.class);
-                        System.out.println("Status: " + response.getStatusCodeValue());
-                        System.out.println("Body: " + response.getBody());
-                        int status = response.getStatusCode().value();
-                        if (status != 200) {
-                            throw new IOException("HTTP error " + status);
-                        }
+            while (messages.hasMoreElements()) {
+                count++;
+                Message msg = (Message) messages.nextElement();
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.YELLOW
+                        + timestamp + " -> Processing  message # " + count + " " + msg + "from queue"
+                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                if (msg instanceof TextMessage) {
+                    // Process migration
+                    json = ((TextMessage) msg).getText();
+                    MigrationQueueMessage queueMessage = mapper.readValue(json, MigrationQueueMessage.class);
+                    String endpoint = ilsproperties.getrelocateendpoint();
+                    System.out.println("Relocate endpoint: " + endpoint);
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    headers.setBasicAuth(
+                            AlfrescoConstants.username,
+                            AlfrescoConstants.password,
+                            StandardCharsets.UTF_8);
+                    RestTemplate restTemplate = new RestTemplate();
+                    // HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
+                    // headers);
+                    ResponseEntity<String> response = restTemplate.postForEntity(endpoint, queueMessage,
+                            String.class);
+                    System.out.println("Status: " + response.getStatusCodeValue());
+                    System.out.println("Body: " + response.getBody());
+                    int status = response.getStatusCode().value();
+                    if (status != 200) {
+                        throw new IOException("HTTP error " + status);
                     }
-                    // consumeMessageById(msg.getJMSMessageID());
                 }
-            } catch (Exception e) {
-                System.err.println("Error in StartPoll:");
-                e.printStackTrace();
+                // consumeMessageById(msg.getJMSMessageID());
             }
         } catch (Exception e) {
             System.err.println("Error in StartPoll:");
