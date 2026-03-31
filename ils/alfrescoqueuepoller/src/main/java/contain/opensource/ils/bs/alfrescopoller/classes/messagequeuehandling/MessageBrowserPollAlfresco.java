@@ -76,9 +76,10 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
             String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
+            String feedback = timestamp + " -> New ALFRESCO poll loop on broker : " + (activeMQProps.getAlfrescoSource().getBrokerUrl())
+                                        + " on queue " + activeMQProps.getAlfrescoSource().getQueue() + ". Interval : " + PollInterval + " seconds";
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
-                    + timestamp + " -> New ALFRESCO poll loop on broker : " + activeMQProps.getBrokerUrl()
-                    + " on queue " + activeMQProps.getAlfrescoQueue() + ". Interval : " + PollInterval + " seconds"
+                    + feedback 
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             Enumeration<?> messages = browser.getEnumeration();
             int count = 0;
@@ -121,26 +122,38 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                     if (migrateinfo.get("platformto") != null
                                             && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
 
-                                        String rawPath = QMessage.getPaths().get(1).toString();
+                                        List<Object> pathsList = QMessage.getPaths();
+                                        String rawPath = "";
 
-                                        // 1. Remove the brackets
-                                        String cleanPath = rawPath.replace("[", "").replace("]", "");
+                                        if (pathsList != null && !pathsList.isEmpty()) {
+                                            // If the list has at least 2 items, it's likely the nested format [Class,
+                                            // [Data]]
+                                            if (pathsList.size() >= 2 && pathsList.get(1) instanceof List) {
+                                                List<?> internalList = (List<?>) pathsList.get(1);
+                                                rawPath = internalList.get(0).toString();
+                                            }
+                                            // If it only has 1 item, it's the simple format [/path/to/file]
+                                            else {
+                                                rawPath = pathsList.get(0).toString();
+                                            }
+                                        }
 
-                                        // 2. Find the position of the last forward slash
-                                        int lastSlashIndex = cleanPath.lastIndexOf("/");
+                                        // 2. Now clean the string (Brackets and Filename)
+                                        if (!rawPath.isEmpty()) {
+                                            String cleanPath = rawPath.replace("[", "").replace("]", "");
+                                            int lastSlash = cleanPath.lastIndexOf("/");
 
-                                        // 3. Extract everything from the start up to (but not including) the last slash
-                                        String folderOnly = (lastSlashIndex != -1)
-                                                ? cleanPath.substring(0, lastSlashIndex)
-                                                : cleanPath;
+                                            // This is your weburl: "/Company Home/Sites/ontobind/documentLibrary"
+                                            String folderOnly = (lastSlash != -1) ? cleanPath.substring(0, lastSlash)
+                                                    : cleanPath;
 
-                                        System.out.println(folderOnly);
-                                        // Output: "/Company Home/Sites/ontobind/documentLibrary"
+                                            // 3. Now it is safe to call your send function
 
-                                        SendMigrationMessage(QMessage.getPaths().get(1).toString(),
-                                                QMessage.getId().toString(),
-                                                "deltalink",
-                                                AlfrescoConstants.ContainPlatforms.ALFRESCO.name(), migrateinfo);
+                                            SendMigrationMessage(folderOnly,
+                                                    QMessage.getId().toString(),
+                                                    "deltalink",
+                                                    AlfrescoConstants.ContainPlatforms.ALFRESCO.name(), migrateinfo);
+                                        }
                                     }
 
                                     /*
@@ -254,7 +267,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
                     // To do transaction and persistance
-                    // consumeMessageById(msg.getJMSMessageID(), activeMQProps.getAlfrescoQueue());
+                    consumeMessageById(msg.getJMSMessageID(), activeMQProps.getAlfrescoSource().getQueue());
 
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");

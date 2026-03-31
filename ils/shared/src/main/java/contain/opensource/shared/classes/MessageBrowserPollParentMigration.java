@@ -26,6 +26,7 @@ import jakarta.jms.Session;
 
 public abstract class MessageBrowserPollParentMigration {
 
+    /*
     @Value("${activemq.brokerUrl}")
     public String brokerUrl;
 
@@ -34,6 +35,8 @@ public abstract class MessageBrowserPollParentMigration {
 
     @Value("${activemq.password}")
     public String password;
+
+*/
 
     public Integer PollInterval = 15;
     public JmsTemplate jmsTemplate;
@@ -94,6 +97,7 @@ public abstract class MessageBrowserPollParentMigration {
 
         Thread pollerThread = new Thread(() -> {
             try {
+                System.out.println("Attempting new polloop on  queue: " + queueid);
                 pollLoop(queueid);
             } finally {
                 pollingActive = false;
@@ -180,7 +184,8 @@ public abstract class MessageBrowserPollParentMigration {
         try {
             while (true) {
                 try {
-                    factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+                    //factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
+                    factory = new ActiveMQConnectionFactory(activeMQProps.getAlfrescoSource().getUser(), activeMQProps.getAlfrescoSource().getPassword(), activeMQProps.getAlfrescoSource().getBrokerUrl());
                     connection = factory.createConnection();
                     connection.start();
                     session = connection.createSession(true, Session.SESSION_TRANSACTED);

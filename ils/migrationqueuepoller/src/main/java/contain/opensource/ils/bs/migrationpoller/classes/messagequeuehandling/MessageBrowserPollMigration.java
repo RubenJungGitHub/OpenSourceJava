@@ -2,16 +2,10 @@ package contain.opensource.ils.bs.migrationpoller.classes.messagequeuehandling;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
-
-import jakarta.jms.Message;
-import jakarta.jms.Queue;
-import jakarta.jms.QueueBrowser;
-import jakarta.jms.Session;
-import jakarta.jms.TextMessage;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,6 +22,11 @@ import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueBrowser;
+import jakarta.jms.Session;
+import jakarta.jms.TextMessage;
 
 @Component
 public class MessageBrowserPollMigration extends MessageBrowserPollParentMigration {
@@ -57,6 +56,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                     + timestamp + " -> New MIGRATION poll loop on broker : " + browser
                     + " on queue " + queue + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                    
             try {
                 String json = "";
                 int count = 0;

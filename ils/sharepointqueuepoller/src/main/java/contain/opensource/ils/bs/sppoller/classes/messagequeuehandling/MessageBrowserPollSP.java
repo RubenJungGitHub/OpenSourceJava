@@ -54,8 +54,8 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
         try {
             timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
-                    + timestamp + " -> New SHAREPOINT poll loop on broker : " + activeMQProps.getBrokerUrl()
-                    + " on queue " + activeMQProps.getSharepointQueue() + ". Interval : " + PollInterval + " seconds"
+                    + timestamp + " -> New SHAREPOINT poll loop on broker : " + activeMQProps.getMigrationHub()
+                    + " on queue " + activeMQProps.getMigrationHub().getSharepointQueue() + ". Interval : " + PollInterval + " seconds"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             String json = "";
             int count = 0;
@@ -123,7 +123,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                     }
                                 }
                             }
-                            consumeMessageById(msg.getJMSMessageID(), activeMQProps.getSharepointQueue());
+                            consumeMessageById(msg.getJMSMessageID(), activeMQProps.getMigrationHub().getSharepointQueue());
                         } catch (JMSException processingError) {
                             System.err.println("Error while processing message" + processingError);
                             processingError.printStackTrace();

@@ -21,6 +21,6 @@ public class StartupRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        SPPoll.startPolling(MQProps.getSharepointQueue());
+        SPPoll.startPolling(MQProps.getMigrationHub().getMigrationQueue());
     }
 }

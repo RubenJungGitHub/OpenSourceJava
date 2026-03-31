@@ -1,47 +1,54 @@
 package contain.opensource.shared.classes;
 
-import jakarta.jms.DeliveryMode;
-import jakarta.jms.MessageProducer;
-import jakarta.jms.Session;
-import jakarta.jms.TextMessage;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
-// ... and any other javax.jms imports;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.MDC;
 import org.springframework.jms.core.JmsTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-//import contain.opensource.ils.bs.receiver.classes.migration.MessageBrowserPollParentMigration;
-//import contain.opensource.ils.bs.receiver.classes.migration.MigrationQueueMessage;/
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
-import contain.opensource.shared.constants.AlfrescoConstants;
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import jakarta.jms.Connection;
+import jakarta.jms.TextMessage;
+import jakarta.jms.Queue;
 
 public abstract class MessageBrowserPollParent extends MessageBrowserPollParentMigration {
 
-    
     public MessageBrowserPollParent(
             ActiveMQProperties activeMQProps,
             AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsproperties,
             ObjectMapper mapper,
-            JmsTemplate jmsTemplate
-            ) {
+            JmsTemplate jmsTemplate) {
 
         super(activeMQProps, alfrescoProps, ilsproperties, mapper, jmsTemplate);
     }
-    public void SendMigrationMessage(String weburl, String id, String deltalink,  String platformfrom,  Hashtable<String, String> migrateinfo ) {
-        try {
 
-            session = connection.createSession(true, Session.SESSION_TRANSACTED);
+    public void SendMigrationMessage(String weburl, String id, String deltalink, String platformfrom,
+            Hashtable<String, String> migrateinfo) {
+        try {
+            ActiveMQConnectionFactory migfactory = new ActiveMQConnectionFactory(
+                    activeMQProps.getMigrationHub().getUser(), activeMQProps.getMigrationHub().getPassword(),
+                    activeMQProps.getMigrationHub().getBrokerUrl());
+            Connection migconnection = migfactory.createConnection();
+            migconnection.start();
+            Session migsession = migconnection.createSession(true, Session.SESSION_TRANSACTED);
+
             // Create a message producer
-            queue = session.createQueue(activeMQProps.getMigrationqueue());
-            MessageProducer producer = session.createProducer(queue);
+            Queue migqueue = migsession.createQueue(activeMQProps.getMigrationHub().getMigrationQueue());
+            MessageProducer producer = migsession.createProducer(migqueue);
             producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-            MigrationQueueMessage payload = new MigrationQueueMessage(weburl, "Migrate", platformfrom, 
+            MigrationQueueMessage payload = new MigrationQueueMessage(weburl, "Migrate", platformfrom,
                     id, deltalink, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
             String json = objectMapper.writeValueAsString(payload);
             String correlationId = MDC.get("correlationId");
@@ -52,8 +59,11 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
 
             // Clean up
             producer.close();
-            session.commit();
-            session.close();
+            migsession.commit();
+            migsession.close();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
                     + timestamp + "-> Information object " + weburl + " sent to migrationqueue"
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);

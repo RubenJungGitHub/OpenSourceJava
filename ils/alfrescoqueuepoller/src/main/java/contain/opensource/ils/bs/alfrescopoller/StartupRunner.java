@@ -21,19 +21,6 @@ public class StartupRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
        
-       /*
-        System.out.println("✅ StartupRunner run() called!");
-        new Thread(() -> {
-            try {
-                SPPoll.ReadMessages();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, "SPPoller-Thread").start();
-    }
-    */
-
-    AlfrescoPoll.startPolling(MQProps.getAlfrescoQueue());
-
+    AlfrescoPoll.startPolling(MQProps.getAlfrescoSource().getQueue());
     }
 }

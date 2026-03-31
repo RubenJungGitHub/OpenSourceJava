@@ -21,6 +21,6 @@ public class StartupRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-    MigrationPoll.startPolling(MQProps.getMigrationqueue());
+    MigrationPoll.startPolling(MQProps.getMigrationHub().getMigrationQueue());
     }
 }
