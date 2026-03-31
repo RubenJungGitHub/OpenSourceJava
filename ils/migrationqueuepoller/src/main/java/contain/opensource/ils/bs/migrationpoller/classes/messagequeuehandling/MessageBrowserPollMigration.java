@@ -99,7 +99,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                         System.err.println("Error in StartPoll:");
                         e.printStackTrace();
                     }
-                    //consumeMessageById(msg.getJMSMessageID());
+                    consumeMessageById(msg.getJMSMessageID());
                     if (status != 200) {
                         throw new IOException("HTTP error " + status);
                     }
