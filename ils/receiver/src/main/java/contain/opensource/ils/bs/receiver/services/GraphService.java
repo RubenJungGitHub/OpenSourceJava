@@ -88,7 +88,7 @@ public class GraphService {
     static GraphServiceClient<?> graphClient;
     static AlfrescoConstants.eItemtype itemtype;
     static ILSRestProperties ILSProperties = null;
-    //static AlfrescoNodeController acontroller = null;
+    // static AlfrescoNodeController acontroller = null;
 
     @Autowired
     public GraphService(ILSRestProperties ilsProperties, AlfrescoNodeController alfresconodecontroller) {
@@ -97,7 +97,7 @@ public class GraphService {
         this.DeltaLinkFile = ILSProperties.getdeltalinkfile();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        //this.acontroller = alfresconodecontroller;
+        // this.acontroller = alfresconodecontroller;
     }
 
     public static byte[] getSPItemContentById(String itemId, String ListId) throws IOException, InterruptedException {
@@ -417,63 +417,6 @@ public class GraphService {
         }
     }
 
-    public void RelocateIO(RelocateInformationObject ROobject) throws Exception {
-        try {
-
-            String action = "Copy UUID " + ROobject.getUuid() + " : " + ROobject.getFileName() + " from "
-                    + ROobject.getplatformfrom() + ":" + ROobject.getcontainerfrom() + " -> " + ROobject.getplatformto()
-                    + " : " + ROobject.getcontainerto();
-
-            // Upload to Alfresco
-           // this.acontroller.uploadSPItemToAlfresco(ROobject);
-
-            // log
-            IOLog.log(
-                    ROobject.getUuid(),
-                    ROobject.getId(),
-                    "",
-                    action,
-                    ROobject.getplatformfrom().toString(),
-                    ROobject.getplatformto().toString(),
-                    // ROobject.getHash(),
-                    "BOUND ON DESTINATION PLATFORM",
-                    ROobject.getFileName(),
-                    "",
-                    AlfrescoConstants.eActionPerformed.IOCOPIED,
-                    "System",
-                    ROobject.marking,
-                    ROobject.classification,
-                    ROobject.version);
-            // Delete from SP (If no exception. This is to be implemented for persistance
-            // and transactions)
-            deleteSPItemById(ROobject.getId());
-
-            // Log
-            action = "Deleted  UUID " + ROobject.getUuid() + " : " + ROobject.getFileName()
-                    + " from "
-                    + ROobject.getplatformfrom();
-            IOLog.log(
-                    "DeletedFromPlatform",
-                    ROobject.getId(),
-                    "",
-                    action,
-                    ROobject.getplatformfrom().toString(),
-                    ROobject.getplatformfrom().toString(),
-                    "DeletedFromPlatform",
-                    ROobject.getFileName(),
-                    "",
-                    AlfrescoConstants.eActionPerformed.IODELETED,
-                    "System",
-                    ROobject.marking,
-                    ROobject.classification,
-                    ROobject.version);
-        } catch (Exception ex) {
-            // System.out.println("Failed to relocate IO: " + ex.getMessage());
-            // ex.printStackTrace();
-            throw ex;
-        }
-    }
-
     private String getDriveID() {
         try {
             String ListNameCorrected = this.ListName.replace(" ", "%20");
@@ -629,8 +572,9 @@ public class GraphService {
         }
     }
 
-    private void deleteSPItemById(String itemId) throws Exception {
+    public void deleteSPItemById(RelocateInformationObject ROobject) throws Exception {
         try {
+            String itemId = ROobject.getId();
             String endpoint = String.format(
                     "https://graph.microsoft.com/v1.0/sites/%s:/sites/%s:/lists/%s/items/%s",
                     this.tenantDomain, this.SiteName, this.ListId, itemId);
@@ -647,7 +591,29 @@ public class GraphService {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 204) {
+
+                String action = "Deleted  UUID " + ROobject.getUuid() + " : " + ROobject.getFileName()
+                        + " from "
+                        + ROobject.getplatformfrom();
+
                 System.out.println("Document deleted successfully.");
+
+                // Log
+                IOLog.log(
+                        "DeletedFromPlatform",
+                        ROobject.getId(),
+                        "",
+                        action,
+                        ROobject.getplatformfrom().toString(),
+                        ROobject.getplatformfrom().toString(),
+                        "DeletedFromPlatform",
+                        ROobject.getFileName(),
+                        "",
+                        AlfrescoConstants.eActionPerformed.IODELETED,
+                        "System",
+                        ROobject.marking,
+                        ROobject.classification,
+                        ROobject.version);
             } else {
                 throw new RuntimeException(
                         "Failed to delete document. HTTP "
@@ -675,7 +641,6 @@ public class GraphService {
     }
 
     private static void itemmustmigrate(SharePointItemResponse SPItem) {
-        String endpoint = ILSProperties.getruleenginemoveendpoint();
         String cleanPlatformFrom = SPItem.platformfrom.name().replace("\"", "");
         String cleanClassification = SPItem.classification.replace("\"", "");
         String cleanMarking = SPItem.marking.replace("\"", "");
@@ -827,7 +792,6 @@ public class GraphService {
                 // Validate if item should move
                 itemmustmigrate(SPItem);
 
-
                 if (SPItem.getmustmove()) {
                     System.out.println("Item " + li.id + " marked for move to " + moveTo);
                 }
@@ -879,7 +843,8 @@ public class GraphService {
             // SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID,
             // graphClient );
             SharePointItemResponse SPItem = getListItemsById(ListId, ListItemID);
-            migrationinfo.put("platformto", (SPItem.getplatformto() != null) ? SPItem.getplatformto().name() : "<NO MOVE>");
+            migrationinfo.put("platformto",
+                    (SPItem.getplatformto() != null) ? SPItem.getplatformto().name() : "<NO MOVE>");
             migrationinfo.put("containerto", SPItem.getcontainerto() != null ? SPItem.getcontainerto() : "");
 
             if (SPItem != null) {

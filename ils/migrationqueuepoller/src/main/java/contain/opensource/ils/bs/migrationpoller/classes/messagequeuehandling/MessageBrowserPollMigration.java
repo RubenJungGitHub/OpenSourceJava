@@ -85,6 +85,8 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                     RestTemplate restTemplate = new RestTemplate();
                     // HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
                     // headers);
+
+                    //This must be checked if connection is broken a restart is required
                     ResponseEntity<String> response = restTemplate.postForEntity(endpoint, queueMessage,
                             String.class);
                     System.out.println("Status: " + response.getStatusCodeValue());

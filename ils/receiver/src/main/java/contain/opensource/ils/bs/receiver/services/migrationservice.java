@@ -106,12 +106,12 @@ public class migrationservice {
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
             // SPitem shoud get COnvertTorelocateObkject like it has for secureobject.
             RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+            ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
+            ROobject.setcontainerto(msg.getcontainerto());
+            this.AlfrescoNodeController.uploadSPItemToAlfresco(ROobject);
+            this.graphservice.deleteSPItemById(ROobject);
 
-            // What to do with the relocation object
-            // executeDMN(ROobject);
-
-            this.graphservice.RelocateIO(ROobject);
-        } catch (Exception e) {
+                    } catch (Exception e) {
             System.out.println("Failed to migrate SP item : " + e.getMessage());
             throw e;
         }
@@ -119,15 +119,8 @@ public class migrationservice {
 
     public void migrateSPObjectToSPO(MigrationQueueMessage msg) throws Exception {
         try {
-
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
-            // SPitem shoud get COnvertTorelocateObkject like it has for secureobject.
             RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-
-            // What to do with the relocation object
-            // executeDMN(ROobject);
-
-            this.graphservice.RelocateIO(ROobject);
         } catch (Exception e) {
             System.out.println("Failed to migrate SP item : " + e.getMessage());
             throw e;

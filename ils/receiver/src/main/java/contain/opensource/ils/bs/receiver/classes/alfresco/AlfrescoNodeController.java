@@ -578,7 +578,25 @@ public class AlfrescoNodeController {
             // reliably Checked relentlessly with ChatGPT 17-12-2025
             updateMetaData(nodeId, IOobject);
             System.out.println("Item  : " + IOobject.getFileName() + " moved to Alfresco succesfully");
-            // BS
+            String action = "Copy UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
+                + IOobject.getplatformfrom() + ":" + IOobject.getcontainerfrom() + " -> " + IOobject.getplatformto()
+                + " : " + IOobject.getcontainerto();
+            IOLog.log(
+                IOobject.getUuid(),
+                IOobject.getId(),
+                "",
+                action,
+                IOobject.getplatformfrom().toString(),
+                IOobject.getplatformto().toString(),
+                // ROobject.getHash(),
+                "BOUND ON DESTINATION PLATFORM",
+                IOobject.getFileName(),
+                "",
+                AlfrescoConstants.eActionPerformed.IOCOPIED,
+                "System",
+                IOobject.marking,
+                IOobject.classification,
+                IOobject.version);
             return "";
           } else {
             throw new RuntimeException("Upload failed: " + statusCode + " - " + responseBody);
@@ -627,7 +645,7 @@ public class AlfrescoNodeController {
     Hashtable<String, String> migrationinfo = new Hashtable<>();
     try {
 
-      this.nodeId = nodeid; 
+      this.nodeId = nodeid;
       AlfrescoNodeResponse alfrescoresponse = GetNode();
 
       migrationinfo.put("platformto",
@@ -635,11 +653,12 @@ public class AlfrescoNodeController {
       migrationinfo.put("containerto",
           alfrescoresponse.getcontainerto() != null ? alfrescoresponse.getcontainerto() : "");
       alfrescoresponse.setpath(secondpath);
-      if (alfresconNodeResponse.getmustmove()){
-            System.out.println("Item " + alfresconNodeResponse.getcontainerfrom() + " marked for move to " + alfrescoresponse.getplatformto()  + " ->" + alfrescoresponse.getcontainerto() )  ;
-        }
+      if (alfresconNodeResponse.getmustmove()) {
+        System.out.println("Item " + alfresconNodeResponse.getcontainerfrom() + " marked for move to "
+            + alfrescoresponse.getplatformto() + " ->" + alfrescoresponse.getcontainerto());
+      }
 
-   if (!alfrescoresponse.HasUUID) {
+      if (!alfrescoresponse.HasUUID) {
         // Assign UUID
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
@@ -709,7 +728,7 @@ public class AlfrescoNodeController {
       e.printStackTrace();
     }
     aitem.setmustmove();
-    
+
   }
 
   private void BindObject(AlfrescoNodeResponse Alfrescoitem) {
@@ -830,8 +849,6 @@ public class AlfrescoNodeController {
                 .path("path")
                 .path("name")
                 .asText());
-
-
 
             // Check if UUID present
             // Get node content
