@@ -54,12 +54,14 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
         try {
 
             timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
-            String feeback = timestamp + " -> New MIGRATION poll loop on broker : " + activeMQProps.getMigrationHub().getBrokerUrl()
-                    + " on queue " + activeMQProps.getMigrationHub().getMigrationQueue() + ". Interval : " + PollInterval + " seconds";
-                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
-                    + feeback 
+            String feedback = timestamp + " -> New MIGRATION poll loop on broker : "
+                    + activeMQProps.getMigrationHub().getBrokerUrl()
+                    + " on queue " + activeMQProps.getMigrationHub().getMigrationQueue() + ". Interval : "
+                    + PollInterval + " seconds";
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
+                    + feeback
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                    
+
             try {
                 String json = "";
                 int count = 0;
@@ -87,7 +89,8 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                         RestTemplate restTemplate = new RestTemplate();
                         // HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
                         // headers);
-                        ResponseEntity<String> response = restTemplate.postForEntity(endpoint, queueMessage, String.class);
+                        ResponseEntity<String> response = restTemplate.postForEntity(endpoint, queueMessage,
+                                String.class);
                         System.out.println("Status: " + response.getStatusCodeValue());
                         System.out.println("Body: " + response.getBody());
                         int status = response.getStatusCode().value();
@@ -95,7 +98,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                             throw new IOException("HTTP error " + status);
                         }
                     }
-           //         consumeMessageById(msg.getJMSMessageID());
+                    // consumeMessageById(msg.getJMSMessageID());
                 }
             } catch (Exception e) {
                 System.err.println("Error in StartPoll:");

@@ -51,30 +51,39 @@ activemq:
   # The "Write" side for EVERYONE (House B)
   # This is also the "Read" side for SharePoint and the Migration Service
   migration-hub:
-    brokerUrl: tcp://activemq:61617
+    brokerUrl: tcp://activemq:61616
     user: admin
     password: admin
     sharepoint-queue: sharepoint.delta.queue
     migration-queue: contain.ils.queue.migration
 
-#ctivemq:
-  #brokerUrl: tcp://end-user-activemq-1:61616 Alfresco queue
-# brokerUrl: tcp://activemq:61616
- #user: admin
-# password: admin
-# sharepoint-queue: sharepoint.delta.queue
-# alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
-# migration-queue: contain.ils.queue.migration
 
+# Receiver in container 
+#ils:
+#  uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
+#  baseurl: http://receiver:8080
+#  bindendpoint: http://receiver:8080/api/Bind
+#  processspitemsendpoint: http://receiver:8080/api/ProcessChangedSharepointItem
+#  processalfresconodepoint: http://receiver:8080/api/ProcessChangedAlfrescoNode
+#  logiodeletedfromplatformendpoint: http://receiver:8080/api/logiodeletedfromplatform
+#  ruleenginemoveendpoint: http://receiver:8080/api/rules
+#  relocateendpoint: http://receiver:8080/api/MigrateIO
+#  ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
+#  ruleengineendpoint: http://kie-server:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+#  ruleengineprojectname: contAlnMigrationRuleset
+#  deltalinkfile: "/app/data/storeddeltalinks.csv"
+
+
+  # Receiver on host
 ils:
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
-  baseurl: http://receiver:8080
-  bindendpoint: http://receiver:8080/api/Bind
-  processspitemsendpoint: http://receiver:8080/api/ProcessChangedSharepointItem
-  processalfresconodepoint: http://receiver:8080/api/ProcessChangedAlfrescoNode
-  logiodeletedfromplatformendpoint: http://receiver:8080/api/logiodeletedfromplatform
-  ruleenginemoveendpoint: http://receiver:8080/api/rules
-  relocateendpoint: http://receiver:8080/api/MigrateIO
+  baseurl: http://host.docker.internal:55000
+  bindendpoint: http://host.docker.internal:55000/api/Bind
+  processspitemsendpoint: http://host.docker.internal:55000/api/ProcessChangedSharepointItem
+  processalfresconodepoint: http://host.docker.internal:55000/api/ProcessChangedAlfrescoNode
+  logiodeletedfromplatformendpoint: http://host.docker.internal:55000/api/logiodeletedfromplatform
+  ruleenginemoveendpoint: http://host.docker.internal:55000/api/rules
+  relocateendpoint: http://host.docker.internal:55000/api/MigrateIO
   ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
   ruleengineendpoint: http://kie-server:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
   ruleengineprojectname: contAlnMigrationRuleset
