@@ -95,7 +95,9 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                         TextMessage text = (TextMessage) msg;
                         json = text.getText();
                         ObjectMapper mapper = new ObjectMapper();
+                        //To do additional checkslike contenttype
                         try {
+                            //to do validation on content type
                             AlfrescoQueMessage QMessage = mapper.readValue(json, AlfrescoQueMessage.class);
                             Object secondpath = "";
                             List<Object> paths = QMessage.getPaths();
