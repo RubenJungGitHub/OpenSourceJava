@@ -85,20 +85,29 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                     RestTemplate restTemplate = new RestTemplate();
                     // HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
                     // headers);
-
-                    //This must be checked if connection is broken a restart is required
-                    ResponseEntity<String> response = restTemplate.postForEntity(endpoint, queueMessage,
-                            String.class);
-                    System.out.println("Status: " + response.getStatusCodeValue());
-                    System.out.println("Body: " + response.getBody());
-                    int status = response.getStatusCode().value();
+                    int status=0;
+                    try {
+                        // This must be checked if connection is broken a restart is required
+                        ResponseEntity<String> response = restTemplate.postForEntity(endpoint, queueMessage,
+                                String.class);
+                        System.out.println("Status: " + response.getStatusCodeValue());
+                        System.out.println("Body: " + response.getBody());
+                        status = response.getStatusCode().value();
+                        // For now hardcoded but this should depend on exceptions, persistance ansd
+                        // transactions
+                    } catch (Exception e) {
+                        System.err.println("Error in StartPoll:");
+                        e.printStackTrace();
+                    }
+                    //consumeMessageById(msg.getJMSMessageID());
                     if (status != 200) {
                         throw new IOException("HTTP error " + status);
                     }
                 }
-                // consumeMessageById(msg.getJMSMessageID());
             }
-        } catch (Exception e) {
+        } catch (
+
+        Exception e) {
             System.err.println("Error in StartPoll:");
             e.printStackTrace();
         }

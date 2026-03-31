@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.net.URL;
 import java.net.URI;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets; // For UTF_8 constant
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -44,7 +46,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.ArrayList;
+import java.util.List;
 import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 //import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
@@ -105,15 +110,14 @@ public class AlfrescoNodeController {
    * @see HttpGet
    * @see ObjectMapper
    */
-  private String GetAlfrescoSiteNode(CloseableHttpClient client) {
+  private String GetAlfrescoSiteNode(CloseableHttpClient client, RelocateInformationObject IOobject) {
 
     CloseableHttpResponse response = null;
 
     try {
       String endpoint = String.format(
-          "%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s",
-          this.endpoint,
-          AlfrescoConstants.alfrescoDemoSiteName);
+          "%s/alfresco/api/-default-/public/alfresco/versions/1/sites",
+          this.endpoint);
       String auth = Base64.getEncoder().encodeToString(
           (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
@@ -123,17 +127,24 @@ public class AlfrescoNodeController {
       int status = response.getCode();
       if (status == 200) {
         String json = EntityUtils.toString(response.getEntity());
-
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(json);
-        JsonNode entryNode = root.get("entry");
+        // 1. Navigate to the "entries" array inside "list"
+        JsonNode entriesNode = root.path("list").path("entries");
 
-        if (entryNode != null && entryNode.get("guid") != null) {
-          String guid = entryNode.get("guid").asText();
-          return guid;
-        } else {
-          System.out.println("GUID not found");
+        // if (entryNode != null && entryNode.get("guid") != null) {
+        // String guid = entryNode.get("guid").asText();
+        // return guid;
+        //
+        for (JsonNode entry : entriesNode) {
+          JsonNode siteNode = entry.path("entry");
+          if (siteNode.path("id").asText().equals(IOobject.getcontainerto())) {
+            String guid = siteNode.path("guid").asText();
+            return guid;
+          }
         }
+        System.out.println("GUID not found");
+        return "site GUID not found";
       }
     } catch (Exception e) {
       throw new RuntimeException("Error resolving Alfresco site nodeId", e);
@@ -165,18 +176,17 @@ public class AlfrescoNodeController {
    *           returns
    *           null if the container is not found or if an exception occurs.
    */
-  private String getDocumentLibraryNodeId(CloseableHttpClient client, String siteNodeId) throws Exception {
+  private String getDocumentLibraryNodeId(CloseableHttpClient client, RelocateInformationObject IOobject) throws Exception {
     try {
       // ChatGPT
       // Thanks — I see your full method. From what you’ve written, a 404 is almost
       // certainly because siteNodeId is not the correct Alfresco site ID (short
       // name). In Alfresco REST API:
       // sites/{siteId}/containers expects the site short name, e.g., "ontobind"
-      String endpoint = String.format(
-          "%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers",
-          this.endpoint, AlfrescoConstants.alfrescoDemoSiteName);
 
-      String auth = Base64.getEncoder().encodeToString((this.username + ":" +
+       String endpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers", this.endpoint, IOobject.getcontainerto());
+
+         String auth = Base64.getEncoder().encodeToString((this.username + ":" +
           this.password).getBytes());
 
       HttpGet request = new HttpGet(endpoint);
@@ -506,10 +516,10 @@ public class AlfrescoNodeController {
     try {
       // First get SiteNode
       try (CloseableHttpClient client = HttpClients.createDefault()) {
-        String siteNode = GetAlfrescoSiteNode(client);
+        String siteNode = GetAlfrescoSiteNode(client, IOobject);
         System.out.println("Sitenode  " + siteNode);
-        String libNode = getDocumentLibraryNodeId(client, siteNode);
-        // System.out.println("Libnode " + libNode);
+        String libNode = getDocumentLibraryNodeId(client, IOobject);
+        System.out.println("Libnode " + libNode);
 
         String auth = Base64.getEncoder()
             .encodeToString((this.username + ":" + this.password).getBytes());

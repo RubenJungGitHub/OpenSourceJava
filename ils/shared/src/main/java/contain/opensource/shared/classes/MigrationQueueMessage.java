@@ -24,7 +24,6 @@ public class MigrationQueueMessage {
         this.source = source;
         this.platformto = platformto;
         this.containerto = containerto;
-        this.deltalink = deltalink;
         if (this.source.equals("SPO")) {
             this.listid = this.deltalink.split("/lists/")[1].split("/")[0];
         }

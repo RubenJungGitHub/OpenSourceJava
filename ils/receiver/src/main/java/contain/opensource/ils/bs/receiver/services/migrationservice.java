@@ -71,7 +71,7 @@ public class migrationservice {
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
                     + "Migrate information object -> " + msg.getKey() + " : Source  -> " + msg.getSource()
                     + " destination  -> "
-                    + msg.getplatformto()
+                    + msg.getplatformto() + " : " + msg.getcontainerto()
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             String source = msg.getSource().toUpperCase();
             String destination = msg.getplatformto().toUpperCase();
