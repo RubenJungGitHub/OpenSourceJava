@@ -41,16 +41,21 @@ spring:
 # ==========================
 
 activemq:
-  source:
-    url: tcp://activemq
+  # The "Read" side for Alfresco (House A)
+  alfresco-source:
+    brokerUrl: tcp://end-user-activemq-1:61616
     user: admin
     password: admin
     queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
-  destination:
-    url: tcp://localhost:61617
+
+  # The "Write" side for EVERYONE (House B)
+  # This is also the "Read" side for SharePoint and the Migration Service
+  migration-hub:
+    brokerUrl: tcp://activemq:61617
     user: admin
     password: admin
-    queue: contain.ils.queue.migration
+    sharepoint-queue: sharepoint.delta.queue
+    migration-queue: contain.ils.queue.migration
 
 #ctivemq:
   #brokerUrl: tcp://end-user-activemq-1:61616 Alfresco queue

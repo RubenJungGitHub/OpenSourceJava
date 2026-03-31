@@ -51,10 +51,12 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
     @Override
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
+
             timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
-                    + timestamp + " -> New MIGRATION poll loop on broker : " + browser
-                    + " on queue " + queue + ". Interval : " + PollInterval + " seconds"
+            String feeback = timestamp + " -> New MIGRATION poll loop on broker : " + activeMQProps.getMigrationHub().getBrokerUrl()
+                    + " on queue " + activeMQProps.getMigrationHub().getMigrationQueue() + ". Interval : " + PollInterval + " seconds";
+                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
+                    + feeback 
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     
             try {

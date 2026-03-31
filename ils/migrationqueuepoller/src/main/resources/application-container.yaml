@@ -40,13 +40,21 @@ spring:
 # ==========================
 
 activemq:
-  #brokerUrl: tcp://end-user-activemq-1:61616 Alfresco queue
-  brokerUrl: tcp://activemq:61616
-  user: admin
-  password: admin
-  sharepoint-queue: sharepoint.delta.queue
-  alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
-  migration-queue: contain.ils.queue.migration
+  # The "Read" side for Alfresco (House A)
+  alfresco-source:
+    brokerUrl: tcp://end-user-activemq-1:61616
+    user: admin
+    password: admin
+    queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+
+  # The "Write" side for EVERYONE (House B)
+  # This is also the "Read" side for SharePoint and the Migration Service
+  migration-hub:
+    brokerUrl: tcp://activemq:61617
+    user: admin
+    password: admin
+    sharepoint-queue: sharepoint.delta.queue
+    migration-queue: contain.ils.queue.migration
 
 ils:
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
