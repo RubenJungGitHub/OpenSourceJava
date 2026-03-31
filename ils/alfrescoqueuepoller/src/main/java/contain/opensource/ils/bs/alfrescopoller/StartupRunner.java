@@ -21,6 +21,6 @@ public class StartupRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
        
-    AlfrescoPoll.startPolling(MQProps.getAlfrescoSource().getQueue());
+    AlfrescoPoll.startPolling();
     }
 }

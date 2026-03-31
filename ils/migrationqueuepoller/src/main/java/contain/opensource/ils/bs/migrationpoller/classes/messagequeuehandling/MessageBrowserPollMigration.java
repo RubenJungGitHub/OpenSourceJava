@@ -42,8 +42,9 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                 alfrescoProps,
                 ilsproperties,
                 objectMapper,
-                jmsTemplate);
-
+                jmsTemplate,
+                activeMQProps.getMigrationHub().getMigrationQueue().toString(),
+                activeMQProps.getMigrationHub());
     }
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -94,7 +95,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                             throw new IOException("HTTP error " + status);
                         }
                     }
-           //         consumeMessageById(msg.getJMSMessageID(), activeMQProps.getMigrationqueue());
+           //         consumeMessageById(msg.getJMSMessageID());
                 }
             } catch (Exception e) {
                 System.err.println("Error in StartPoll:");

@@ -52,16 +52,22 @@ public abstract class MessageBrowserPollParentMigration {
     private volatile boolean pollingActive = false;
     private final ExecutorService pollExecutor = Executors.newSingleThreadExecutor();
     public ILSRestProperties ilsproperties;
-    
-    @Autowired
+    protected ActiveMQProperties.BrokerConfig currentSource;
+    protected String queuetopoll;
+
+//   @Autowired
     public MessageBrowserPollParentMigration(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
-            ILSRestProperties ilsproperties, ObjectMapper mapper, JmsTemplate jmsTemplate) {
+            ILSRestProperties ilsproperties, ObjectMapper mapper, JmsTemplate jmsTemplate, String queuetopoll,
+            ActiveMQProperties.BrokerConfig specificSource) {
         this.activeMQProps = activeMQProps;
         this.alfrescoProps = alfrescoProps;
         this.ilsproperties = ilsproperties;
         this.objectMapper = mapper;
         this.jmsTemplate = jmsTemplate;
+        this.queuetopoll  = queuetopoll;
+        this.currentSource = specificSource;
     }
+    
 
     /**
      * Reads messages from a specified ActiveMQ queue and polls for new messages at
@@ -86,10 +92,10 @@ public abstract class MessageBrowserPollParentMigration {
      */
 
     // Public method to start polling
-    public void startPolling(String queueid) {
+    public void startPolling() {
         synchronized (this) {
             if (pollingActive) {
-                System.out.println("Polling already active for queue: " + queueid);
+                System.out.println("Polling already active for queue: " + this.queuetopoll);
                 return; // don't start another poller
             }
             pollingActive = true;
@@ -97,8 +103,8 @@ public abstract class MessageBrowserPollParentMigration {
 
         Thread pollerThread = new Thread(() -> {
             try {
-                System.out.println("Attempting new polloop on  queue: " + queueid);
-                pollLoop(queueid);
+                System.out.println("Attempting new polloop on  queue: " + this.queuetopoll);
+                pollLoop();
             } finally {
                 pollingActive = false;
                 pollExecutor.shutdown();
@@ -109,7 +115,7 @@ public abstract class MessageBrowserPollParentMigration {
         pollerThread.start();
     }
 
-    private void pollLoop(String queueid) {
+    private void pollLoop() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 // Ensure connection/session exist
@@ -118,10 +124,10 @@ public abstract class MessageBrowserPollParentMigration {
                     session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
                 }
 
-                queue = session.createQueue(queueid);
+                queue = session.createQueue(this.queuetopoll);
                 browser = session.createBrowser(queue);
 
-                System.out.println("Polling queue messages...");
+                //System.out.println("Polling queue messages on " + this.currentSource.getBrokerUrl() + " for queue " + this.queuetopoll + "...");
 
                 // Submit StartPoll as a Future and block until finished
                 Future<?> pollFuture = pollExecutor.submit(() -> StartPoll(browser, session, queue));
@@ -185,7 +191,7 @@ public abstract class MessageBrowserPollParentMigration {
             while (true) {
                 try {
                     //factory = new ActiveMQConnectionFactory(user, password, brokerUrl);
-                    factory = new ActiveMQConnectionFactory(activeMQProps.getAlfrescoSource().getUser(), activeMQProps.getAlfrescoSource().getPassword(), activeMQProps.getAlfrescoSource().getBrokerUrl());
+                    factory = new ActiveMQConnectionFactory(currentSource.getUser(), currentSource.getPassword(), currentSource.getBrokerUrl());
                     connection = factory.createConnection();
                     connection.start();
                     session = connection.createSession(true, Session.SESSION_TRANSACTED);
@@ -218,7 +224,7 @@ public abstract class MessageBrowserPollParentMigration {
     // Your existing poll logic override in child
     // }
 
-    public void ReadMessages(String queueid) {
+    public void ReadMessages() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 System.out.println("Polling queue messages...");
@@ -228,7 +234,7 @@ public abstract class MessageBrowserPollParentMigration {
                     session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
                 }
 
-                queue = session.createQueue(queueid);
+                queue = session.createQueue(this.queuetopoll);
                 browser = session.createBrowser(queue);
 
                 // Blocking poll — ensures next iteration only happens after completion
@@ -283,7 +289,7 @@ public abstract class MessageBrowserPollParentMigration {
     }
 
 
-    public void consumeMessageById(String messageId, String queueid) throws JMSException {
+    public void consumeMessageById(String messageId) throws JMSException {
         String selector = "JMSMessageID = '" + messageId + "'";
         // Check session is open
         MessageConsumer consumer = null;
@@ -295,7 +301,7 @@ public abstract class MessageBrowserPollParentMigration {
                 }
             }
             session = connection.createSession(true, Session.SESSION_TRANSACTED);
-            queue = session.createQueue(queueid);
+            queue = session.createQueue(this.queuetopoll);
             consumer = session.createConsumer(queue, selector);
             Message msg = consumer.receive(1000);
             if (msg != null) {

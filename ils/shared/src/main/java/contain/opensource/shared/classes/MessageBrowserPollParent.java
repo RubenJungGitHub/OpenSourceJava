@@ -23,54 +23,55 @@ import jakarta.jms.Queue;
 
 public abstract class MessageBrowserPollParent extends MessageBrowserPollParentMigration {
 
+
     public MessageBrowserPollParent(
             ActiveMQProperties activeMQProps,
             AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsproperties,
-            ObjectMapper mapper,
-            JmsTemplate jmsTemplate) {
+            ObjectMapper mapper, // Named 'mapper' here
+            JmsTemplate jmsTemplate,
+            String queuetopoll,
+            ActiveMQProperties.BrokerConfig specificSource) {
 
-        super(activeMQProps, alfrescoProps, ilsproperties, mapper, jmsTemplate);
+        super(activeMQProps, alfrescoProps, ilsproperties, mapper, jmsTemplate, queuetopoll, specificSource);
+
     }
 
     public void SendMigrationMessage(String weburl, String id, String deltalink, String platformfrom,
             Hashtable<String, String> migrateinfo) {
-        try {
-            ActiveMQConnectionFactory migfactory = new ActiveMQConnectionFactory(
-                    activeMQProps.getMigrationHub().getUser(), activeMQProps.getMigrationHub().getPassword(),
-                    activeMQProps.getMigrationHub().getBrokerUrl());
-            Connection migconnection = migfactory.createConnection();
+        // Use the 'migconnection' and 'migsession' you created locally
+        try (Connection migconnection = createConnectionFromConfig(activeMQProps.getMigrationHub())) {
             migconnection.start();
-            Session migsession = migconnection.createSession(true, Session.SESSION_TRANSACTED);
+            try (Session migsession = migconnection.createSession(true, Session.SESSION_TRANSACTED)) {
 
-            // Create a message producer
-            Queue migqueue = migsession.createQueue(activeMQProps.getMigrationHub().getMigrationQueue());
-            MessageProducer producer = migsession.createProducer(migqueue);
-            producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+                Queue migqueue = migsession.createQueue(activeMQProps.getMigrationHub().getMigrationQueue());
+                MessageProducer producer = migsession.createProducer(migqueue);
+                producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-            MigrationQueueMessage payload = new MigrationQueueMessage(weburl, "Migrate", platformfrom,
-                    id, deltalink, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
-            String json = objectMapper.writeValueAsString(payload);
-            String correlationId = MDC.get("correlationId");
-            TextMessage message = session.createTextMessage(json);
+                MigrationQueueMessage payload = new MigrationQueueMessage(weburl, "Migrate", platformfrom,
+                        id, deltalink, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
+                
+                // Ensure this variable name matches what's in the Grandparent
+                String json = this.objectMapper.writeValueAsString(payload); 
+                
+                // Use 'migsession' here, NOT 'session'
+                TextMessage message = migsession.createTextMessage(json); 
 
-            // Send the message
-            producer.send(message);
+                producer.send(message);
 
-            // Clean up
-            producer.close();
-            migsession.commit();
-            migsession.close();
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-            String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
-                    + timestamp + "-> Information object " + weburl + " sent to migrationqueue"
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
+                producer.close();
+                migsession.commit();
+            }
+            // Add your logging here
         } catch (Exception ex) {
-            // log.error("Failed to send delta message to ActiveMQ", ex);
             throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);
         }
+    }
+    
+    // Helper to keep the try-with-resources clean
+    private Connection createConnectionFromConfig(ActiveMQProperties.BrokerConfig config) throws Exception {
+        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
+                config.getUser(), config.getPassword(), config.getBrokerUrl());
+        return factory.createConnection();
     }
 }

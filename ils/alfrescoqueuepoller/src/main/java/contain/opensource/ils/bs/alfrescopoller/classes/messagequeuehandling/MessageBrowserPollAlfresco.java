@@ -48,7 +48,9 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                 alfrescoProps,
                 ilsproperties,
                 objectMapper,
-                null);
+                null,
+                activeMQProps.getAlfrescoSource().getQueue().toString(),
+                activeMQProps.getAlfrescoSource());;
     }
 
     /**
@@ -267,7 +269,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
                     // To do transaction and persistance
-                    consumeMessageById(msg.getJMSMessageID(), activeMQProps.getAlfrescoSource().getQueue());
+                    consumeMessageById(msg.getJMSMessageID());
 
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");

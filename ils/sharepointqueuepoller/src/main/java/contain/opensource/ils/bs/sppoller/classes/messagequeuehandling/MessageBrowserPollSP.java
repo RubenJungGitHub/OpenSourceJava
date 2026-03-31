@@ -46,7 +46,9 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                 alfrescoProps,
                 ilsproperties,
                 objectMapper,
-                jmsTemplate);
+                jmsTemplate,
+                activeMQProps.getMigrationHub().getSharepointQueue().toString(),
+                activeMQProps.getMigrationHub());
     }
 
     @Override
@@ -104,8 +106,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                     }
                                 }
                             }
-                            consumeMessageById(msg.getJMSMessageID(),
-                                    activeMQProps.getMigrationHub().getSharepointQueue());
+                            consumeMessageById(msg.getJMSMessageID());
                         } catch (JMSException processingError) {
                             System.err.println("Error while processing message" + processingError);
                             processingError.printStackTrace();
