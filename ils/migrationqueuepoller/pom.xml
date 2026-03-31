@@ -105,7 +105,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>contain.opensource.ils.bs.sppoller.StartMigrationPoller</mainClass>
+                    <mainClass>contain.opensource.ils.bs.migrationpoller.StartMigrationPoller</mainClass>
                 </configuration>
             </plugin>
             <plugin>

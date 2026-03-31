@@ -4,12 +4,18 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 # Set working directory
 WORKDIR /build
 
-# Copy and build shared module (if exists)
+
+# 1. Bouw shared module
 COPY shared/pom.xml shared/
 COPY shared/src shared/src
 RUN mvn -B -U -f shared/pom.xml clean install -DskipTests
 
-# Copy and build receiver module
+# 2. Bouw uuidutil (Cruciaal: Maven zoekt deze in Central en vindt hem niet)
+COPY uuidutil/pom.xml uuidutil/
+COPY uuidutil/src uuidutil/src
+RUN mvn -B -U -f uuidutil/pom.xml clean install -DskipTests
+
+# 3. Bouw receiver module
 COPY receiver/pom.xml receiver/
 COPY receiver/src receiver/src
 RUN mvn -B -U -f receiver/pom.xml clean install -DskipTests
