@@ -20,6 +20,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -246,6 +248,44 @@ public class GraphService {
         }
     }
 
+    public Set<String> getGraphListColumns(String graphToken) {
+        Set<String> columnNames = new HashSet<>();
+
+        // Graph URL to get all columns for a specific list
+        String url = "https://graph.microsoft.com/v1.0/sites/" + this.SiteID + "/lists/" + this.ListId
+                + "/columns?$select=name";
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", "Bearer " + graphToken)
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.body());
+
+                // Graph returns columns in a 'value' array
+                JsonNode columns = root.path("value");
+                for (JsonNode col : columns) {
+                    // 'name' in Graph = 'InternalName' in SharePoint
+                    columnNames.add(col.path("name").asText());
+                }
+                System.out.println("Sniffed " + columnNames.size() + " columns via Graph.");
+            } else {
+                System.err.println("Graph Error: " + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to sniff Graph columns: " + e.getMessage());
+        }
+
+        return columnNames;
+    }
+
     public String updateSharepointItemGraphAPI(RelocateInformationObject node, String listItemId) {
         try {
 
@@ -256,11 +296,16 @@ public class GraphService {
             // String uuid = GetUUID();
             HttpClient client = HttpClient.newHttpClient();
 
+            // Set<String> internalnames = getGraphListColumns(accessToken);
+
             // Build payload to update Title and ObjectClassificationText
             Map<String, Object> body = new HashMap<>();
             body.put("ContAInUUID", node.getUuid());
             body.put("Title", node.getTitle());
-            body.put("Description0", node.getDescription());
+            // body.put("Description0", node.getDescription()); This does not allways work,
+            // a custom field should be used for description to prevent update failure due
+            // to Graph API limitations on the description field.
+            body.put("containIODescription", node.getDescription());
             body.put("Marking", node.getMarking());
             body.put("Classification", node.getclassification());
 
