@@ -260,6 +260,7 @@ public class GraphService {
             Map<String, Object> body = new HashMap<>();
             body.put("ContAInUUID", node.getUuid());
             body.put("Title", node.getTitle());
+            body.put("Description0", node.getDescription());
             body.put("Marking", node.getMarking());
             body.put("Classification", node.getclassification());
 
@@ -291,6 +292,23 @@ public class GraphService {
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 System.out.println("Item  : " + node.getFileName() + " moved to SharePoint succesfully");
+                String action = "IO " + node.getUuid() + " uploaded to SharePoint ";
+                IOLog.log(
+                        node.getUuid(),
+                        listItemId,
+                        "-",
+                        action,
+                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        "BOUND ON DESTINATION",
+                        node.getFileName(),
+                        "",
+                        AlfrescoConstants.eActionPerformed.IOCOPIED,
+                        "System",
+                        node.getMarking(),
+                        node.getclassification(),
+                        node.getVersion());
+                // ==========================================================================================
                 return "Success";
             } else {
                 System.out.println("Failed to update field: " + response.body());
@@ -314,9 +332,9 @@ public class GraphService {
             String driveItemId = "";
             // to do check null
 
-            //First set the correct destination
-            
-            String driveId = getDriveID();
+            // First set the correct destination
+
+            String driveId = getDriveID(IOobject);
             String endPoint = String.format(
                     "https://graph.microsoft.com/v1.0/drives/%s/root:/%s:/content",
                     driveId, fileName);
@@ -420,11 +438,13 @@ public class GraphService {
         }
     }
 
-    private String getDriveID() {
+    private String getDriveID(RelocateInformationObject IOobject) {
         try {
+            // BETTER DECODING REQUIRED!
             String ListNameCorrected = this.ListName.replace(" ", "%20");
             String ListWebUrl = "https://" + this.tenantDomain + "/sites/" + this.SiteName + "/" + ListNameCorrected;
-            String endpoint = String.format("https://graph.microsoft.com/v1.0/sites/%s/drives", this.SiteID);
+            String endpoint = String.format(
+                    "https://graph.microsoft.com/v1.0/sites/%s/drives?$select=id,name,sharepointIds", this.SiteID);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
                     .header("Authorization", "Bearer " + accessToken)
@@ -443,9 +463,16 @@ public class GraphService {
             JsonNode rootNode = mapper.readTree(responseBody);
             // "value" array contains all drives
             JsonNode drivesArray = rootNode.path("value");
+            String containerto = IOobject.getcontainerto().trim();
+            if (containerto.endsWith("/")) {
+                containerto = containerto.substring(0, containerto.length() - 1);
+            }
+            String lookforlistId = containerto.substring(containerto.lastIndexOf("/") + 1);
+
             for (JsonNode driveNode : drivesArray) {
-                String driveNameListIWebUrl = driveNode.path("webUrl").asText();
-                if (ListWebUrl.equalsIgnoreCase(driveNameListIWebUrl)) {
+                String drivelistid = driveNode.path("sharePointIds").path("listId").asText();
+                // Compare on listid
+                if (lookforlistId.equalsIgnoreCase(drivelistid)) {
                     return driveNode.path("id").asText(); // Return Drive ID
                 }
             }
