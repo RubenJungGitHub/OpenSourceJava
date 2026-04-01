@@ -155,7 +155,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             // 3. Now it is safe to call your send function
 
                                             SendMigrationMessage(folderOnly,
-                                                    QMessage.getId().toString(), "-",
+                                                    QMessage.getNodeId().toString(), "-",
                                                     AlfrescoConstants.ContainPlatforms.ALFRESCO.name(), migrateinfo);
                                         }
                                     }

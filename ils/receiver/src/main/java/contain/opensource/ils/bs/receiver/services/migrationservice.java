@@ -82,7 +82,7 @@ public class migrationservice {
                     migrateAlfrescoObjectToAlfresco(msg);
                     break;
                 }
-                default: 
+                default:
                     System.out.println("No migration path matched for: " + migrate);
                     // Do nothing or throw an error
                     break;
@@ -124,73 +124,12 @@ public class migrationservice {
         RelocateInformationObject ROobject = new RelocateInformationObject(AlfrescoNodeController.GetNode(msg.getID()));
         ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
         ROobject.setcontainerto(msg.getcontainerto());
-        // this.graphservice.uploadAlfrescoNodeToSP(ROobject);
-        /*
-         * // ========================================================================
-         * // To be moved to migration service
-         * // ========================================================================
-         * /*
-         * // Moveobject, binding in new environment.
-         * if (aController.alfresconNodeResponse.MustMove) {
-         * System.out.println(
-         * contain.opensource.shared.constants.AlfrescoConstants.CYAN
-         * + "Alfresco  node must-move?"
-         * + aController.alfresconNodeResponse.MustMove
-         * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-         * RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation,
-         * "InProcess",
-         * 120);
-         * 
-         * // Create generic property mapping information object
-         * RelocateInformationObject IOobject = new RelocateInformationObject(
-         * aController.alfresconNodeResponse,
-         * "BOUND ON DESTINATION PLATFORM",
-         * AlfrescoConstants.ContainPlatforms.ALFRESCO,
-         * AlfrescoConstants.ContainPlatforms.SPO);
-         * // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
-         * // Could Be done from here but because it is not yet certain from where the
-         * // relocaiton is called we use a REST API
-         * // aController.RelocateIO(IOobject);
-         * RestTemplate restTemplate = new RestTemplate();
-         * // String endpoint = String.format(
-         * // "%s/RelocateIO",
-         * // this.ilsproperties.getBaseUrl());
-         * String endpoint = this.ilsproperties.getBaseUrl();
-         * HttpHeaders headers = new HttpHeaders();
-         * headers.setContentType(MediaType.APPLICATION_JSON);
-         * headers.setBasicAuth(
-         * AlfrescoConstants.username,
-         * AlfrescoConstants.password,
-         * StandardCharsets.UTF_8);
-         * 
-         * HttpEntity<RelocateInformationObject> entity2 = new HttpEntity<>(IOobject,
-         * headers);
-         * 
-         * ResponseEntity<String> response2 = restTemplate.postForEntity(endpoint,
-         * entity2,
-         * String.class);
-         * 
-         * System.out.println("Status: " + response2.getStatusCodeValue());
-         * System.out.println("Body: " + response2.getBody());
-         * 
-         * Integer status = response2.getStatusCode().value();
-         * if (status != 200) {
-         * throw new IOException("HTTP error " + status);
-         * }
-         * } else {
-         * // BindObject
-         * BindIO(IOUUID, QMessage, secondPath);
-         * }
-         */
-
-        // BindIO(IOUUID, QMessage, secondPath);
-        // boolean migrate =
-        // this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
-        // item.getId(), deltaLink);
-        // if (migrate) {
-        // SendMigrationMessage(item);
-        // }
-
+        this.graphservice.uploadAlfrescoNodeToSP(ROobject);
+        try {
+            this.AlfrescoNodeController.DeleteAlfrescoNode(ROobject.getId());
+        } catch (Exception e) {
+            System.out.println("Failed to delete Alfresco node after migration: " + e.getMessage());
+        }
     }
 
     public void migrateAlfrescoObjectToAlfresco(MigrationQueueMessage msg) {

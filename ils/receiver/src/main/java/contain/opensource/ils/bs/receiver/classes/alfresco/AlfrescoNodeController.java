@@ -176,7 +176,8 @@ public class AlfrescoNodeController {
    *           returns
    *           null if the container is not found or if an exception occurs.
    */
-  private String getDocumentLibraryNodeId(CloseableHttpClient client, RelocateInformationObject IOobject) throws Exception {
+  private String getDocumentLibraryNodeId(CloseableHttpClient client, RelocateInformationObject IOobject)
+      throws Exception {
     try {
       // ChatGPT
       // Thanks — I see your full method. From what you’ve written, a 404 is almost
@@ -184,9 +185,10 @@ public class AlfrescoNodeController {
       // name). In Alfresco REST API:
       // sites/{siteId}/containers expects the site short name, e.g., "ontobind"
 
-       String endpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers", this.endpoint, IOobject.getcontainerto());
+      String endpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers",
+          this.endpoint, IOobject.getcontainerto());
 
-         String auth = Base64.getEncoder().encodeToString((this.username + ":" +
+      String auth = Base64.getEncoder().encodeToString((this.username + ":" +
           this.password).getBytes());
 
       HttpGet request = new HttpGet(endpoint);
@@ -883,7 +885,6 @@ public class AlfrescoNodeController {
             }
             try {
 
-
               // alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO
               // MOVE>")); // IMPROVE!! SHOULD
               // ALSO CHECK IF NOT
@@ -1142,41 +1143,46 @@ public class AlfrescoNodeController {
    * platforms, hash, marking,
    * classification, and version.
    */
-  public void RelocateIO(RelocateInformationObject IOobject) {
-    /// ==================================================
-    /// NOTE> NO VERSIONING AND COPY CONTROLS INCLUDED!!!
-    /// Proper returnvalue needed..
-    /// ==================================================
 
-    // Could be done from here but because it is not sure from where relocation is
-    // performed we are using a REST API
-    // ADD ERRORHANDLING
-
-    this.nodeId = IOobject.getId();
-    // For now assumed only happy path. If something goes wrong rollback in
-    // ballenbak and complete transacton`
-    String action = "Move UUID " + IOobject.getUuid() + " : " + IOobject.getFileName() + " from "
-        + IOobject.getplatformfrom();
-
-    // this.migrationservice.migrateNodeToSP(IOobject);
-    IOLog.log(
-        IOobject.getUuid(),
-        "",
-        "",
-        action,
-        IOobject.getplatformfrom().toString(),
-        IOobject.getplatformto().toString(),
-        IOobject.getHash(),
-        IOobject.getFileName(),
-        "",
-        eActionPerformed.IOCOPIED,
-        "System",
-        IOobject.marking,
-        IOobject.classification,
-        IOobject.version);
-
-    DeleteAlfrescoNode();
-  }
+  /*
+   * public void RelocateIO(RelocateInformationObject IOobject) {
+   * /// ==================================================
+   * /// NOTE> NO VERSIONING AND COPY CONTROLS INCLUDED!!!
+   * /// Proper returnvalue needed..
+   * /// ==================================================
+   * 
+   * // Could be done from here but because it is not sure from where relocation
+   * is
+   * // performed we are using a REST API
+   * // ADD ERRORHANDLING
+   * 
+   * this.nodeId = IOobject.getId();
+   * // For now assumed only happy path. If something goes wrong rollback in
+   * // ballenbak and complete transacton`
+   * String action = "Move UUID " + IOobject.getUuid() + " : " +
+   * IOobject.getFileName() + " from "
+   * + IOobject.getplatformfrom();
+   * 
+   * // this.migrationservice.migrateNodeToSP(IOobject);
+   * IOLog.log(
+   * IOobject.getUuid(),
+   * "",
+   * "",
+   * action,
+   * IOobject.getplatformfrom().toString(),
+   * IOobject.getplatformto().toString(),
+   * IOobject.getHash(),
+   * IOobject.getFileName(),
+   * "",
+   * eActionPerformed.IOCOPIED,
+   * "System",
+   * IOobject.marking,
+   * IOobject.classification,
+   * IOobject.version);
+   * 
+   * DeleteAlfrescoNode();
+   * }
+   */
 
   /**
    * Deletes a node from Alfresco using the REST API.
@@ -1189,7 +1195,8 @@ public class AlfrescoNodeController {
    *
    * @throws Exception if an error occurs during the HTTP request.
    */
-  private void DeleteAlfrescoNode() {
+  public void DeleteAlfrescoNode(String nodeId) throws Exception {
+    this.nodeId = nodeId;
     String endpoint = String.format(
         "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
         this.endpoint, this.nodeId);
