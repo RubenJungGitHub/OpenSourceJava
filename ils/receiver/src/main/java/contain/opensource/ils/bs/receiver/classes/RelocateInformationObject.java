@@ -19,11 +19,11 @@ public class RelocateInformationObject extends IOObjectProperties {
     }
 
     // Constructor for Alfresco
-    public RelocateInformationObject(AlfrescoNodeResponse Anode, String hash)
+    public RelocateInformationObject(AlfrescoNodeResponse Anode)
     {
         // Map to this object
         this.UUID = Anode.UUID;
-        this.HASH = hash;
+        this.HASH = "1234567890";
         this.id = Anode.entry.id;
         this.Title = Anode.Title;
         this.content = Anode.content;

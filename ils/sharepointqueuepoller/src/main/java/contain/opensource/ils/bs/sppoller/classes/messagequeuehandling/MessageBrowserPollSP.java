@@ -55,7 +55,8 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
     public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
         try {
             String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
-            String feedback = timestamp + " -> New SHAREPOINT poll loop on broker : " + this.currentSource.getBrokerUrl()
+            String feedback = timestamp + " -> New SHAREPOINT poll loop on broker : "
+                    + this.currentSource.getBrokerUrl()
                     + " on queue " + this.queuetopoll + ". Interval : " + PollInterval + " seconds";
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
                     + feedback
@@ -75,7 +76,6 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                         try {
                             System.out.println("RAW JSON: " + json);
                             SharepointQueMessage message = mapper.readValue(json, SharepointQueMessage.class);
-
                             for (SharepointQueMessage.Item item : message.getItems()) {
                                 System.out.println("Item ID: " + item.getId());
                                 if (item.getParentReference() != null) {
@@ -104,6 +104,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                     }
                                 }
                             }
+                            String a = "a";
                             consumeMessageById(msg.getJMSMessageID());
                         } catch (JMSException processingError) {
                             System.err.println("Error while processing message" + processingError);

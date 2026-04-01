@@ -656,8 +656,8 @@ public class AlfrescoNodeController {
     try {
 
       this.nodeId = nodeid;
-      AlfrescoNodeResponse alfrescoresponse = GetNode();
-
+      AlfrescoNodeResponse alfrescoresponse = GetNode(nodeid);
+      itemmustmigrate(alfresconNodeResponse);
       migrationinfo.put("platformto",
           (alfrescoresponse.getplatformto() != null) ? alfrescoresponse.getplatformto().name() : "<NO MOVE>");
       migrationinfo.put("containerto",
@@ -802,8 +802,9 @@ public class AlfrescoNodeController {
     }
   }
 
-  private AlfrescoNodeResponse GetNode() {
+  public AlfrescoNodeResponse GetNode(String nodeid) {
     try {
+      this.nodeId = nodeid;
 
       String endpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s?include=path",
@@ -881,7 +882,7 @@ public class AlfrescoNodeController {
               e.printStackTrace();
             }
             try {
-              itemmustmigrate(alfresconNodeResponse);
+
 
               // alfresconNodeResponse.MustMove = (!alfresconNodeResponse.MoveTo.equals("<NO
               // MOVE>")); // IMPROVE!! SHOULD

@@ -16,16 +16,17 @@ public class MigrationQueueMessage {
     }
 
     // Constructor with all properties
-    public MigrationQueueMessage(String key, String action, String source, String id, String deltalink,
+    public MigrationQueueMessage(String key, String action, String deltalink, String source, String id,
             String platformto, String containerto) {
         this.id = id;
         this.key = key;
         this.action = action;
+        this.deltalink = deltalink;
         this.source = source;
         this.platformto = platformto;
         this.containerto = containerto;
         if (this.source.equals("SPO")) {
-            this.listid = this.deltalink.split("/lists/")[1].split("/")[0];
+         this.listid = this.deltalink.split("/lists/")[1].split("/")[0];
         }
     }
 

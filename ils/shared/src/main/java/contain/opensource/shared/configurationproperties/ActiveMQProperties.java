@@ -2,6 +2,8 @@ package contain.opensource.shared.configurationproperties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import jakarta.annotation.PostConstruct;
+
 //@Component
 @ConfigurationProperties(prefix = "activemq")
 public class ActiveMQProperties {
@@ -45,4 +47,14 @@ public class ActiveMQProperties {
 
     public BrokerConfig getMigrationHub() { return migrationHub; }
     public void setMigrationHub(BrokerConfig migrationHub) { this.migrationHub = migrationHub; }
+
+
+        @PostConstruct
+    public void init() {
+        System.out.println("ActiveMQProperties loaded:");
+        System.out.println("Alfresco source config = " + alfrescoSource.getBrokerUrl() + ", queue: " + alfrescoSource.getQueue());
+        System.out.println("Migration hub config = " + migrationHub.getBrokerUrl() + ", migration queue: " + migrationHub.getMigrationQueue());
+         System.out.println("Migration hub config = " + migrationHub.getBrokerUrl() + ", sharepoint queue: " + migrationHub.getSharepointQueue());
+    }
+
 }

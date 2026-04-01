@@ -1,5 +1,8 @@
 package contain.opensource.shared.classes;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -295,6 +298,8 @@ public abstract class MessageBrowserPollParentMigration {
         MessageConsumer consumer = null;
 
         try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
             if (session instanceof ActiveMQSession amqSession) {
                 if (amqSession.isClosed()) {
                     connection = createConnectionWithRetry();

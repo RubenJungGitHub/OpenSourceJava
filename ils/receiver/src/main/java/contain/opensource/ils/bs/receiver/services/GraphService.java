@@ -313,6 +313,9 @@ public class GraphService {
             String fileName = URLEncoder.encode(rawFileName, StandardCharsets.UTF_8).replace("+", "%20"); // IMPORTANT
             String driveItemId = "";
             // to do check null
+
+            //First set the correct destination
+            
             String driveId = getDriveID();
             String endPoint = String.format(
                     "https://graph.microsoft.com/v1.0/drives/%s/root:/%s:/content",

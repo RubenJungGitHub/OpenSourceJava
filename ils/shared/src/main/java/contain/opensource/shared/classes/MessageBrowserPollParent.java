@@ -23,7 +23,6 @@ import jakarta.jms.Queue;
 
 public abstract class MessageBrowserPollParent extends MessageBrowserPollParentMigration {
 
-
     public MessageBrowserPollParent(
             ActiveMQProperties activeMQProps,
             AlfrescoProperties alfrescoProps,
@@ -48,26 +47,32 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
                 MessageProducer producer = migsession.createProducer(migqueue);
                 producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
-                MigrationQueueMessage payload = new MigrationQueueMessage(weburl, "Migrate", platformfrom,
-                        id, deltalink, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
-                
+                MigrationQueueMessage payload = new MigrationQueueMessage(weburl, "Migrate", deltalink, platformfrom,
+                        id, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
+
                 // Ensure this variable name matches what's in the Grandparent
-                String json = this.objectMapper.writeValueAsString(payload); 
-                
+                String json = this.objectMapper.writeValueAsString(payload);
+
                 // Use 'migsession' here, NOT 'session'
-                TextMessage message = migsession.createTextMessage(json); 
+                TextMessage message = migsession.createTextMessage(json);
 
                 producer.send(message);
 
                 producer.close();
                 migsession.commit();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
+                String feedback = timestamp + " -> Information object queued for migration";
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
+                        + feedback
+                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             }
             // Add your logging here
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);
         }
     }
-    
+
     // Helper to keep the try-with-resources clean
     private Connection createConnectionFromConfig(ActiveMQProperties.BrokerConfig config) throws Exception {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(

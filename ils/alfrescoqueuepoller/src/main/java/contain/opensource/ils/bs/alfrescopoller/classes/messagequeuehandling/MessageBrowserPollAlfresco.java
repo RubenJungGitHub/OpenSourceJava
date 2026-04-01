@@ -155,109 +155,10 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             // 3. Now it is safe to call your send function
 
                                             SendMigrationMessage(folderOnly,
-                                                    QMessage.getId().toString(),
-                                                    "deltalink",
+                                                    QMessage.getId().toString(), "-",
                                                     AlfrescoConstants.ContainPlatforms.ALFRESCO.name(), migrateinfo);
                                         }
                                     }
-
-                                    /*
-                                     * String IOUUID = "";
-                                     * // if (!aController.alfresconNodeResponse.HasUUID) {cd..
-                                     * // // Set UUID
-                                     * // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID,
-                                     * // ilsproperties.getuudiutilendpoint(),
-                                     * // Optional.ofNullable(secondPath.toString()), Optional.empty());
-                                     * // IOUUID = aController.UpdateNode(AlfrescoConstants.NodeTypeFields.UUID
-                                     * // ,Optional.ofNullable(secondPath.toString()), Optional.empty());
-                                     * 
-                                     * // } else {
-                                     * // IOUUID = aController.alfresconNodeResponse.UUID;
-                                     * // }
-                                     * 
-                                     * // redis redindant. To memcollection?
-                                     * String redisLogId = IOUUID;
-                                     * // Add to Redis cache to avoid double binding.
-                                     * for (ContainPlatforms platform : ContainPlatforms.values()) {
-                                     * redisLogId = redisLogId.replace(platform.toString(), "");
-                                     * }
-                                     * String redisentryInRelocation = "IOinRelocateProcess" + redisLogId;
-                                     * String redisentryUUIDAssigned = "IOinUUIDAssigned" + IOUUID;
-                                     * 
-                                     * if (RedisManager.getHashField(redisentryInRelocation) != null) {
-                                     * RedisManager.deleteEntry(redisentryInRelocation);
-                                     * return;
-                                     * }
-                                     * // if (RedisManager.getHashField(redisentryUUIDAssigned) != null
-                                     * // && aController.alfresconNodeResponse.HasUUID) {
-                                     * // RedisManager.deleteEntry(redisentryUUIDAssigned);
-                                     * // return;
-                                     * // }
-                                     * 
-                                     * // ========================================================================
-                                     * // To be moved to migration service
-                                     * // ========================================================================
-                                     * /*
-                                     * // Moveobject, binding in new environment.
-                                     * if (aController.alfresconNodeResponse.MustMove) {
-                                     * System.out.println(
-                                     * contain.opensource.shared.constants.AlfrescoConstants.CYAN
-                                     * + "Alfresco  node must-move?"
-                                     * + aController.alfresconNodeResponse.MustMove
-                                     * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                                     * RedisManager.putHash("IOinRelocateProcess", redisentryInRelocation,
-                                     * "InProcess",
-                                     * 120);
-                                     * 
-                                     * // Create generic property mapping information object
-                                     * RelocateInformationObject IOobject = new RelocateInformationObject(
-                                     * aController.alfresconNodeResponse,
-                                     * "BOUND ON DESTINATION PLATFORM",
-                                     * AlfrescoConstants.ContainPlatforms.ALFRESCO,
-                                     * AlfrescoConstants.ContainPlatforms.SPO);
-                                     * // MOVE FOR NOW ONLY TOGGLE BETWEEN SPO and ALFRESCO
-                                     * // Could Be done from here but because it is not yet certain from where the
-                                     * // relocaiton is called we use a REST API
-                                     * // aController.RelocateIO(IOobject);
-                                     * RestTemplate restTemplate = new RestTemplate();
-                                     * // String endpoint = String.format(
-                                     * // "%s/RelocateIO",
-                                     * // this.ilsproperties.getBaseUrl());
-                                     * String endpoint = this.ilsproperties.getBaseUrl();
-                                     * HttpHeaders headers = new HttpHeaders();
-                                     * headers.setContentType(MediaType.APPLICATION_JSON);
-                                     * headers.setBasicAuth(
-                                     * AlfrescoConstants.username,
-                                     * AlfrescoConstants.password,
-                                     * StandardCharsets.UTF_8);
-                                     * 
-                                     * HttpEntity<RelocateInformationObject> entity2 = new HttpEntity<>(IOobject,
-                                     * headers);
-                                     * 
-                                     * ResponseEntity<String> response2 = restTemplate.postForEntity(endpoint,
-                                     * entity2,
-                                     * String.class);
-                                     * 
-                                     * System.out.println("Status: " + response2.getStatusCodeValue());
-                                     * System.out.println("Body: " + response2.getBody());
-                                     * 
-                                     * Integer status = response2.getStatusCode().value();
-                                     * if (status != 200) {
-                                     * throw new IOException("HTTP error " + status);
-                                     * }
-                                     * } else {
-                                     * // BindObject
-                                     * BindIO(IOUUID, QMessage, secondPath);
-                                     * }
-                                     */
-
-                                    // BindIO(IOUUID, QMessage, secondPath);
-                                    // boolean migrate =
-                                    // this.graphService.ProcessChangedSharepointItem(item.getWebUrl(),
-                                    // item.getId(), deltaLink);
-                                    // if (migrate) {
-                                    // SendMigrationMessage(item);
-                                    // }
                                 }
                             }
                         } catch (Exception e) {
@@ -285,7 +186,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
             System.err.println("Error polling the queue:");
             e.printStackTrace();
         }
-        System.out.println("No remaining ALFRESCO messages on queue");
+      //  System.out.println("No remaining ALFRESCO messages on queue");
     }
 
     private Hashtable<String, String> processalfresconode(String nodeid, String secondpath) {

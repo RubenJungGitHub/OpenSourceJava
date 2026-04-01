@@ -137,6 +137,5 @@ public class ILSRestProperties {
         System.out.println("ruleendpoint = " + ruleenginemoveendpoint);
         System.out.println("processspitemsendpoint = " + processspitemsendpoint);
         System.out.println("processalfresconodepoint = " + processalfresconodepoint);
-        
     }
 }

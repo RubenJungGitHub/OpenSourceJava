@@ -72,7 +72,7 @@ activemq:
   # The "Write" side for EVERYONE (House B)
   # This is also the "Read" side for SharePoint and the Migration Service
   migration-hub:
-    brokerUrl: tcp://localhost:61617
+    brokerUrl: tcp://localhost:61616
     user: admin
     password: admin
     sharepoint-queue: sharepoint.delta.queue
