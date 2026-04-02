@@ -78,11 +78,14 @@ public class ILSController {
             @RequestParam String id,
             @RequestParam String filename,
             @RequestParam String deletedby,
-            @RequestParam String secondpath) {
+            @RequestParam String secondpath,
+            @RequestParam String additionalinfo) {
         try {
             String decodesecondpath = URLDecoder.decode(secondpath, StandardCharsets.UTF_8);
             String decodefilename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
             String decodeeletedby = URLDecoder.decode(deletedby, StandardCharsets.UTF_8);
+            String decodeadditionalinfo = URLDecoder.decode(additionalinfo, StandardCharsets.UTF_8);
+
             String action = id + " : " + filename + " deleted from " + platform + " by user " + deletedby;
             IOLog.log(
                     "DeletedFromPlatform",
@@ -93,7 +96,7 @@ public class ILSController {
                     platform,
                     "DeletedFromPlatform",
                     decodefilename,
-                    "",
+                    decodeadditionalinfo,
                     AlfrescoConstants.eActionPerformed.IODELETED,
                     decodeeletedby,
                     "DeletedFromPlatform",

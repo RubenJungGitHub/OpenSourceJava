@@ -85,7 +85,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                             }
                             String deltaLink = message.getDeltaLink().split("\\?")[0];
                             if (item.getDeleted() != null) {
-                                logalfrescoiodeletedendpoint(item, "DeletedFromPlatform");
+                                logSharepointItemdeletedendpoint(message);
                             } else {
                                 try {
                                     Hashtable<String, String> migrateinfo = processharepointitem(message, item,
@@ -108,7 +108,9 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                         }
                     }
                 } catch (JMSException e) {
-                    System.err.println("Error polling the queue:");
+                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                            + "Error polling the queue: " + e.getMessage()
+                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     e.printStackTrace();
                 }
             }
@@ -144,15 +146,16 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
         }
     }
 
-    private boolean logalfrescoiodeletedendpoint(SharepointQueMessage.Item item, String secondpath) {
+    private boolean logSharepointItemdeletedendpoint( SharepointQueMessage msg) {
         RestTemplate restTemplate = new RestTemplate();
         String url = ilsproperties.getlogiodeletedfromplatformendpoint();
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
                 .queryParam("platform", AlfrescoConstants.ContainPlatforms.SPO.name())
-                .queryParam("id", item.getId())
+                .queryParam("id", msg.getItems().get(0).getId())
                 .queryParam("filename", "<Unknown>")
                 .queryParam("deletedby", "<Unknown>")
-                .queryParam("secondpath", secondpath);
+                .queryParam("secondpath", "<Unknown>")
+                .queryParam("additionalinfo", msg.getDeltaLink());
 
         try {
             // 1. Create headers and set Content-Type to JSON
@@ -173,9 +176,11 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
             // Return the actual body from the response
             return response.getBody() != null && response.getBody();
 
-        } catch (Exception ex) {
-            System.err.println("Fout bij aanroepen Alfresco endpoint: " + ex.getMessage());
-            return false;
+        } catch (Exception e) {
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                    + "Fout bij aanroepen logSharepointItemdeletedendpoint Receiver: " + e.getMessage()
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
         }
+        return false;
     }
 }
