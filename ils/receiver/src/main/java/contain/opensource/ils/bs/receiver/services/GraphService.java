@@ -950,12 +950,9 @@ public class GraphService {
             String resourceValue)
             throws MalformedURLException, Exception {
         String siteId = null;
-        String driveId = null;
-        // String siteGUID = null;
-        // String listId = null;
+        //String driveId = null;
         String action = "";
         Hashtable<String, String> migrationinfo = new Hashtable<>();
-        boolean MustMove = false;
         try {
             if (accessToken == null || accessToken.isEmpty()) {
                 accessToken = getGraphToken();

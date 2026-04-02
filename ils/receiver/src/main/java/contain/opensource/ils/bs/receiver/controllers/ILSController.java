@@ -1,8 +1,8 @@
 package contain.opensource.ils.bs.receiver.controllers;
-
+import java.nio.charset.StandardCharsets;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -119,6 +119,9 @@ public class ILSController {
                     ListItemID,
                     resourceValue);
             return ResponseEntity.ok(result);
+        } catch (NullPointerException ex) {
+            // Specifically handle the "Item missing/null" case
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ITEM_NOT_FOUND");
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body(ex.getMessage());
         }

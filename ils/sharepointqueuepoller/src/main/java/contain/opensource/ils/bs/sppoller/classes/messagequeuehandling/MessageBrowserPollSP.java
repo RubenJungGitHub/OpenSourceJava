@@ -91,13 +91,14 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                                         deltaLink);
                                 // Check 'platformto' in plaats van 'containerto'
                                 // To do source <> destination
-                                if (migrateinfo.get("platformto") != null
-                                        && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
-                                    SendMigrationMessage(item.getWebUrl(),
-                                            item.getFields().get("id").toString(), deltaLink,
-                                            AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
+                                if (migrateinfo != null) {
+                                    if (migrateinfo.get("platformto") != null
+                                            && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
+                                        SendMigrationMessage(item.getWebUrl(),
+                                                item.getFields().get("id").toString(), deltaLink,
+                                                AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
+                                    }
                                 }
-
                             }
                         }
                     }
@@ -138,13 +139,24 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                     message,
                     Hashtable.class);
             return response.getBody();
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+
+            // Now this will work perfectly:
+            int code = e.getStatusCode().value();
+
+            if (code == 404) {
+                // Perform your "Different Action" for the missing SharePoint item
+                System.out.println("Item not found (404). Handling accordingly.");
+            }
         } catch (Exception e) {
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
                     + "Fout bij aanroepen processharepointitem in receiver: " +
                     e.getMessage()
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            // This catches everything else that isn't an HTTP error (like a Timeout)
             throw e;
         }
+        return null;
     }
 
     private boolean logSharepointItemdeletedendpoint(SharepointQueMessage msg) throws Exception {
