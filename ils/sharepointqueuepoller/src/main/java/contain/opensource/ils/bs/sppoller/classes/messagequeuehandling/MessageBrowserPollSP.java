@@ -73,50 +73,44 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                     if (msg instanceof TextMessage) {
                         json = ((TextMessage) msg).getText();
                         // TextMessage text = (TextMessage) msg;
-                        try {
-                            System.out.println("RAW JSON: " + json);
-                            SharepointQueMessage message = mapper.readValue(json, SharepointQueMessage.class);
-                            for (SharepointQueMessage.Item item : message.getItems()) {
-                                System.out.println("Item ID: " + item.getId());
-                                if (item.getParentReference() != null) {
-                                    System.out.println("Site ID: " + item.getParentReference().getSiteId());
-                                }
-                                if (item.getFields() != null) {
-                                    System.out.println("Fields: " + item.getFields());
-                                }
-                                String deltaLink = message.getDeltaLink().split("\\?")[0];
-                                if (item.getDeleted() != null) {
-                                    logalfrescoiodeletedendpoint(item, "DeletedFromPlatform");
-                                } else {
-                                    try {
-                                        Hashtable<String, String> migrateinfo = processharepointitem(message, item,
-                                                deltaLink);
-                                        // Check 'platformto' in plaats van 'containerto'
-                                        // To do source <> destination
-                                        if (migrateinfo.get("platformto") != null
-                                                && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
-                                            SendMigrationMessage(item.getWebUrl(),
-                                                    item.getFields().get("id").toString(), deltaLink,
-                                                    AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
-                                        }
-                                    } catch (Exception e) {
-                                        System.err.println("Fout bij aanroepen Receiver: " + e.getMessage());
+                        System.out.println("RAW JSON: " + json);
+                        SharepointQueMessage message = mapper.readValue(json, SharepointQueMessage.class);
+                        for (SharepointQueMessage.Item item : message.getItems()) {
+                            System.out.println("Item ID: " + item.getId());
+                            if (item.getParentReference() != null) {
+                                System.out.println("Site ID: " + item.getParentReference().getSiteId());
+                            }
+                            if (item.getFields() != null) {
+                                System.out.println("Fields: " + item.getFields());
+                            }
+                            String deltaLink = message.getDeltaLink().split("\\?")[0];
+                            if (item.getDeleted() != null) {
+                                logalfrescoiodeletedendpoint(item, "DeletedFromPlatform");
+                            } else {
+                                try {
+                                    Hashtable<String, String> migrateinfo = processharepointitem(message, item,
+                                            deltaLink);
+                                    // Check 'platformto' in plaats van 'containerto'
+                                    // To do source <> destination
+                                    if (migrateinfo.get("platformto") != null
+                                            && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
+                                        SendMigrationMessage(item.getWebUrl(),
+                                                item.getFields().get("id").toString(), deltaLink,
+                                                AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
                                     }
+                                    consumeMessageById(msg.getJMSMessageID());
+                                } catch (Exception e) {
+                                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                                            + "Fout bij aanroepen Receiver: " + e.getMessage()
+                                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                                 }
                             }
-                            String a = "a";
-                            consumeMessageById(msg.getJMSMessageID());
-                        } catch (JMSException processingError) {
-                            System.err.println("Error while processing message" + processingError);
-                            processingError.printStackTrace();
                         }
-
                     }
                 } catch (JMSException e) {
                     System.err.println("Error polling the queue:");
                     e.printStackTrace();
                 }
-
             }
         } catch (Exception e) {
             System.err.println("Error in StartPoll:");
@@ -125,20 +119,20 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
     }
 
     private Hashtable<String, String> processharepointitem(SharepointQueMessage message, SharepointQueMessage.Item item,
-            String deltaLink) {
+            String deltaLink) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
-
-        // 2. De URL van je nieuwe endpoint (haal dit idealiter uit ILSRestProperties)
-        String url = ilsproperties.getprocessspitemsendpoint();
-        // 3. De parameters (als je ze als Query Params houdt zoals in je huidige
-        // skeleton)
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("ItemWebUrl", item.getWebUrl())
-                .queryParam("ListItemID", item.getId())
-                .queryParam("resourceValue", deltaLink);
-
-        // 4. Verstuur het bericht (de 'message' is je SharepointQueMessage)
         try {
+            // 2. De URL van je nieuwe endpoint (haal dit idealiter uit ILSRestProperties)
+            String url = ilsproperties.getprocessspitemsendpoint();
+            // 3. De parameters (als je ze als Query Params houdt zoals in je huidige
+            // skeleton)
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                    .queryParam("ItemWebUrl", item.getWebUrl())
+                    .queryParam("ListItemID", item.getId())
+                    .queryParam("resourceValue", deltaLink);
+
+            // 4. Verstuur het bericht (de 'message' is je SharepointQueMessage)
+
             ResponseEntity<Hashtable> response = restTemplate.postForEntity(
                     builder.toUriString(),
                     message,
@@ -146,8 +140,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
             System.out.println("Receiver antwoordde met: " + response.getStatusCode());
             return response.getBody();
         } catch (Exception e) {
-            System.err.println("Fout bij aanroepen Receiver: " + e.getMessage());
-            return null;
+            throw e;
         }
     }
 

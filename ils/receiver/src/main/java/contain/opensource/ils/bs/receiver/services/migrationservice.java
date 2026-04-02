@@ -92,14 +92,14 @@ public class migrationservice {
         }
     }
 
-    public void migrateSPObjectToAlfresco(MigrationQueueMessage msg) throws Exception {
+    private void migrateSPObjectToAlfresco(MigrationQueueMessage msg) throws Exception {
         try {
 
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
-            // SPitem shoud get COnvertTorelocateObkject like it has for secureobject.
             RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-            ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
-            ROobject.setcontainerto(msg.getcontainerto());
+            setenvironments(msg, ROobject);
+            // ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
+            // ROobject.setcontainerto(msg.getcontainerto());
             this.AlfrescoNodeController.uploadSPItemToAlfresco(ROobject);
             this.graphservice.deleteSPItemById(ROobject);
 
@@ -109,29 +109,50 @@ public class migrationservice {
         }
     }
 
-    public void migrateSPObjectToSPO(MigrationQueueMessage msg) throws Exception {
+    private void migrateSPObjectToSPO(MigrationQueueMessage msg) throws Exception {
         try {
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
             RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+            setenvironments(msg, ROobject);
+            // ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
+            // ROobject.setcontainerto(msg.getcontainerto());
+            // Store original ItemId for deletion after successful upload
+            this.graphservice.uploadAlfrescoNodeToSP(ROobject);
+            this.graphservice.deleteSPItemByFromDeltaLink(ROobject, msg.getdeltalink());
         } catch (Exception e) {
             System.out.println("Failed to migrate SP item : " + e.getMessage());
             throw e;
         }
     }
 
-    public void migrateAlfrescoObjectToSP(MigrationQueueMessage msg) {
+    private void migrateAlfrescoObjectToSP(MigrationQueueMessage msg) {
         // First get item from alfresco
-        RelocateInformationObject ROobject = new RelocateInformationObject(AlfrescoNodeController.GetNode(msg.getID()));
-        ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
-        ROobject.setcontainerto(msg.getcontainerto());
-        this.graphservice.uploadAlfrescoNodeToSP(ROobject);
         try {
+            RelocateInformationObject ROobject = new RelocateInformationObject(
+                    AlfrescoNodeController.GetNode(msg.getID()));
+            setenvironments(msg, ROobject);
+            this.graphservice.uploadAlfrescoNodeToSP(ROobject);
             this.AlfrescoNodeController.DeleteAlfrescoNode(ROobject.getId());
         } catch (Exception e) {
             System.out.println("Failed to delete Alfresco node after migration: " + e.getMessage());
         }
     }
 
-    public void migrateAlfrescoObjectToAlfresco(MigrationQueueMessage msg) {
+    private void migrateAlfrescoObjectToAlfresco(MigrationQueueMessage msg) {
+        try {
+            RelocateInformationObject ROobject = new RelocateInformationObject(
+                    AlfrescoNodeController.GetNode(msg.getID()));
+            setenvironments(msg, ROobject);
+            this.AlfrescoNodeController.uploadSPItemToAlfresco(ROobject);
+            this.AlfrescoNodeController.DeleteAlfrescoNode(ROobject.getId());
+        } catch (Exception e) {
+            System.out.println("Failed to delete Alfresco node after migration: " + e.getMessage());
+        }
+    }
+
+    private void setenvironments(MigrationQueueMessage msg, RelocateInformationObject ROobject) {
+        ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
+        ROobject.setcontainerto(msg.getcontainerto());
+
     }
 }

@@ -79,4 +79,12 @@ public class MigrationQueueMessage {
     public void setcontainerto(String containerto) {
         this.containerto = containerto;
     }
+
+        public String getdeltalink() {
+        return deltalink;
+    }
+
+    public void setdeltalink(String deltalink) {
+        this.deltalink = deltalink;
+    }
 }

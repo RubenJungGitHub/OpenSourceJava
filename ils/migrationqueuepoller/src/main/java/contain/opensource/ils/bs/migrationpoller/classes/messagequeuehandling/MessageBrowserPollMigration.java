@@ -85,7 +85,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                     RestTemplate restTemplate = new RestTemplate();
                     // HttpEntity<RelocateInformationObject> entitymove = new HttpEntity<>(ROobject,
                     // headers);
-                    int status=0;
+                    int status = 0;
                     try {
                         // This must be checked if connection is broken a restart is required
                         ResponseEntity<String> response = restTemplate.postForEntity(endpoint, queueMessage,
@@ -99,9 +99,11 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                         System.err.println("Error in StartPoll:");
                         e.printStackTrace();
                     }
-                    consumeMessageById(msg.getJMSMessageID());
+
                     if (status != 200) {
                         throw new IOException("HTTP error " + status);
+                    } else {
+                        consumeMessageById(msg.getJMSMessageID());
                     }
                 }
             }

@@ -288,7 +288,10 @@ public class GraphService {
 
     public String updateSharepointItemGraphAPI(RelocateInformationObject node, String listItemId) {
         try {
-
+            // Start with a short delay to ensure SharePoint has processed the new item.
+            // This is a common issue where the item is not immediately available for
+            // updates after creation.
+            Thread.sleep(1000);
             // First obtain new UUID and accesstoken
             if (accessToken == null || accessToken.isEmpty()) {
                 accessToken = getGraphToken();
@@ -323,7 +326,7 @@ public class GraphService {
 
             String endpoint = String.format(
                     "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
-                    this.SiteID, ListId, listItemId);
+                    this.SiteID, this.ListId, listItemId);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
@@ -512,12 +515,12 @@ public class GraphService {
             if (containerto.endsWith("/")) {
                 containerto = containerto.substring(0, containerto.length() - 1);
             }
-            String lookforlistId = containerto.substring(containerto.lastIndexOf("/") + 1);
+            this.ListId = containerto.substring(containerto.lastIndexOf("/") + 1);
 
             for (JsonNode driveNode : drivesArray) {
                 String drivelistid = driveNode.path("sharePointIds").path("listId").asText();
                 // Compare on listid
-                if (lookforlistId.equalsIgnoreCase(drivelistid)) {
+                if (this.ListId.equalsIgnoreCase(drivelistid)) {
                     return driveNode.path("id").asText(); // Return Drive ID
                 }
             }
@@ -644,6 +647,60 @@ public class GraphService {
             }
         } else {
             throw new IOException("Failed to fetch SharePoint item. Status: " + response.statusCode());
+        }
+    }
+
+    public void deleteSPItemByFromDeltaLink(RelocateInformationObject ROobject, String deltalink) throws Exception {
+        try {
+            extractIdsFromDeltaLink(deltalink);
+            String itemId = ROobject.getId();
+
+            String endpoint = String.format(
+                    "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s",
+                    this.SiteID, this.ListId, itemId);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endpoint))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Accept", "application/json")
+                    .DELETE()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 204) {
+
+                String action = "Deleted  UUID " + ROobject.getUuid() + " : " + ROobject.getFileName()
+                        + " from "
+                        + ROobject.getplatformfrom();
+
+                System.out.println("Document deleted successfully.");
+
+                // Log
+                IOLog.log(
+                        "DeletedFromPlatform",
+                        ROobject.getId(),
+                        "",
+                        action,
+                        ROobject.getplatformfrom().toString(),
+                        ROobject.getplatformfrom().toString(),
+                        "DeletedFromPlatform",
+                        ROobject.getFileName(),
+                        "",
+                        AlfrescoConstants.eActionPerformed.IODELETED,
+                        "System",
+                        ROobject.marking,
+                        ROobject.classification,
+                        ROobject.version);
+            } else {
+                throw new RuntimeException(
+                        "Failed to delete document. HTTP "
+                                + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception ex) {
+            System.out.println("Failed to delete SP item: " + ex.getMessage());
         }
     }
 
@@ -956,5 +1013,29 @@ public class GraphService {
             throw ex;
         }
         return migrationinfo;
+    }
+
+    public void extractIdsFromDeltaLink(String deltaLink) {
+        try {
+            // 1. Get the List ID (Everything between /lists/ and /items/)
+            this.ListId = deltaLink.split("/lists/")[1].split("/")[0];
+
+            // 2. Get the Full Site Composite String (Everything between /sites/ and
+            // /lists/)
+            String siteFullString = deltaLink.split("/sites/")[1].split("/lists/")[0];
+
+            // 3. Separate the Site Composite String by commas
+            String[] siteParts = siteFullString.split(",");
+
+            this.tenantDomain = siteParts[0]; // lls6.sharepoint.com
+            this.SiteID = siteParts[1]; // d155b09d-c4de-4d04-8b37-198f35e78232
+            String webId = siteParts[2]; // fcdd99bf-a85d-4b0f-8387-1a96133d521a
+
+            System.out.println("Extracted SiteID: " + this.SiteID);
+            System.out.println("Extracted ListID: " + this.ListId);
+
+        } catch (Exception e) {
+            System.err.println("Could not parse deltalink: " + e.getMessage());
+        }
     }
 }
