@@ -63,7 +63,7 @@ public abstract class MessageBrowserPollParent extends MessageBrowserPollParentM
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
                 String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
                 String feedback = timestamp + " -> Information object queued for migration";
-                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
                         + feedback
                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             }

@@ -616,6 +616,7 @@ public class AlfrescoNodeController {
         }
       }
     } catch (Exception e) {
+     //TO DO LOGGING BECAUSE ITEM PROBABLY ALREADY EXISTS IN DESTINATION
       System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();
       throw e;
@@ -1123,66 +1124,6 @@ public class AlfrescoNodeController {
       return false;
     }
   }
-
-  /**
-   * Relocates an Information Object (IO) from Alfresco to another platform.
-   * 
-   * This method logs the relocation action, uploads the node to SharePoint (or
-   * another
-   * specified platform) using a REST API, and then deletes the original Alfresco
-   * node.
-   * 
-   * b>Note:</b> This method currently assumes only the happy path and does not
-   * include
-   * versioning, copy controls, or proper rollback/transaction management in case
-   * of errors.
-   * 
-   * param IOobject The {@link RelocateInformationObject} containing details
-   * about the node to relocate,
-   * including its ID, UUID, file name, source and destination
-   * platforms, hash, marking,
-   * classification, and version.
-   */
-
-  /*
-   * public void RelocateIO(RelocateInformationObject IOobject) {
-   * /// ==================================================
-   * /// NOTE> NO VERSIONING AND COPY CONTROLS INCLUDED!!!
-   * /// Proper returnvalue needed..
-   * /// ==================================================
-   * 
-   * // Could be done from here but because it is not sure from where relocation
-   * is
-   * // performed we are using a REST API
-   * // ADD ERRORHANDLING
-   * 
-   * this.nodeId = IOobject.getId();
-   * // For now assumed only happy path. If something goes wrong rollback in
-   * // ballenbak and complete transacton`
-   * String action = "Move UUID " + IOobject.getUuid() + " : " +
-   * IOobject.getFileName() + " from "
-   * + IOobject.getplatformfrom();
-   * 
-   * // this.migrationservice.migrateNodeToSP(IOobject);
-   * IOLog.log(
-   * IOobject.getUuid(),
-   * "",
-   * "",
-   * action,
-   * IOobject.getplatformfrom().toString(),
-   * IOobject.getplatformto().toString(),
-   * IOobject.getHash(),
-   * IOobject.getFileName(),
-   * "",
-   * eActionPerformed.IOCOPIED,
-   * "System",
-   * IOobject.marking,
-   * IOobject.classification,
-   * IOobject.version);
-   * 
-   * DeleteAlfrescoNode();
-   * }
-   */
 
   /**
    * Deletes a node from Alfresco using the REST API.

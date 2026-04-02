@@ -157,11 +157,12 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             SendMigrationMessage(folderOnly,
                                                     QMessage.getNodeId().toString(), "-",
                                                     AlfrescoConstants.ContainPlatforms.ALFRESCO.name(), migrateinfo);
-                                            consumeMessageById(msg.getJMSMessageID());
+
                                         }
                                     }
                                 }
                             }
+                            consumeMessageById(msg.getJMSMessageID());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -211,26 +212,39 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                     entity,
                     Hashtable.class);
 
-            // Return the actual body from the response
-            // return response.getBody() != null && response.getBody();
             return response.getBody();
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+
+            // Now this will work perfectly:
+            int code = e.getStatusCode().value();
+
+            if (code == 404) {
+                // Perform your "Different Action" for the missing SharePoint item
+                System.out.println("Item not found (404). Handling accordingly.");
+            }
         } catch (Exception e) {
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                    + "Fout bij aanroepen processalfresconode in receiver: " +
+                    e.getMessage()
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            // This catches everything else that isn't an HTTP error (like a Timeout)
             throw e;
         }
+        return null;
     }
 
-    private boolean logalfrescoiodeletedendpoint(AlfrescoQueMessage QMessage, String secondpath) {
-        RestTemplate restTemplate = new RestTemplate();
-        String url = ilsproperties.getlogiodeletedfromplatformendpoint();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("platform", AlfrescoConstants.ContainPlatforms.ALFRESCO.name())
-                .queryParam("id", QMessage.getId())
-                .queryParam("filename", QMessage.getName())
-                .queryParam("deletedby", QMessage.getUsername())
-                .queryParam("secondpath", secondpath)
-                .queryParam("additionalinfo","-");;
-
+    private boolean logalfrescoiodeletedendpoint(AlfrescoQueMessage QMessage, String secondpath) throws Exception {
         try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = ilsproperties.getlogiodeletedfromplatformendpoint();
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                    .queryParam("platform", AlfrescoConstants.ContainPlatforms.ALFRESCO.name())
+                    .queryParam("id", QMessage.getId())
+                    .queryParam("filename", QMessage.getName())
+                    .queryParam("deletedby", QMessage.getUsername())
+                    .queryParam("secondpath", secondpath)
+                    .queryParam("additionalinfo", "-");
+
             // 1. Create headers and set Content-Type to JSON
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -251,9 +265,10 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
 
         } catch (Exception e) {
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
-                    + "Fout bij aanroepen logalfrescoiodeletedendpoint Receiver: " + e.getMessage()
+                    + "Fout bij aanroepen logalfrescoiodeletedendpoint Receiver: " +
+                    e.getMessage()
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            throw e;
         }
-        return false;
     }
 }

@@ -291,11 +291,15 @@ public class GraphService {
             // Start with a short delay to ensure SharePoint has processed the new item.
             // This is a common issue where the item is not immediately available for
             // updates after creation.
-            Thread.sleep(1000);
+            //Thread.sleep(1000);
             // First obtain new UUID and accesstoken
             if (accessToken == null || accessToken.isEmpty()) {
                 accessToken = getGraphToken();
             }
+
+        String cleanClassification =  node.getclassification().replace("\"", "");
+        String cleanMarking = node.getMarking().replace("\"", "");
+
             // String uuid = GetUUID();
             HttpClient client = HttpClient.newHttpClient();
 
@@ -309,8 +313,8 @@ public class GraphService {
             // a custom field should be used for description to prevent update failure due
             // to Graph API limitations on the description field.
             body.put("containIODescription", node.getDescription());
-            body.put("Marking", node.getMarking());
-            body.put("Classification", node.getclassification());
+            body.put("Marking", cleanMarking);
+            body.put("Classification", cleanClassification);
 
             // Graph API will not allow description field to be a[dated. Even wordso./ If
             // this field is added the entire update fails!

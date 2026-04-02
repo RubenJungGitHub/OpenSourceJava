@@ -96,13 +96,14 @@ public class migrationservice {
         try {
 
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
-            RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-            setenvironments(msg, ROobject);
-            // ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
-            // ROobject.setcontainerto(msg.getcontainerto());
-            this.AlfrescoNodeController.uploadSPItemToAlfresco(ROobject);
-            this.graphservice.deleteSPItemById(ROobject);
-
+            if (SPItem != null) {
+                RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+                setenvironments(msg, ROobject);
+                // ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
+                // ROobject.setcontainerto(msg.getcontainerto());
+                this.AlfrescoNodeController.uploadSPItemToAlfresco(ROobject);
+                this.graphservice.deleteSPItemById(ROobject);
+            }
         } catch (Exception e) {
             System.out.println("Failed to migrate SP item : " + e.getMessage());
             throw e;
@@ -112,13 +113,16 @@ public class migrationservice {
     private void migrateSPObjectToSPO(MigrationQueueMessage msg) throws Exception {
         try {
             SharePointItemResponse SPItem = GraphService.getListItemsById(msg.getlistid(), msg.getID());
-            RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
-            setenvironments(msg, ROobject);
-            // ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
-            // ROobject.setcontainerto(msg.getcontainerto());
-            // Store original ItemId for deletion after successful upload
-            this.graphservice.uploadAlfrescoNodeToSP(ROobject);
-            this.graphservice.deleteSPItemByFromDeltaLink(ROobject, msg.getdeltalink());
+            // Sheck if item exists, if not continue.
+            if (SPItem != null) {
+                RelocateInformationObject ROobject = new RelocateInformationObject(SPItem);
+                setenvironments(msg, ROobject);
+                // ROobject.setplatformto(AlfrescoConstants.ContainPlatforms.valueOf(msg.getplatformto().toUpperCase()));
+                // ROobject.setcontainerto(msg.getcontainerto());
+                // Store original ItemId for deletion after successful upload
+                this.graphservice.uploadAlfrescoNodeToSP(ROobject);
+                this.graphservice.deleteSPItemByFromDeltaLink(ROobject, msg.getdeltalink());
+            }
         } catch (Exception e) {
             System.out.println("Failed to migrate SP item : " + e.getMessage());
             throw e;
@@ -134,7 +138,7 @@ public class migrationservice {
             this.graphservice.uploadAlfrescoNodeToSP(ROobject);
             this.AlfrescoNodeController.DeleteAlfrescoNode(ROobject.getId());
         } catch (Exception e) {
-            System.out.println("Failed to delete Alfresco node after migration: " + e.getMessage());
+            System.out.println("Failed to migrate Alfresco node :  " + e.getMessage());
         }
     }
 
@@ -146,7 +150,7 @@ public class migrationservice {
             this.AlfrescoNodeController.uploadSPItemToAlfresco(ROobject);
             this.AlfrescoNodeController.DeleteAlfrescoNode(ROobject.getId());
         } catch (Exception e) {
-            System.out.println("Failed to delete Alfresco node after migration: " + e.getMessage());
+            System.out.println("Failed to migrate Alfresco node : " + e.getMessage());
         }
     }
 
