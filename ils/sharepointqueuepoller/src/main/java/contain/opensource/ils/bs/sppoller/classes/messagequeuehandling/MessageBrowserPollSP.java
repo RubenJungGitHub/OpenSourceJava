@@ -87,36 +87,34 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                             if (item.getDeleted() != null) {
                                 logSharepointItemdeletedendpoint(message);
                             } else {
-                                try {
-                                    Hashtable<String, String> migrateinfo = processharepointitem(message, item,
-                                            deltaLink);
-                                    // Check 'platformto' in plaats van 'containerto'
-                                    // To do source <> destination
-                                    if (migrateinfo.get("platformto") != null
-                                            && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
-                                        SendMigrationMessage(item.getWebUrl(),
-                                                item.getFields().get("id").toString(), deltaLink,
-                                                AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
-                                    }
-                                    consumeMessageById(msg.getJMSMessageID());
-                                } catch (Exception e) {
-                                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
-                                            + "Fout bij aanroepen Receiver: " + e.getMessage()
-                                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                                Hashtable<String, String> migrateinfo = processharepointitem(message, item,
+                                        deltaLink);
+                                // Check 'platformto' in plaats van 'containerto'
+                                // To do source <> destination
+                                if (migrateinfo.get("platformto") != null
+                                        && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
+                                    SendMigrationMessage(item.getWebUrl(),
+                                            item.getFields().get("id").toString(), deltaLink,
+                                            AlfrescoConstants.ContainPlatforms.SPO.name(), migrateinfo);
                                 }
+
                             }
                         }
                     }
+                    consumeMessageById(msg.getJMSMessageID());
                 } catch (JMSException e) {
                     System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
-                            + "Error polling the queue: " + e.getMessage()
+                            + "Error in sharepoint poller : " + e.getMessage()
                             + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                    e.printStackTrace();
+                    // e.printStackTrace();
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error in StartPoll:");
-            e.printStackTrace();
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                    + "Fout bij aanroepen processharepointitem in receiver: " +
+                    e.getMessage()
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            // e.printStackTrace();
         }
     }
 
@@ -139,25 +137,28 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                     builder.toUriString(),
                     message,
                     Hashtable.class);
-            System.out.println("Receiver antwoordde met: " + response.getStatusCode());
             return response.getBody();
         } catch (Exception e) {
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                    + "Fout bij aanroepen processharepointitem in receiver: " +
+                    e.getMessage()
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
             throw e;
         }
     }
 
-    private boolean logSharepointItemdeletedendpoint( SharepointQueMessage msg) {
-        RestTemplate restTemplate = new RestTemplate();
-        String url = ilsproperties.getlogiodeletedfromplatformendpoint();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("platform", AlfrescoConstants.ContainPlatforms.SPO.name())
-                .queryParam("id", msg.getItems().get(0).getId())
-                .queryParam("filename", "<Unknown>")
-                .queryParam("deletedby", "<Unknown>")
-                .queryParam("secondpath", "<Unknown>")
-                .queryParam("additionalinfo", msg.getDeltaLink());
-
+    private boolean logSharepointItemdeletedendpoint(SharepointQueMessage msg) throws Exception {
         try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = ilsproperties.getlogiodeletedfromplatformendpoint();
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                    .queryParam("platform", AlfrescoConstants.ContainPlatforms.SPO.name())
+                    .queryParam("id", msg.getItems().get(0).getId())
+                    .queryParam("filename", "<Unknown>")
+                    .queryParam("deletedby", "<Unknown>")
+                    .queryParam("secondpath", "<Unknown>")
+                    .queryParam("additionalinfo", msg.getDeltaLink());
+
             // 1. Create headers and set Content-Type to JSON
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -171,16 +172,15 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                     entity,
                     Boolean.class);
 
-            System.out.println("Endpoint aangeroepen. Status: " + response.getStatusCode());
-
             // Return the actual body from the response
             return response.getBody() != null && response.getBody();
 
         } catch (Exception e) {
             System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
-                    + "Fout bij aanroepen logSharepointItemdeletedendpoint Receiver: " + e.getMessage()
+                    + "Fout bij aanroepen logSharepointItemdeletedendpoint Receiver: " +
+                    e.getMessage()
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            throw e;
         }
-        return false;
     }
 }

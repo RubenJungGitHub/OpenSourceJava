@@ -157,6 +157,7 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             SendMigrationMessage(folderOnly,
                                                     QMessage.getNodeId().toString(), "-",
                                                     AlfrescoConstants.ContainPlatforms.ALFRESCO.name(), migrateinfo);
+                                            consumeMessageById(msg.getJMSMessageID());
                                         }
                                     }
                                 }
@@ -173,7 +174,6 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                     }
                     // To do transaction and persistance
-                    consumeMessageById(msg.getJMSMessageID());
 
                 } catch (JMSException processingError) {
                     System.err.println("Error while processing message, ROLLBACK.");
@@ -186,18 +186,18 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
             System.err.println("Error polling the queue:");
             e.printStackTrace();
         }
-      //  System.out.println("No remaining ALFRESCO messages on queue");
+        // System.out.println("No remaining ALFRESCO messages on queue");
     }
 
-    private Hashtable<String, String> processalfresconode(String nodeid, String secondpath) {
-        RestTemplate restTemplate = new RestTemplate();
-        String url = ilsproperties.getprocessalfresconodepoint();
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("nodeid", nodeid)
-                .queryParam("secondpath", secondpath);
-
+    private Hashtable<String, String> processalfresconode(String nodeid, String secondpath) throws Exception {
         try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = ilsproperties.getprocessalfresconodepoint();
+
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url)
+                    .queryParam("nodeid", nodeid)
+                    .queryParam("secondpath", secondpath);
+
             // 1. Create headers and set Content-Type to JSON
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -211,15 +211,11 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                     entity,
                     Hashtable.class);
 
-            System.out.println("Endpoint aangeroepen. Status: " + response.getStatusCode());
-
             // Return the actual body from the response
             // return response.getBody() != null && response.getBody();
             return response.getBody();
-
-        } catch (Exception ex) {
-            System.err.println("Fout bij aanroepen Alfresco endpoint: " + ex.getMessage());
-            return null;
+        } catch (Exception e) {
+            throw e;
         }
     }
 
@@ -231,7 +227,8 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                 .queryParam("id", QMessage.getId())
                 .queryParam("filename", QMessage.getName())
                 .queryParam("deletedby", QMessage.getUsername())
-                .queryParam("secondpath", secondpath);
+                .queryParam("secondpath", secondpath)
+                .queryParam("additionalinfo","-");;
 
         try {
             // 1. Create headers and set Content-Type to JSON
@@ -252,9 +249,11 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
             // Return the actual body from the response
             return response.getBody() != null && response.getBody();
 
-        } catch (Exception ex) {
-            System.err.println("Fout bij aanroepen Alfresco endpoint: " + ex.getMessage());
-            return false;
+        } catch (Exception e) {
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                    + "Fout bij aanroepen logalfrescoiodeletedendpoint Receiver: " + e.getMessage()
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
         }
+        return false;
     }
 }
