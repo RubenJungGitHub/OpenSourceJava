@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
+import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeResponse;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
 import contain.opensource.shared.classes.MigrationQueueMessage;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
@@ -144,9 +145,11 @@ public class migrationservice {
 
     private void migrateAlfrescoObjectToAlfresco(MigrationQueueMessage msg) {
         try {
-            RelocateInformationObject ROobject = new RelocateInformationObject(
-                    AlfrescoNodeController.GetNode(msg.getID()));
+            AlfrescoNodeResponse aresponse =  AlfrescoNodeController.GetNode(msg.getID());            
+            RelocateInformationObject ROobject = new RelocateInformationObject(aresponse);
             setenvironments(msg, ROobject);
+            //We have to set the mimetype seperately
+            //ROobject.setmimetype(ROobject.getproperties().get("mimetype").toString());
             this.AlfrescoNodeController.uploadSPItemToAlfresco(ROobject);
             this.AlfrescoNodeController.DeleteAlfrescoNode(ROobject.getId());
         } catch (Exception e) {

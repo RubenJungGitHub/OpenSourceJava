@@ -9,8 +9,9 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 //======================================================
 public class RelocateInformationObject extends IOObjectProperties {
 
-
     public String containerto;
+    private String siteid;
+    private String libid;
     public AlfrescoConstants.ContainPlatforms platformto;
 
     public RelocateInformationObject() {
@@ -19,8 +20,7 @@ public class RelocateInformationObject extends IOObjectProperties {
     }
 
     // Constructor for Alfresco
-    public RelocateInformationObject(AlfrescoNodeResponse Anode)
-    {
+    public RelocateInformationObject(AlfrescoNodeResponse Anode) {
         // Map to this object
         this.UUID = Anode.UUID;
         this.HASH = "1234567890";
@@ -33,6 +33,7 @@ public class RelocateInformationObject extends IOObjectProperties {
         this.classification = Anode.classification;
         this.platformfrom = AlfrescoConstants.ContainPlatforms.ALFRESCO;
         this.version = Anode.version;
+        this.mimeType = Anode.mimeType;
     }
 
     // Constructor for SP
@@ -49,7 +50,7 @@ public class RelocateInformationObject extends IOObjectProperties {
         this.classification = SPItem.classification;
         this.version = SPItem.version;
         this.platformfrom = AlfrescoConstants.ContainPlatforms.SPO;
-     }
+    }
 
     public void setcontainerto(String containerto) {
         this.containerto = containerto;
@@ -59,13 +60,27 @@ public class RelocateInformationObject extends IOObjectProperties {
         return this.containerto;
     }
 
-
     public void setplatformto(AlfrescoConstants.ContainPlatforms platformto) {
         this.platformto = platformto;
     }
 
-    public AlfrescoConstants.ContainPlatforms  getplatformto() {
+    public AlfrescoConstants.ContainPlatforms getplatformto() {
         return this.platformto;
     }
 
+    public void setsiteid(String siteid) {
+        this.siteid = siteid;
+    }
+
+    public String getsiteid() {
+        return this.siteid;
+    }
+
+    public void setlibid(String libid) {
+        this.libid = libid;
+    }
+
+    public String getlibid() {
+        return this.libid;
+    }
 }

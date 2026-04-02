@@ -65,6 +65,7 @@ public class AlfrescoNodeController {
   private String username;
   private String password;
   private String endpoint;
+ 
 
   public AlfrescoNodeResponse alfresconNodeResponse;
   private ILSRestProperties ilsproperties;
@@ -140,6 +141,7 @@ public class AlfrescoNodeController {
           JsonNode siteNode = entry.path("entry");
           if (siteNode.path("id").asText().equals(IOobject.getcontainerto())) {
             String guid = siteNode.path("guid").asText();
+            IOobject.setsiteid(guid);
             return guid;
           }
         }
@@ -205,7 +207,9 @@ public class AlfrescoNodeController {
           String responseBody = EntityUtils.toString(response.getEntity()); // ✅ get
           JsonNode root = mapper.readTree(responseBody);
           for (JsonNode container : root.path("list").path("entries")) {
+            //documentlibrary should be configurable per site, but to be sure we check the folderId field
             if ("documentLibrary".equals(container.path("entry").path("folderId").asText())) {
+              IOobject.setlibid(container.path("entry").path("id").asText());
               return container.path("entry").path("id").asText();
             }
           }
@@ -864,6 +868,11 @@ public class AlfrescoNodeController {
                 .path("name")
                 .asText());
 
+            alfresconNodeResponse.mimeType = rootNode.path("entry")
+                .path("content")
+                .path("mimeType")
+                .asText();
+                
             // Check if UUID present
             // Get node content
             Object ioUUIDValue = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");

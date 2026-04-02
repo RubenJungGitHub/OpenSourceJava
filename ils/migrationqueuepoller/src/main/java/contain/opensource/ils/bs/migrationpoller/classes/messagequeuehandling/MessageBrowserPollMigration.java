@@ -103,7 +103,7 @@ public class MessageBrowserPollMigration extends MessageBrowserPollParentMigrati
                     if (status != 200) {
                         throw new IOException("HTTP error " + status);
                     } else {
-                        consumeMessageById(msg.getJMSMessageID());
+                       // consumeMessageById(msg.getJMSMessageID());
                     }
                 }
             }
