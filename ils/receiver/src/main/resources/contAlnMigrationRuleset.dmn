@@ -11,13 +11,13 @@
         <dmn:text>"HR Confidential", "Medical Confidentieel", "Commercial", "Internal discussion", "Yes only:", null</dmn:text>
       </dmn:allowedValues>
     </dmn:itemComponent>
-    <dmn:itemComponent id="_E52FCE77-6CC4-458C-988A-F8987E3F850A" name="containplatformfrom" isCollection="false">
+    <dmn:itemComponent id="_E52FCE77-6CC4-458C-988A-F8987E3F850A" name="platformfrom" isCollection="false">
       <dmn:typeRef>string</dmn:typeRef>
       <dmn:allowedValues kie:constraintType="enumeration" id="_16196D62-FDAD-4301-B5B1-3844CC1290B7">
         <dmn:text>"SPO", "ALFRESCO"</dmn:text>
       </dmn:allowedValues>
     </dmn:itemComponent>
-    <dmn:itemComponent id="_3725CCDB-0EF4-433B-9273-B7CBB40D94CF" name="containfromcontainer" isCollection="false">
+    <dmn:itemComponent id="_3725CCDB-0EF4-433B-9273-B7CBB40D94CF" name="containerfrom" isCollection="false">
       <dmn:typeRef>string</dmn:typeRef>
     </dmn:itemComponent>
   </dmn:itemDefinition>
@@ -54,36 +54,36 @@
           <dmn:text>source.classification</dmn:text>
         </dmn:inputExpression>
       </dmn:input>
-      <dmn:input id="_F8058DFB-4295-4565-90B0-393FAB634FF4">
-        <dmn:inputExpression id="_E4F28649-F0D1-442C-BE47-2EAD3E95A7CD" typeRef="string">
-          <dmn:text>source.containfromcontainer</dmn:text>
-        </dmn:inputExpression>
-      </dmn:input>
-      <dmn:input id="_3C9246F6-88CB-4CCE-814D-B28B10F14901">
-        <dmn:inputExpression id="_7C6A5A29-1592-43DF-8C8B-B27D71ABF9CA" typeRef="string">
-          <dmn:text>source.containplatformfrom</dmn:text>
-        </dmn:inputExpression>
-      </dmn:input>
       <dmn:input id="_D63557BF-39A3-49AC-9B9B-85C7BEA45940">
         <dmn:inputExpression id="_E2894B20-901E-4492-A154-0359F1E00C9F" typeRef="string">
           <dmn:text>source.marking</dmn:text>
         </dmn:inputExpression>
       </dmn:input>
-      <dmn:output id="_97A7B5C9-16E1-494D-B8B0-D51BE36200A2" name="containtocontainer" typeRef="returnvalue"/>
-      <dmn:output id="_00CD61B5-15E8-4A8D-B0A0-36E93B2DD2FE" name="containplatformto" typeRef="returnvalue"/>
+      <dmn:input id="_3C9246F6-88CB-4CCE-814D-B28B10F14901">
+        <dmn:inputExpression id="_7C6A5A29-1592-43DF-8C8B-B27D71ABF9CA" typeRef="string">
+          <dmn:text>source.platformfrom</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_F8058DFB-4295-4565-90B0-393FAB634FF4">
+        <dmn:inputExpression id="_E4F28649-F0D1-442C-BE47-2EAD3E95A7CD" typeRef="string">
+          <dmn:text>source.containerfrom</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:output id="_97A7B5C9-16E1-494D-B8B0-D51BE36200A2" name="containerto" typeRef="returnvalue"/>
+      <dmn:output id="_00CD61B5-15E8-4A8D-B0A0-36E93B2DD2FE" name="platformto" typeRef="returnvalue"/>
       <dmn:annotation name="annotation-1"/>
       <dmn:rule id="_7813E0EE-4E2E-4816-8405-401DEC7EFE73">
         <dmn:inputEntry id="_9AD6F098-CC64-4E2A-B6B1-6B13E27A1C6A">
           <dmn:text>"Public"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_CC3958B2-3B51-4456-9392-B0D6802ADCD0">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_18E2CAE7-4FA6-4084-ADA4-328610BE76AD">
+          <dmn:text>"HR Confidential"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_E86735CF-1ACE-4D6A-B0F9-57CD1B739834">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_18E2CAE7-4FA6-4084-ADA4-328610BE76AD">
-          <dmn:text>"HR Confidential"</dmn:text>
+        <dmn:inputEntry id="_CC3958B2-3B51-4456-9392-B0D6802ADCD0">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_3A0CDD28-76FA-4CDE-BC6B-77AA44D0D5A4">
           <dmn:text>"PublicSPOSPOHR Confidential"</dmn:text>
@@ -99,14 +99,14 @@
         <dmn:inputEntry id="_6C5616FD-C25E-4652-B941-2103C8661774">
           <dmn:text>"Public"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_2B521C8A-A5D3-42CD-A423-925C615E22B5">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_126C45EA-E03D-4B27-8D28-406433F81027">
+          <dmn:text>"Commercial"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_E934281B-180C-434F-B219-A3DB8B9FA302">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_126C45EA-E03D-4B27-8D28-406433F81027">
-          <dmn:text>"Commercial"</dmn:text>
+        <dmn:inputEntry id="_2B521C8A-A5D3-42CD-A423-925C615E22B5">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_57787775-AA71-43CB-8DDF-DB233AE693ED">
           <dmn:text>"PublicSPOSPOCommercial"</dmn:text>
@@ -122,14 +122,14 @@
         <dmn:inputEntry id="_2278A7A0-5342-4F9D-89F2-962C3D151F84">
           <dmn:text>"Public"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_95F874F1-D2A7-4A88-9267-CBAB7A1F4472">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_184B8CD6-D59F-487C-AEE5-AAF7774CB673">
+          <dmn:text>"Medical Confidentieel"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_D4AF4BBB-DCDF-45D7-80D2-D9D2B98FC6EF">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_184B8CD6-D59F-487C-AEE5-AAF7774CB673">
-          <dmn:text>"Medical Confidentieel"</dmn:text>
+        <dmn:inputEntry id="_95F874F1-D2A7-4A88-9267-CBAB7A1F4472">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_BC125C19-CCA0-40F9-A319-C35060D9EC2D">
           <dmn:text>"PublicSPOSPOMedical Confidentieel"</dmn:text>
@@ -145,14 +145,14 @@
         <dmn:inputEntry id="_CFEC5970-E42C-49D6-BF95-48B38F445ADB">
           <dmn:text>"Public"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_E815C822-770C-4AB8-B4EF-8C6B27544EE8">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_61BA3277-39BF-48C8-BD53-719AE0E1A995">
+          <dmn:text>"Internal discussion"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_C6DCABFF-C0D8-4972-A7BF-34B227E6BA26">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_61BA3277-39BF-48C8-BD53-719AE0E1A995">
-          <dmn:text>"Internal discussion"</dmn:text>
+        <dmn:inputEntry id="_E815C822-770C-4AB8-B4EF-8C6B27544EE8">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_F8BE68ED-531F-41D4-9135-2BC9A8E93A15">
           <dmn:text>"PublicSPOSPOInternal discussion"</dmn:text>
@@ -168,17 +168,17 @@
         <dmn:inputEntry id="_CA8488C7-7895-49A9-980A-2CDD27080205">
           <dmn:text>"Public"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_F80E0BF5-A081-4EF4-962B-B0D2C29382B9">
-          <dmn:text>"SPO"</dmn:text>
-        </dmn:inputEntry>
-        <dmn:inputEntry id="_8D93FA63-F1A8-4A32-9932-D319F23793E1">
-          <dmn:text>"SPO"</dmn:text>
-        </dmn:inputEntry>
         <dmn:inputEntry id="_AFCA9425-8B66-4F46-9653-51FCDE435B12">
           <dmn:text>"Yes only:"</dmn:text>
         </dmn:inputEntry>
+        <dmn:inputEntry id="_8D93FA63-F1A8-4A32-9932-D319F23793E1">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F80E0BF5-A081-4EF4-962B-B0D2C29382B9">
+          <dmn:text>"/Company Home/Sites/ontobind/documentLibrary"</dmn:text>
+        </dmn:inputEntry>
         <dmn:outputEntry id="_AC70FE83-2C92-4C0B-AE27-25598D85D621">
-          <dmn:text>"PublicSPOSPOYes only:"</dmn:text>
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_DEA14E4B-43C5-47BC-83C6-3EC557A4E131">
           <dmn:text>"SPO"</dmn:text>
@@ -191,17 +191,17 @@
         <dmn:inputEntry id="_059AC2BC-B27B-4FD8-B51D-C1EC8D8063E3">
           <dmn:text>"Public"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_6C5ED329-A3D9-41C8-94C8-40784CAC303D">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_AF31D6C5-33C6-4879-944B-E6A1C6860681">
+          <dmn:text>"Releasable to: organization"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_7A0C8DD5-45D5-4A46-9EEF-981A01220D79">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_AF31D6C5-33C6-4879-944B-E6A1C6860681">
-          <dmn:text>"Releasable to: organization"</dmn:text>
+        <dmn:inputEntry id="_6C5ED329-A3D9-41C8-94C8-40784CAC303D">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_58FDB84D-2E19-418E-8229-9A80DCB937B0">
-          <dmn:text>"PublicSPOSPOReleasable to: organization"</dmn:text>
+          <dmn:text>"PulicSPOSPOReleasable to: organization"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_D50D0E30-8BD8-433A-ADFA-2D7FA96BFB4C">
           <dmn:text>"SPO"</dmn:text>
@@ -214,17 +214,17 @@
         <dmn:inputEntry id="_780C077B-CB53-48C0-8D0A-B84A5E819EA7">
           <dmn:text>"Unclassified"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_3CD36AF7-B2C8-4540-991C-05D974D7685F">
-          <dmn:text>"SPO"</dmn:text>
-        </dmn:inputEntry>
-        <dmn:inputEntry id="_5EC5589F-3D74-43B1-8B3A-617ABC5010FB">
-          <dmn:text>"SPO"</dmn:text>
-        </dmn:inputEntry>
         <dmn:inputEntry id="_D7188CBC-E749-467C-AD03-2C3B7DA8832C">
           <dmn:text>"HR Confidential"</dmn:text>
         </dmn:inputEntry>
+        <dmn:inputEntry id="_5EC5589F-3D74-43B1-8B3A-617ABC5010FB">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_3CD36AF7-B2C8-4540-991C-05D974D7685F">
+          <dmn:text>"/Company Home/Sites/ontobindarchive/documentLibrary"</dmn:text>
+        </dmn:inputEntry>
         <dmn:outputEntry id="_169EB85C-9D47-4051-BFC5-22F58C3659F1">
-          <dmn:text>"UnclassifiedSPOSPOHR Confidential"</dmn:text>
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_E8BA9D38-E914-40F2-9CEC-5CCA3E5686C1">
           <dmn:text>"SPO"</dmn:text>
@@ -237,14 +237,14 @@
         <dmn:inputEntry id="_18120B68-FC0D-4739-8C75-CE2204A78F9C">
           <dmn:text>"Unclassified"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_F66724F6-3AB0-44EF-8A87-87B8D986CA57">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_45637E94-086E-4E24-B66C-53C29844CF5D">
+          <dmn:text>"Commercial"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_B3C5FE6A-DD4B-4998-AB31-A72564C433D6">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_45637E94-086E-4E24-B66C-53C29844CF5D">
-          <dmn:text>"Commercial"</dmn:text>
+        <dmn:inputEntry id="_F66724F6-3AB0-44EF-8A87-87B8D986CA57">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_9FACA692-DFC6-4FCB-9022-856FC5FA0708">
           <dmn:text>"UnclassifiedSPOSPOCommercial"</dmn:text>
@@ -260,14 +260,14 @@
         <dmn:inputEntry id="_DA0E3646-A792-4567-8750-2A9E123898AE">
           <dmn:text>"Unclassified"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_15DA4C0D-440C-45A7-A550-0AD2D8C17893">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_08E3BA20-3D92-402A-BA1D-963B72643591">
+          <dmn:text>"Medical Confidentieel"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_4E4589E5-AD51-4815-906E-BBC12AC3D904">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_08E3BA20-3D92-402A-BA1D-963B72643591">
-          <dmn:text>"Medical Confidentieel"</dmn:text>
+        <dmn:inputEntry id="_15DA4C0D-440C-45A7-A550-0AD2D8C17893">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_6CB7A3CC-2522-4DAF-BF4D-008531505520">
           <dmn:text>"UnclassifiedSPOSPOMedical Confidentieel"</dmn:text>
@@ -283,14 +283,14 @@
         <dmn:inputEntry id="_D6221B44-07CE-4D7F-A260-52BC809179C1">
           <dmn:text>"Unclassified"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_5F964935-4ECF-4A52-958E-C4B4579F3F10">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_6A06380A-9497-443F-9342-A988D59BD7B7">
+          <dmn:text>"Internal discussion"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_DC57534F-E01D-4127-B44C-9A76B86C314C">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_6A06380A-9497-443F-9342-A988D59BD7B7">
-          <dmn:text>"Internal discussion"</dmn:text>
+        <dmn:inputEntry id="_5F964935-4ECF-4A52-958E-C4B4579F3F10">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_1357C2B8-EE16-481A-B2EF-96C7F57AB4F3">
           <dmn:text>"UnclassifiedSPOSPOInternal discussion"</dmn:text>
@@ -306,14 +306,14 @@
         <dmn:inputEntry id="_6F53C8EE-F136-4C09-9287-585C08F6FEF2">
           <dmn:text>"Unclassified"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_7CCBEE63-2F3E-41C2-B38A-085FA2D2AEFB">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_930311BB-B381-412B-B898-E03163DA1174">
+          <dmn:text>"Yes only:"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_07E023E0-AD73-4751-A123-40485F2F5E8E">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_930311BB-B381-412B-B898-E03163DA1174">
-          <dmn:text>"Yes only:"</dmn:text>
+        <dmn:inputEntry id="_7CCBEE63-2F3E-41C2-B38A-085FA2D2AEFB">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_675394FB-8ED9-461B-BF61-D3E27B10702B">
           <dmn:text>"UnclassifiedSPOSPOYes only:"</dmn:text>
@@ -329,14 +329,14 @@
         <dmn:inputEntry id="_EBD46537-A961-4C38-908B-98B4365E94AB">
           <dmn:text>"Unclassified"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_C636E1C5-A8AA-4F34-81E9-D9F087335193">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_91092E20-F1C4-4855-B761-E96A22A1F3CB">
+          <dmn:text>"Releasable to: organization"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_57D6912C-C802-4B4B-A92A-D4870EAF715B">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_91092E20-F1C4-4855-B761-E96A22A1F3CB">
-          <dmn:text>"Releasable to: organization"</dmn:text>
+        <dmn:inputEntry id="_C636E1C5-A8AA-4F34-81E9-D9F087335193">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_4195916D-34BF-4CB4-8732-42BB36B78B8E">
           <dmn:text>"UnclassifiedSPOSPOReleasable to: organization"</dmn:text>
@@ -352,14 +352,14 @@
         <dmn:inputEntry id="_59CD3851-648E-42E3-9B26-F4E3845EBB49">
           <dmn:text>"Internal"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_05157656-2747-4F61-A0BD-C5EE79BC9D86">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_D50ED4C2-4BEE-4D5A-A2B4-469E9A26DC40">
+          <dmn:text>"HR Confidential"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_08FA06EA-A65E-4CC1-A2B8-DBAD357DF9A1">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_D50ED4C2-4BEE-4D5A-A2B4-469E9A26DC40">
-          <dmn:text>"HR Confidential"</dmn:text>
+        <dmn:inputEntry id="_05157656-2747-4F61-A0BD-C5EE79BC9D86">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_8EEE24AD-09F5-4977-9C33-163DD80AAD3E">
           <dmn:text>"InternalSPOSPOHR Confidential"</dmn:text>
@@ -375,14 +375,14 @@
         <dmn:inputEntry id="_C6F2CD73-FB26-417F-84C9-97AD94C13E40">
           <dmn:text>"Internal"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_955C5E9B-D05D-4A36-9E3B-0D81FB700F1D">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_6C199B76-423E-4807-8A25-6DDD901912F2">
+          <dmn:text>"Commercial"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_C881BF63-31A3-4625-815B-75DB9AFD04E4">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_6C199B76-423E-4807-8A25-6DDD901912F2">
-          <dmn:text>"Commercial"</dmn:text>
+        <dmn:inputEntry id="_955C5E9B-D05D-4A36-9E3B-0D81FB700F1D">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_E4460C72-BF53-4C16-9B8A-FDFA898179BD">
           <dmn:text>"InternalSPOSPOCommercial"</dmn:text>
@@ -398,14 +398,14 @@
         <dmn:inputEntry id="_23D37546-6364-48DB-B8D9-0CCCF0155A76">
           <dmn:text>"Internal"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_F29E6A95-367D-49F0-AC7E-C5173AC47166">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_427F5940-604D-41E6-B567-3B970EDF115F">
+          <dmn:text>"Medical Confidentieel"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_8A14C696-3ED7-4AC8-ABB9-EC624779F96B">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_427F5940-604D-41E6-B567-3B970EDF115F">
-          <dmn:text>"Medical Confidentieel"</dmn:text>
+        <dmn:inputEntry id="_F29E6A95-367D-49F0-AC7E-C5173AC47166">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_B342CBF5-A05B-434C-8897-EB02A099506F">
           <dmn:text>"InternalSPOSPOMedical Confidentieel"</dmn:text>
@@ -421,14 +421,14 @@
         <dmn:inputEntry id="_F97ED203-33D5-469A-BBD9-1BD09557BCB0">
           <dmn:text>"Internal"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_E49176FF-E478-4118-8C2B-B8878816C14A">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_54B2E445-E05B-442E-9182-BDBD6D74176A">
+          <dmn:text>"Internal discussion"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_9E4C5FB9-ECD3-4D98-B611-9FD48F83BE8F">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_54B2E445-E05B-442E-9182-BDBD6D74176A">
-          <dmn:text>"Internal discussion"</dmn:text>
+        <dmn:inputEntry id="_E49176FF-E478-4118-8C2B-B8878816C14A">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_B06F3DA5-7603-4E23-8C6E-B3CB62832967">
           <dmn:text>"InternalSPOSPOInternal discussion"</dmn:text>
@@ -444,17 +444,17 @@
         <dmn:inputEntry id="_22E3E9AC-5B27-4B5C-81AE-818C9AF31FD9">
           <dmn:text>"Internal"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_9FAB1AD6-C295-4148-B527-F7ECE9DBED18">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_3596BF6C-A7C5-431E-AA76-B6788676AB7C">
+          <dmn:text>"Yes only:"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_A702ABD4-20FA-4E08-AF6C-CD5279787C20">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_3596BF6C-A7C5-431E-AA76-B6788676AB7C">
-          <dmn:text>"Yes only:"</dmn:text>
+        <dmn:inputEntry id="_9FAB1AD6-C295-4148-B527-F7ECE9DBED18">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_EEDA1CE2-C537-4996-A8CF-AD4CA5433A7A">
-          <dmn:text>"InternalSPOSPOYes only:"</dmn:text>
+          <dmn:text>"InternalSPOSPOReleasable to: organization"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_2E992132-0E47-42BF-A821-892286CF1C4D">
           <dmn:text>"SPO"</dmn:text>
@@ -467,20 +467,20 @@
         <dmn:inputEntry id="_8D68160C-6DAC-4B01-8774-3D469B396539">
           <dmn:text>"Internal"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_2F806FB8-798F-4A76-9998-73CCD16657D6">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_55A42F34-D41C-49C7-9852-3A75BCFDCE60">
+          <dmn:text>"Releasable to: organization"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_E93DA2AD-71F5-44DD-8E7D-C308E8A692F6">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_55A42F34-D41C-49C7-9852-3A75BCFDCE60">
-          <dmn:text>"Releasable to: organization"</dmn:text>
+        <dmn:inputEntry id="_2F806FB8-798F-4A76-9998-73CCD16657D6">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_119BDB71-3E16-4C4D-82B0-E72E624A2052">
-          <dmn:text>"InternalSPOSPOReleasable to: organization"</dmn:text>
+          <dmn:text>"ontobind"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_493FF0E7-D4B0-4030-8088-65D629787779">
-          <dmn:text>"SPO"</dmn:text>
+          <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
           <dmn:text></dmn:text>
@@ -490,20 +490,20 @@
         <dmn:inputEntry id="_A123C35A-B44A-4CA3-BF11-56881256DF11">
           <dmn:text>"Confidential"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_EE8EE8FE-D1A6-49D2-AB42-1A069544C3BD">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_D1827330-AA01-40D5-8FE2-B84095A3B05E">
+          <dmn:text>"HR Confidential"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_59A53FAD-4762-4B71-88F6-59B0CEE507D1">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_D1827330-AA01-40D5-8FE2-B84095A3B05E">
-          <dmn:text>"HR Confidential"</dmn:text>
+        <dmn:inputEntry id="_EE8EE8FE-D1A6-49D2-AB42-1A069544C3BD">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_067E114F-3D4B-481D-B1AA-CB85716981E0">
-          <dmn:text>"ConfidentialSPOSPOHR Confidential"</dmn:text>
+          <dmn:text>"ontobindarchive"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_63CF3839-62E0-4C49-A07A-E2255D99187D">
-          <dmn:text>"SPO"</dmn:text>
+          <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
           <dmn:text></dmn:text>
@@ -513,14 +513,14 @@
         <dmn:inputEntry id="_787173F0-4A81-41BF-BC89-50C0B6C8E0EF">
           <dmn:text>"Confidential"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_3C452A8C-1C62-4944-801B-25705C16E36A">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_37B87ED5-D81B-476E-9F83-F90CF760FC20">
+          <dmn:text>"Commercial"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_AD1E6718-3D42-416B-BE58-C3AE5E73C018">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_37B87ED5-D81B-476E-9F83-F90CF760FC20">
-          <dmn:text>"Commercial"</dmn:text>
+        <dmn:inputEntry id="_3C452A8C-1C62-4944-801B-25705C16E36A">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_856B2325-E1D6-4432-B037-B854A5E13ABD">
           <dmn:text>"ConfidentialSPOSPOCommercial"</dmn:text>
@@ -536,14 +536,14 @@
         <dmn:inputEntry id="_AF70D275-CC5F-473C-A2BE-BFA370194B54">
           <dmn:text>"Confidential"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_F2611946-3639-406A-92B6-50F2840BF203">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_1D817DBB-BF62-4D84-AFDE-1A010268B06A">
+          <dmn:text>"Medical Confidentieel"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_CE3F9F5A-D72F-4A46-8CF3-47A78B10D7B9">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_1D817DBB-BF62-4D84-AFDE-1A010268B06A">
-          <dmn:text>"Medical Confidentieel"</dmn:text>
+        <dmn:inputEntry id="_F2611946-3639-406A-92B6-50F2840BF203">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_5600E4E3-04A8-47D3-AA3E-A390907B122C">
           <dmn:text>"ConfidentialSPOSPOMedical Confidentieel"</dmn:text>
@@ -559,14 +559,14 @@
         <dmn:inputEntry id="_9B3649AE-4C01-4E9F-948D-C8E940010F71">
           <dmn:text>"Confidential"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_2AF297B0-8414-4204-845E-D13111B8B7EA">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_5BD06E79-46D2-44B2-933E-ED1ECB63A4A6">
+          <dmn:text>"Internal discussion"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_9FD303A1-CB1F-4822-9BA2-9D12790330B5">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_5BD06E79-46D2-44B2-933E-ED1ECB63A4A6">
-          <dmn:text>"Internal discussion"</dmn:text>
+        <dmn:inputEntry id="_2AF297B0-8414-4204-845E-D13111B8B7EA">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_B4596072-3157-4987-BE7A-D4B472A300C9">
           <dmn:text>"ConfidentialSPOSPOInternal discussion"</dmn:text>
@@ -582,17 +582,17 @@
         <dmn:inputEntry id="_971CC809-8846-40DE-9485-328CEA4B1D05">
           <dmn:text>"Confidential"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_CD51DD63-35AC-47E7-AF98-FC4C9DCEC2F2">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_8A1CACFE-2080-4877-8604-37085257DA0B">
+          <dmn:text>"Yes only:"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_55C7BE59-D782-45C5-B1FB-29DDE90B6B1B">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_8A1CACFE-2080-4877-8604-37085257DA0B">
-          <dmn:text>"Yes only:"</dmn:text>
+        <dmn:inputEntry id="_CD51DD63-35AC-47E7-AF98-FC4C9DCEC2F2">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_80136AF6-C9C0-48BD-9B0D-BAFEBB0412DF">
-          <dmn:text>"ConfidentialSPOSPOYes only:"</dmn:text>
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_4B7D1AF3-1FB8-4965-923C-FB2FF2588E6F">
           <dmn:text>"SPO"</dmn:text>
@@ -605,17 +605,17 @@
         <dmn:inputEntry id="_3897C730-58F6-43D3-9F6D-7F79EA087617">
           <dmn:text>"Confidential"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_6154A9DC-4D74-4E0D-9DB2-4B45B50F9010">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_2A2F6066-981C-4F53-BED2-D2F88694400D">
+          <dmn:text>"Releasable to: organization"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_6AC07A7F-C3BF-4698-B4D2-058AAA1F4643">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_2A2F6066-981C-4F53-BED2-D2F88694400D">
-          <dmn:text>"Releasable to: organization"</dmn:text>
+        <dmn:inputEntry id="_6154A9DC-4D74-4E0D-9DB2-4B45B50F9010">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_AABB5E62-2187-4BED-B711-DF8FF63B8AE6">
-          <dmn:text>"ConfidentialSPOSPOReleasable to: organization"</dmn:text>
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_F981C209-F5E3-47D2-B9F7-7FC313B360EE">
           <dmn:text>"SPO"</dmn:text>
@@ -628,14 +628,14 @@
         <dmn:inputEntry id="_864F7179-9126-48C7-9FD8-1AA3B3658E65">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_CEE02768-96DA-4A3E-A87C-EEE8151F45CF">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_255D59FB-C4EA-4DB5-AA06-0D95268A6EBE">
+          <dmn:text>"HR Confidential"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_8A6DA78F-59AD-4ED1-8617-503F817EF9B2">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_255D59FB-C4EA-4DB5-AA06-0D95268A6EBE">
-          <dmn:text>"HR Confidential"</dmn:text>
+        <dmn:inputEntry id="_CEE02768-96DA-4A3E-A87C-EEE8151F45CF">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_6D20703A-D25A-47B4-813C-55023C28A0F6">
           <dmn:text>"SecretSPOSPOHR Confidential"</dmn:text>
@@ -651,14 +651,14 @@
         <dmn:inputEntry id="_A6718566-B394-48E1-B948-71992E47D8B7">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_C9F022DF-136A-4539-ADF3-9D83DE1C8816">
-          <dmn:text>"TEST"</dmn:text>
+        <dmn:inputEntry id="_435DF21B-EFAE-4691-A8FE-0BF1C3D61DF0">
+          <dmn:text>"HR Confidential"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_175075D2-77C3-4C5D-9259-C5FCD00A98A4">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_435DF21B-EFAE-4691-A8FE-0BF1C3D61DF0">
-          <dmn:text>"HR Confidential"</dmn:text>
+        <dmn:inputEntry id="_C9F022DF-136A-4539-ADF3-9D83DE1C8816">
+          <dmn:text>"TEST"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_D6EDEC4E-09CD-4553-AC6B-0C4399E4BDAE">
           <dmn:text>"SecretTESTSPOHR Confidential"</dmn:text>
@@ -674,14 +674,14 @@
         <dmn:inputEntry id="_DE707149-8FAC-4DDB-AB26-A121A0A641FD">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_BCD95C82-A64D-4B7B-9F72-749F8A4C734B">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_ADC0FFDC-6245-4835-9B12-8637D289111E">
+          <dmn:text>"Commercial"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_88F8E407-170D-42E3-9B8C-F29398BA0C28">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_ADC0FFDC-6245-4835-9B12-8637D289111E">
-          <dmn:text>"Commercial"</dmn:text>
+        <dmn:inputEntry id="_BCD95C82-A64D-4B7B-9F72-749F8A4C734B">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_B5CC895C-06A8-40CB-B5A8-A2F547A8353D">
           <dmn:text>"SecretSPOSPOCommercial"</dmn:text>
@@ -697,14 +697,14 @@
         <dmn:inputEntry id="_22AC815A-C963-4CE9-B468-6ED5E9E4DB59">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_62B5588A-1881-4C39-AD97-45BEA4E7F3D8">
-          <dmn:text>"TEST"</dmn:text>
+        <dmn:inputEntry id="_B625E636-7421-407F-B3B0-A8C0C98D4EE3">
+          <dmn:text>"Commercial"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_EA54430F-7649-4BFB-8532-C036478A7594">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_B625E636-7421-407F-B3B0-A8C0C98D4EE3">
-          <dmn:text>"Commercial"</dmn:text>
+        <dmn:inputEntry id="_62B5588A-1881-4C39-AD97-45BEA4E7F3D8">
+          <dmn:text>"TEST"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_505340C9-D92D-400F-B7F6-868CE7F2D85C">
           <dmn:text>"SecretTESTSPOCommercial"</dmn:text>
@@ -720,20 +720,20 @@
         <dmn:inputEntry id="_E902AA37-3C0F-4325-9EB4-E3E83BC48C51">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_4B065B82-F504-4062-996B-F1F3FB9557BD">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_AA9C325E-7277-4923-8845-393D5B3D16D8">
+          <dmn:text>"Medical Confidentieel"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_1E7B2C00-C82A-478A-B8C4-3F130AA438E7">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_AA9C325E-7277-4923-8845-393D5B3D16D8">
-          <dmn:text>"Medical Confidentieel"</dmn:text>
+        <dmn:inputEntry id="_4B065B82-F504-4062-996B-F1F3FB9557BD">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/7b6c5de3-f1c8-49d6-9226-386a28682fb8"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_AFFA62E4-D6CA-4CE3-BF36-CAC45E0A37E9">
-          <dmn:text>"SecretSPOSPOMedical Confidentieel"</dmn:text>
+          <dmn:text>"ontobind"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_2028796A-CB52-4513-9319-AC27FDBC164C">
-          <dmn:text>"SPO"</dmn:text>
+          <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
           <dmn:text></dmn:text>
@@ -743,14 +743,14 @@
         <dmn:inputEntry id="_CFAA2654-B71E-4B9D-8BA7-FAFFA6E2080E">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_CAB2B3AD-A786-4E50-8791-987EE998C106">
-          <dmn:text>"TEST"</dmn:text>
+        <dmn:inputEntry id="_B271C9B5-C68D-4328-B4FF-CCB1635B4481">
+          <dmn:text>"Medical Confidentieel"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_F6CFB04C-405C-4F0F-A261-886718C2341D">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_B271C9B5-C68D-4328-B4FF-CCB1635B4481">
-          <dmn:text>"Medical Confidentieel"</dmn:text>
+        <dmn:inputEntry id="_CAB2B3AD-A786-4E50-8791-987EE998C106">
+          <dmn:text>"TEST"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_4070FDD0-63C4-482E-BA2F-A9D69B595FA3">
           <dmn:text>"SecretTESTSPOMedical Confidentieel"</dmn:text>
@@ -766,20 +766,21 @@
         <dmn:inputEntry id="_DCD075FC-1D83-483C-838C-84FB2647D602">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_B1B4CC07-B71C-4C7B-8F1A-FAFE90F672E4">
-          <dmn:text>"SPO"</dmn:text>
-        </dmn:inputEntry>
-        <dmn:inputEntry id="_B97416D9-ADCB-4735-93B5-E65C0BE7310A">
-          <dmn:text>"SPO"</dmn:text>
-        </dmn:inputEntry>
         <dmn:inputEntry id="_941E0ECD-1F21-4A20-BB9D-FF507C2EFFE2">
           <dmn:text>"Internal discussion"</dmn:text>
         </dmn:inputEntry>
+        <dmn:inputEntry id="_B97416D9-ADCB-4735-93B5-E65C0BE7310A">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1B4CC07-B71C-4C7B-8F1A-FAFE90F672E4">
+          <dmn:text>"/Company Home/Sites/ontobind/documentLibrary"</dmn:text>
+        </dmn:inputEntry>
         <dmn:outputEntry id="_CB9BCB06-11B0-449F-8724-68EC4060945A">
-          <dmn:text>"SecretSPOSPOInternal discussion"</dmn:text>
+          <dmn:text>"ontobindarchive"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_3000C9AF-64CA-4B62-AD3B-7BED618D94F3">
-          <dmn:text>"SPO"</dmn:text>
+          <dmn:text>"ALFRESCO"
+</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
           <dmn:text></dmn:text>
@@ -789,14 +790,14 @@
         <dmn:inputEntry id="_058F5D91-75AD-402C-B0E1-93CD85A94811">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_448A2E22-8381-46EB-8B9E-58062C0E2431">
-          <dmn:text>"TEST"</dmn:text>
+        <dmn:inputEntry id="_C82BFC0B-DCF8-4B8A-BE09-78F746294845">
+          <dmn:text>"Internal discussion"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_B1600D45-24CA-4346-94CC-0816E820A224">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_C82BFC0B-DCF8-4B8A-BE09-78F746294845">
-          <dmn:text>"Internal discussion"</dmn:text>
+        <dmn:inputEntry id="_448A2E22-8381-46EB-8B9E-58062C0E2431">
+          <dmn:text>"TEST"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_E609B163-D4BD-4CE5-839F-3FD922C33162">
           <dmn:text>"SecretTESTSPOInternal discussion"</dmn:text>
@@ -812,20 +813,20 @@
         <dmn:inputEntry id="_4C9D7D26-5DC1-43A2-9069-AEC2263FEA20">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_1B54DD8E-743B-45CE-B29E-AEB823600413">
-          <dmn:text>"SPO"</dmn:text>
-        </dmn:inputEntry>
-        <dmn:inputEntry id="_C089CB43-B85A-4C55-83AF-AE0AEBB6C85F">
-          <dmn:text>"SPO"</dmn:text>
-        </dmn:inputEntry>
         <dmn:inputEntry id="_2A664AA6-10F7-4BD0-86D4-6DF71E545A23">
           <dmn:text>"Yes only:"</dmn:text>
         </dmn:inputEntry>
+        <dmn:inputEntry id="_C089CB43-B85A-4C55-83AF-AE0AEBB6C85F">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_1B54DD8E-743B-45CE-B29E-AEB823600413">
+          <dmn:text>"/Company Home/Sites/ontobindarchive/documentLibrary"</dmn:text>
+        </dmn:inputEntry>
         <dmn:outputEntry id="_DD0848B2-FF21-4121-8FD2-357534448E64">
-          <dmn:text>"SecretSPOSPOYes only:"</dmn:text>
+          <dmn:text>"ontobind"</dmn:text>
         </dmn:outputEntry>
         <dmn:outputEntry id="_3117057A-B05E-4872-A673-AA19B992219B">
-          <dmn:text>"SPO"</dmn:text>
+          <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
           <dmn:text></dmn:text>
@@ -835,14 +836,14 @@
         <dmn:inputEntry id="_68D87F82-44D6-4B54-9BCA-FAEFCEAB08CC">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_9568DFB8-9080-49E9-9382-2145A884A884">
-          <dmn:text>"TEST"</dmn:text>
+        <dmn:inputEntry id="_2226C552-0422-445D-A588-943F8109F605">
+          <dmn:text>"Yes only:"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_133E8D4B-29AD-4AF2-86D0-C398AC4C68FB">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_2226C552-0422-445D-A588-943F8109F605">
-          <dmn:text>"Yes only:"</dmn:text>
+        <dmn:inputEntry id="_9568DFB8-9080-49E9-9382-2145A884A884">
+          <dmn:text>"TEST"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_02E06DF0-9817-4E74-80A3-99DB69009795">
           <dmn:text>"SecretTESTSPOYes only:"</dmn:text>
@@ -858,14 +859,14 @@
         <dmn:inputEntry id="_EF2D4771-B58E-44E5-B1F1-477C4214ADC9">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_3E1F0373-FC84-48B6-A597-65D84BAE0AC4">
-          <dmn:text>"SPO"</dmn:text>
+        <dmn:inputEntry id="_8C882638-5006-441D-93DA-F189EEA9E7D8">
+          <dmn:text>"Releasable to: organization"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_35DE6A4A-E9DA-415B-8D23-F6B961B99C5A">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_8C882638-5006-441D-93DA-F189EEA9E7D8">
-          <dmn:text>"Releasable to: organization"</dmn:text>
+        <dmn:inputEntry id="_3E1F0373-FC84-48B6-A597-65D84BAE0AC4">
+          <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_C9F3208B-DEC8-47E3-8D05-489E1F96D778">
           <dmn:text>"SecretSPOSPOReleasable to: organization"</dmn:text>
@@ -881,14 +882,14 @@
         <dmn:inputEntry id="_A7FDF65A-A2F5-4927-8330-0C9AD7D9911A">
           <dmn:text>"Secret"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_7E1E55DC-40F4-447A-93EA-8105FDB6D46E">
-          <dmn:text>"TEST"</dmn:text>
+        <dmn:inputEntry id="_B1FC6DAA-B4A5-414A-B977-907DB03E4E1F">
+          <dmn:text>"Releasable to: organization"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_DECCFDAC-F4C0-4334-A309-D84E934A8BA3">
           <dmn:text>"SPO"</dmn:text>
         </dmn:inputEntry>
-        <dmn:inputEntry id="_B1FC6DAA-B4A5-414A-B977-907DB03E4E1F">
-          <dmn:text>"Releasable to: organization"</dmn:text>
+        <dmn:inputEntry id="_7E1E55DC-40F4-447A-93EA-8105FDB6D46E">
+          <dmn:text>"TEST"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_F050376C-9113-4E4C-BCC1-1576FE6B152C">
           <dmn:text>"SecretTESTSPOReleasable to: organization"</dmn:text>
@@ -909,9 +910,9 @@
           <kie:ComponentWidths dmnElementRef="_9D6C7701-688E-4415-A099-CF8ABC911831">
             <kie:width>50.0</kie:width>
             <kie:width>297.0</kie:width>
-            <kie:width>297.0</kie:width>
-            <kie:width>365.0</kie:width>
             <kie:width>301.0</kie:width>
+            <kie:width>365.0</kie:width>
+            <kie:width>1093.0</kie:width>
             <kie:width>937.0</kie:width>
             <kie:width>494.0</kie:width>
             <kie:width>100.0</kie:width>
