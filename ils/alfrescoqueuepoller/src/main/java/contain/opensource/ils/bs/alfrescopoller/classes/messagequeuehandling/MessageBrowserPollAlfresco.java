@@ -34,7 +34,7 @@ import jakarta.jms.TextMessage;
 
 @Component
 public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
-    private Integer PollInterval = 15;
+  //  private Integer PollInterval = 5;
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -124,40 +124,45 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                                             secondpath.toString());
                                     // Check 'platformto' in plaats van 'containerto'
                                     // To do source <> destination
-                                    if (migrateinfo.get("platformto") != null
-                                            && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
+                                    if (migrateinfo != null) {
+                                        if (migrateinfo.get("platformto") != null
+                                                && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
 
-                                        List<Object> pathsList = QMessage.getPaths();
-                                        String rawPath = "";
+                                            List<Object> pathsList = QMessage.getPaths();
+                                            String rawPath = "";
 
-                                        if (pathsList != null && !pathsList.isEmpty()) {
-                                            // If the list has at least 2 items, it's likely the nested format [Class,
-                                            // [Data]]
-                                            if (pathsList.size() >= 2 && pathsList.get(1) instanceof List) {
-                                                List<?> internalList = (List<?>) pathsList.get(1);
-                                                rawPath = internalList.get(0).toString();
+                                            if (pathsList != null && !pathsList.isEmpty()) {
+                                                // If the list has at least 2 items, it's likely the nested format
+                                                // [Class,
+                                                // [Data]]
+                                                if (pathsList.size() >= 2 && pathsList.get(1) instanceof List) {
+                                                    List<?> internalList = (List<?>) pathsList.get(1);
+                                                    rawPath = internalList.get(0).toString();
+                                                }
+                                                // If it only has 1 item, it's the simple format [/path/to/file]
+                                                else {
+                                                    rawPath = pathsList.get(0).toString();
+                                                }
                                             }
-                                            // If it only has 1 item, it's the simple format [/path/to/file]
-                                            else {
-                                                rawPath = pathsList.get(0).toString();
+
+                                            // 2. Now clean the string (Brackets and Filename)
+                                            if (!rawPath.isEmpty()) {
+                                                String cleanPath = rawPath.replace("[", "").replace("]", "");
+                                                int lastSlash = cleanPath.lastIndexOf("/");
+
+                                                // This is your weburl: "/Company Home/Sites/ontobind/documentLibrary"
+                                                String folderOnly = (lastSlash != -1)
+                                                        ? cleanPath.substring(0, lastSlash)
+                                                        : cleanPath;
+
+                                                // 3. Now it is safe to call your send function
+
+                                                SendMigrationMessage(folderOnly,
+                                                        QMessage.getNodeId().toString(), "-",
+                                                        AlfrescoConstants.ContainPlatforms.ALFRESCO.name(),
+                                                        migrateinfo);
+
                                             }
-                                        }
-
-                                        // 2. Now clean the string (Brackets and Filename)
-                                        if (!rawPath.isEmpty()) {
-                                            String cleanPath = rawPath.replace("[", "").replace("]", "");
-                                            int lastSlash = cleanPath.lastIndexOf("/");
-
-                                            // This is your weburl: "/Company Home/Sites/ontobind/documentLibrary"
-                                            String folderOnly = (lastSlash != -1) ? cleanPath.substring(0, lastSlash)
-                                                    : cleanPath;
-
-                                            // 3. Now it is safe to call your send function
-
-                                            SendMigrationMessage(folderOnly,
-                                                    QMessage.getNodeId().toString(), "-",
-                                                    AlfrescoConstants.ContainPlatforms.ALFRESCO.name(), migrateinfo);
-
                                         }
                                     }
                                 }

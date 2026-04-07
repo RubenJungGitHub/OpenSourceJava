@@ -41,7 +41,7 @@ public abstract class MessageBrowserPollParentMigration {
 
 */
 
-    public Integer PollInterval = 15;
+    public Integer PollInterval = 5;
     public JmsTemplate jmsTemplate;
     public final ObjectMapper objectMapper;
     public final ActiveMQProperties activeMQProps;

@@ -58,17 +58,10 @@ activemq:
     migration-queue: contain.ils.queue.migration
 
 
-
 alfresco:
   username: admin
   password: admin
   baseUrl: http://end-user-alfresco-1:8080
-  sharepoint-queue: sharepoint.delta.queue
-  migration-queue: contain.ils.queue.migration
-  alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
-
-
-
   
 
 

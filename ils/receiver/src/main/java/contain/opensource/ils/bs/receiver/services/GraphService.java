@@ -16,12 +16,12 @@ import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.Set;
-import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -55,11 +55,11 @@ import com.microsoft.graph.requests.GraphServiceClient;
 import com.microsoft.graph.serializer.AdditionalDataManager;
 
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
+import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.alfresco.AlfrescoNodeController;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointDriveInfo;
 import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemResponse;
-import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -291,14 +291,14 @@ public class GraphService {
             // Start with a short delay to ensure SharePoint has processed the new item.
             // This is a common issue where the item is not immediately available for
             // updates after creation.
-            //Thread.sleep(1000);
+            // Thread.sleep(1000);
             // First obtain new UUID and accesstoken
             if (accessToken == null || accessToken.isEmpty()) {
                 accessToken = getGraphToken();
             }
 
-        String cleanClassification =  node.getclassification().replace("\"", "");
-        String cleanMarking = node.getMarking().replace("\"", "");
+            String cleanClassification = node.getclassification().replace("\"", "");
+            String cleanMarking = node.getMarking().replace("\"", "");
 
             // String uuid = GetUUID();
             HttpClient client = HttpClient.newHttpClient();
@@ -849,7 +849,7 @@ public class GraphService {
                     .items(listItemId)
                     .buildRequest()
                     .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                    .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,Move,OData__UIVersionString,Marking,classification),driveItem")
+                    .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,OData__UIVersionString,Marking,classification),driveItem")
                     .get();
             if (li != null) {
                 FieldValueSet fields = li.fields;
@@ -894,14 +894,20 @@ public class GraphService {
                             .get(0);
 
                     // Now create only the objects that require actions. reove because for binding
+                    String classification = "";
+                    String marking = "";
                     try {
                         String json = mapper.writeValueAsString(li);
                         SPItem = mapper.readValue(json, SharePointItemResponse.class);
                         Object title = adm.get("Title");
                         Object filename = driveItem.name;
                         Object description = adm.get("containIODescription");
-                        String classification = adm.get("Classification").toString();
-                        String marking = adm.get("Marking").toString();
+                        if (adm.get("Classification") != null) {
+                            classification = adm.get("Classification").toString();
+                        }
+                        if (adm.get("Marking") != null) {
+                            marking = adm.get("Marking").toString();
+                        }
                         String titleStr = title != null ? title.toString().replace("\"", "") : "";
                         String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
                         String descriptionStr = description != null ? description.toString().replace("\"", "") : "";
@@ -954,7 +960,7 @@ public class GraphService {
             String resourceValue)
             throws MalformedURLException, Exception {
         String siteId = null;
-        //String driveId = null;
+        // String driveId = null;
         String action = "";
         Hashtable<String, String> migrationinfo = new Hashtable<>();
         try {

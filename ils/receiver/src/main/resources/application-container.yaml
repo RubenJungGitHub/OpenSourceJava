@@ -55,7 +55,8 @@ app:
 alfresco:
   username: admin
   password: admin
-  baseUrl: http://end-user-alfresco-1:8081
+  baseUrl: http://end-user-alfresco-1:8080
+
   
 
 mongodb:
@@ -63,8 +64,6 @@ mongodb:
       
 
 ils:
-  #username: admin
-  #password: admin
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
   baseurl: http://receiver:8080
   bindendpoint: http://receiver:8080/api/Bind
