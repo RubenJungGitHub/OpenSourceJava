@@ -43,7 +43,7 @@ spring:
 activemq:
   # The "Read" side for Alfresco (House A)
   alfresco-source:
-    brokerUrl: tcp://end-user-activemq-1:61616
+    brokerUrl: tcp://developer-activemq-1:61616
     user: admin
     password: admin
     queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
@@ -51,7 +51,7 @@ activemq:
   # The "Write" side for EVERYONE (House B)
   # This is also the "Read" side for SharePoint and the Migration Service
   migration-hub:
-    brokerUrl: tcp://end-user-activemq-1:61616
+    brokerUrl: tcp://developer-activemq-1:61616
     user: admin
     password: admin
     sharepoint-queue: sharepoint.delta.queue
@@ -61,7 +61,7 @@ activemq:
 alfresco:
   username: admin
   password: admin
-  baseUrl: http://end-user-alfresco-1:8080
+  baseUrl: http://developer-user-alfresco-1:8080
   
 
 

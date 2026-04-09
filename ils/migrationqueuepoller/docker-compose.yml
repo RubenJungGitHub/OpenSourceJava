@@ -15,11 +15,11 @@ services:
       - "3003:3003"
     networks:
       - ils_ils_default
-      - end-user_default
+      - developer_default
 
 
 networks:
   ils_ils_default:
     external: true
-  end-user_default:
+  developer_default:
     external: true

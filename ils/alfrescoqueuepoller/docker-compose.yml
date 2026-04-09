@@ -15,13 +15,13 @@ services:
       - "3002:3002"
     networks:
       - ils_ils_default
-      - end-user_default
+      - developer_default
 
 
 networks:
   ils_ils_default:
     external: true
-  end-user_default:
+  developer_default:
     external: true
 
 
