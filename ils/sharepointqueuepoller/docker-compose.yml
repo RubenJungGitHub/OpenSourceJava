@@ -3,7 +3,7 @@ name : ilsqueuepollers
 services:
   sharepointqueuepoller:
     build:
-      context: C:/ContainOpenSource/Java/OpenSourceJava/ils
+      context: C:/ContainOpenSource/OpenSourceJava/ils
       dockerfile: sharepointqueuepoller/Dockerfile
     container_name: sharepointqueuepoller
     environment:

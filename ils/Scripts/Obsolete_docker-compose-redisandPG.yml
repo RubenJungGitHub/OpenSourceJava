@@ -1,5 +1,4 @@
-name: ilstools
-
+name : ils
 services:
   redis:
     image: redis/redis-stack:latest
@@ -8,13 +7,12 @@ services:
     - "6379:6379"
     - "8001:8001"
     networks:
-    - ils_ils_default
+    - ils_default
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 2s
       retries: 5
-      
 
   postgres:
     image: postgres:16
@@ -25,16 +23,19 @@ services:
       POSTGRES_DB: contAInBallenbak  # <-- the database Spring Boot will use
     ports:
       - "5433:5432"
-    networks:
-    - ils_ils_default
     volumes:
       - pgdata:/var/lib/postgresql/data
-
+    networks:
+      - ils_default
 
 volumes:
   pgdata:
 
-
 networks:
-  ils_ils_default:
+  ils_default:
+    driver: bridge
+    #external: true
+
+  end-user_default:
+    driver: bridge
     external: true

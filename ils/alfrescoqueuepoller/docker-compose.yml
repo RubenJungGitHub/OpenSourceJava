@@ -3,7 +3,7 @@ name : ilsqueuepollers
 services:
   alfrescoqueuepoller:
     build:
-      context: C:/ContainOpenSource/Java/OpenSourceJava/ils
+      context: C:/ContainOpenSource/OpenSourceJava/ils
       dockerfile: alfrescoqueuepoller/Dockerfile
     container_name: alfrescoqueuepoller
     environment:

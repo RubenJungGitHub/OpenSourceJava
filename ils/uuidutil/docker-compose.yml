@@ -5,7 +5,7 @@ name: ils
 services:
   uuidutil:
     build:
-      context: C:/ContainOpenSource/Java/OpenSourceJava/ils
+      context: C:/ContainOpenSource/OpenSourceJava/ils
       dockerfile: uuidutil/Dockerfile
     ports:
       - "5002:5002"
