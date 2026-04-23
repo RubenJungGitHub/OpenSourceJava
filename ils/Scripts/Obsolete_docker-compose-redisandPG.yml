@@ -7,7 +7,7 @@ services:
     - "6379:6379"
     - "8001:8001"
     networks:
-    - ils_ils_default
+    - ils_default
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -26,15 +26,16 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - ils_ils_default
+      - ils_default
 
 volumes:
   pgdata:
 
 networks:
-  ils_ils_default:
+  ils_default:
     driver: bridge
-    external: true
+    #external: true
 
   end-user_default:
+    driver: bridge
     external: true
