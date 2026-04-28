@@ -1,0 +1,61 @@
+spring:
+
+  redis:
+    host: localhost
+    port: 6379
+    profiles:
+    active: sp
+  flyway:
+    enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5433/contAInBallenbak
+    username: contain
+    password: contain
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      leak-detection-threshold: 20000
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+# ---------------- ActiveMQ ----------------
+activemq:
+  brokerUrl: tcp://localhost:61617
+  user: admin
+  password: admin
+  sharepoint-queue: sharepoint.delta.queue
+  alfresco-queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+
+mongodb:
+      uri: mongodb://admin:admin@127.0.0.1:27017/ilstools?authSource=admin
+      
+# ---------------- Custom App ----------------
+app:
+  keystore:
+    path: C:\ContainOpenSource\Java\OpenSourceJava\ils\src\main\resources\Containselfsigned_cert.p12
+
+alfresco:
+  username: admin
+  password: admin
+  baseUrl: http://localhost:8082
+
+ils:
+  baseurl: http://localhost:55000
+  uudiutilendpoint: http://localhost:5002/api/GetUUID
+  bindendpoint: http://localhost:55000/api/Bind
+  relocateendpoint: http://localhost:55000/api/MigrateIO
+  ruleenginemoveendpoint: http://localhost:55000/api/rules
+  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
+  ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+  ruleengineprojectName: contAlnMigrationRuleset
+  deltalinkfile: "C:\\Temp\\storeddeltalinks.csv"
+
+
+#Accept all connections inside the network
+server:
+  port: 8080
+  address: 0.0.0.0
