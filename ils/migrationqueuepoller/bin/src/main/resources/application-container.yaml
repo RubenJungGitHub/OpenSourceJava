@@ -1,0 +1,91 @@
+
+# ==========================
+# Spring Boot Configuration
+# ==========================
+
+name: ils
+
+#debug: true
+
+spring:
+  redis:
+    host: Redis-service
+    port: 6379
+
+  
+# ---------- Mongo DataSource ----------
+  data:
+    mongodb:
+      uri: mongodb://admin:admin@mongo_db:27017/ilstools?authSource=admin
+
+  
+  datasource:
+ #------------PostGress datasource -------------
+    url: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+    username: contain
+    password: contain
+    driver-class-name: org.postgresql.Driver
+    idle-timeout: 30000          # 30 seconds
+    max-lifetime: 1800000        # 30 minutes
+    connection-timeout: 30000    # 30 seconds
+    leak-detection-threshold: 20000  # 20 seconds\
+  jpa:
+    hibernate:
+      ddl-auto: update   # or create / create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+# ==========================
+# Custom Application Properties
+# ==========================
+
+activemq:
+  # The "Read" side for Alfresco (House A)
+  alfresco-source:
+    brokerUrl: tcp://developer-activemq-1:61616
+    user: admin
+    password: admin
+    queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+
+  # The "Write" side for EVERYONE (House B)
+  # This is also the "Read" side for SharePoint and the Migration Service
+  migration-hub:
+    brokerUrl: tcp://developer-activemq-1:61616
+    user: admin
+    password: admin
+    sharepoint-queue: sharepoint.delta.queue
+    migration-queue: contain.ils.queue.migration
+
+
+# Receiver in container 
+ils:
+  uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
+  baseurl: http://receiver:8080
+  bindendpoint: http://receiver:8080/api/Bind
+  processspitemsendpoint: http://receiver:8080/api/ProcessChangedSharepointItem
+  processalfresconodepoint: http://receiver:8080/api/ProcessChangedAlfrescoNode
+  logiodeletedfromplatformendpoint: http://receiver:8080/api/logiodeletedfromplatform
+  ruleenginemoveendpoint: http://receiver:8080/api/rules
+  relocateendpoint: http://receiver:8080/api/MigrateIO
+  ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
+  ruleengineendpoint: http://kie-server:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+  ruleengineprojectname: contAlnMigrationRuleset
+  deltalinkfile: "/app/data/storeddeltalinks.csv"
+
+
+
+  # Receiver on host
+#ils:
+#  uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
+#  baseurl: http://host.docker.internal:55000
+#  bindendpoint: http://host.docker.internal:55000/api/Bind
+#  processspitemsendpoint: http://host.docker.internal:55000/api/ProcessChangedSharepointItem
+#  processalfresconodepoint: http://host.docker.internal:55000/api/ProcessChangedAlfrescoNode
+#  logiodeletedfromplatformendpoint: http://host.docker.internal:55000/api/logiodeletedfromplatform
+#  ruleenginemoveendpoint: http://host.docker.internal:55000/api/rules
+#  relocateendpoint: http://host.docker.internal:55000/api/MigrateIO
+#  ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
+#  ruleengineendpoint: http://kie-server:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+#  ruleengineprojectname: contAlnMigrationRuleset
+#  deltalinkfile: "/app/data/storeddeltalinks.csv"

@@ -1,0 +1,59 @@
+spring:
+  profiles:
+    active: sp
+  flyway:
+    enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5433/contAInBallenbak
+    username: contain
+    password: contain
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      leak-detection-threshold: 20000
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+# ---------------- ActiveMQ ----------------
+activemq:
+  # The "Read" side for Alfresco (House A)
+  alfresco-source:
+    brokerUrl: tcp://localhost:61616
+    user: admin
+    password: admin
+    queue: Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes
+
+  # The "Write" side for EVERYONE (House B)
+  # This is also the "Read" side for SharePoint and the Migration Service
+  migration-hub:
+    brokerUrl: tcp://localhost:61617
+    user: admin
+    password: admin
+    sharepoint-queue: sharepoint.delta.queue
+    migration-queue: contain.ils.queue.migration
+
+# ---------------- Custom App ----------------
+app:
+  keystore:
+    path: C:\ContainOpenSource\Java\OpenSourceJava\ils\src\main\resources\Containselfsigned_cert.p12
+
+alfresco:
+  username: admin
+  password: admin
+  baseUrl: http://localhost:8080
+
+ils:
+  baseurl: http://localhost:5000
+  uudiutilendpoint: http://localhost:5002/api/GetUUID
+  bindendpoint: http://localhost:55000/api/Bind
+  relocateendpoint: http://localhost:55000/api/RelocateIO
+  deltalinkfile: "C:\\Temp\\storeddeltalinks.csv"
+  ruleengineprojectname: contAlnMigrationRuleset
+  ruleenginemoveendpoint: http://localhost:55000/rules
+  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
+  ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
