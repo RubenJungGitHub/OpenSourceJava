@@ -11,10 +11,13 @@ cd "C:\Program Files\MongoDB\Connector for BI\2.14\bin"
 # -------------------------------
 # ManageMonogBIIConnector.ps1
 # -------------------------------
-
+$a = 1;
 # 1️⃣ Configurable variables
 $mongoExe       = "C:\Program Files\MongoDB\Server\6.0\bin\mongo.exe"  # path to mongo.exe
 $mongosqldExe   = "C:\Program Files\MongoDB\Connector for BI\2.14\bin\mongosqld.exe"
+
+$a = 1
+
 
 $mongoHost      = "localhost"
 $mongoPort      = 27017
