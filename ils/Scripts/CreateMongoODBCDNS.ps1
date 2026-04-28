@@ -13,7 +13,8 @@ $odbcDriverName = "MySQL ODBC 9.6 Unicode Driver"
 
 # === 2️⃣ Create a mongosqld user with mysql_native_password ===
 # Connect using the mysql client bundled with mongosqld
-$mysqlExe = "C:\Program Files\MongoDB\Connector for BI\2.14\bin\mysql.exe"
+#$mysqlExe = "C:\Program Files\MongoDB\Connector for BI\2.14\bin\mysql.exe"
+$mysqlExe = "C:\ProgramData\chocolatey\bin\mysql.exe"
 
 $createUserSQL = @"
 CREATE USER IF NOT EXISTS '$mongosqldUser'@'%' IDENTIFIED WITH mysql_native_password BY '$mongosqldPassword';
