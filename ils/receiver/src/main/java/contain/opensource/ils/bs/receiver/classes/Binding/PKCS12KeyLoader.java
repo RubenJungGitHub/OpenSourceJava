@@ -6,11 +6,13 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.nio.file.Paths;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import contain.opensource.shared.constants.AlfrescoConstants;
-
+import contain.opensource.shared.configurationproperties.AlfrescoProperties;
+import  contain.opensource.shared.configurationproperties.ILSRestProperties;
 /**
  * Utility class for loading PKCS12 private keys from a keystore file.
  * 
@@ -49,18 +51,13 @@ public class PKCS12KeyLoader {
     private String keyStorePath;
     private PrivateKey cachedKey;
 
+    @Autowired
+  public PKCS12KeyLoader(ILSRestProperties ilsproperties) {
+        this.keyStorePath = ilsproperties.getkeystorepath();
+  }
+
     //Hard coded. this should be derived from propertiess
-    public PKCS12KeyLoader(@Value("${APP_KEYSTORE_PATH:/app/config/Containselfsigned_cert.p12}") String keyStorePath) {
-        System.out.println(System.getProperty("user.dir"));
-        this.keyStorePath = keyStorePath;
-        //Quick and dirty 
-
-        if (Paths.get(System.getProperty("user.dir"))
-        .equals(Paths.get("c:/ContainOpenSource/Java/OpenSourceJava/ils"))) {
-              this.keyStorePath = System.getProperty("user.dir") +  keyStorePath;
-        }
-
-        System.out.println("[PKCS12] resolved keystore path: " + this.keyStorePath);
+    public PKCS12KeyLoader() {
     }
 
     public synchronized PrivateKey getPrivateKey() throws Exception {
