@@ -70,7 +70,7 @@ ils:
   ruleengineendpoint: http://kie-server:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
   ruleengineprojectname: contAlnMigrationRuleset
   deltalinkfile: "/app/data/storeddeltalinks.csv"
-  keystorepath: "${APP_KEYSTORE_PATH:/app/config/Containselfsigned_cert.p12"
+  keystorepath: "${APP_KEYSTORE_PATH:file:/app/config/Containselfsigned_cert.p12}"
 
 
 
