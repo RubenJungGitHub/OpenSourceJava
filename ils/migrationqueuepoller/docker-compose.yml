@@ -3,7 +3,7 @@ name : ilsqueuepollers
 services:
   migrationqueuepoller:
     build:
-      context: C:/ContainOpenSource/OpenSourceJava/ils
+      context: D:/Contain/OpenSourceJava/ils
       dockerfile: migrationqueuepoller/Dockerfile
     container_name: migrationqueuepoller
     environment:

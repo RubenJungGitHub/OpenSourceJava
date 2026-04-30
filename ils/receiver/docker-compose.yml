@@ -3,7 +3,7 @@ name : ils
 services:
   receiver:
     build:
-      context: C:/ContainOpenSource/OpenSourceJava/ils
+      context: D:/Contain/OpenSourceJava/ils
       dockerfile: receiver/Dockerfile
     container_name: receiver
     environment:
