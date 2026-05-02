@@ -44,6 +44,7 @@ import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
+import com.microsoft.aad.msal4j.SilentParameters;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.http.GraphServiceException;
 import com.microsoft.graph.models.Drive;
@@ -760,20 +761,32 @@ public class GraphService {
         }
     }
 
-    public static String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
-        // Build confidential client application
+    public static String getGraphToken() throws Exception {
+        // 1. Re-build (or reuse) the App object
         ConfidentialClientApplication app = ConfidentialClientApplication.builder(
                 AlfrescoConstants.clientId,
                 ClientCredentialFactory.createFromSecret(AlfrescoConstants.clientSecret))
                 .authority("https://login.microsoftonline.com/" + AlfrescoConstants.tenantId)
                 .build();
-        // Scopes for client credentials flow
-        // Set<String> scopes =
-        // Collections.singleton("https://graph.microsoft.com/.default");
-        // Acquire token
-        IAuthenticationResult result = app.acquireToken(parameters).get();
-        accessToken = result.accessToken();
-        return accessToken;
+
+        // 2. Define your scopes
+        Set<String> scopes = Collections.singleton("https://graph.microsoft.com/.default");
+
+        // 3. TRY TO ACQUIRE SILENTLY FIRST
+        // This checks the internal cache and handles expiration automatically.
+        SilentParameters silentParameters = SilentParameters.builder(scopes).build();
+
+        try {
+            IAuthenticationResult result = app.acquireTokenSilently(silentParameters).get();
+            System.out.println("Token retrieved from cache.");
+            return result.accessToken();
+        } catch (Exception e) {
+            // 4. FALLBACK: If silent fails (expired or not in cache), get a fresh one
+            System.out.println("Cache expired or empty. Acquiring fresh token...");
+            ClientCredentialParameters modelParameters = ClientCredentialParameters.builder(scopes).build();
+            IAuthenticationResult result = app.acquireToken(modelParameters).get();
+            return result.accessToken();
+        }
     }
 
     private static void itemmustmigrate(SharePointItemResponse SPItem) {
@@ -964,9 +977,7 @@ public class GraphService {
         String action = "";
         Hashtable<String, String> migrationinfo = new Hashtable<>();
         try {
-            if (accessToken == null || accessToken.isEmpty()) {
-                accessToken = getGraphToken();
-            }
+            accessToken = getGraphToken();
             String[] parts = ItemWebUrl.split("/");
             tenantDomain = parts[2];
             SiteName = parts[4];
