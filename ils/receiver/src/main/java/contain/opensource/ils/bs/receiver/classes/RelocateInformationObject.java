@@ -30,7 +30,9 @@ public class RelocateInformationObject extends IOObjectProperties {
         this.Description = Anode.Description;
         this.filename = Anode.entry.filename;
         this.marking = Anode.marking;
+        this.markingID = Anode.markingID;
         this.classification = Anode.classification;
+        this.classificationID = Anode.classificationID;
         this.platformfrom = AlfrescoConstants.ContainPlatforms.ALFRESCO;
         this.version = Anode.version;
         this.mimeType = Anode.mimeType;
@@ -47,7 +49,9 @@ public class RelocateInformationObject extends IOObjectProperties {
         this.mimeType = SPItem.mimetype;
         this.content = SPItem.filecontent;
         this.marking = SPItem.marking;
+        this.markingID = SPItem.markingID;
         this.classification = SPItem.classification;
+        this.classificationID = SPItem.classificationID;
         this.version = SPItem.version;
         this.platformfrom = AlfrescoConstants.ContainPlatforms.SPO;
     }

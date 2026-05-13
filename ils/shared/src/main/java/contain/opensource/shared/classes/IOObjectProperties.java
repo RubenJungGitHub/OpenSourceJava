@@ -140,7 +140,7 @@ public abstract class IOObjectProperties {
 
 
     public String getMarkingID() {
-        return this.marking;
+        return this.markingID;
     }
 
     public void setMarkingID(String markingID) {

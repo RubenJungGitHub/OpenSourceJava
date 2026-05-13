@@ -315,8 +315,10 @@ public class GraphService {
             // a custom field should be used for description to prevent update failure due
             // to Graph API limitations on the description field.
             body.put("containIODescription", node.getDescription());
-            body.put("Marking", cleanMarking);
-            body.put("Classification", cleanClassification);
+            body.put("markingexternaltax", cleanMarking);
+            body.put("classificationexternaltax", cleanClassification);
+            body.put("markingexternaltaxsystemid", node.getMarkingID());
+            body.put("classificationexternaltaxsystemid", node.getclassificationID());
 
             // Graph API will not allow description field to be a[dated. Even wordso./ If
             // this field is added the entire update fails!
@@ -326,7 +328,7 @@ public class GraphService {
 
             // body.put("Description", node.getDescription());
             body.put("containIODescription", node.getDescription());
-            body.put("ObjectClassificationText", "Changed from Java after move");
+            // body.put("ObjectClassificationText", "Changed from Java after move");
 
             String json = mapper.writeValueAsString(body);
 
@@ -486,7 +488,7 @@ public class GraphService {
                         SPItem.marking,
                         SPItem.markingID,
                         SPItem.classification,
-                        SPItem.classificationID,                            
+                        SPItem.classificationID,
                         SPItem.version);
                 // ==========================================================================================
             }
@@ -801,9 +803,8 @@ public class GraphService {
     private static void itemmustmigrate(SharePointItemResponse SPItem) {
         String cleanPlatformFrom = SPItem.platformfrom.name().replace("\"", "");
         String cleancontainerfrom = SPItem.containerfrom.replace("\"", "");
-        String cleanClassification = SPItem.classificationID.replace("\"", "").replace("-","");
-        String cleanMarking = SPItem.markingID.replace("\"", "").replace("-","");
-
+        String cleanClassification = SPItem.classificationID.replace("\"", "").replace("-", "");
+        String cleanMarking = SPItem.markingID.replace("\"", "").replace("-", "");
 
         // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
@@ -1006,7 +1007,7 @@ public class GraphService {
             String[] siteParts = siteId.split(",");
             SiteID = siteParts[1];
             // Single tennant for now
-           // GraphServiceClient<?> graphClient = getGraphClient(tenantDomain);
+            // GraphServiceClient<?> graphClient = getGraphClient(tenantDomain);
             // SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID,
             // graphClient );
             SharePointItemResponse SPItem = getListItemsById(ListId, ListItemID);
