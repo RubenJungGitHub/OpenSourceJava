@@ -860,14 +860,26 @@ public class AlfrescoNodeController {
 
             alfresconNodeResponse.marking = rootNode.path("entry")
                 .path("properties")
-                .path("contain:MARKING")
+                .path("contain:EXTTAXMARKINGVAL")
                 .asText();
+
+            alfresconNodeResponse.markingID  = rootNode.path("entry")
+                .path("properties")
+                .path("contain:EXTTAXMARKINGID")
+                .asText();
+
 
             alfresconNodeResponse.classification = rootNode.path("entry")
                 .path("properties")
-                .path("contain:CLASSIFICATION")
+                .path("contain:EXTTAXCLASSIFICATIONVAL")
                 .asText();
 
+            alfresconNodeResponse.classificationID = rootNode.path("entry")
+                .path("properties")
+                .path("contain:EXTTAXCLASSIFICATIONID")
+                .asText();
+
+                
             alfresconNodeResponse.setcontainerfrom(rootNode.path("entry")
                 .path("path")
                 .path("name")
