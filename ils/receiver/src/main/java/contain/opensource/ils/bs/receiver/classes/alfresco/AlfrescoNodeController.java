@@ -696,8 +696,8 @@ public class AlfrescoNodeController {
   private void itemmustmigrate(AlfrescoNodeResponse aitem) {
     String endpoint = ilsproperties.getruleenginemoveendpoint();
     String cleanPlatformFrom = aitem.platformfrom.name().replace("\"", "");
-    String cleanClassification = aitem.classification.replace("\"", "");
-    String cleanMarking = aitem.marking.replace("\"", "");
+    String cleanClassification = aitem.classificationID.replace("\"", "").replace("-", "");
+    String cleanMarking = aitem.markingID.replace("\"", "").replace("-", "");
     String cleancontainerfrom = aitem.containerfrom.replace("\"", "");
 
     // Bouw de URL exact zoals Swagger het doet
