@@ -428,13 +428,26 @@ public class AlfrescoNodeController {
         String rawMarking = IOobject.getMarking();
         // Remove leading/trailing quotes if they exist
         rawMarking = rawMarking.replaceAll("^\"|\"$", "");
-        propertiesNode.put("contain:MARKING", rawMarking);
+        propertiesNode.put("contain:EXTTAXMARKINGVAL", rawMarking);
       }
       if (IOobject.getclassification() != null) {
         String rawlabel = IOobject.getclassification();
         // Remove leading/trailing quotes if they exist
         rawlabel = rawlabel.replaceAll("^\"|\"$", "");
-        propertiesNode.put("contain:CLASSIFICATION", rawlabel);
+        propertiesNode.put("contain:EXTTAXCLASSIFICATIONVAL", rawlabel);
+      }
+
+        if (IOobject.getMarkingID() != null) {
+        String rawMarking = IOobject.getMarkingID();
+        // Remove leading/trailing quotes if they exist
+        rawMarking = rawMarking.replaceAll("^\"|\"$", "");
+        propertiesNode.put("contain:EXTTAXMARKINGID", rawMarking);
+      }
+      if (IOobject.getclassificationID() != null) {
+        String rawlabel = IOobject.getclassificationID();
+        // Remove leading/trailing quotes if they exist
+        rawlabel = rawlabel.replaceAll("^\"|\"$", "");
+        propertiesNode.put("contain:EXTTAXCLASSIFICATIONID", rawlabel);
       }
       /*
        * chatgpt
