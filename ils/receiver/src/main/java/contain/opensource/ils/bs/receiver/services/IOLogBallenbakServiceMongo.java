@@ -79,7 +79,7 @@ public class IOLogBallenbakServiceMongo {
     @Transactional
     public void log(String containIOUUID, String PlatformID, String IOpath, String action, String source,
             String destination,
-            String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String Classification,String version) {
+            String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String MarkingID, String Classification,String ClassificationID   ,String version) {
 
 
      IOLogBallenbakMongo log = new IOLogBallenbakMongo();
@@ -97,7 +97,9 @@ public class IOLogBallenbakServiceMongo {
         log.setActionPerformed(actionPerformed);
         log.setActionPerformedBy(ActionPerformedBy);
         log.setMarking(Marking);
+        log.setMarkingID(MarkingID);
         log.setClassification(Classification);
+        log.setClassificationID(ClassificationID);
         log.setVersion(version);
     
         // Update Redis

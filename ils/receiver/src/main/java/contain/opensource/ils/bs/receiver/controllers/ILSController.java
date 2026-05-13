@@ -101,6 +101,8 @@ public class ILSController {
                     decodeeletedby,
                     "DeletedFromPlatform",
                     "DeletedFromPlatform",
+                    "DeletedFromPlatform",
+                    "DeletedFromPlatform",
                     "DeletedFromPlatform");
         } catch (Exception ex) {
             throw ex;

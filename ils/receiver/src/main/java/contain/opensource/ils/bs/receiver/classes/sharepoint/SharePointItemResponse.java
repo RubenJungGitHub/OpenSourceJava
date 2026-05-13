@@ -127,7 +127,9 @@ public class SharePointItemResponse extends IOObjectProperties {
                 createdAtInstant,
                 null, // to be iplemented modifiedAtInstant
                 this.marking,
+                this.markingID,
                 this.classification,
+                this.classificationID,
                 this.version);
         return secdoc;
     }

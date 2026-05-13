@@ -213,7 +213,7 @@ public class GraphService {
             Map<String, Object> body = new HashMap<>();
             body.put("ContAInUUID", uuid);
             body.put("Title", "Test Updated Document Title Ruben from JaVa");
-            body.put("ObjectClassificationText", "Changed from Java");
+            // body.put("ObjectClassificationText", "Changed from Java");
 
             String json = mapper.writeValueAsString(body);
 
@@ -360,7 +360,9 @@ public class GraphService {
                         AlfrescoConstants.eActionPerformed.IOCOPIED,
                         "System",
                         node.getMarking(),
+                        node.getMarkingID(),
                         node.getclassification(),
+                        node.getclassificationID(),
                         node.getVersion());
                 // ==========================================================================================
                 return "Success";
@@ -482,7 +484,9 @@ public class GraphService {
                         AlfrescoConstants.eActionPerformed.IOBOUND,
                         "System",
                         SPItem.marking,
+                        SPItem.markingID,
                         SPItem.classification,
+                        SPItem.classificationID,                            
                         SPItem.version);
                 // ==========================================================================================
             }
@@ -698,7 +702,9 @@ public class GraphService {
                         AlfrescoConstants.eActionPerformed.IODELETED,
                         "System",
                         ROobject.marking,
+                        ROobject.markingID,
                         ROobject.classification,
+                        ROobject.classificationID,
                         ROobject.version);
             } else {
                 throw new RuntimeException(
@@ -750,7 +756,9 @@ public class GraphService {
                         AlfrescoConstants.eActionPerformed.IODELETED,
                         "System",
                         ROobject.marking,
+                        ROobject.markingID,
                         ROobject.classification,
+                        ROobject.classificationID,
                         ROobject.version);
             } else {
                 throw new RuntimeException(
@@ -792,9 +800,10 @@ public class GraphService {
 
     private static void itemmustmigrate(SharePointItemResponse SPItem) {
         String cleanPlatformFrom = SPItem.platformfrom.name().replace("\"", "");
-        String cleanClassification = SPItem.classification.replace("\"", "");
-        String cleanMarking = SPItem.marking.replace("\"", "");
         String cleancontainerfrom = SPItem.containerfrom.replace("\"", "");
+        String cleanClassification = SPItem.classificationID.replace("\"", "").replace("-","");
+        String cleanMarking = SPItem.markingID.replace("\"", "").replace("-","");
+
 
         // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
@@ -863,7 +872,7 @@ public class GraphService {
                     .items(listItemId)
                     .buildRequest()
                     .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                    .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,OData__UIVersionString,Marking,classification),driveItem")
+                    .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,OData__UIVersionString,markingexternaltax, markingexternaltaxsystemid,classificationexternaltax, classificationexternaltaxsystemid),driveItem")
                     .get();
             if (li != null) {
                 FieldValueSet fields = li.fields;
@@ -908,19 +917,24 @@ public class GraphService {
                             .get(0);
 
                     // Now create only the objects that require actions. reove because for binding
+                    String classificationID = "";
+                    String markingID = "";
                     String classification = "";
                     String marking = "";
+
                     try {
                         String json = mapper.writeValueAsString(li);
                         SPItem = mapper.readValue(json, SharePointItemResponse.class);
                         Object title = adm.get("Title");
                         Object filename = driveItem.name;
                         Object description = adm.get("containIODescription");
-                        if (adm.get("Classification") != null) {
-                            classification = adm.get("Classification").toString();
+                        if (adm.get("classificationexternaltaxsystemid") != null) {
+                            classificationID = adm.get("classificationexternaltaxsystemid").toString();
+                            classification = adm.get("classificationexternaltax").toString();
                         }
-                        if (adm.get("Marking") != null) {
-                            marking = adm.get("Marking").toString();
+                        if (adm.get("markingexternaltaxsystemid") != null) {
+                            markingID = adm.get("markingexternaltaxsystemid").toString();
+                            marking = adm.get("markingexternaltax").toString();
                         }
                         String titleStr = title != null ? title.toString().replace("\"", "") : "";
                         String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
@@ -937,7 +951,9 @@ public class GraphService {
                         // To do get file content
                         SPItem.HasUUID = hasUUID;
                         SPItem.version = latestVersion.id;
+                        SPItem.markingID = markingID;
                         SPItem.marking = marking;
+                        SPItem.classificationID = classificationID;
                         SPItem.classification = classification;
                         SPItem.filecontent = getSPItemContentById(li.id, listId);
                     } catch (Exception e) {
@@ -990,7 +1006,7 @@ public class GraphService {
             String[] siteParts = siteId.split(",");
             SiteID = siteParts[1];
             // Single tennant for now
-            GraphServiceClient<?> graphClient = getGraphClient(tenantDomain);
+           // GraphServiceClient<?> graphClient = getGraphClient(tenantDomain);
             // SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID,
             // graphClient );
             SharePointItemResponse SPItem = getListItemsById(ListId, ListItemID);
@@ -1019,7 +1035,9 @@ public class GraphService {
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
                             "System",
                             SPItem.marking,
+                            SPItem.markingID,
                             SPItem.classification,
+                            SPItem.classificationID,
                             SPItem.version);
                     return migrationinfo;
                 }

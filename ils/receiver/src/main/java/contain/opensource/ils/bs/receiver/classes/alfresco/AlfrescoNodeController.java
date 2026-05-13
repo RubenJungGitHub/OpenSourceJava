@@ -484,7 +484,9 @@ public class AlfrescoNodeController {
               AlfrescoConstants.eActionPerformed.COPIEDUUID,
               "System",
               IOobject.marking,
+              IOobject.markingID,
               IOobject.classification,
+              IOobject.classificationID,
               IOobject.version);
         }
       }
@@ -610,7 +612,9 @@ public class AlfrescoNodeController {
                 AlfrescoConstants.eActionPerformed.IOCOPIED,
                 "System",
                 IOobject.marking,
+                IOobject.markingID,
                 IOobject.classification,
+                IOobject.classificationID,
                 IOobject.version);
             return "";
           } else {
@@ -798,7 +802,9 @@ public class AlfrescoNodeController {
             AlfrescoConstants.eActionPerformed.IOBOUND,
             "System",
             Alfrescoitem.marking,
+            Alfrescoitem.markingID,
             Alfrescoitem.classification,
+            Alfrescoitem.classificationID,
             Alfrescoitem.version);
         // ==========================================================================================
       }
@@ -1114,7 +1120,9 @@ public class AlfrescoNodeController {
               eActionPerformed.ASSIGNUUID,
               alfresconNodeResponse.entry.modifiedByUser.displayName,
               this.alfresconNodeResponse.marking,
+              this.alfresconNodeResponse.markingID,
               this.alfresconNodeResponse.classification,
+              this.alfresconNodeResponse.classificationID,
               this.alfresconNodeResponse.version);
 
           System.out.println("Node updated successfully:");
