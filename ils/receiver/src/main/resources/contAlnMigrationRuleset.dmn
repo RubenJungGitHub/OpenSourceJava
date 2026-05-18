@@ -212,7 +212,7 @@
       </dmn:rule>
       <dmn:rule id="_CCBEC850-0C50-4ABA-BDBF-CF69371019EC">
         <dmn:inputEntry id="_780C077B-CB53-48C0-8D0A-B84A5E819EA7">
-          <dmn:text>"dd1a0582-a5c0-4a59-a89f-a86ffd3e7994"</dmn:text>
+          <dmn:text>"dd1a0582a5c04a59a89fa86ffd3e7994"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_D7188CBC-E749-467C-AD03-2C3B7DA8832C">
           <dmn:text>"56263b48965643e483378b6959d96d52"</dmn:text>
@@ -235,7 +235,7 @@
       </dmn:rule>
       <dmn:rule id="_FA85DB3A-572D-42B7-A795-9DB07FB2F288">
         <dmn:inputEntry id="_18120B68-FC0D-4739-8C75-CE2204A78F9C">
-          <dmn:text>"dd1a0582-a5c0-4a59-a89f-a86ffd3e7994"</dmn:text>
+          <dmn:text>"dd1a0582a5c04a59a89fa86ffd3e7994"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_45637E94-086E-4E24-B66C-53C29844CF5D">
           <dmn:text>
@@ -259,7 +259,7 @@
       </dmn:rule>
       <dmn:rule id="_69F3E6B7-2299-4217-8F8D-B472B403B41C">
         <dmn:inputEntry id="_DA0E3646-A792-4567-8750-2A9E123898AE">
-          <dmn:text>"dd1a0582-a5c0-4a59-a89f-a86ffd3e7994"</dmn:text>
+          <dmn:text>"dd1a0582a5c04a59a89fa86ffd3e7994"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_08E3BA20-3D92-402A-BA1D-963B72643591">
           <dmn:text>"43d28acb83a44a5bac2c674a90ba0f99"</dmn:text>
@@ -282,7 +282,7 @@
       </dmn:rule>
       <dmn:rule id="_812895A4-EC59-49D7-AF51-8A6EC7C0F92E">
         <dmn:inputEntry id="_D6221B44-07CE-4D7F-A260-52BC809179C1">
-          <dmn:text>"dd1a0582-a5c0-4a59-a89f-a86ffd3e7994"</dmn:text>
+          <dmn:text>"dd1a0582a5c04a59a89fa86ffd3e7994"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_6A06380A-9497-443F-9342-A988D59BD7B7">
           <dmn:text>"84cb87b6b294418e9bde923c323848f3"</dmn:text>
@@ -305,7 +305,7 @@
       </dmn:rule>
       <dmn:rule id="_C4E7F2D8-0BB3-4920-BB18-0CD5CBB3A89F">
         <dmn:inputEntry id="_6F53C8EE-F136-4C09-9287-585C08F6FEF2">
-          <dmn:text>"dd1a0582-a5c0-4a59-a89f-a86ffd3e7994"</dmn:text>
+          <dmn:text>"dd1a0582a5c04a59a89fa86ffd3e7994"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_930311BB-B381-412B-B898-E03163DA1174">
           <dmn:text>"11770f31708a41fabc8465e084ca88e0"</dmn:text>
@@ -328,7 +328,7 @@
       </dmn:rule>
       <dmn:rule id="_3D814A6E-9DAD-4687-A932-C5473903721A">
         <dmn:inputEntry id="_EBD46537-A961-4C38-908B-98B4365E94AB">
-          <dmn:text>"dd1a0582-a5c0-4a59-a89f-a86ffd3e7994"</dmn:text>
+          <dmn:text>"dd1a0582a5c04a59a89fa86ffd3e7994"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_91092E20-F1C4-4855-B761-E96A22A1F3CB">
           <dmn:text>"11770f31708a41fabc8465e084ca88e9"</dmn:text>
@@ -446,7 +446,7 @@
           <dmn:text>"e3faa3ef9bae40c4a346ff4139e205d4"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_3596BF6C-A7C5-431E-AA76-B6788676AB7C">
-          <dmn:text>"11770f31708a41fabc8465e084ca88e0"</dmn:text>
+          <dmn:text>"11770f31708a41fabc8465e084ca88e9"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_A702ABD4-20FA-4E08-AF6C-CD5279787C20">
           <dmn:text>"SPO"</dmn:text>
@@ -469,7 +469,7 @@
           <dmn:text>"e3faa3ef9bae40c4a346ff4139e205d4"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_55A42F34-D41C-49C7-9852-3A75BCFDCE60">
-          <dmn:text>"11770f31708a41fabc8465e084ca88e0"</dmn:text>
+          <dmn:text>"11770f31708a41fabc8465e084ca88e9"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_E93DA2AD-71F5-44DD-8E7D-C308E8A692F6">
           <dmn:text>"SPO"</dmn:text>
@@ -774,7 +774,7 @@
           <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:inputEntry>
         <dmn:inputEntry id="_B1B4CC07-B71C-4C7B-8F1A-FAFE90F672E4">
-          <dmn:text>"/Company Home/Sites/ontobind/documentLibrary"</dmn:text>
+          <dmn:text>"/Company Home/Sites/ontobind/documentLibrary/Secret"</dmn:text>
         </dmn:inputEntry>
         <dmn:outputEntry id="_CB9BCB06-11B0-449F-8724-68EC4060945A">
           <dmn:text>"ontobindarchive"</dmn:text>
