@@ -428,13 +428,26 @@ public class AlfrescoNodeController {
         String rawMarking = IOobject.getMarking();
         // Remove leading/trailing quotes if they exist
         rawMarking = rawMarking.replaceAll("^\"|\"$", "");
-        propertiesNode.put("contain:MARKING", rawMarking);
+        propertiesNode.put("contain:EXTTAXMARKINGVAL", rawMarking);
       }
       if (IOobject.getclassification() != null) {
         String rawlabel = IOobject.getclassification();
         // Remove leading/trailing quotes if they exist
         rawlabel = rawlabel.replaceAll("^\"|\"$", "");
-        propertiesNode.put("contain:CLASSIFICATION", rawlabel);
+        propertiesNode.put("contain:EXTTAXCLASSIFICATIONVAL", rawlabel);
+      }
+
+        if (IOobject.getMarkingID() != null) {
+        String rawMarking = IOobject.getMarkingID();
+        // Remove leading/trailing quotes if they exist
+        rawMarking = rawMarking.replaceAll("^\"|\"$", "");
+        propertiesNode.put("contain:EXTTAXMARKINGID", rawMarking);
+      }
+      if (IOobject.getclassificationID() != null) {
+        String rawlabel = IOobject.getclassificationID();
+        // Remove leading/trailing quotes if they exist
+        rawlabel = rawlabel.replaceAll("^\"|\"$", "");
+        propertiesNode.put("contain:EXTTAXCLASSIFICATIONID", rawlabel);
       }
       /*
        * chatgpt
@@ -484,7 +497,9 @@ public class AlfrescoNodeController {
               AlfrescoConstants.eActionPerformed.COPIEDUUID,
               "System",
               IOobject.marking,
+              IOobject.markingID,
               IOobject.classification,
+              IOobject.classificationID,
               IOobject.version);
         }
       }
@@ -610,7 +625,9 @@ public class AlfrescoNodeController {
                 AlfrescoConstants.eActionPerformed.IOCOPIED,
                 "System",
                 IOobject.marking,
+                IOobject.markingID,
                 IOobject.classification,
+                IOobject.classificationID,
                 IOobject.version);
             return "";
           } else {
@@ -692,8 +709,8 @@ public class AlfrescoNodeController {
   private void itemmustmigrate(AlfrescoNodeResponse aitem) {
     String endpoint = ilsproperties.getruleenginemoveendpoint();
     String cleanPlatformFrom = aitem.platformfrom.name().replace("\"", "");
-    String cleanClassification = aitem.classification.replace("\"", "");
-    String cleanMarking = aitem.marking.replace("\"", "");
+    String cleanClassification = aitem.classificationID.replace("\"", "").replace("-", "");
+    String cleanMarking = aitem.markingID.replace("\"", "").replace("-", "");
     String cleancontainerfrom = aitem.containerfrom.replace("\"", "");
 
     // Bouw de URL exact zoals Swagger het doet
@@ -798,7 +815,9 @@ public class AlfrescoNodeController {
             AlfrescoConstants.eActionPerformed.IOBOUND,
             "System",
             Alfrescoitem.marking,
+            Alfrescoitem.markingID,
             Alfrescoitem.classification,
+            Alfrescoitem.classificationID,
             Alfrescoitem.version);
         // ==========================================================================================
       }
@@ -854,14 +873,26 @@ public class AlfrescoNodeController {
 
             alfresconNodeResponse.marking = rootNode.path("entry")
                 .path("properties")
-                .path("contain:MARKING")
+                .path("contain:EXTTAXMARKINGVAL")
                 .asText();
+
+            alfresconNodeResponse.markingID  = rootNode.path("entry")
+                .path("properties")
+                .path("contain:EXTTAXMARKINGID")
+                .asText();
+
 
             alfresconNodeResponse.classification = rootNode.path("entry")
                 .path("properties")
-                .path("contain:CLASSIFICATION")
+                .path("contain:EXTTAXCLASSIFICATIONVAL")
                 .asText();
 
+            alfresconNodeResponse.classificationID = rootNode.path("entry")
+                .path("properties")
+                .path("contain:EXTTAXCLASSIFICATIONID")
+                .asText();
+
+                
             alfresconNodeResponse.setcontainerfrom(rootNode.path("entry")
                 .path("path")
                 .path("name")
@@ -1114,7 +1145,9 @@ public class AlfrescoNodeController {
               eActionPerformed.ASSIGNUUID,
               alfresconNodeResponse.entry.modifiedByUser.displayName,
               this.alfresconNodeResponse.marking,
+              this.alfresconNodeResponse.markingID,
               this.alfresconNodeResponse.classification,
+              this.alfresconNodeResponse.classificationID,
               this.alfresconNodeResponse.version);
 
           System.out.println("Node updated successfully:");

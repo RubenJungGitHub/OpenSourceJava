@@ -38,6 +38,13 @@ public abstract class IOObjectProperties {
     @JsonProperty("classification")
     public String classification;
 
+
+    @JsonProperty("markingID")
+    public String markingID;
+
+    @JsonProperty("classificationID")
+    public String classificationID;
+
     @JsonProperty("mimeType")
     public String mimeType;
 
@@ -131,12 +138,29 @@ public abstract class IOObjectProperties {
         this.marking = marking;
     }
 
+
+    public String getMarkingID() {
+        return this.markingID;
+    }
+
+    public void setMarkingID(String markingID) {
+        this.markingID = markingID;
+    }
+
     public String getclassification() {
         return this.classification;
     }
 
     public void setclassification(String classification) {
         this.classification = classification;
+    }
+
+       public String getclassificationID() {
+        return this.classificationID;
+    }
+
+    public void setclassificationID(String classificationID) {
+        this.classificationID = classificationID;
     }
 
     public String getVersion() {

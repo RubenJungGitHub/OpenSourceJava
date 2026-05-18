@@ -33,10 +33,6 @@ activemq:
 mongodb:
       uri: mongodb://admin:admin@127.0.0.1:27017/ilstools?authSource=admin
       
-# ---------------- Custom App ----------------
-app:
-  keystore:
-    path: C:\ContainOpenSource\Java\OpenSourceJava\ils\src\main\resources\Containselfsigned_cert.p12
 
 alfresco:
   username: admin
@@ -53,6 +49,7 @@ ils:
   ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
   ruleengineprojectName: contAlnMigrationRuleset
   deltalinkfile: "C:\\Temp\\storeddeltalinks.csv"
+  keystorepath: "D:\\contAIn\\OpenSourceJava\\ils\\receiver\\src\\main\\resources\\Containselfsigned_cert.p12"
 
 
 #Accept all connections inside the network

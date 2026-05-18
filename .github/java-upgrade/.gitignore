@@ -1,0 +1,6 @@
+target/
+*.jar
+*.amp
+*.log
+.DS_Store
+

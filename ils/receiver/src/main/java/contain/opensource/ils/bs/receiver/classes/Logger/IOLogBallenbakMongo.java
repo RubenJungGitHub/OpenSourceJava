@@ -17,9 +17,13 @@ public class IOLogBallenbakMongo {
 
     private String path;
     private String marking;
+    private String markingID;
 
     @Field("classification")
     private String classification;
+
+    @Field("classificationID")
+    private String classificationID;
 
     private String version;
 
@@ -76,7 +80,9 @@ public class IOLogBallenbakMongo {
     public void setPlatformId(String platformId) { this.platformId = platformId; }
     public void setPath(String path) { this.path = path; }
     public void setMarking(String marking) { this.marking = marking; }
+    public void setMarkingID(String markingID) { this.markingID = markingID; }
     public void setClassification(String classification) { this.classification = classification; }
+    public void setClassificationID(String classificationID) { this.classificationID = classificationID; }
     public void setVersion(String version) { this.version = version; }
     public void setContainIoUuid(String containIoUuid) { this.containIoUuid = containIoUuid; }
     public void setIoAction(String ioAction) { this.ioAction = ioAction; }

@@ -44,6 +44,7 @@ import com.microsoft.aad.msal4j.ClientCredentialFactory;
 import com.microsoft.aad.msal4j.ClientCredentialParameters;
 import com.microsoft.aad.msal4j.ConfidentialClientApplication;
 import com.microsoft.aad.msal4j.IAuthenticationResult;
+import com.microsoft.aad.msal4j.SilentParameters;
 import com.microsoft.graph.authentication.TokenCredentialAuthProvider;
 import com.microsoft.graph.http.GraphServiceException;
 import com.microsoft.graph.models.Drive;
@@ -63,6 +64,7 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemRespo
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
+import java.util.Collections;
 
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
@@ -211,7 +213,7 @@ public class GraphService {
             Map<String, Object> body = new HashMap<>();
             body.put("ContAInUUID", uuid);
             body.put("Title", "Test Updated Document Title Ruben from JaVa");
-            body.put("ObjectClassificationText", "Changed from Java");
+            // body.put("ObjectClassificationText", "Changed from Java");
 
             String json = mapper.writeValueAsString(body);
 
@@ -313,8 +315,10 @@ public class GraphService {
             // a custom field should be used for description to prevent update failure due
             // to Graph API limitations on the description field.
             body.put("containIODescription", node.getDescription());
-            body.put("Marking", cleanMarking);
-            body.put("Classification", cleanClassification);
+            body.put("markingexternaltax", cleanMarking);
+            body.put("classificationexternaltax", cleanClassification);
+            body.put("markingexternaltaxsystemid", node.getMarkingID());
+            body.put("classificationexternaltaxsystemid", node.getclassificationID());
 
             // Graph API will not allow description field to be a[dated. Even wordso./ If
             // this field is added the entire update fails!
@@ -324,7 +328,7 @@ public class GraphService {
 
             // body.put("Description", node.getDescription());
             body.put("containIODescription", node.getDescription());
-            body.put("ObjectClassificationText", "Changed from Java after move");
+            // body.put("ObjectClassificationText", "Changed from Java after move");
 
             String json = mapper.writeValueAsString(body);
 
@@ -358,7 +362,9 @@ public class GraphService {
                         AlfrescoConstants.eActionPerformed.IOCOPIED,
                         "System",
                         node.getMarking(),
+                        node.getMarkingID(),
                         node.getclassification(),
+                        node.getclassificationID(),
                         node.getVersion());
                 // ==========================================================================================
                 return "Success";
@@ -480,7 +486,9 @@ public class GraphService {
                         AlfrescoConstants.eActionPerformed.IOBOUND,
                         "System",
                         SPItem.marking,
+                        SPItem.markingID,
                         SPItem.classification,
+                        SPItem.classificationID,
                         SPItem.version);
                 // ==========================================================================================
             }
@@ -696,7 +704,9 @@ public class GraphService {
                         AlfrescoConstants.eActionPerformed.IODELETED,
                         "System",
                         ROobject.marking,
+                        ROobject.markingID,
                         ROobject.classification,
+                        ROobject.classificationID,
                         ROobject.version);
             } else {
                 throw new RuntimeException(
@@ -748,7 +758,9 @@ public class GraphService {
                         AlfrescoConstants.eActionPerformed.IODELETED,
                         "System",
                         ROobject.marking,
+                        ROobject.markingID,
                         ROobject.classification,
+                        ROobject.classificationID,
                         ROobject.version);
             } else {
                 throw new RuntimeException(
@@ -760,27 +772,39 @@ public class GraphService {
         }
     }
 
-    public static String getGraphToken() throws MalformedURLException, ExecutionException, InterruptedException {
-        // Build confidential client application
+    public static String getGraphToken() throws Exception {
+        // 1. Re-build (or reuse) the App object
         ConfidentialClientApplication app = ConfidentialClientApplication.builder(
                 AlfrescoConstants.clientId,
                 ClientCredentialFactory.createFromSecret(AlfrescoConstants.clientSecret))
                 .authority("https://login.microsoftonline.com/" + AlfrescoConstants.tenantId)
                 .build();
-        // Scopes for client credentials flow
-        // Set<String> scopes =
-        // Collections.singleton("https://graph.microsoft.com/.default");
-        // Acquire token
-        IAuthenticationResult result = app.acquireToken(parameters).get();
-        accessToken = result.accessToken();
-        return accessToken;
+
+        // 2. Define your scopes
+        Set<String> scopes = Collections.singleton("https://graph.microsoft.com/.default");
+
+        // 3. TRY TO ACQUIRE SILENTLY FIRST
+        // This checks the internal cache and handles expiration automatically.
+        SilentParameters silentParameters = SilentParameters.builder(scopes).build();
+
+        try {
+            IAuthenticationResult result = app.acquireTokenSilently(silentParameters).get();
+            System.out.println("Token retrieved from cache.");
+            return result.accessToken();
+        } catch (Exception e) {
+            // 4. FALLBACK: If silent fails (expired or not in cache), get a fresh one
+            System.out.println("Cache expired or empty. Acquiring fresh token...");
+            ClientCredentialParameters modelParameters = ClientCredentialParameters.builder(scopes).build();
+            IAuthenticationResult result = app.acquireToken(modelParameters).get();
+            return result.accessToken();
+        }
     }
 
     private static void itemmustmigrate(SharePointItemResponse SPItem) {
         String cleanPlatformFrom = SPItem.platformfrom.name().replace("\"", "");
-        String cleanClassification = SPItem.classification.replace("\"", "");
-        String cleanMarking = SPItem.marking.replace("\"", "");
         String cleancontainerfrom = SPItem.containerfrom.replace("\"", "");
+        String cleanClassification = SPItem.classificationID.replace("\"", "").replace("-", "");
+        String cleanMarking = SPItem.markingID.replace("\"", "").replace("-", "");
 
         // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
@@ -849,7 +873,7 @@ public class GraphService {
                     .items(listItemId)
                     .buildRequest()
                     .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                    .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,OData__UIVersionString,Marking,classification),driveItem")
+                    .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,OData__UIVersionString,markingexternaltax, markingexternaltaxsystemid,classificationexternaltax, classificationexternaltaxsystemid),driveItem")
                     .get();
             if (li != null) {
                 FieldValueSet fields = li.fields;
@@ -894,19 +918,24 @@ public class GraphService {
                             .get(0);
 
                     // Now create only the objects that require actions. reove because for binding
+                    String classificationID = "";
+                    String markingID = "";
                     String classification = "";
                     String marking = "";
+
                     try {
                         String json = mapper.writeValueAsString(li);
                         SPItem = mapper.readValue(json, SharePointItemResponse.class);
                         Object title = adm.get("Title");
                         Object filename = driveItem.name;
                         Object description = adm.get("containIODescription");
-                        if (adm.get("Classification") != null) {
-                            classification = adm.get("Classification").toString();
+                        if (adm.get("classificationexternaltaxsystemid") != null) {
+                            classificationID = adm.get("classificationexternaltaxsystemid").toString();
+                            classification = adm.get("classificationexternaltax").toString();
                         }
-                        if (adm.get("Marking") != null) {
-                            marking = adm.get("Marking").toString();
+                        if (adm.get("markingexternaltaxsystemid") != null) {
+                            markingID = adm.get("markingexternaltaxsystemid").toString();
+                            marking = adm.get("markingexternaltax").toString();
                         }
                         String titleStr = title != null ? title.toString().replace("\"", "") : "";
                         String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
@@ -923,7 +952,9 @@ public class GraphService {
                         // To do get file content
                         SPItem.HasUUID = hasUUID;
                         SPItem.version = latestVersion.id;
+                        SPItem.markingID = markingID;
                         SPItem.marking = marking;
+                        SPItem.classificationID = classificationID;
                         SPItem.classification = classification;
                         SPItem.filecontent = getSPItemContentById(li.id, listId);
                     } catch (Exception e) {
@@ -964,9 +995,7 @@ public class GraphService {
         String action = "";
         Hashtable<String, String> migrationinfo = new Hashtable<>();
         try {
-            if (accessToken == null || accessToken.isEmpty()) {
-                accessToken = getGraphToken();
-            }
+            accessToken = getGraphToken();
             String[] parts = ItemWebUrl.split("/");
             tenantDomain = parts[2];
             SiteName = parts[4];
@@ -978,7 +1007,7 @@ public class GraphService {
             String[] siteParts = siteId.split(",");
             SiteID = siteParts[1];
             // Single tennant for now
-            GraphServiceClient<?> graphClient = getGraphClient(tenantDomain);
+            // GraphServiceClient<?> graphClient = getGraphClient(tenantDomain);
             // SharePointItemResponse SPItem = getListItemsById(this.ListId, ListItemID,
             // graphClient );
             SharePointItemResponse SPItem = getListItemsById(ListId, ListItemID);
@@ -1007,7 +1036,9 @@ public class GraphService {
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
                             "System",
                             SPItem.marking,
+                            SPItem.markingID,
                             SPItem.classification,
+                            SPItem.classificationID,
                             SPItem.version);
                     return migrationinfo;
                 }

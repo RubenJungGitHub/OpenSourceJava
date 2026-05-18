@@ -3,7 +3,7 @@ net:
   port: 3307
   ssl:
     mode: "requireSSL"
-    PEMKeyFile: "C:/ContainOpenSource/OpenSourceJava/ils/receiver/src/main/resources/mongosqld.pem"
+    PEMKeyFile: "D:/contain//OpenSourceJava/ils/receiver/src/main/resources/mongosqld.pem"
 
 security:
   enabled: true # Change this from false to true

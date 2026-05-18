@@ -37,10 +37,6 @@ activemq:
     sharepoint-queue: sharepoint.delta.queue
     migration-queue: contain.ils.queue.migration
 
-# ---------------- Custom App ----------------
-app:
-  keystore:
-    path: C:\ContainOpenSource\Java\OpenSourceJava\ils\src\main\resources\Containselfsigned_cert.p12
 
 alfresco:
   username: admin
@@ -57,3 +53,5 @@ ils:
   ruleenginemoveendpoint: http://localhost:55000/rules
   ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
   ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+  logiodeletedfromplatformendpoint: http://localhost:55000/api/LogIODeletedFromPlatform
+  keystorepath: "C:\\ContainOpenSource\\Java\\OpenSourceJava\\ils\\src\\main\\resources\\Containselfsigned_cert.p12"

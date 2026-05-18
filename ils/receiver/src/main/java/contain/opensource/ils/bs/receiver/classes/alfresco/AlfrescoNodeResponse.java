@@ -69,7 +69,9 @@ public class AlfrescoNodeResponse extends IOObjectProperties {
         public Properties properties;
         public String version;
         public String marking;
+        public String markingID;
         public String classification;
+        public String classificationID;
     }
 
     public static class CreatedByUser {
@@ -128,7 +130,9 @@ public class AlfrescoNodeResponse extends IOObjectProperties {
                 createdAtInstant,
                 modifiedAtInstant,
                 this.marking,
+                this.markingID,
                 this.classification,
+                this.classificationID,
                 this.version);
         return secdoc;
     }

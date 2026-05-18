@@ -19,6 +19,7 @@ public class ILSRestProperties {
     private String processspitemsendpoint;
     private String processalfresconodepoint;
     private String logiodeletedfromplatformendpoint;
+    private String keystorepath;
 
     // ----------------- Getters & Setters -----------------
     
@@ -121,6 +122,15 @@ public class ILSRestProperties {
         this.processalfresconodepoint = processalfresconodepoint;
     }
 
+        
+    public String getkeystorepath() {
+        return keystorepath;
+    }
+
+    public void setkeystorepath(String keystorepath) {
+        this.keystorepath = keystorepath    ;
+    }
+
 
     
     @PostConstruct
@@ -137,5 +147,6 @@ public class ILSRestProperties {
         System.out.println("ruleendpoint = " + ruleenginemoveendpoint);
         System.out.println("processspitemsendpoint = " + processspitemsendpoint);
         System.out.println("processalfresconodepoint = " + processalfresconodepoint);
+        System.out.println("keystorepath = " + keystorepath);
     }
 }
