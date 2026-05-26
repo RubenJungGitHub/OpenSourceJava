@@ -5,7 +5,7 @@ services:
     image: quay.io/kiegroup/kie-server-showcase:7.73.0.Final
     container_name: kie-server
     ports:
-      - "8180:8080"
+      - "57000:8080"
     volumes:
       # Use an absolute path on your host machine outside the project folder
       - C:\rhpam-data\kie-server-data:/opt/jboss/wildfly/standalone/data

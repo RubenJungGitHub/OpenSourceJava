@@ -45,8 +45,8 @@ ils:
   bindendpoint: http://localhost:55000/api/Bind
   relocateendpoint: http://localhost:55000/api/MigrateIO
   ruleenginemoveendpoint: http://localhost:55000/api/rules
-  ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
-  ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+  ruleenginecontainerendpoint: http://localhost:57000/kie-server/services/rest/server
+  ruleengineendpoint: http://localhost:57000/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
   ruleengineprojectName: contAlnMigrationRuleset
   deltalinkfile: "C:\\Temp\\storeddeltalinks.csv"
   keystorepath: "D:\\contAIn\\OpenSourceJava\\ils\\receiver\\src\\main\\resources\\Containselfsigned_cert.p12"
