@@ -380,58 +380,71 @@ public class GraphService {
     }
 
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
-        try {
-            if (accessToken == null || accessToken.isEmpty()) {
-                accessToken = getGraphToken();
+        int maxRetries = 2;
+        int attempt = 0;
+
+        while (attempt < maxRetries) {
+            try {
+                // 1. Get/Refresh Token
+                if (accessToken == null || accessToken.isEmpty()) {
+                    accessToken = getGraphToken();
+                }
+
+                // 2. Prepare Upload
+                byte[] fileBytes = IOobject.getContent();
+                String fileName = URLEncoder.encode(IOobject.getFileName(), StandardCharsets.UTF_8).replace("+", "%20");
+                String driveId = getDriveID(IOobject);
+                String endPoint = String.format("https://graph.microsoft.com/v1.0/drives/%s/root:/%s:/content", driveId,
+                        fileName);
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(endPoint))
+                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Content-Type", "application/octet-stream")
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(fileBytes))
+                        .build();
+
+                HttpResponse<String> response = HttpClient.newHttpClient()
+                        .send(request, HttpResponse.BodyHandlers.ofString());
+
+                // 3. Handle Token Expiration
+                if (response.statusCode() == 401) {
+                    System.err.println("Attempt " + (attempt + 1) + ": Token expired. Refreshing...");
+                    this.accessToken = null;
+                    attempt++;
+                    continue;
+                }
+
+                // 4. Process Success
+                if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                    JsonNode rootNode = mapper.readTree(response.body());
+                    String driveItemId = rootNode.path("id").asText();
+                    System.out.println("Uploaded file DriveItemID: " + driveItemId);
+
+                    // --- YOUR SPECIFIC LOGIC ---
+                    // Step 1: Get new listitemid
+                    String listItemId = getListItemId(driveId, driveItemId);
+
+                    // UniqueIdentifier
+                    String UID = this.SiteID + this.ListId + listItemId;
+
+                    // Update SharePoint Item metadata
+                    String retval = updateSharepointItemGraphAPI(IOobject, listItemId);
+
+                    System.out.println("Successfully processed item: " + UID);
+                    return; // Everything completed successfully
+
+                } else {
+                    System.err.println("Upload failed (" + response.statusCode() + "): " + response.body());
+                    break; // Stop retrying if not an auth issue
+                }
+
+            } catch (Exception e) {
+                System.err.println("Exception in upload/update flow: " + e.getMessage());
+                attempt++;
+                if (attempt >= maxRetries)
+                    e.printStackTrace();
             }
-            byte[] fileBytes = IOobject.getContent();
-            String rawFileName = IOobject.getFileName();
-            String fileName = URLEncoder.encode(rawFileName, StandardCharsets.UTF_8).replace("+", "%20"); // IMPORTANT
-            String driveItemId = "";
-            // to do check null
-
-            // First set the correct destination
-
-            String driveId = getDriveID(IOobject);
-            String endPoint = String.format(
-                    "https://graph.microsoft.com/v1.0/drives/%s/root:/%s:/content",
-                    driveId, fileName);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(endPoint))
-                    .header("Authorization", "Bearer " + accessToken)
-                    .header("Content-Type", "application/octet-stream")
-                    .PUT(HttpRequest.BodyPublishers.ofByteArray(fileBytes))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                // ObjectMapper mapper = new ObjectMapper();
-                JsonNode rootNode = mapper.readTree(response.body());
-                driveItemId = rootNode.path("id").asText(); // DriveItem ID
-                System.out.println("Uploaded file DiveItemID: " + driveItemId);
-            } else {
-                System.err.println("Failed to upload file: " + response.statusCode());
-                System.err.println(response.body());
-            }
-
-            // Step 1 : Get new listitemid
-            // Prevent webhooklistener to update UUID and other fields prior to completion.
-            // In future the webhooklistener should place messages on the queue and this
-            // should become obsolete.ILSApplication
-            String listItemId = getListItemId(driveId, driveItemId);
-            // UniqueIdentifier
-            String UID = this.SiteID + this.ListId + listItemId;
-            // Globals.AlfrescoItemInProcess.add(UID);
-            String retval = updateSharepointItemGraphAPI(IOobject, listItemId);
-            // Globals.AlfrescoItemInProcess.remove(UID);
-            // Function should return something in the future for transaction purposes
-
-        } catch (Exception e) {
-            System.err.println("Failed to move Alfresco node: " + e);
-            e.printStackTrace();
         }
     }
 

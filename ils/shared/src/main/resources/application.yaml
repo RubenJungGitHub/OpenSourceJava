@@ -46,12 +46,12 @@ alfresco:
 ils:
   baseurl: http://localhost:5000
   uudiutilendpoint: http://localhost:5002/api/GetUUID
-  bindendpoint: http://localhost:55000/api/Bind
-  relocateendpoint: http://localhost:55000/api/RelocateIO
+  bindendpoint: http://localhost:55500/api/Bind
+  relocateendpoint: http://localhost:55500/api/RelocateIO
   deltalinkfile: "C:\\Temp\\storeddeltalinks.csv"
   ruleengineprojectname: contAlnMigrationRuleset
-  ruleenginemoveendpoint: http://localhost:55000/rules
+  ruleenginemoveendpoint: http://localhost:55500/rules
   ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
   ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
-  logiodeletedfromplatformendpoint: http://localhost:55000/api/LogIODeletedFromPlatform
+  logiodeletedfromplatformendpoint: http://localhost:55500/api/LogIODeletedFromPlatform
   keystorepath: "C:\\ContainOpenSource\\Java\\OpenSourceJava\\ils\\src\\main\\resources\\Containselfsigned_cert.p12"

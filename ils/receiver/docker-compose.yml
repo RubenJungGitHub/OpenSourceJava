@@ -14,7 +14,7 @@ services:
       APP_KEYSTORE_PATH: /app/config/Containselfsigned_cert.p12
       SPRING_REDIS_HOST: Redis-service
     ports:
-      - "55000:8080"
+      - "55500:8080"
     networks:
       - ils_ils_default
       - developer_default
