@@ -83,6 +83,7 @@ public class GraphService {
     static String SiteName = "SP-EventReceivers-Test";
     static String ListId = "9358df3d-0b30-4f09-a063-d1d8dcaeccd3";
     static String ListName = "Shared Documents";
+    static String SubFolderId = "";
 
     private String newDeltaLink = "";
     private String DeltaLinkFile = null;
@@ -959,7 +960,8 @@ public class GraphService {
                         SPItem.setpath(driveItem.webUrl);
                         SPItem.UUID = uuidValue;
                         SPItem.platformfrom = AlfrescoConstants.ContainPlatforms.SPO;
-                        SPItem.containerfrom = tenantDomain + "/" + SiteName + "/" + ListId;
+                        SPItem.containerfrom = tenantDomain + "/" + SiteName + "/" + ListId + "/" + SubFolderId;
+                        //  SPItem.containerfrom = li.driveItem.webUrl.replace("https://", "").replace("/" + li.driveItem.name, "");
                         // String description = (String) fields.get("Description");
                         // To do get file content
                         SPItem.HasUUID = hasUUID;
@@ -1012,7 +1014,10 @@ public class GraphService {
             tenantDomain = parts[2];
             SiteName = parts[4];
             ListName = parts[5];
-
+            for (int i = 6; i < parts.length - 1; i++) {
+                SubFolderId += parts[i] + "/";
+            }
+            SubFolderId = SubFolderId.substring(0, SubFolderId.length() - 1);
             parts = resourceValue.split("/");
             ListId = parts[7];
             siteId = parts[5];
