@@ -960,8 +960,12 @@ public class GraphService {
                         SPItem.setpath(driveItem.webUrl);
                         SPItem.UUID = uuidValue;
                         SPItem.platformfrom = AlfrescoConstants.ContainPlatforms.SPO;
-                        SPItem.containerfrom = tenantDomain + "/" + SiteName + "/" + ListId + "/" + SubFolderId;
-                        //  SPItem.containerfrom = li.driveItem.webUrl.replace("https://", "").replace("/" + li.driveItem.name, "");
+                        // Gebruik een ternary operator voor de SubFolderId
+                        String subFolderPart = SubFolderId.isEmpty() ? "" : "/" + SubFolderId;
+
+                        SPItem.containerfrom = tenantDomain + "/" + SiteName + "/" + ListId + subFolderPart;
+                        // SPItem.containerfrom = li.driveItem.webUrl.replace("https://",
+                        // "").replace("/" + li.driveItem.name, "");
                         // String description = (String) fields.get("Description");
                         // To do get file content
                         SPItem.HasUUID = hasUUID;
@@ -1014,10 +1018,13 @@ public class GraphService {
             tenantDomain = parts[2];
             SiteName = parts[4];
             ListName = parts[5];
-            for (int i = 6; i < parts.length - 1; i++) {
-                SubFolderId += parts[i] + "/";
+            if (parts.length > 6) {
+                java.util.StringJoiner joiner = new java.util.StringJoiner("/");
+                for (int i = 6; i < parts.length - 1; i++) {
+                    joiner.add(parts[i]);
+                }
+                SubFolderId = joiner.toString();
             }
-            SubFolderId = SubFolderId.substring(0, SubFolderId.length() - 1);
             parts = resourceValue.split("/");
             ListId = parts[7];
             siteId = parts[5];
