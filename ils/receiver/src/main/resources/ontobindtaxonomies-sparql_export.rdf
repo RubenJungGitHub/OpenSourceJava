@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	xmlns:rdf4j="http://rdf4j.org/schema/rdf4j#"
+	xmlns:sesame="http://www.openrdf.org/schema/sesame#"
+	xmlns:owl="http://www.w3.org/2002/07/owl#"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+	xmlns:fn="http://www.w3.org/2005/xpath-functions#">
+
+<rdf:Description rdf:about="http://ontobind.taxonomies">
+	<rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#conceptScheme_79f3a932">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_af889bbb"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_af889bbb">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">ontobindtaxonomies</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_682ca6ac">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_c07881bd"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_nl_835793bf"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<topConceptOf xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_c07881bd">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">classification</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_ab456850">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_e9faa8d5"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_682ca6ac"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_e9faa8d5">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Confidential</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_a3914e33">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_77a0cec9"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_nl_c4416dcd"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_682ca6ac"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_77a0cec9">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Internal</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_b16aeb9b">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_dbe5f373"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_nl_9768c21c"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_682ca6ac"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_dbe5f373">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Unclassified</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_899a1eb9">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_68c72dfa"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_nl_833a583b"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_682ca6ac"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_68c72dfa">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Secret</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_c222b55c">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_62aa0ee6"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_nl_85109423"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_682ca6ac"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_62aa0ee6">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Public</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_35f71050">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_594042e4"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<topConceptOf xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_594042e4">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Marking</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_d49621b5">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_136717d0"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_nl_20ff3dea"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_35f71050"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_136717d0">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Commercial</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_a3a9e2a5">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_01a7b666"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_nl_39c3f0ad"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_35f71050"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_01a7b666">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">HR Confidential</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_c688d18d">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_e03538e7"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_35f71050"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_e03538e7">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Internal discussion</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_6eacb6e2">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_f6779a6b"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_35f71050"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_f6779a6b">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Medical Conidential</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_0fc3dde5">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_dc2d8ea3"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_35f71050"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_dc2d8ea3">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Yes only</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_11a3e30d">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_3e4b14fb"/>
+	<owl:deprecated rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</owl:deprecated>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_35f71050"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_3e4b14fb">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Wim Mulders</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#c_1d688b28">
+	<rdf:type rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+	<prefLabel xmlns="http://www.w3.org/2008/05/skos-xl#" rdf:resource="http://ontobind.taxonomies#xl_en_919144d9"/>
+	<inScheme xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#conceptScheme_79f3a932"/>
+	<broader xmlns="http://www.w3.org/2004/02/skos/core#" rdf:resource="http://ontobind.taxonomies#c_35f71050"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_en_919144d9">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="en">Releasable to: organization</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_nl_835793bf">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="nl">classificatie</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_nl_20ff3dea">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="nl">Commercieel</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_nl_39c3f0ad">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="nl">HR Confidentieel</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_nl_c4416dcd">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="nl">Intern</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_nl_85109423">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="nl">Publiek</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_nl_833a583b">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="nl">Geheim</literalForm>
+</rdf:Description>
+
+<rdf:Description rdf:about="http://ontobind.taxonomies#xl_nl_9768c21c">
+	<rdf:type rdf:resource="http://www.w3.org/2008/05/skos-xl#Label"/>
+	<literalForm xmlns="http://www.w3.org/2008/05/skos-xl#" xml:lang="nl">Ongeclassificeerd</literalForm>
+</rdf:Description>
+
+</rdf:RDF>

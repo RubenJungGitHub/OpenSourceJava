@@ -929,7 +929,6 @@ public class GraphService {
                             .get()
                             .getCurrentPage()
                             .get(0);
-
                     // Now create only the objects that require actions. reove because for binding
                     String classificationID = "";
                     String markingID = "";
@@ -943,12 +942,12 @@ public class GraphService {
                         Object filename = driveItem.name;
                         Object description = adm.get("containIODescription");
                         if (adm.get("classificationexternaltaxsystemid") != null) {
-                            classificationID = adm.get("classificationexternaltaxsystemid").toString();
-                            classification = adm.get("classificationexternaltax").toString();
+                            classificationID = adm.get("classificationexternaltaxsystemid").getAsString();
+                            classification = adm.get("classificationexternaltax").getAsString();
                         }
                         if (adm.get("markingexternaltaxsystemid") != null) {
-                            markingID = adm.get("markingexternaltaxsystemid").toString();
-                            marking = adm.get("markingexternaltax").toString();
+                            markingID = adm.get("markingexternaltaxsystemid").getAsString();
+                            marking = adm.get("markingexternaltax").getAsString();
                         }
                         String titleStr = title != null ? title.toString().replace("\"", "") : "";
                         String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
