@@ -65,7 +65,6 @@ public class AlfrescoNodeController {
   private String username;
   private String password;
   private String endpoint;
- 
 
   public AlfrescoNodeResponse alfresconNodeResponse;
   private ILSRestProperties ilsproperties;
@@ -139,7 +138,7 @@ public class AlfrescoNodeController {
         //
         for (JsonNode entry : entriesNode) {
           JsonNode siteNode = entry.path("entry");
-          if (siteNode.path("id").asText().equals(IOobject.getcontainerto())) {
+          if (siteNode.path("id").asText().equals(IOobject.getcontainerto().split("[/\\\\]")[0])) {
             String guid = siteNode.path("guid").asText();
             IOobject.setsiteid(guid);
             return guid;
@@ -188,7 +187,7 @@ public class AlfrescoNodeController {
       // sites/{siteId}/containers expects the site short name, e.g., "ontobind"
 
       String endpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/sites/%s/containers",
-          this.endpoint, IOobject.getcontainerto());
+          this.endpoint, IOobject.getcontainerto().split("[/\\\\]")[0]);
 
       String auth = Base64.getEncoder().encodeToString((this.username + ":" +
           this.password).getBytes());
@@ -207,10 +206,66 @@ public class AlfrescoNodeController {
           String responseBody = EntityUtils.toString(response.getEntity()); // ✅ get
           JsonNode root = mapper.readTree(responseBody);
           for (JsonNode container : root.path("list").path("entries")) {
-            //documentlibrary should be configurable per site, but to be sure we check the folderId field
-            if ("documentLibrary".equals(container.path("entry").path("folderId").asText())) {
+            // documentlibrary should be configurable per site, but to be sure we check the
+            // folderId field
+            if (IOobject.getcontainerto().split("[/\\\\]")[1]
+                .equalsIgnoreCase(container.path("entry").path("folderId").asText())) {
               IOobject.setlibid(container.path("entry").path("id").asText());
               return container.path("entry").path("id").asText();
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("Exception uploading item to alfresco : " + e);
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  private String getDocumentLibraryChild(CloseableHttpClient client, RelocateInformationObject IOobject,
+      String doclibNodeId)
+      throws Exception {
+    try {
+      // ChatGPT
+      // Thanks — I see your full method. From what you’ve written, a 404 is almost
+      // certainly because siteNodeId is not the correct Alfresco site ID (short
+      // name). In Alfresco REST API:
+      // sites/{siteId}/containers expects the site short name, e.g., "ontobind"
+
+      String endpoint = String.format("%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
+          this.endpoint, doclibNodeId);
+
+      String auth = Base64.getEncoder().encodeToString((this.username + ":" +
+          this.password).getBytes());
+
+      HttpGet request = new HttpGet(endpoint);
+      request.setHeader("Authorization", "Basic " + auth);
+      request.setHeader("Accept", "application/json");
+
+      // request.setHeader("Authorization", "Basic " + auth);
+      // Send request
+      try (CloseableHttpResponse response = client.execute(request)) {
+        int statusCode = response.getCode();
+
+        if (statusCode >= 200 && statusCode < 300) {
+          ObjectMapper mapper = new ObjectMapper();
+          String responseBody = EntityUtils.toString(response.getEntity()); // ✅ get
+          JsonNode root = mapper.readTree(responseBody);
+          for (JsonNode container : root.path("list").path("entries")) {
+            JsonNode entry = container.path("entry");
+
+            // 1. Zorg dat we alleen folders checken
+            if (entry.path("isFolder").asBoolean()) {
+
+              // 2. Haal de mapnaam uit je IOobject (bijv. "Secret")
+              // Gebruik index 6 (of de juiste index uit je pad-split)
+              String targetFolderName = IOobject.getcontainerto().split("[/\\\\]")[2];
+
+              // 3. Vergelijk de mapnaam uit Alfresco met je doelnaam
+              if (targetFolderName.equalsIgnoreCase(entry.path("name").asText())) {
+                return entry.path("id").asText(); // Retourneert de GUID
+              }
             }
           }
         }
@@ -437,7 +492,7 @@ public class AlfrescoNodeController {
         propertiesNode.put("contain:EXTTAXCLASSIFICATIONVAL", rawlabel);
       }
 
-        if (IOobject.getMarkingID() != null) {
+      if (IOobject.getMarkingID() != null) {
         String rawMarking = IOobject.getMarkingID();
         // Remove leading/trailing quotes if they exist
         rawMarking = rawMarking.replaceAll("^\"|\"$", "");
@@ -535,11 +590,18 @@ public class AlfrescoNodeController {
   public String uploadSPItemToAlfresco(RelocateInformationObject IOobject) throws Exception {
     try {
       // First get SiteNode
+
       try (CloseableHttpClient client = HttpClients.createDefault()) {
+
         String siteNode = GetAlfrescoSiteNode(client, IOobject);
         System.out.println("Sitenode  " + siteNode);
         String libNode = getDocumentLibraryNodeId(client, IOobject);
         System.out.println("Libnode " + libNode);
+
+        if (IOobject.getcontainerto().split("[/\\\\]").length > 2) {
+          libNode = getDocumentLibraryChild(client, IOobject, libNode);
+          System.out.println("Foldernode " + libNode);
+        }
 
         String auth = Base64.getEncoder()
             .encodeToString((this.username + ":" + this.password).getBytes());
@@ -636,7 +698,7 @@ public class AlfrescoNodeController {
         }
       }
     } catch (Exception e) {
-     //TO DO LOGGING BECAUSE ITEM PROBABLY ALREADY EXISTS IN DESTINATION
+      // TO DO LOGGING BECAUSE ITEM PROBABLY ALREADY EXISTS IN DESTINATION
       System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();
       throw e;
@@ -876,11 +938,10 @@ public class AlfrescoNodeController {
                 .path("contain:EXTTAXMARKINGVAL")
                 .asText();
 
-            alfresconNodeResponse.markingID  = rootNode.path("entry")
+            alfresconNodeResponse.markingID = rootNode.path("entry")
                 .path("properties")
                 .path("contain:EXTTAXMARKINGID")
                 .asText();
-
 
             alfresconNodeResponse.classification = rootNode.path("entry")
                 .path("properties")
@@ -892,7 +953,6 @@ public class AlfrescoNodeController {
                 .path("contain:EXTTAXCLASSIFICATIONID")
                 .asText();
 
-                
             alfresconNodeResponse.setcontainerfrom(rootNode.path("entry")
                 .path("path")
                 .path("name")
@@ -902,7 +962,7 @@ public class AlfrescoNodeController {
                 .path("content")
                 .path("mimeType")
                 .asText();
-                
+
             // Check if UUID present
             // Get node content
             Object ioUUIDValue = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
