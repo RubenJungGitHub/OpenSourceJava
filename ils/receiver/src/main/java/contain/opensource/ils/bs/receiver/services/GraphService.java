@@ -383,7 +383,7 @@ public class GraphService {
     public void uploadAlfrescoNodeToSP(RelocateInformationObject IOobject) {
         int maxRetries = 2;
         int attempt = 0;
-
+        StringBuilder subPath = new StringBuilder();
         while (attempt < maxRetries) {
             try {
                 // 1. Get/Refresh Token
@@ -392,11 +392,29 @@ public class GraphService {
                 }
 
                 // 2. Prepare Upload
+
+                String path = IOobject.getcontainerto().trim();
+                String[] parts = path.split("/");
+
+                if (parts.length > 3) {
+
+
+                    // We starten bij index 3 ("Secret")
+                    for (int i = 3; i < parts.length; i++) {
+                        subPath.append(parts[i]);
+
+                        // Voeg een slash toe tussen de mappen, maar niet aan het einde
+                        if (i < parts.length - 1) {
+                            subPath.append("/");
+                        }
+                    }
+                }
+
                 byte[] fileBytes = IOobject.getContent();
                 String fileName = URLEncoder.encode(IOobject.getFileName(), StandardCharsets.UTF_8).replace("+", "%20");
                 String driveId = getDriveID(IOobject);
-                String endPoint = String.format("https://graph.microsoft.com/v1.0/drives/%s/root:/%s:/content", driveId,
-                        fileName);
+                String endPoint = String.format("https://graph.microsoft.com/v1.0/drives/%s/root:/%s/%s:/content", driveId,
+                        subPath.toString(),fileName);
 
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(endPoint))
@@ -541,7 +559,8 @@ public class GraphService {
             if (containerto.endsWith("/")) {
                 containerto = containerto.substring(0, containerto.length() - 1);
             }
-            this.ListId = containerto.substring(containerto.lastIndexOf("/") + 1);
+            // this.ListId = containerto.substring(containerto.lastIndexOf("/") + 1);
+            this.ListId = containerto.split("/")[2];
 
             for (JsonNode driveNode : drivesArray) {
                 String drivelistid = driveNode.path("sharePointIds").path("listId").asText();

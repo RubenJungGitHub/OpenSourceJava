@@ -161,7 +161,7 @@
           <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
-          <dmn:text>Working</dmn:text>
+          <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
       <dmn:rule id="_F537089F-6E42-494B-B76B-3F18FA780DCC">
@@ -184,7 +184,7 @@
           <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
-          <dmn:text>Validate</dmn:text>
+          <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
       <dmn:rule id="_2D0B5213-6486-44ED-915C-EA6D9477950B">
@@ -207,7 +207,7 @@
           <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
-          <dmn:text>Working</dmn:text>
+          <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
       <dmn:rule id="_FF21C03F-9DB6-45BE-B8B6-737758D742B8">
@@ -230,7 +230,7 @@
           <dmn:text>"SPO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
-          <dmn:text>Working</dmn:text>
+          <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
       <dmn:rule id="_8FA9CA32-17E2-4036-8D86-32D6BE9D38B2">
@@ -253,7 +253,7 @@
           <dmn:text>"SPO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
-          <dmn:text>Working</dmn:text>
+          <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
       <dmn:rule id="_084B33FD-ADDC-4085-B213-A207E1F99CD0">
@@ -276,7 +276,7 @@
           <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
-          <dmn:text>Working</dmn:text>
+          <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
       <dmn:rule id="_0B81BF26-ED48-4CDB-BD3C-64E1F1928336">
@@ -300,7 +300,7 @@
 </dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
-          <dmn:text>Working</dmn:text>
+          <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
       <dmn:rule id="_5F5DA628-CC95-4CBB-8F3F-763961368A95">
@@ -323,7 +323,7 @@
           <dmn:text>"ALFRESCO"</dmn:text>
         </dmn:outputEntry>
         <dmn:annotationEntry>
-          <dmn:text>Working</dmn:text>
+          <dmn:text></dmn:text>
         </dmn:annotationEntry>
       </dmn:rule>
     </dmn:decisionTable>
