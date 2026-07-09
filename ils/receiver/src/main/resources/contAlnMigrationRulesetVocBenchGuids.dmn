@@ -1,2 +1,371 @@
-<?xml version="1.0" ?><dmn:definitions xmlns:dmn="http://www.omg.org/spec/DMN/20180521/MODEL/" xmlns="https://kiegroup.org/dmn/_97C0832F-7022-4837-9316-21CE90B8B1CA" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:kie="http://www.drools.org/kie/dmn/1.2" xmlns:feel="http://www.omg.org/spec/DMN/20180521/FEEL/" xmlns:dmndi="http://www.omg.org/spec/DMN/20180521/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="_8678F9B7-803E-4193-8C81-25E739309AA2" name="contAlnMigrationRuleset" expressionLanguage="http://www.omg.org/spec/DMN/20180521/FEEL/" typeLanguage="http://www.omg.org/spec/DMN/20180521/FEEL/" namespace="https://kiegroup.org/dmn/_97C0832F-7022-4837-9316-21CE90B8B1CA"><dmn:extensionElements/><dmn:itemDefinition id="_5AC34415-FDCF-4D3B-AD36-294490FF05A0" name="migrationinformationobject" isCollection="false"><dmn:itemComponent id="_93E6F53F-8B55-41E6-9545-348EC559C5E1" name="classification" isCollection="false"><dmn:typeRef>string</dmn:typeRef></dmn:itemComponent><dmn:itemComponent id="_6E3EF46B-37FA-49FD-BAA2-328B96062EC0" name="marking" isCollection="false"><dmn:typeRef>string</dmn:typeRef><dmn:allowedValues kie:constraintType="enumeration" id="_6DBD14EA-4F3B-4983-9548-DD5BB3AADD95"><dmn:text>null</dmn:text></dmn:allowedValues></dmn:itemComponent><dmn:itemComponent id="_E52FCE77-6CC4-458C-988A-F8987E3F850A" name="platformfrom" isCollection="false"><dmn:typeRef>string</dmn:typeRef><dmn:allowedValues kie:constraintType="enumeration" id="_16196D62-FDAD-4301-B5B1-3844CC1290B7"><dmn:text>"SPO", "ALFRESCO"</dmn:text></dmn:allowedValues></dmn:itemComponent><dmn:itemComponent id="_3725CCDB-0EF4-433B-9273-B7CBB40D94CF" name="containerfrom" isCollection="false"><dmn:typeRef>string</dmn:typeRef></dmn:itemComponent></dmn:itemDefinition><dmn:itemDefinition id="_138E4227-1E8C-4FC7-8FC8-762BCDC05371" name="returnvalue" isCollection="false"><dmn:itemComponent id="_21593165-892E-4D84-B093-54C3CAECA05C" name="Insert a name" isCollection="false"><dmn:typeRef>Any</dmn:typeRef></dmn:itemComponent><dmn:itemComponent id="_9D8B82A8-3F0C-48E5-82DE-56F518C42F0B" name="Insert a name - 2" isCollection="false"><dmn:typeRef>Any</dmn:typeRef></dmn:itemComponent><dmn:itemComponent id="_E668B9D6-9736-49B4-BF57-70C8F007ADB4" name="containplatformto" isCollection="false"><dmn:typeRef>string</dmn:typeRef><dmn:allowedValues kie:constraintType="enumeration" id="_4245EE73-6CD9-440F-8FF6-CDE3BFF23E1C"><dmn:text>"SPO", "ALFRESCO"</dmn:text></dmn:allowedValues></dmn:itemComponent><dmn:itemComponent id="_9F05471A-5F54-419F-9F70-B66451EADB2C" name="containtocontainer" isCollection="false"><dmn:typeRef>string</dmn:typeRef></dmn:itemComponent></dmn:itemDefinition><dmn:inputData id="_8C16C1D4-4F2E-4FCD-A3A3-39F1FBC6772A" name="source"><dmn:extensionElements/><dmn:variable id="_05A34A04-C887-4340-ADCA-B1B92C44E890" name="source" typeRef="migrationinformationobject"/></dmn:inputData><dmn:decision id="_540DE25E-E8BF-4A11-8C96-4F86611C117C" name="destination"><dmn:extensionElements/><dmn:variable id="_C74F1536-B7E8-4261-A230-24991B6DA1A4" name="destination" typeRef="returnvalue"/><dmn:informationRequirement id="_4AF5D882-47F8-4CCB-9BC7-FA33E9A3208E"><dmn:requiredInput href="#_8C16C1D4-4F2E-4FCD-A3A3-39F1FBC6772A"/></dmn:informationRequirement><dmn:decisionTable id="_9D6C7701-688E-4415-A099-CF8ABC911831" hitPolicy="UNIQUE" preferredOrientation="Rule-as-Row"><dmn:input id="_018A6BDC-3CA5-4715-9B98-D2DF0AC9DD57"><dmn:inputExpression id="_967E26B4-3B6D-44F0-B472-D615AE5EBFCB" typeRef="string"><dmn:text>source.classification</dmn:text></dmn:inputExpression></dmn:input><dmn:input id="_D63557BF-39A3-49AC-9B9B-85C7BEA45940"><dmn:inputExpression id="_E2894B20-901E-4492-A154-0359F1E00C9F" typeRef="string"><dmn:text>source.marking</dmn:text></dmn:inputExpression></dmn:input><dmn:input id="_3C9246F6-88CB-4CCE-814D-B28B10F14901"><dmn:inputExpression id="_7C6A5A29-1592-43DF-8C8B-B27D71ABF9CA" typeRef="string"><dmn:text>source.platformfrom</dmn:text></dmn:inputExpression></dmn:input><dmn:input id="_F8058DFB-4295-4565-90B0-393FAB634FF4"><dmn:inputExpression id="_E4F28649-F0D1-442C-BE47-2EAD3E95A7CD" typeRef="string"><dmn:text>source.containerfrom</dmn:text></dmn:inputExpression></dmn:input><dmn:output id="_97A7B5C9-16E1-494D-B8B0-D51BE36200A2" name="containerto" typeRef="returnvalue"/><dmn:output id="_00CD61B5-15E8-4A8D-B0A0-36E93B2DD2FE" name="platformto" typeRef="returnvalue"/><dmn:annotation name="annotation-1"/><dmn:rule id="_5D241CD9-8CBA-4DDB-A3F1-0409A6DEC201"><dmn:inputEntry id="_CA8488C7-7895-49A9-980A-2CDD27080205"><dmn:text>"c_c222b55c"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_AFCA9425-8B66-4F46-9653-51FCDE435B12"><dmn:text>"c_0fc3dde5"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_8D93FA63-F1A8-4A32-9932-D319F23793E1"><dmn:text>"ALFRESCO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_F80E0BF5-A081-4EF4-962B-B0D2C29382B9"><dmn:text>starts with(?, "/Company Home/Sites/ontobind/documentLibrary")</dmn:text></dmn:inputEntry><dmn:outputEntry id="_AC70FE83-2C92-4C0B-AE27-25598D85D621"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_DEA14E4B-43C5-47BC-83C6-3EC557A4E131"><dmn:text>"SPO"</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule><dmn:rule id="_D68B0A18-7C6C-4221-B599-3714B8EDE471"><dmn:inputEntry id="_E16CAB1A-8E06-42EF-87D1-B29B33CD347D"><dmn:text>"c_b16aeb9b"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_15938CC2-8F8E-4B74-8B0F-E5E55EE5DF4A"><dmn:text>"c_a3a9e2a5"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_0F83F7B0-2F71-4847-997E-35D405B5F673"><dmn:text>"ALFRESCO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_4B65F415-5148-480D-8752-C0D7C3F54917"><dmn:text>starts with(?, "/Company Home/Sites/ontobindarchive/documentLibrary")</dmn:text></dmn:inputEntry><dmn:outputEntry id="_E60A44F5-AD77-4C11-94DF-E8DF1E72AA16"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_EADD5D22-2890-4BD5-9137-0A2CA867A6FA"><dmn:text>"SPO"</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule><dmn:rule id="_2D0B5213-6486-44ED-915C-EA6D9477950B"><dmn:inputEntry id="_8D68160C-6DAC-4B01-8774-3D469B396539"><dmn:text>"c_a3914e33"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_55A42F34-D41C-49C7-9852-3A75BCFDCE60"><dmn:text>"c_1d688b28"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_E93DA2AD-71F5-44DD-8E7D-C308E8A692F6"><dmn:text>"SPO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_2F806FB8-798F-4A76-9998-73CCD16657D6"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text></dmn:inputEntry><dmn:outputEntry id="_119BDB71-3E16-4C4D-82B0-E72E624A2052"><dmn:text>"ontobind"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_493FF0E7-D4B0-4030-8088-65D629787779"><dmn:text>"ALFRESCO"</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule><dmn:rule id="_974B8CE1-EB4B-4C15-B8A5-E75EBA5E0236"><dmn:inputEntry id="_A123C35A-B44A-4CA3-BF11-56881256DF11"><dmn:text>"c_ab456850"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_D1827330-AA01-40D5-8FE2-B84095A3B05E"><dmn:text>"c_a3a9e2a5"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_59A53FAD-4762-4B71-88F6-59B0CEE507D1"><dmn:text>"SPO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_EE8EE8FE-D1A6-49D2-AB42-1A069544C3BD"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text></dmn:inputEntry><dmn:outputEntry id="_067E114F-3D4B-481D-B1AA-CB85716981E0"><dmn:text>"ontobindarchive"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_63CF3839-62E0-4C49-A07A-E2255D99187D"><dmn:text>"ALFRESCO"</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule><dmn:rule id="_FF21C03F-9DB6-45BE-B8B6-737758D742B8"><dmn:inputEntry id="_FACD571F-4302-43D3-ACCE-081D250038F9"><dmn:text>"c_ab456850"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_99923A59-6474-4BE9-A006-8AEEDBA2F79E"><dmn:text>"c_0fc3dde5"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_E9AEF219-1DEF-497D-97C3-D2ABF3F1ABB6"><dmn:text>"SPO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_03E39FB0-EFC9-4616-B119-C9C4AEF38A22"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text></dmn:inputEntry><dmn:outputEntry id="_52DBF026-EBBD-46BE-BA12-458EC5A67745"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_A3617775-1DBF-4055-BAFB-0FDD3A000371"><dmn:text>"SPO"</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule><dmn:rule id="_8FA9CA32-17E2-4036-8D86-32D6BE9D38B2"><dmn:inputEntry id="_971CC809-8846-40DE-9485-328CEA4B1D05"><dmn:text>"c_ab456850"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_8A1CACFE-2080-4877-8604-37085257DA0B"><dmn:text>"c_1d688b28"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_55C7BE59-D782-45C5-B1FB-29DDE90B6B1B"><dmn:text>"SPO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_CD51DD63-35AC-47E7-AF98-FC4C9DCEC2F2"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text></dmn:inputEntry><dmn:outputEntry id="_80136AF6-C9C0-48BD-9B0D-BAFEBB0412DF"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_4B7D1AF3-1FB8-4965-923C-FB2FF2588E6F"><dmn:text>"SPO"</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule><dmn:rule id="_084B33FD-ADDC-4085-B213-A207E1F99CD0"><dmn:inputEntry id="_E902AA37-3C0F-4325-9EB4-E3E83BC48C51"><dmn:text>"c_899a1eb9"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_AA9C325E-7277-4923-8845-393D5B3D16D8"><dmn:text>"c_6eacb6e2"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_1E7B2C00-C82A-478A-B8C4-3F130AA438E7"><dmn:text>"SPO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_4B065B82-F504-4062-996B-F1F3FB9557BD"><dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/7b6c5de3-f1c8-49d6-9226-386a28682fb8"</dmn:text></dmn:inputEntry><dmn:outputEntry id="_AFFA62E4-D6CA-4CE3-BF36-CAC45E0A37E9"><dmn:text>"ontobind"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_2028796A-CB52-4513-9319-AC27FDBC164C"><dmn:text>"ALFRESCO"</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule><dmn:rule id="_0B81BF26-ED48-4CDB-BD3C-64E1F1928336"><dmn:inputEntry id="_DCD075FC-1D83-483C-838C-84FB2647D602"><dmn:text>"c_899a1eb9"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_941E0ECD-1F21-4A20-BB9D-FF507C2EFFE2"><dmn:text>"c_c688d18d"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_B97416D9-ADCB-4735-93B5-E65C0BE7310A"><dmn:text>"ALFRESCO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_B1B4CC07-B71C-4C7B-8F1A-FAFE90F672E4"><dmn:text>"/Company Home/Sites/ontobind/documentLibrary/Secret"</dmn:text></dmn:inputEntry><dmn:outputEntry id="_CB9BCB06-11B0-449F-8724-68EC4060945A"><dmn:text>"ontobindarchive"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_3000C9AF-64CA-4B62-AD3B-7BED618D94F3"><dmn:text>"ALFRESCO"
-</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule><dmn:rule id="_5F5DA628-CC95-4CBB-8F3F-763961368A95"><dmn:inputEntry id="_4C9D7D26-5DC1-43A2-9069-AEC2263FEA20"><dmn:text>"c_899a1eb9"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_2A664AA6-10F7-4BD0-86D4-6DF71E545A23"><dmn:text>"c_0fc3dde5"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_C089CB43-B85A-4C55-83AF-AE0AEBB6C85F"><dmn:text>"ALFRESCO"</dmn:text></dmn:inputEntry><dmn:inputEntry id="_1B54DD8E-743B-45CE-B29E-AEB823600413"><dmn:text>starts with(?, "/Company Home/Sites/ontobindarchive/documentLibrary")</dmn:text></dmn:inputEntry><dmn:outputEntry id="_DD0848B2-FF21-4121-8FD2-357534448E64"><dmn:text>"ontobind"</dmn:text></dmn:outputEntry><dmn:outputEntry id="_3117057A-B05E-4872-A673-AA19B992219B"><dmn:text>"ALFRESCO"</dmn:text></dmn:outputEntry><dmn:annotationEntry><dmn:text></dmn:text></dmn:annotationEntry></dmn:rule></dmn:decisionTable></dmn:decision><dmndi:DMNDI><dmndi:DMNDiagram id="_87ADC896-3548-4AD8-AEFF-E2C7CD4BFCD7" name="DRG"><di:extension><kie:ComponentsWidthsExtension><kie:ComponentWidths dmnElementRef="_9D6C7701-688E-4415-A099-CF8ABC911831"><kie:width>50</kie:width><kie:width>358</kie:width><kie:width>359</kie:width><kie:width>365</kie:width><kie:width>1093</kie:width><kie:width>937</kie:width><kie:width>494</kie:width><kie:width>100</kie:width></kie:ComponentWidths></kie:ComponentsWidthsExtension></di:extension><dmndi:DMNShape id="dmnshape-drg-_8C16C1D4-4F2E-4FCD-A3A3-39F1FBC6772A" dmnElementRef="_8C16C1D4-4F2E-4FCD-A3A3-39F1FBC6772A" isCollapsed="false"><dmndi:DMNStyle><dmndi:FillColor red="255" green="255" blue="255"/><dmndi:StrokeColor red="0" green="0" blue="0"/><dmndi:FontColor red="0" green="0" blue="0"/></dmndi:DMNStyle><dc:Bounds x="200" y="328" width="100" height="50"/><dmndi:DMNLabel/></dmndi:DMNShape><dmndi:DMNShape id="dmnshape-drg-_540DE25E-E8BF-4A11-8C96-4F86611C117C" dmnElementRef="_540DE25E-E8BF-4A11-8C96-4F86611C117C" isCollapsed="false"><dmndi:DMNStyle><dmndi:FillColor red="255" green="255" blue="255"/><dmndi:StrokeColor red="0" green="0" blue="0"/><dmndi:FontColor red="0" green="0" blue="0"/></dmndi:DMNStyle><dc:Bounds x="485" y="329" width="100" height="50"/><dmndi:DMNLabel/></dmndi:DMNShape><dmndi:DMNEdge id="dmnedge-drg-_4AF5D882-47F8-4CCB-9BC7-FA33E9A3208E-AUTO-TARGET" dmnElementRef="_4AF5D882-47F8-4CCB-9BC7-FA33E9A3208E"><di:waypoint x="250" y="353"/><di:waypoint x="535" y="329"/></dmndi:DMNEdge></dmndi:DMNDiagram></dmndi:DMNDI></dmn:definitions>
+<?xml version='1.0' encoding='UTF-8'?>
+<dmn:definitions xmlns:dmn="http://www.omg.org/spec/DMN/20180521/MODEL/" xmlns="https://kiegroup.org/dmn/_97C0832F-7022-4837-9316-21CE90B8B1CA" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:kie="http://www.drools.org/kie/dmn/1.2" xmlns:feel="http://www.omg.org/spec/DMN/20180521/FEEL/" xmlns:dmndi="http://www.omg.org/spec/DMN/20180521/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="_8678F9B7-803E-4193-8C81-25E739309AA2" name="contAlnMigrationRuleset" expressionLanguage="http://www.omg.org/spec/DMN/20180521/FEEL/" typeLanguage="http://www.omg.org/spec/DMN/20180521/FEEL/" namespace="https://kiegroup.org/dmn/_97C0832F-7022-4837-9316-21CE90B8B1CA">
+  <dmn:extensionElements/>
+  <dmn:itemDefinition id="_5AC34415-FDCF-4D3B-AD36-294490FF05A0" name="migrationinformationobject" isCollection="false">
+    <dmn:itemComponent id="_93E6F53F-8B55-41E6-9545-348EC559C5E1" name="classification" isCollection="false">
+      <dmn:typeRef>string</dmn:typeRef>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="_6E3EF46B-37FA-49FD-BAA2-328B96062EC0" name="marking" isCollection="false">
+      <dmn:typeRef>string</dmn:typeRef>
+      <dmn:allowedValues kie:constraintType="enumeration" id="_6DBD14EA-4F3B-4983-9548-DD5BB3AADD95">
+        <dmn:text>null</dmn:text>
+      </dmn:allowedValues>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="_E52FCE77-6CC4-458C-988A-F8987E3F850A" name="platformfrom" isCollection="false">
+      <dmn:typeRef>string</dmn:typeRef>
+      <dmn:allowedValues kie:constraintType="enumeration" id="_16196D62-FDAD-4301-B5B1-3844CC1290B7">
+        <dmn:text>"SPO", "ALFRESCO"</dmn:text>
+      </dmn:allowedValues>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="_3725CCDB-0EF4-433B-9273-B7CBB40D94CF" name="containerfrom" isCollection="false">
+      <dmn:typeRef>string</dmn:typeRef>
+    </dmn:itemComponent>
+  </dmn:itemDefinition>
+  <dmn:itemDefinition id="_138E4227-1E8C-4FC7-8FC8-762BCDC05371" name="returnvalue" isCollection="false">
+    <dmn:itemComponent id="_21593165-892E-4D84-B093-54C3CAECA05C" name="Insert a name" isCollection="false">
+      <dmn:typeRef>Any</dmn:typeRef>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="_9D8B82A8-3F0C-48E5-82DE-56F518C42F0B" name="Insert a name - 2" isCollection="false">
+      <dmn:typeRef>Any</dmn:typeRef>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="_E668B9D6-9736-49B4-BF57-70C8F007ADB4" name="containplatformto" isCollection="false">
+      <dmn:typeRef>string</dmn:typeRef>
+      <dmn:allowedValues kie:constraintType="enumeration" id="_4245EE73-6CD9-440F-8FF6-CDE3BFF23E1C">
+        <dmn:text>"SPO", "ALFRESCO"</dmn:text>
+      </dmn:allowedValues>
+    </dmn:itemComponent>
+    <dmn:itemComponent id="_9F05471A-5F54-419F-9F70-B66451EADB2C" name="containtocontainer" isCollection="false">
+      <dmn:typeRef>string</dmn:typeRef>
+    </dmn:itemComponent>
+  </dmn:itemDefinition>
+  <dmn:inputData id="_8C16C1D4-4F2E-4FCD-A3A3-39F1FBC6772A" name="source">
+    <dmn:extensionElements/>
+    <dmn:variable id="_05A34A04-C887-4340-ADCA-B1B92C44E890" name="source" typeRef="migrationinformationobject"/>
+  </dmn:inputData>
+  <dmn:decision id="_540DE25E-E8BF-4A11-8C96-4F86611C117C" name="destination">
+    <dmn:extensionElements/>
+    <dmn:variable id="_C74F1536-B7E8-4261-A230-24991B6DA1A4" name="destination" typeRef="returnvalue"/>
+    <dmn:informationRequirement id="_87ADC896-3548-4AD8-AEFF-E2C7CD4BFCD7#_4AF5D882-47F8-4CCB-9BC7-FA33E9A3208E">
+      <dmn:requiredInput href="#_8C16C1D4-4F2E-4FCD-A3A3-39F1FBC6772A"/>
+    </dmn:informationRequirement>
+    <dmn:decisionTable id="_9D6C7701-688E-4415-A099-CF8ABC911831" hitPolicy="UNIQUE" preferredOrientation="Rule-as-Row">
+      <dmn:input id="_018A6BDC-3CA5-4715-9B98-D2DF0AC9DD57">
+        <dmn:inputExpression id="_967E26B4-3B6D-44F0-B472-D615AE5EBFCB" typeRef="string">
+          <dmn:text>source.classification</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_D63557BF-39A3-49AC-9B9B-85C7BEA45940">
+        <dmn:inputExpression id="_E2894B20-901E-4492-A154-0359F1E00C9F" typeRef="string">
+          <dmn:text>source.marking</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_3C9246F6-88CB-4CCE-814D-B28B10F14901">
+        <dmn:inputExpression id="_7C6A5A29-1592-43DF-8C8B-B27D71ABF9CA" typeRef="string">
+          <dmn:text>source.platformfrom</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:input id="_F8058DFB-4295-4565-90B0-393FAB634FF4">
+        <dmn:inputExpression id="_E4F28649-F0D1-442C-BE47-2EAD3E95A7CD" typeRef="string">
+          <dmn:text>source.containerfrom</dmn:text>
+        </dmn:inputExpression>
+      </dmn:input>
+      <dmn:output id="_97A7B5C9-16E1-494D-B8B0-D51BE36200A2" name="containerto" typeRef="returnvalue"/>
+      <dmn:output id="_00CD61B5-15E8-4A8D-B0A0-36E93B2DD2FE" name="platformto" typeRef="returnvalue"/>
+      <dmn:annotation name="annotation-1"/>
+      <dmn:rule id="_5D241CD9-8CBA-4DDB-A3F1-0409A6DEC201">
+        <dmn:inputEntry id="_CA8488C7-7895-49A9-980A-2CDD27080205">
+          <dmn:text>"c_c222b55c"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_AFCA9425-8B66-4F46-9653-51FCDE435B12">
+          <dmn:text>"c_0fc3dde5"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8D93FA63-F1A8-4A32-9932-D319F23793E1">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F80E0BF5-A081-4EF4-962B-B0D2C29382B9">
+          <dmn:text>starts with(?, "/Company Home/Sites/ontobind/documentLibrary")</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_AC70FE83-2C92-4C0B-AE27-25598D85D621">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_DEA14E4B-43C5-47BC-83C6-3EC557A4E131">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_D0F42830-7BAF-4E23-B5A9-C447DA0288B4">
+        <dmn:inputEntry id="_64ECFA84-31C6-4102-AD1C-4AFB65AF7C01">
+          <dmn:text>"c_b16aeb9b"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_F6B4A7CE-A886-4D27-896D-0A05C637ABEA">
+          <dmn:text>"c_a3a9e2a5"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_895BC29E-5693-4ED3-9C90-5F0088549E61">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_551667ED-CBFB-4FD8-B2FC-FD8E521B07B5">
+          <dmn:text>starts with(?, "/Company Home/Sites/ontobindarchive/documentLibrary")</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_1034E3BF-5A08-4959-B213-A835D99BE759">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_7DAC9B59-8F2F-4A32-91CF-1CDA00D9B9D1">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_D68B0A18-7C6C-4221-B599-3714B8EDE471">
+        <dmn:inputEntry id="_E16CAB1A-8E06-42EF-87D1-B29B33CD347D">
+          <dmn:text>"c_b16aeb9b"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_15938CC2-8F8E-4B74-8B0F-E5E55EE5DF4A">
+          <dmn:text>"c_a3a9e2a5"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_0F83F7B0-2F71-4847-997E-35D405B5F673">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4B65F415-5148-480D-8752-C0D7C3F54917">
+          <dmn:text>starts with(?, "/Company Home/Sites/containtemplate/documentLibrary/Secret")</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_E60A44F5-AD77-4C11-94DF-E8DF1E72AA16">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3/Secret"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_EADD5D22-2890-4BD5-9137-0A2CA867A6FA">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_48763DD1-2DCC-4CE4-B052-253342BF27AC">
+        <dmn:inputEntry id="_04FCDD9E-5D5A-4E69-B7CB-A262519D9E16">
+          <dmn:text>"c_a3914e33"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_FF0A42AB-EA51-407C-8248-1057AF3B2E1E">
+          <dmn:text>"c_1d688b28"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_117AAF69-B3C2-4058-817E-7C88D3DE98DE">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_6F2191BE-9D53-4DAB-882B-A4E2751EF0DB">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_73745BB5-B1C7-4B05-A1B5-AB7143F1A890">
+          <dmn:text>"ontobind/documentlibrary"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_13664DC1-D6C4-4C92-B402-DCAE593C89CD">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_F537089F-6E42-494B-B76B-3F18FA780DCC">
+        <dmn:inputEntry id="_A254C513-3D97-4A7E-84F0-7645378F2E53">
+          <dmn:text>"c_a3914e33"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_843CF924-EFA7-4C1D-9B3A-CD73F1CF8CD4">
+          <dmn:text>"c_c688d18d"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_A2F7609F-9590-40BD-B013-9E24D881FD01">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B35B192B-8CDE-422F-9C84-A527D952381E">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3/Secret"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_C6167A07-6392-436D-B5D2-FA29FDB4658E">
+          <dmn:text>"containtemplate/documentlibrary/Secret"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_85BC3696-E30D-4AB5-9BCC-02F197EC33A4">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Validate</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_2D0B5213-6486-44ED-915C-EA6D9477950B">
+        <dmn:inputEntry id="_8D68160C-6DAC-4B01-8774-3D469B396539">
+          <dmn:text>"c_ab456850"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_55A42F34-D41C-49C7-9852-3A75BCFDCE60">
+          <dmn:text>"c_a3a9e2a5"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_E93DA2AD-71F5-44DD-8E7D-C308E8A692F6">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2F806FB8-798F-4A76-9998-73CCD16657D6">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_119BDB71-3E16-4C4D-82B0-E72E624A2052">
+          <dmn:text>"ontobindarchive/documentlibrary"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_493FF0E7-D4B0-4030-8088-65D629787779">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_FF21C03F-9DB6-45BE-B8B6-737758D742B8">
+        <dmn:inputEntry id="_FACD571F-4302-43D3-ACCE-081D250038F9">
+          <dmn:text>"c_ab456850"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_99923A59-6474-4BE9-A006-8AEEDBA2F79E">
+          <dmn:text>"c_0fc3dde5"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_E9AEF219-1DEF-497D-97C3-D2ABF3F1ABB6">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_03E39FB0-EFC9-4616-B119-C9C4AEF38A22">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_52DBF026-EBBD-46BE-BA12-458EC5A67745">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_A3617775-1DBF-4055-BAFB-0FDD3A000371">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_8FA9CA32-17E2-4036-8D86-32D6BE9D38B2">
+        <dmn:inputEntry id="_971CC809-8846-40DE-9485-328CEA4B1D05">
+          <dmn:text>"c_ab456850"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_8A1CACFE-2080-4877-8604-37085257DA0B">
+          <dmn:text>"c_1d688b28"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_55C7BE59-D782-45C5-B1FB-29DDE90B6B1B">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_CD51DD63-35AC-47E7-AF98-FC4C9DCEC2F2">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/9358df3d-0b30-4f09-a063-d1d8dcaeccd3"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_80136AF6-C9C0-48BD-9B0D-BAFEBB0412DF">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/af00c8d0-96c9-4ecc-baf5-98f7388eec2e"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_4B7D1AF3-1FB8-4965-923C-FB2FF2588E6F">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_084B33FD-ADDC-4085-B213-A207E1F99CD0">
+        <dmn:inputEntry id="_E902AA37-3C0F-4325-9EB4-E3E83BC48C51">
+          <dmn:text>"c_899a1eb9"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_AA9C325E-7277-4923-8845-393D5B3D16D8">
+          <dmn:text>"c_6eacb6e2"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_1E7B2C00-C82A-478A-B8C4-3F130AA438E7">
+          <dmn:text>"SPO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_4B065B82-F504-4062-996B-F1F3FB9557BD">
+          <dmn:text>"lls6.sharepoint.com/SP-EventReceivers-Test/7b6c5de3-f1c8-49d6-9226-386a28682fb8"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_AFFA62E4-D6CA-4CE3-BF36-CAC45E0A37E9">
+          <dmn:text>"ontobind/documentlibrary"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_2028796A-CB52-4513-9319-AC27FDBC164C">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_0B81BF26-ED48-4CDB-BD3C-64E1F1928336">
+        <dmn:inputEntry id="_DCD075FC-1D83-483C-838C-84FB2647D602">
+          <dmn:text>"c_899a1eb9"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_941E0ECD-1F21-4A20-BB9D-FF507C2EFFE2">
+          <dmn:text>"c_c688d18d"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B97416D9-ADCB-4735-93B5-E65C0BE7310A">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_B1B4CC07-B71C-4C7B-8F1A-FAFE90F672E4">
+          <dmn:text>"/Company Home/Sites/ontobind/documentLibrary/Secret"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_CB9BCB06-11B0-449F-8724-68EC4060945A">
+          <dmn:text>"ontobindarchive/documentlibrary"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_3000C9AF-64CA-4B62-AD3B-7BED618D94F3">
+          <dmn:text>"ALFRESCO"
+</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+      <dmn:rule id="_5F5DA628-CC95-4CBB-8F3F-763961368A95">
+        <dmn:inputEntry id="_4C9D7D26-5DC1-43A2-9069-AEC2263FEA20">
+          <dmn:text>"c_899a1eb9"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_2A664AA6-10F7-4BD0-86D4-6DF71E545A23">
+          <dmn:text>"c_0fc3dde5"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_C089CB43-B85A-4C55-83AF-AE0AEBB6C85F">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:inputEntry>
+        <dmn:inputEntry id="_1B54DD8E-743B-45CE-B29E-AEB823600413">
+          <dmn:text>starts with(?, "/Company Home/Sites/ontobindarchive/documentLibrary")</dmn:text>
+        </dmn:inputEntry>
+        <dmn:outputEntry id="_DD0848B2-FF21-4121-8FD2-357534448E64">
+          <dmn:text>"ontobind/documentlibrary"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:outputEntry id="_3117057A-B05E-4872-A673-AA19B992219B">
+          <dmn:text>"ALFRESCO"</dmn:text>
+        </dmn:outputEntry>
+        <dmn:annotationEntry>
+          <dmn:text>Working</dmn:text>
+        </dmn:annotationEntry>
+      </dmn:rule>
+    </dmn:decisionTable>
+  </dmn:decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <di:extension>
+        <kie:ComponentsWidthsExtension>
+          <kie:ComponentWidths dmnElementRef="_9D6C7701-688E-4415-A099-CF8ABC911831">
+            <kie:width>50.0</kie:width>
+            <kie:width>358.0</kie:width>
+            <kie:width>359.0</kie:width>
+            <kie:width>365.0</kie:width>
+            <kie:width>1093.0</kie:width>
+            <kie:width>937.0</kie:width>
+            <kie:width>494.0</kie:width>
+            <kie:width>100.0</kie:width>
+          </kie:ComponentWidths>
+        </kie:ComponentsWidthsExtension>
+      </di:extension>
+      <dmndi:DMNShape id="dmnshape-_8C16C1D4-4F2E-4FCD-A3A3-39F1FBC6772A" dmnElementRef="_8C16C1D4-4F2E-4FCD-A3A3-39F1FBC6772A" isCollapsed="false">
+        <dmndi:DMNStyle>
+          <dmndi:FillColor red="255" green="255" blue="255"/>
+          <dmndi:StrokeColor red="0" green="0" blue="0"/>
+          <dmndi:FontColor red="0" green="0" blue="0"/>
+        </dmndi:DMNStyle>
+        <dc:Bounds x="200" y="328" width="100" height="50"/>
+        <dmndi:DMNLabel/>
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="dmnshape-_540DE25E-E8BF-4A11-8C96-4F86611C117C" dmnElementRef="_540DE25E-E8BF-4A11-8C96-4F86611C117C" isCollapsed="false">
+        <dmndi:DMNStyle>
+          <dmndi:FillColor red="255" green="255" blue="255"/>
+          <dmndi:StrokeColor red="0" green="0" blue="0"/>
+          <dmndi:FontColor red="0" green="0" blue="0"/>
+        </dmndi:DMNStyle>
+        <dc:Bounds x="485" y="329" width="100" height="50"/>
+        <dmndi:DMNLabel/>
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="dmnedge-_87ADC896-3548-4AD8-AEFF-E2C7CD4BFCD7#_4AF5D882-47F8-4CCB-9BC7-FA33E9A3208E-AUTO-TARGET" dmnElementRef="_87ADC896-3548-4AD8-AEFF-E2C7CD4BFCD7#_4AF5D882-47F8-4CCB-9BC7-FA33E9A3208E">
+        <di:waypoint x="250" y="353"/>
+        <di:waypoint x="535" y="329"/>
+      </dmndi:DMNEdge>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</dmn:definitions>
