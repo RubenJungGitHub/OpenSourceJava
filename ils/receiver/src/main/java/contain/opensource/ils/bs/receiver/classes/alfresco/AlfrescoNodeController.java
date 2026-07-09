@@ -802,9 +802,14 @@ public class AlfrescoNodeController {
       // 3. Controleer de statuscode
       int statusCode = response.statusCode();
       responseBody = response.body();
-
+      System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_MAGENTA
+          + "Item must migrate Request : " + request
+          + contain.opensource.shared.constants.AlfrescoConstants.RESET);
       if (statusCode == 200) {
-        System.out.println("Succes! Response: " + responseBody);
+        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_CYAN
+            + "Item must migrate Response : " + responseBody
+            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
         ObjectMapper mapper = new ObjectMapper();
 
         // Map de JSON direct naar je bestaande object
