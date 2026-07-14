@@ -884,10 +884,10 @@ public class AlfrescoNodeController {
             "",
             AlfrescoConstants.eActionPerformed.IOBOUND,
             "System",
-            Alfrescoitem.marking =  this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.markingID),
             Alfrescoitem.markingID,
-            Alfrescoitem.classification= this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.classificationID),
+            Alfrescoitem.marking =  this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.markingID),
             Alfrescoitem.classificationID,
+            Alfrescoitem.classification= this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.classificationID),
             Alfrescoitem.version);
         // ==========================================================================================
       }
