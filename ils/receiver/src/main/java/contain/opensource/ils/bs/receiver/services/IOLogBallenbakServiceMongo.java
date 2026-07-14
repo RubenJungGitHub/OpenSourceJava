@@ -79,7 +79,7 @@ public class IOLogBallenbakServiceMongo {
     @Transactional
     public void log(String containIOUUID, String PlatformID, String IOpath, String action, String source,
             String destination,
-            String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy, String Marking,String MarkingID, String Classification,String ClassificationID   ,String version) {
+            String pkiHash, String reference, String info, eActionPerformed actionPerformed, String ActionPerformedBy, String MarkingID,String Marking, String Classification,String ClassificationID   ,String version) {
 
 
      IOLogBallenbakMongo log = new IOLogBallenbakMongo();

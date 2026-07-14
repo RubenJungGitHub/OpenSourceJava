@@ -43,6 +43,7 @@ ils:
   baseurl: http://localhost:55000
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
+  taxonomyserviceendpoint: https://localhost:53000/api
   relocateendpoint: http://localhost:55000/api/MigrateIO
   ruleenginemoveendpoint: http://localhost:55000/api/rules
   ruleenginecontainerendpoint: http://localhost:57000/kie-server/services/rest/server

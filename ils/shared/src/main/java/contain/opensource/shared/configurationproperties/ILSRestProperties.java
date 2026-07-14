@@ -12,6 +12,7 @@ public class ILSRestProperties {
     private String uudiutilendpoint;
     private String bindendpoint;
     private String relocateendpoint;
+    private String taxonomyserviceendpoint;
     private String ruleenginemoveendpoint;
     private String ruleenginecontainerendpoint;
     private String ruleengineendpoint;
@@ -22,8 +23,10 @@ public class ILSRestProperties {
     private String keystorepath;
 
     // ----------------- Getters & Setters -----------------
-    
-// The `getbaseurl()` method is a getter method for the `baseurl` property in the `ILSRestProperties` class. It simply returns the current value of the `baseurl` property.
+
+    // The `getbaseurl()` method is a getter method for the `baseurl` property in
+    // the `ILSRestProperties` class. It simply returns the current value of the
+    // `baseurl` property.
 
     public String getlogiodeletedfromplatformendpoint() {
         return logiodeletedfromplatformendpoint;
@@ -63,6 +66,14 @@ public class ILSRestProperties {
 
     public void setbindendpoint(String bindendpoint) {
         this.bindendpoint = bindendpoint;
+    }
+
+    public String gettaxonomyserviceendpoint() {
+        return taxonomyserviceendpoint;
+    }
+
+    public void settaxonomyserviceendpoint(String taxonomyserviceendpoint) {
+        this.taxonomyserviceendpoint = taxonomyserviceendpoint;
     }
 
     public String getruleenginemoveendpoint() {
@@ -113,7 +124,6 @@ public class ILSRestProperties {
         this.processspitemsendpoint = processspitemsendpoint;
     }
 
-    
     public String getprocessalfresconodepoint() {
         return processalfresconodepoint;
     }
@@ -122,17 +132,14 @@ public class ILSRestProperties {
         this.processalfresconodepoint = processalfresconodepoint;
     }
 
-        
     public String getkeystorepath() {
         return keystorepath;
     }
 
     public void setkeystorepath(String keystorepath) {
-        this.keystorepath = keystorepath    ;
+        this.keystorepath = keystorepath;
     }
 
-
-    
     @PostConstruct
     public void init() {
         System.out.println("ILSRestProperties loaded:");

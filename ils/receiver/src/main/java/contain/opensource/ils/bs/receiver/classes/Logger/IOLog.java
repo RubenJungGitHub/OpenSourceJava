@@ -64,8 +64,8 @@ public class IOLog {
                     ActionPerformedBy,
                     Marking,
                     MarkingID,
-                    Classification,
                     ClassificationID,
+                    Classification,
                     version);
                     
         } catch (Exception ex) {

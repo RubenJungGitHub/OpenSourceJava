@@ -64,6 +64,7 @@ ils:
   uudiutilendpoint: http://ils-uuidutil-1:5002/api/GetUUID
   baseurl: http://receiver:8080
   bindendpoint: http://receiver:8080/api/Bind
+  taxonomyserviceendpoint: https://taxonomy-service-ssl:53000/api
   ruleenginemoveendpoint: http://receiver:8080/api/rules
   relocateendpoint: http://receiver:8080/api/MigrateIO
   ruleenginecontainerendpoint: http://kie-server:8080/kie-server/services/rest/server
