@@ -65,7 +65,7 @@ import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.util.Collections;
-import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
+//import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT

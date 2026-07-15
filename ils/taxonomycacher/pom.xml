@@ -34,7 +34,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        
+        <dependency>
+            <groupId>contain.opensource.java</groupId>
+            <artifactId>receiver</artifactId>
+            <version>3.3.0</version>
+        </dependency>
 
 
         <dependency>
