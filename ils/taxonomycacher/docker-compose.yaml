@@ -1,0 +1,27 @@
+
+name: ils
+services:
+  #postgres:
+  #  image: postgres:16
+  #  container_name: postgres
+  #  environment:
+  #    POSTGRES_DB: sharepoint
+  #    POSTGRES_USER: sharepoint
+  #    POSTGRES_PASSWORD: sharepoint
+  #  ports:
+  #    - "5432:5432"
+  #  volumes:
+  #    - postgres-data:/var/lib/postgresql/data
+
+  taxonomycacher:
+    build: .
+    container_name: taxonomycacher
+    ports:
+      - "9090:9090"
+    networks:
+      - ils_ils_default
+    environment:
+
+networks:
+  ils_ils_default:
+    external: true
