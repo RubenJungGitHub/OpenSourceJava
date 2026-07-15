@@ -47,18 +47,6 @@ public class ILSController {
         }
     }
 
-    @PostMapping("/UpdateSharepointItemGraphAPI/{listItemId}")
-    public String UpdateItemUUIDGraphAPI(@PathVariable("listItemId") String listItemId) {
-        try {
-            String retval = graphService.updateSharepointItemGraphAPI(listItemId, "PLACEHOLDERFORFUTUREIMPLEMENTATION"); // now
-                                                                                                                         // works
-            return retval;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error acquiring token: " + e.getMessage();
-        }
-    }
-
     @PostMapping(value = "/MigrateIO", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void MIgrateIO(@RequestBody MigrationQueueMessage msg) throws Exception {
         System.out.println("in migrate IO endpoint");

@@ -65,6 +65,7 @@ import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
 import java.util.Collections;
+import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 
 //========================================================================
 //THIS CLASS IS WAY TO BIG AND SHOULD BE SPLIT
@@ -93,11 +94,14 @@ public class GraphService {
     static GraphServiceClient<?> graphClient;
     static AlfrescoConstants.eItemtype itemtype;
     static ILSRestProperties ILSProperties = null;
+    static TaxonomyServiceClient taxonomyServiceClient;
     // static AlfrescoNodeController acontroller = null;
 
     @Autowired
-    public GraphService(ILSRestProperties ilsProperties, AlfrescoNodeController alfresconodecontroller) {
+    public GraphService(ILSRestProperties ilsProperties, AlfrescoNodeController alfresconodecontroller,
+            TaxonomyServiceClient taxonomyServiceClient) {
         this.ILSProperties = ilsProperties;
+        this.taxonomyServiceClient = taxonomyServiceClient;
         mapper = new ObjectMapper();
         this.DeltaLinkFile = ILSProperties.getdeltalinkfile();
         mapper.registerModule(new JavaTimeModule());
@@ -176,7 +180,10 @@ public class GraphService {
 
     public static String updateSharepointItemGraphAPI(
             @Parameter(description = "List Item ID") @RequestParam String listItemId,
-            @Parameter(description = "List ID") @RequestParam String ListId) {
+            @Parameter(description = "List ID") @RequestParam String ListId,
+            @Parameter(description = "classification") @RequestParam String classification,
+            @Parameter(description = "Marking") @RequestParam String marking) {
+
         try {
             if (accessToken == null || accessToken.isEmpty()) {
                 accessToken = getGraphToken();
@@ -213,6 +220,8 @@ public class GraphService {
             // Build payload to update Title and ObjectClassificationText
             Map<String, Object> body = new HashMap<>();
             body.put("ContAInUUID", uuid);
+            body.put("markingexternaltax", marking);
+            body.put("classificationexternaltax", classification);
             body.put("Title", "Test Updated Document Title Ruben from JaVa");
             // body.put("ObjectClassificationText", "Changed from Java");
 
@@ -398,7 +407,6 @@ public class GraphService {
 
                 if (parts.length > 3) {
 
-
                     // We starten bij index 3 ("Secret")
                     for (int i = 3; i < parts.length; i++) {
                         subPath.append(parts[i]);
@@ -413,8 +421,9 @@ public class GraphService {
                 byte[] fileBytes = IOobject.getContent();
                 String fileName = URLEncoder.encode(IOobject.getFileName(), StandardCharsets.UTF_8).replace("+", "%20");
                 String driveId = getDriveID(IOobject);
-                String endPoint = String.format("https://graph.microsoft.com/v1.0/drives/%s/root:/%s/%s:/content", driveId,
-                        subPath.toString(),fileName);
+                String endPoint = String.format("https://graph.microsoft.com/v1.0/drives/%s/root:/%s/%s:/content",
+                        driveId,
+                        subPath.toString(), fileName);
 
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(endPoint))
@@ -517,10 +526,11 @@ public class GraphService {
                         "",
                         AlfrescoConstants.eActionPerformed.IOBOUND,
                         "System",
-                        SPItem.marking,
                         SPItem.markingID,
-                        SPItem.classification,
+                        SPItem.marking,
                         SPItem.classificationID,
+                        SPItem.classification,
+
                         SPItem.version);
                 // ==========================================================================================
             }
@@ -963,11 +973,14 @@ public class GraphService {
                         Object description = adm.get("containIODescription");
                         if (adm.get("classificationexternaltaxsystemid") != null) {
                             classificationID = adm.get("classificationexternaltaxsystemid").getAsString();
-                            classification = adm.get("classificationexternaltax").getAsString();
+                            // classification = adm.get("classificationexternaltax").getAsString();
+                            classification = taxonomyServiceClient.GetTaxLabel(classificationID);
+
                         }
                         if (adm.get("markingexternaltaxsystemid") != null) {
                             markingID = adm.get("markingexternaltaxsystemid").getAsString();
-                            marking = adm.get("markingexternaltax").getAsString();
+                            // marking = adm.get("markingexternaltax").getAsString();
+                            marking = taxonomyServiceClient.GetTaxLabel(markingID);
                         }
                         String titleStr = title != null ? title.toString().replace("\"", "") : "";
                         String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
@@ -1063,7 +1076,8 @@ public class GraphService {
                     System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
                 if (!SPItem.HasUUID) {
-                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId);
+                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId, SPItem.getclassification(),
+                            SPItem.getMarking());
                     action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
 
                     IOLog.log(
@@ -1078,10 +1092,13 @@ public class GraphService {
                             "",
                             AlfrescoConstants.eActionPerformed.ASSIGNUUID,
                             "System",
-                            SPItem.marking,
                             SPItem.markingID,
-                            SPItem.classification,
+                            SPItem.marking,
+                            // SPItem.marking = this.taxonomyServiceClient.GetTaxLabel(SPItem.markingID),
                             SPItem.classificationID,
+                            SPItem.classification,
+                            // SPItem.classification =
+                            // this.taxonomyServiceClient.GetTaxLabel(SPItem.classificationID),
                             SPItem.version);
                     return migrationinfo;
                 }
