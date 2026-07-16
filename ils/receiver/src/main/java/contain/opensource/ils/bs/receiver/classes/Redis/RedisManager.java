@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import jakarta.annotation.PostConstruct;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -35,22 +36,26 @@ import io.lettuce.core.api.sync.RedisCommands;
  *
  */
 @Component
-@ConditionalOnProperty(name = "redis.enabled", havingValue = "true", matchIfMissing = false)
-@ConditionalOnMissingBean(RedisManager.class)
+// @ConditionalOnProperty(name = "redis.enabled", havingValue = "true",
+// matchIfMissing = false)
+// @ConditionalOnMissingBean(RedisManager.class)
 public final class RedisManager {
     private static final String REDIS_URI = "redis://localhost:6379"; // Redis protocol port
 
     public static RedisClient client;
     public static StatefulRedisConnection<String, String> connection;
     public static RedisCommands<String, String> redis;
+    private final RedisConfigProperties config;
 
     // Private constructor to prevent instantiation
-    private RedisManager() {
+    private RedisManager(RedisConfigProperties config) {
+        this.config = config;
     }
 
     /**
      * Lazy initialization
      */
+
     /**
      * Initializes the RedisManager by establishing a connection to a Redis server.
      * 
@@ -69,35 +74,39 @@ public final class RedisManager {
      * This method is synchronized to ensure thread safety during initialization.
      *
      */
-    public static synchronized void init(RedisConfigProperties config) {
-        if (redis != null)
-            return; // already initialized
-        try {
-
-            String host = config.getHost() != null ? config.getHost() : "localhost";
-            int port = config.getPort() != 0 ? config.getPort() : 6379;
-
-            String redisUri = "redis://" + host + ":" + port;
-
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
-                    + ("[RedisManager] Connecting to " + redisUri)
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-            client = RedisClient.create(redisUri);
-            connection = client.connect();
-            redis = connection.sync();
-            System.out.println(">>> RedisManager initialized");
-        } catch (Exception e) {
-            System.err.println("Failed to initialize RedisManager!");
-            e.printStackTrace();
-            // Do not throw to allow class to load
-        }
-    }
-
-    // ===============================
-    // Hash operations (persistent)
-    // ===============================
-
-    /** Store a field in a hash */
+    /*
+     * public static synchronized void init() {
+     * if (redis != null)
+     * return; // already initialized
+     * 
+     * try {
+     * 
+     * String host = config.getHost() != null ? config.getHost() : "localhost";
+     * int port = config.getPort() != 0 ? config.getPort() : 6379;
+     * 
+     * String redisUri = "redis://" + host + ":" + port;
+     * 
+     * System.out.println(contain.opensource.shared.constants.AlfrescoConstants.
+     * BG_GREEN
+     * + ("[RedisManager] Connecting to " + redisUri)
+     * + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+     * client = RedisClient.create(redisUri);
+     * connection = client.connect();
+     * redis = connection.sync();
+     * System.out.println(">>> RedisManager initialized");
+     * } catch (Exception e) {
+     * System.err.println("Failed to initialize RedisManager!");
+     * e.printStackTrace();
+     * // Do not throw to allow class to load
+     * }
+     * }
+     * 
+     * // ===============================
+     * // Hash operations (persistent)
+     * // ===============================
+     * 
+     * /** Store a field in a hash
+     */
     /**
      * Stores a value in Redis with a specified TTL (Time To Live) using the given
      * field as the key.
@@ -241,5 +250,32 @@ public final class RedisManager {
             connection.close();
         if (client != null)
             client.shutdown();
+    }
+
+    @PostConstruct
+    public void init() {
+        try
+        {
+        // Automatically runs once when the bean is created
+        String host = config.getHost() != null ? config.getHost() : "localhost";
+        int port = config.getPort() != 0 ? config.getPort() : 6379;
+
+        String redisUri = "redis://" + host + ":" + port;
+
+        this.client = RedisClient.create(redisUri);
+        this.connection = client.connect();
+        this.redis = connection.sync();
+         System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
+                    + ("REDISCONNECTION INITIALIZED: " + redis.toString())
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                    }
+        catch (Exception e) {
+            System.err.println("Failed to initialize RedisManager!");
+            e.printStackTrace();
+        }
+    }
+
+    public RedisCommands<String, String> getCommands() {
+        return this.redis;
     }
 }

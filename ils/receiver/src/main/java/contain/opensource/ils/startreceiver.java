@@ -37,7 +37,7 @@ public class startreceiver {
 		var context = SpringApplication.run(startreceiver.class, args);
 		RedisConfigProperties redisConfig = context.getBean(RedisConfigProperties.class);
 		// GenerateKeyPair();
-		RedisManager.init(redisConfig);
+	//	RedisManager.init(redisConfig);
 		System.out.println("Listening.....");
 	}
 
