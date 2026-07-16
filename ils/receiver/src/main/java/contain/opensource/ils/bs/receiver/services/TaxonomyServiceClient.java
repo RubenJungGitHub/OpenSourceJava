@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.time.Duration;
 import contain.opensource.ils.bs.receiver.model.TaxonomyResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 
 //MIND YOU>.. ALL CERTIFICATES ARE TRUSTED.. THIS IS FOR DEV PURPOSES ONLY
 @Service
@@ -25,6 +26,7 @@ public class TaxonomyServiceClient {
     private final HttpClient httpClient;
     private final ILSRestProperties ilsProperties;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    public Boolean includeDepricated = false;
 
     public TaxonomyServiceClient(ILSRestProperties ilsProperties) throws Exception {
         this.ilsProperties = ilsProperties;
@@ -89,16 +91,17 @@ public class TaxonomyServiceClient {
         }
     }
 
-    public TaxonomyResponse GetTaxonomies(String parent, String lang) {
-        // TaxonomyResponse response = GetTaxonomies(parent, lang);
+    public TaxonomyResponse GetTaxonomies(String parent, String lang){
+
         String baseUrl = this.ilsProperties.gettaxonomyserviceendpoint();
-        String uri = String.format("%s/gettaxonomies?parent=%s&lang=%s", baseUrl, parent, lang);
+        StringBuilder uriBuilder = new StringBuilder();
+        uriBuilder.append(String.format("%s/gettaxonomies?parent=%s&lang=%s", baseUrl, parent, lang, true));
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(uri))
+                    .uri(URI.create(uriBuilder.toString())) // Use the dynamic URI
                     .timeout(Duration.ofSeconds(10))
-                    .header("Accept", "application/json") // Good practice to define expected response
+                    .header("Accept", "application/json")
                     .GET()
                     .build();
 
