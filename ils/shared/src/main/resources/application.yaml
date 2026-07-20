@@ -54,8 +54,8 @@ ils:
   relocateendpoint: http://localhost:55500/api/RelocateIO
   deltalinkfile: "C:\\Temp\\storeddeltalinks.csv"
   ruleengineprojectname: contAlnMigrationRuleset
-  taxonomyserviceendpoint: https://taxonomy-service-ssl:53000/api
-  #taxonomyserviceendpoint: https://localhost:53000/api
+  #taxonomyserviceendpoint: https://taxonomy-service-ssl:53000/api
+  taxonomyserviceendpoint: https://localhost:53000/api
   ruleenginemoveendpoint: http://localhost:55500/rules
   ruleenginecontainerendpoint: http://localhost:8180/kie-server/services/rest/server
   ruleengineendpoint: http://localhost:8180/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn

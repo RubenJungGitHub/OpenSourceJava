@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.time.Duration;
 import contain.opensource.ils.bs.receiver.model.TaxonomyResponse;
+import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 
@@ -24,12 +25,14 @@ import java.util.Optional;
 public class TaxonomyServiceClient {
     private static final Logger log = LoggerFactory.getLogger(TaxonomyServiceClient.class);
     private final HttpClient httpClient;
+    private final RedisManager redisManager;
     private final ILSRestProperties ilsProperties;
     private final ObjectMapper objectMapper = new ObjectMapper();
     public Boolean includeDepricated = false;
 
-    public TaxonomyServiceClient(ILSRestProperties ilsProperties) throws Exception {
+    public TaxonomyServiceClient(ILSRestProperties ilsProperties, RedisManager redisManager) throws Exception {
         this.ilsProperties = ilsProperties;
+        this.redisManager = redisManager;
 
         // 1. Create a TrustManager that trusts all certs (already done)
         TrustManager[] trustAllCerts = new TrustManager[] {
@@ -60,9 +63,21 @@ public class TaxonomyServiceClient {
                 .build();
     }
 
+
+
+
     public String GetTaxLabel(String taxid) {
         if (taxid == null || taxid.isBlank()) {
             return "No Marking Provided";
+        }
+
+        // First check if value exists in redis for ddos prevention and performance
+        String cachedLabel = this.redisManager.getField(taxid);
+        if (cachedLabel != null) {
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_GREEN
+                    + cachedLabel + " detected in redis cache for taxid: " + taxid
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            return cachedLabel;
         }
 
         // Use a cleaner way to build URIs to avoid manual string concatenation errors
@@ -80,6 +95,9 @@ public class TaxonomyServiceClient {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
+                System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
+                        + response.body() + " detected in VocBench cache for taxid: " + taxid
+                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                 return response.body();
             } else {
                 log.warn("Taxonomy service returned status {}: {}", response.statusCode(), response.body());

@@ -52,7 +52,7 @@ public final class RedisManager {
         this.config = config;
     }
 
-      public static void putHash(String hashKey, String field, String value, Integer TimeSpanSecs) {
+    public static void putHash(String hashKey, String field, String value, Integer TimeSpanSecs) {
         // init();
         // As hashjey TTL will delete entire hashkey .
         // This is undesired because we want to keep the essential info in cache..
@@ -82,6 +82,13 @@ public final class RedisManager {
             // This returns value from key
             redis.expire(uuid, 1200); // reset TTL
             return redis.get(uuid);
+        }
+        return null;
+    }
+
+    public String getField(String field) {
+        if (redis != null) {
+            return redis.get(field); // Standard GET for a String key
         }
         return null;
     }
@@ -180,22 +187,20 @@ public final class RedisManager {
 
     @PostConstruct
     public void init() {
-        try
-        {
-        // Automatically runs once when the bean is created
-        String host = config.getHost() != null ? config.getHost() : "localhost";
-        int port = config.getPort() != 0 ? config.getPort() : 6379;
+        try {
+            // Automatically runs once when the bean is created
+            String host = config.getHost() != null ? config.getHost() : "localhost";
+            int port = config.getPort() != 0 ? config.getPort() : 6379;
 
-        String redisUri = "redis://" + host + ":" + port;
+            String redisUri = "redis://" + host + ":" + port;
 
-        this.client = RedisClient.create(redisUri);
-        this.connection = client.connect();
-        this.redis = connection.sync();
-         System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
+            this.client = RedisClient.create(redisUri);
+            this.connection = client.connect();
+            this.redis = connection.sync();
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_GREEN
                     + ("REDISCONNECTION INITIALIZED: " + redis.toString())
                     + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                    }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Failed to initialize RedisManager!");
             e.printStackTrace();
         }
