@@ -16,9 +16,8 @@ public class TaxcacherScheduler {
         this.cacheTaxonomies = cacheTaxonomies;
     }
 
-    // @Scheduled(fixedDelay = 600_000) -> 10 minutes
-    // @Scheduled(fixedDelay = 600_000)
-    @Scheduled(fixedDelay = 10_000)
+     @Scheduled(fixedDelay = 600_000) //-> 10 minutes
+    //@Scheduled(fixedDelay = 10_000)
     public void maintain() {
         try {
 

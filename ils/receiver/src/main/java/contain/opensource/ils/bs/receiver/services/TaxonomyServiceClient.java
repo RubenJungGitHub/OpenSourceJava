@@ -91,11 +91,17 @@ public class TaxonomyServiceClient {
         }
     }
 
-    public TaxonomyResponse GetTaxonomies(String parent, String lang){
+    public TaxonomyResponse GetTaxonomies(String parent, String lang) {
 
         String baseUrl = this.ilsProperties.gettaxonomyserviceendpoint();
+
         StringBuilder uriBuilder = new StringBuilder();
-        uriBuilder.append(String.format("%s/gettaxonomies?parent=%s&lang=%s", baseUrl, parent, lang, true));
+        uriBuilder.append(String.format("%s/gettaxonomies?parent=%s&lang=%s", baseUrl, parent, lang));
+
+        // 2. Use the exact parameter name the API expects
+        if (includeDepricated != null) {
+            uriBuilder.append("&includedepricated=").append(includeDepricated);
+        }
 
         try {
             HttpRequest request = HttpRequest.newBuilder()

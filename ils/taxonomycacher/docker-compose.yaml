@@ -1,27 +1,22 @@
 
 name: ils
 services:
-  #postgres:
-  #  image: postgres:16
-  #  container_name: postgres
-  #  environment:
-  #    POSTGRES_DB: sharepoint
-  #    POSTGRES_USER: sharepoint
-  #    POSTGRES_PASSWORD: sharepoint
-  #  ports:
-  #    - "5432:5432"
-  #  volumes:
-  #    - postgres-data:/var/lib/postgresql/data
-
   taxonomycacher:
-    build: .
+    build:
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+      context: ..
+      dockerfile: taxonomycacher/Dockerfile
     container_name: taxonomycacher
     ports:
-      - "9090:9090"
+      - "60000:60000"
     networks:
       - ils_ils_default
     environment:
+      # Use host.docker.internal to route from the container to your host machine
+      SPRING_DATA_MONGODB_URI: mongodb://host.docker.internal:27017/tbl_iolog
 
 networks:
   ils_ils_default:
     external: true
+
