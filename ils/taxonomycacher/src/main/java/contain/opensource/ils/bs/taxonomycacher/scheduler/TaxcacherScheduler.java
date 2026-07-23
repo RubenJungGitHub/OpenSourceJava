@@ -11,18 +11,18 @@ public class TaxcacherScheduler {
     String ANSI_BLACK_TEXT = "\u001B[30m";
     String ANSI_RESET = "\u001B[0m";
     private final CacheTaxonomies cacheTaxonomies;
-
+private static final long interVal = 600_000; // 10 minutes in milliseconds
     public TaxcacherScheduler(CacheTaxonomies cacheTaxonomies) {
         this.cacheTaxonomies = cacheTaxonomies;
     }
 
-     @Scheduled(fixedDelay = 600_000) //-> 10 minutes
+     @Scheduled(fixedDelay = interVal) //-> 10 minutes
     //@Scheduled(fixedDelay = 10_000)
     public void maintain() {
         try {
 
             System.out.println(ANSI_GREEN_BACKGROUND + ANSI_BLACK_TEXT +
-                    "[CONSOLE] [NEW CACHE] Interval voor Taxcacher is bereikt. Uitvoeren van caching..." +
+                    "[CONSOLE] [NEW CACHE] Interval of " + interVal/1000 + " seconds voor Taxcacher is bereikt. Uitvoeren van caching..." +
                     ANSI_RESET);
 
                     cacheTaxonomies.process();

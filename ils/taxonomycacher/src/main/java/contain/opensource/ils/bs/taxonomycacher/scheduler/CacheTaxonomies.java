@@ -110,12 +110,12 @@ public class CacheTaxonomies {
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
                 try {
-                    var classifications = objectMapper.readValue(response.body(), TaxonomyResponse.class);
+                    var markings = objectMapper.readValue(response.body(), TaxonomyResponse.class);
 
-                    if (classifications != null && classifications.options != null) {
-                        for (TaxonomyResponse.Option option : classifications.options) {
+                    if (markings != null && markings.options != null) {
+                        for (TaxonomyResponse.Option option : markings.options) {
                             // Example: Key = "taxonomy:classification:c_ab456850", Value = "Confidential"
-                            String key = "taxonomy:classification:" + option.value;
+                            String key = "taxonomy:markings:" + option.value;
                             // String CheckIndRedis = redisManager.getHashField(key, key);
                             // if (CheckIndRedis == null || CheckIndRedis.isEmpty()) {
                             redisManager.putHash("taxonomies", option.value, option.label, 3600); //
