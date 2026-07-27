@@ -371,10 +371,10 @@ public class GraphService {
                         "",
                         AlfrescoConstants.eActionPerformed.IOCOPIED,
                         "System",
-                        this.taxonomyServiceClient.GetTaxLabel(node.markingID.toString()),
                         node.getMarkingID(),
-                        this.taxonomyServiceClient.GetTaxLabel(node.classificationID.toString()),
+                        this.taxonomyServiceClient.GetTaxLabel(node.markingID.toString()),
                         node.getclassificationID(),
+                        this.taxonomyServiceClient.GetTaxLabel(node.classificationID.toString()),
                         node.getVersion());
                 // ==========================================================================================
                 return "Success";
