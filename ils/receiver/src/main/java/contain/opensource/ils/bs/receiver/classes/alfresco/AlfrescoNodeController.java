@@ -73,7 +73,8 @@ public class AlfrescoNodeController {
   private TaxonomyServiceClient taxonomyServiceClient;
 
   @Autowired
-  public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsproperties, TaxonomyServiceClient taxonomyServiceClient) {
+  public AlfrescoNodeController(AlfrescoProperties alfrescoProperties, ILSRestProperties ilsproperties,
+      TaxonomyServiceClient taxonomyServiceClient) {
     this.alfrescoProperties = alfrescoProperties;
     this.ilsproperties = ilsproperties;
     this.taxonomyServiceClient = taxonomyServiceClient;
@@ -554,10 +555,10 @@ public class AlfrescoNodeController {
               "",
               AlfrescoConstants.eActionPerformed.COPIEDUUID,
               "System",
-              IOobject.marking,
               IOobject.markingID,
-              IOobject.classification,
+              this.taxonomyServiceClient.GetTaxLabel(IOobject.markingID.toString()),
               IOobject.classificationID,
+              this.taxonomyServiceClient.GetTaxLabel(IOobject.classificationID.toString()),
               IOobject.version);
         }
       }
@@ -689,10 +690,10 @@ public class AlfrescoNodeController {
                 "",
                 AlfrescoConstants.eActionPerformed.IOCOPIED,
                 "System",
-                IOobject.marking,
                 IOobject.markingID,
-                IOobject.classification,
+                this.taxonomyServiceClient.GetTaxLabel(IOobject.markingID.toString()),
                 IOobject.classificationID,
+                this.taxonomyServiceClient.GetTaxLabel(IOobject.classificationID.toString()),
                 IOobject.version);
             return "";
           } else {
@@ -885,9 +886,9 @@ public class AlfrescoNodeController {
             AlfrescoConstants.eActionPerformed.IOBOUND,
             "System",
             Alfrescoitem.markingID,
-            Alfrescoitem.marking =  this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.markingID),
+            Alfrescoitem.marking = this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.markingID),
             Alfrescoitem.classificationID,
-            Alfrescoitem.classification= this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.classificationID),
+            Alfrescoitem.classification = this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.classificationID),
             Alfrescoitem.version);
         // ==========================================================================================
       }
@@ -1212,13 +1213,14 @@ public class AlfrescoNodeController {
               jsonBody,
               eActionPerformed.ASSIGNUUID,
               alfresconNodeResponse.entry.modifiedByUser.displayName,
-              
-              this.alfresconNodeResponse.markingID,
-              this.alfresconNodeResponse.marking =  this.taxonomyServiceClient.GetTaxLabel(this.alfresconNodeResponse.markingID),
-              this.alfresconNodeResponse.classificationID,
-              this.alfresconNodeResponse.classification =  this.taxonomyServiceClient.GetTaxLabel(this.alfresconNodeResponse.classificationID),
-              this.alfresconNodeResponse.version);
 
+              this.alfresconNodeResponse.markingID,
+              this.alfresconNodeResponse.marking = this.taxonomyServiceClient
+                  .GetTaxLabel(this.alfresconNodeResponse.markingID),
+              this.alfresconNodeResponse.classificationID,
+              this.alfresconNodeResponse.classification = this.taxonomyServiceClient
+                  .GetTaxLabel(this.alfresconNodeResponse.classificationID),
+              this.alfresconNodeResponse.version);
 
           System.out.println("Node updated successfully:");
           System.out.println(responseJson);

@@ -364,16 +364,16 @@ public class GraphService {
                         listItemId,
                         "-",
                         action,
-                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
                         AlfrescoConstants.ContainPlatforms.SPO.toString(),
                         "BOUND ON DESTINATION",
                         node.getFileName(),
                         "",
                         AlfrescoConstants.eActionPerformed.IOCOPIED,
                         "System",
-                        node.getMarking(),
+                        this.taxonomyServiceClient.GetTaxLabel(node.markingID.toString()),
                         node.getMarkingID(),
-                        node.getclassification(),
+                        this.taxonomyServiceClient.GetTaxLabel(node.classificationID.toString()),
                         node.getclassificationID(),
                         node.getVersion());
                 // ==========================================================================================
@@ -735,7 +735,7 @@ public class GraphService {
 
                 // Log
                 IOLog.log(
-                        "DeletedFromPlatform",
+                        ROobject.getUuid(),
                         ROobject.getId(),
                         "",
                         action,
@@ -746,9 +746,9 @@ public class GraphService {
                         "",
                         AlfrescoConstants.eActionPerformed.IODELETED,
                         "System",
-                        ROobject.marking,
+                        this.taxonomyServiceClient.GetTaxLabel(ROobject.markingID.toString()),
                         ROobject.markingID,
-                        ROobject.classification,
+                        this.taxonomyServiceClient.GetTaxLabel(ROobject.classificationID.toString()),
                         ROobject.classificationID,
                         ROobject.version);
             } else {
@@ -789,7 +789,7 @@ public class GraphService {
 
                 // Log
                 IOLog.log(
-                        "DeletedFromPlatform",
+                        ROobject.getUuid(),
                         ROobject.getId(),
                         "",
                         action,
@@ -800,10 +800,10 @@ public class GraphService {
                         "",
                         AlfrescoConstants.eActionPerformed.IODELETED,
                         "System",
-                        ROobject.marking,
                         ROobject.markingID,
-                        ROobject.classification,
+                        this.taxonomyServiceClient.GetTaxLabel(ROobject.markingID.toString()),
                         ROobject.classificationID,
+                        this.taxonomyServiceClient.GetTaxLabel(ROobject.classificationID.toString()),
                         ROobject.version);
             } else {
                 throw new RuntimeException(
