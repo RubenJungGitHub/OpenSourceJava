@@ -41,7 +41,10 @@ alfresco:
 
 ils:
   baseurl: http://localhost:55000
-  uudiutilendpoint: http://localhost:5002/api/GetUUID
+  #Docker
+  #uudiutilendpoint: http://localhost:5002/api/GetUUID
+  #OpenShift
+  uudiutilendpoint: http://uuidutil-route-contain-dvl.apps.ocp0.anders-nogic.atos.net/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
   taxonomyserviceendpoint: https://localhost:53000/api
   relocateendpoint: http://localhost:55000/api/MigrateIO

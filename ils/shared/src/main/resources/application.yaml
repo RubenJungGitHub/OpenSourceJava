@@ -49,7 +49,10 @@ alfresco:
 
 ils:
   baseurl: http://localhost:5000
-  uudiutilendpoint: http://localhost:5002/api/GetUUID
+  #Docker
+  #uudiutilendpoint: http://localhost:5002/api/GetUUID
+  #OpenShift
+  uudiutilendpoint: http://uuidutil-route-contain-dvl.apps.ocp0.anders-nogic.atos.net/api/GetUUID
   bindendpoint: http://localhost:55500/api/Bind
   relocateendpoint: http://localhost:55500/api/RelocateIO
   deltalinkfile: "C:\\Temp\\storeddeltalinks.csv"
