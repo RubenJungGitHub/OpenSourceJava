@@ -10,20 +10,20 @@ $ErrorActionPreference = "Continue"
 # 1. CONFIGURATION
 # ==========================================
 $ghUser = "RubenJungGitHub"      # Your GitHub username
-$githubToken = "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" 
+$githubToken = "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" 
 
 # Define the collection of container images to process
 $containers = @(
-    @{ Repo = "ils-uuidutil";       LocalTag = "latest"; TargetTag = "v1.0" },
-    @{ Repo = "ils-receiver";    LocalTag = "latest"; TargetTag = "v1.0" },
-    @{ Repo = "ils-taxonomycacher";    LocalTag = "latest"; TargetTag = "v1.0" }
-    @{ Repo = "ils-taxonomy-service-ssl";    LocalTag = "latest"; TargetTag = "v1.0" }
-    @{ Repo = "ils-taxonomycacher";    LocalTag = "latest"; TargetTag = "v1.0" }
-    @{ Repo = "sharepoint-subscriptionservice";    LocalTag = "latest"; TargetTag = "v1.0" }
-    @{ Repo = "sharepoint-notificationservice";    LocalTag = "latest"; TargetTag = "v1.0" }
-    @{ Repo = "ilsqueuepollers-migrationqueuepoller";    LocalTag = "latest"; TargetTag = "v1.0" }
-    @{ Repo = "ilsqueuepollers-sharepointqueuepoller";    LocalTag = "latest"; TargetTag = "v1.0" }
-    @{ Repo = "ilsqueuepollers-alfrescoqueuepoller";    LocalTag = "latest"; TargetTag = "v1.0" }
+    @{ Repo = "ils-uuidutil";       LocalTag = "latest"; TargetTag = "v1.0" }
+#    @{ Repo = "ils-receiver";    LocalTag = "latest"; TargetTag = "v1.0" },
+#    @{ Repo = "ils-taxonomycacher";    LocalTag = "latest"; TargetTag = "v1.0" }
+#    @{ Repo = "ils-taxonomy-service-ssl";    LocalTag = "latest"; TargetTag = "v1.0" }
+#    @{ Repo = "ils-taxonomycacher";    LocalTag = "latest"; TargetTag = "v1.0" }
+#    @{ Repo = "sharepoint-subscriptionservice";    LocalTag = "latest"; TargetTag = "v1.0" }
+#    @{ Repo = "sharepoint-notificationservice";    LocalTag = "latest"; TargetTag = "v1.0" }
+#    @{ Repo = "ilsqueuepollers-migrationqueuepoller";    LocalTag = "latest"; TargetTag = "v1.0" }
+#    @{ Repo = "ilsqueuepollers-sharepointqueuepoller";    LocalTag = "latest"; TargetTag = "v1.0" }
+#    @{ Repo = "ilsqueuepollers-alfrescoqueuepoller";    LocalTag = "latest"; TargetTag = "v1.0" }
 )
 # ==========================================
 # 2. GHCR AUTHENTICATION (ONCE FOR ALL)
