@@ -1,0 +1,6 @@
+﻿#cd C:\Users\nl07428\Desktop\contAIn\alfresco-university\envs\sandbox\acs\developer\OpenShift\manifests\
+#d:\tools\kompose kompose convert -f C:\Users\nl07428\Desktop\contAIn\alfresco-university\envs\sandbox\acs\developer\compose-withvolume-BaseForOpenShift.yml --provider openshift -o C:\Users\nl07428\Desktop\contAIn\alfresco-university\envs\sandbox\acs\developer\OpenShift\manifests\Alfresco\
+cd D:\contAIn\OpenSourceJava\ils\Scripts\docker-postgress-redis-activemq-mongodb-RHBAP
+d:\tools\kompose convert -f D:\contAIn\OpenSourceJava\ils\Scripts\docker-postgress-redis-activemq-mongodb-RHBAP\docker-compose-#4_PG_redis.yml --provider openshift -o C:\Users\nl07428\Desktop\contAIn\alfresco-university\envs\sandbox\acs\developer\OpenShift\manifests\ILSTools\Redis\
+d:\tools\kompose convert -f D:\contAIn\OpenSourceJava\ils\Scripts\docker-postgress-redis-activemq-mongodb-RHBAP\docker-compose-#3_mongodb.yml --provider openshift -o C:\Users\nl07428\Desktop\contAIn\alfresco-university\envs\sandbox\acs\developer\OpenShift\manifests\ILSTools\MongoDB\
+d:\tools\kompose convert -f D:\contAIn\OpenSourceJava\ils\Scripts\docker-postgress-redis-activemq-mongodb-RHBAP\docker-compose-#1_RHBAP-BC.yml --provider openshift -o C:\Users\nl07428\Desktop\contAIn\alfresco-university\envs\sandbox\acs\developer\OpenShift\manifests\ILSTools\RHBC\

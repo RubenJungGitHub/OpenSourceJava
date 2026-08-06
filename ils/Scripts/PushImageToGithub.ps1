@@ -9,13 +9,13 @@ $ErrorActionPreference = "Stop"
 # ==========================================
 # 1. CONFIGURATION
 # ==========================================
-$localRepo = "ils-uuidutil"          # Local Docker repository name
+$localRepo = "vocbench-vocbench"          # Local Docker repository name
 $localTag  = "latest"                # Local Docker tag
 $ghUser    = "RubenJungGitHub"       # Your GitHub username
 $targetTag = "v1.0"                  # Target tag for GHCR
 
 # IMPORTANT: Replace with your actual Classic Personal Access Token (ghp_...)
-$githubToken = "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" 
+$githubToken = "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" 
 
 # ==========================================
 # 2. GHCR AUTHENTICATION

@@ -1,5 +1,3 @@
-\name: RHBAPBC
-
 services:
   business-central:
     image: quay.io/kiegroup/business-central-workbench-showcase:7.73.0.Final

@@ -1,0 +1,1 @@
+﻿c login --server=https://api.ocp0.anders-nogic.atos.net:6443
