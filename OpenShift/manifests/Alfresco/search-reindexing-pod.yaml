@@ -1,0 +1,37 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: search-reindexing
+  name: search-reindexing
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: search-reindexing
+  template:
+    metadata:
+      labels:
+        io.kompose.service: search-reindexing
+    spec:
+      # Add your secret here:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - image: quay.io/alfresco/alfresco-elasticsearch-reindexing:4.0.1
+          name: search-reindexing
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          # ... rest of your container configuration
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - search-reindexing
+        from:
+          kind: ImageStreamTag
+          name: search-reindexing:4.0.1
+      type: ImageChange

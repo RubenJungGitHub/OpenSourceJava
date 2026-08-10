@@ -1,0 +1,39 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: sync-service
+  name: sync-service
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: sync-service
+  template:
+    metadata:
+      labels:
+        io.kompose.service: sync-service
+    spec:
+      containers:
+        - env:
+            - name: JAVA_OPTS
+              value: -Dsql.db.driver=org.postgresql.Driver -Dsql.db.url=jdbc:postgresql://postgres:5432/alfresco -Dsql.db.username=alfresco -Dsql.db.password=alfresco -Dmessaging.broker.host=activemq -Drepo.hostname=alfresco -Drepo.port=8080 -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+          image: ' '
+          name: sync-service
+          ports:
+            - containerPort: 9090
+              protocol: TCP
+          resources:
+            limits:
+              memory: "1073741824"
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - sync-service
+        from:
+          kind: ImageStreamTag
+          name: sync-service:4.0.1
+      type: ImageChange

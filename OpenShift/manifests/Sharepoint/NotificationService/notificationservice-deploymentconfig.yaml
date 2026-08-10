@@ -1,0 +1,59 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: notificationservice
+  name: notificationservice
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: notificationservice
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: notificationservice
+    spec:
+      containers:
+        - env:
+            - name: SPRING_ACTIVEMQ_BROKER_URL
+              value: tcp://developer-activemq-1:61616
+            - name: SPRING_ACTIVEMQ_PASSWORD
+              value: admin
+            - name: SPRING_ACTIVEMQ_USER
+              value: admin
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: contain
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+            - name: SPRING_DATASOURCE_USERNAME
+              value: contain
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+            - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+              value: org.hibernate.dialect.PostgreSQLDialect
+          image: ' '
+          name: notificationservice
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: delta-data
+      restartPolicy: Always
+      volumes:
+        - name: delta-data
+          persistentVolumeClaim:
+            claimName: delta-data
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - notificationservice
+        from:
+          kind: ImageStreamTag
+          name: notificationservice:latest
+      type: ImageChange

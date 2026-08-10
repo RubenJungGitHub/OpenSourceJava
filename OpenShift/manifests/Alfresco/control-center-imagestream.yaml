@@ -1,0 +1,16 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    io.kompose.service: control-center
+  name: control-center
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - from:
+        kind: DockerImage
+        name: quay.io/alfresco/alfresco-control-center:8.4.1
+      name: 8.4.1
+      referencePolicy:
+        type: ""

@@ -1,0 +1,69 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: postgres
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: postgres
+    spec:
+      securityContext:
+        fsGroup: 1000900000
+      containers:
+        - args:
+            - postgres
+            - -c
+            - max_connections=300
+            - -c
+            - log_min_messages=LOG
+          env:
+            - name: POSTGRES_DB
+              value: alfresco
+            - name: POSTGRES_PASSWORD
+              value: alfresco
+            - name: POSTGRES_USER
+              value: alfresco
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          image: postgres:14.4
+          name: postgres
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          resources:
+            limits:
+              memory: "536870912"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-data
+            - mountPath: /var/run/postgresql
+              name: postgres-run
+      restartPolicy: Always
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data
+        - name: postgres-run
+          emptyDir: {}
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - postgres
+        from:
+          kind: ImageStreamTag
+          name: postgres:14.4
+      type: ImageChange

@@ -1,0 +1,42 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: digital-workspace
+  name: digital-workspace
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: digital-workspace
+  template:
+    metadata:
+      labels:
+        io.kompose.service: digital-workspace
+    spec:
+      containers:
+        - env:
+            - name: APP_BASE_SHARE_URL
+              value: http://localhost:8080/workspace/#/preview/s
+            - name: APP_CONFIG_AUTH_TYPE
+              value: BASIC
+            - name: APP_CONFIG_PROVIDER
+              value: ECM
+            - name: BASE_PATH
+              value: ./
+          image: ' '
+          name: digital-workspace
+          resources:
+            limits:
+              memory: "134217728"
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - digital-workspace
+        from:
+          kind: ImageStreamTag
+          name: digital-workspace:4.4.1
+      type: ImageChange

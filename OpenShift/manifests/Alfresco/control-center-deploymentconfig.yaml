@@ -1,0 +1,40 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: control-center
+  name: control-center
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: control-center
+  template:
+    metadata:
+      labels:
+        io.kompose.service: control-center
+    spec:
+      containers:
+        - env:
+            - name: APP_CONFIG_AUTH_TYPE
+              value: BASIC
+            - name: APP_CONFIG_PROVIDER
+              value: ECM
+            - name: BASE_PATH
+              value: ./
+          image: ' '
+          name: control-center
+          resources:
+            limits:
+              memory: "134217728"
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - control-center
+        from:
+          kind: ImageStreamTag
+          name: control-center:8.4.1
+      type: ImageChange

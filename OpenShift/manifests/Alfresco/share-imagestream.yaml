@@ -1,0 +1,16 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    io.kompose.service: share
+  name: share
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - from:
+        kind: DockerImage
+        name: quay.io/alfresco/alfresco-share:23.2.1
+      name: 23.2.1
+      referencePolicy:
+        type: ""

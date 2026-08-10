@@ -1,0 +1,35 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: mailhog
+  name: mailhog
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: mailhog
+  template:
+    metadata:
+      labels:
+        io.kompose.service: mailhog
+    spec:
+      containers:
+        - image: ' '
+          name: mailhog
+          ports:
+            - containerPort: 1025
+              protocol: TCP
+            - containerPort: 8025
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - mailhog
+        from:
+          kind: ImageStreamTag
+          name: mailhog:latest
+      type: ImageChange

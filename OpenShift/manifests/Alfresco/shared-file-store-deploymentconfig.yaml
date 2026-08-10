@@ -1,0 +1,52 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: shared-file-store
+  name: shared-file-store
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: shared-file-store
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: shared-file-store
+    spec:
+      containers:
+        - env:
+            - name: JAVA_OPTS
+              value: -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+            - name: scheduler.cleanup.interval
+              value: "86400000"
+            - name: scheduler.content.age.millis
+              value: "86400000"
+          image: ' '
+          name: shared-file-store
+          ports:
+            - containerPort: 8099
+              protocol: TCP
+          resources:
+            limits:
+              memory: "536870912"
+          volumeMounts:
+            - mountPath: /tmp/Alfresco/sfs
+              name: shared-file-store-volume
+      restartPolicy: Always
+      volumes:
+        - name: shared-file-store-volume
+          persistentVolumeClaim:
+            claimName: shared-file-store-volume
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - shared-file-store
+        from:
+          kind: ImageStreamTag
+          name: shared-file-store:4.1.1
+      type: ImageChange

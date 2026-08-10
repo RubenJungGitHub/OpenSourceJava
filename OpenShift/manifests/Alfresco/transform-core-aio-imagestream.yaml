@@ -1,0 +1,16 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    io.kompose.service: transform-core-aio
+  name: transform-core-aio
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - from:
+        kind: DockerImage
+        name: alfresco/alfresco-transform-core-aio:5.1.1
+      name: 5.1.1
+      referencePolicy:
+        type: ""

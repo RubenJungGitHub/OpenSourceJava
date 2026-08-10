@@ -1,0 +1,16 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    io.kompose.service: alfrescoqueuepoller
+  name: alfrescoqueuepoller
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - from:
+        kind: DockerImage
+        name: alfrescoqueuepoller
+      name: latest
+      referencePolicy:
+        type: ""

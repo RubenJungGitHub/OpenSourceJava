@@ -1,0 +1,16 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    io.kompose.service: taxonomycacher
+  name: taxonomycacher
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - from:
+        kind: DockerImage
+        name: taxonomycacher
+      name: latest
+      referencePolicy:
+        type: ""

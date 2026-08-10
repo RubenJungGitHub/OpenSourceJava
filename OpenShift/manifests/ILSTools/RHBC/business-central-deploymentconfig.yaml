@@ -1,0 +1,44 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: business-central
+  name: business-central
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: business-central
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: business-central
+    spec:
+      containers:
+        - env:
+            - name: JAVA_OPTS
+              value: -Xms512m -Xmx2048m -Djava.net.preferIPv4Stack=true -Dorg.kie.demo=false -Dorg.kie.example=false
+            - name: KIE_ADMIN_PWD
+              value: admin
+            - name: KIE_ADMIN_USER
+              value: admin
+          image: ' '
+          name: business-central
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8001
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - business-central
+        from:
+          kind: ImageStreamTag
+          name: business-central:7.73.0.Final
+      type: ImageChange

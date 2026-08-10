@@ -1,0 +1,42 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: taxonomy-service
+  name: taxonomy-service
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: taxonomy-service
+  template:
+    metadata:
+      labels:
+        io.kompose.service: taxonomy-service
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: docker
+            - name: VOCBENCH_BASE_URL
+              value: http://vocbench-vocbench-1:1979
+            - name: VOCBENCH_PASSWORD
+              value: admin
+            - name: VOCBENCH_USER
+              value: admin@vocbench.com
+          image: ' '
+          name: taxonomy-service
+          ports:
+            - containerPort: 54000
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - taxonomy-service
+        from:
+          kind: ImageStreamTag
+          name: taxonomy-service:latest
+      type: ImageChange

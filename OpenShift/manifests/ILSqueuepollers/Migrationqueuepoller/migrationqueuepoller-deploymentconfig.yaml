@@ -1,0 +1,42 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: migrationqueuepoller
+  name: migrationqueuepoller
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: migrationqueuepoller
+  template:
+    metadata:
+      labels:
+        io.kompose.service: migrationqueuepoller
+    spec:
+      containers:
+        - env:
+            - name: SPRING_CONFIG_LOCATION
+              value: /app/data/application.yaml
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: contain
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+            - name: SPRING_DATASOURCE_USERNAME
+              value: contain
+          image: ' '
+          name: migrationqueuepoller
+          ports:
+            - containerPort: 3003
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - migrationqueuepoller
+        from:
+          kind: ImageStreamTag
+          name: migrationqueuepoller:latest
+      type: ImageChange

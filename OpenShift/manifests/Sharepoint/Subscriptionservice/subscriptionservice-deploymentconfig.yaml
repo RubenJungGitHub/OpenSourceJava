@@ -1,0 +1,44 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: subscriptionservice
+  name: subscriptionservice
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: subscriptionservice
+  template:
+    metadata:
+      labels:
+        io.kompose.service: subscriptionservice
+    spec:
+      containers:
+        - env:
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: contain
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+            - name: SPRING_DATASOURCE_USERNAME
+              value: contain
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+            - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+              value: org.hibernate.dialect.PostgreSQLDialect
+          image: ' '
+          name: subscriptionservice
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - subscriptionservice
+        from:
+          kind: ImageStreamTag
+          name: subscriptionservice:latest
+      type: ImageChange

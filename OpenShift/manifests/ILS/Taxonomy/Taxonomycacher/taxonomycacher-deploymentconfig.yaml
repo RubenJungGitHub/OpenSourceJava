@@ -1,0 +1,36 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: taxonomycacher
+  name: taxonomycacher
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: taxonomycacher
+  template:
+    metadata:
+      labels:
+        io.kompose.service: taxonomycacher
+    spec:
+      containers:
+        - env:
+            - name: SPRING_DATA_MONGODB_URI
+              value: mongodb://host.docker.internal:27017/tbl_iolog
+          image: ' '
+          name: taxonomycacher
+          ports:
+            - containerPort: 60000
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - taxonomycacher
+        from:
+          kind: ImageStreamTag
+          name: taxonomycacher:latest
+      type: ImageChange

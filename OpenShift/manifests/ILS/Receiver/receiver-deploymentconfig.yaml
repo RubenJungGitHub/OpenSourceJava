@@ -1,0 +1,46 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: receiver
+  name: receiver
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: receiver
+  template:
+    metadata:
+      labels:
+        io.kompose.service: receiver
+    spec:
+      containers:
+        - env:
+            - name: APP_KEYSTORE_PATH
+              value: /app/config/Containselfsigned_cert.p12
+            - name: SPRING_CONFIG_LOCATION
+              value: /app/data/application.yaml
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: contain
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+            - name: SPRING_DATASOURCE_USERNAME
+              value: contain
+            - name: SPRING_REDIS_HOST
+              value: Redis-service
+          image: ' '
+          name: receiver
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - receiver
+        from:
+          kind: ImageStreamTag
+          name: receiver:latest
+      type: ImageChange

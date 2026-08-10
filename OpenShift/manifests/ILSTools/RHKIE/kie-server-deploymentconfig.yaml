@@ -1,0 +1,52 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: kie-server
+  name: kie-server
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: kie-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: kie-server
+    spec:
+      containers:
+        - env:
+            - name: JAVA_OPTS
+              value: -Dkie.maven.offline.force=false -Dorg.kie.server.sync.deploy=true
+            - name: KIE_ADMIN_PWD
+              value: admin
+            - name: KIE_ADMIN_USER
+              value: admin
+            - name: KIE_MAVEN_REPO
+              value: http://business-central:8080/business-central/maven2
+            - name: KIE_SCANNER_INTERVAL
+              value: "5000"
+            - name: KIE_SERVER_CONTROLLER
+              value: http://business-central:8080/business-central/rest/controller
+            - name: KIE_SERVER_ID
+              value: rhpam-poc-server
+            - name: KIE_SERVER_LOCATION
+              value: http://kie-server:8080/kie-server/services/rest/server
+          image: ' '
+          name: kie-server
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - kie-server
+        from:
+          kind: ImageStreamTag
+          name: kie-server:7.73.0.Final
+      type: ImageChange

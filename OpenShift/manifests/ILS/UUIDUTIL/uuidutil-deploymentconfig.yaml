@@ -1,0 +1,35 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: uuidutil
+  name: uuidutil
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: uuidutil
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: uuidutil
+    spec:
+      containers:
+        - image: ' '
+          name: uuidutil
+          ports:
+            - containerPort: 5002
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - uuidutil
+        from:
+          kind: ImageStreamTag
+          name: uuidutil:latest
+      type: ImageChange

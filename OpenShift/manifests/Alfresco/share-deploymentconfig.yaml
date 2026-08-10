@@ -1,0 +1,40 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: share
+  name: share
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: share
+  template:
+    metadata:
+      labels:
+        io.kompose.service: share
+    spec:
+      containers:
+        - env:
+            - name: JAVA_OPTS
+              value: -XX:MinRAMPercentage=50  -XX:MaxRAMPercentage=80  -Dorg.apache.catalina.webresources.Cache.maxSize=200000 -Dalfresco.host=localhost  -Dalfresco.port=8080  -Dalfresco.context=alfresco  -Dalfresco.protocol=http
+            - name: REPO_HOST
+              value: alfresco
+            - name: REPO_PORT
+              value: "8080"
+          image: ' '
+          name: share
+          resources:
+            limits:
+              memory: "1073741824"
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - share
+        from:
+          kind: ImageStreamTag
+          name: share:23.2.1
+      type: ImageChange
