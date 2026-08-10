@@ -14,6 +14,10 @@ $folders = @(
     "$manifestsBase\ILSqueuepollers\Alfrescoqueuepoller"
     "$manifestsBase\ILSqueuepollers\Sharepointqueuepoller"
     "$manifestsBase\ILSqueuepollers\Migrationqueuepoller"
+    "$manifestsBase\ILS\Taxonomy\TaxonomyCahcer"
+    "$manifestsBase\ILS\TaxonomyService\TaxonomyService"
+    "$manifestsBase\ILS\Receiver"
+    "$manifestsBase\ILS\UUIDUTIL"
 )
 
 # Ensure all directories exist (creates them if missing, does nothing if they already exist)
@@ -58,9 +62,24 @@ d:\tools\kompose convert -f "D:\contAIn\SharePointHandler\Sharepoint\subscriber-
 
 
 # 10. Sharepoint notification Conversion
-d:\tools\kompose convert -f "D:\contAIn\SharePointHandler\Sharepoint\notification-service\docker-compose.yaml" --provider openshift -o "$manifestsBase\\Sharepoint\NotificationService\"
+d:\tools\kompose convert -f "D:\contAIn\SharePointHandler\Sharepoint\notification-service\docker-compose.yaml" --provider openshift -o "$manifestsBase\Sharepoint\NotificationService\"
 
 
+
+# 11. Taxonomy cacher Conversion
+d:\tools\kompose convert -f "D:\contAIn\OpenSourceJava\ils\taxonomycacher\docker-compose.yaml" --provider openshift -o "$manifestsBase\ILS\Taxonomy\Taxonomycacher\"
+
+
+# 12. Taxonomy service Conversion
+d:\tools\kompose convert -f "D:\contAIn\taxonomyservice\taxonomy-controllers\docker-compose.yaml" --provider openshift -o "$manifestsBase\ILS\Taxonomy\Taxonomyservice\"
+
+
+# 13. UUIDUTIL  service Conversion
+d:\tools\kompose convert -f "D:\contAIn\OpenSourceJava\ils\uuidutil\docker-compose.yaml" --provider openshift -o "$manifestsBase\ILS\UUIDUTIL\"
+
+
+# 14. ReceiverConversion
+d:\tools\kompose convert -f "D:\contAIn\OpenSourceJava\ils\receiver" --provider openshift -o "$manifestsBase\ILS\Receiver\"
 
 
 
