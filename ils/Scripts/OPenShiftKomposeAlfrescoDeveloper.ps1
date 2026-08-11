@@ -71,17 +71,15 @@ d:\tools\kompose convert -f "D:\contAIn\OpenSourceJava\ils\taxonomycacher\docker
 
 
 # 12. Taxonomy service Conversion
-d:\tools\kompose convert -f "D:\contAIn\taxonomyservice\taxonomy-controllers\docker-compose.yaml" --provider openshift -o "$manifestsBase\ILS\Taxonomy\Taxonomyservice\"
+d:\tools\kompose convert -f "D:\contAIn\taxonomyservice\taxonomy-controllers\docker-compose.yml" --provider openshift -o "$manifestsBase\ILS\Taxonomy\Taxonomyservice\"
 
 
 # 13. UUIDUTIL  service Conversion
-d:\tools\kompose convert -f "D:\contAIn\OpenSourceJava\ils\uuidutil\docker-compose.yaml" --provider openshift -o "$manifestsBase\ILS\UUIDUTIL\"
+d:\tools\kompose convert -f "D:\contAIn\OpenSourceJava\ils\uuidutil\docker-compose.yml" --provider openshift -o "$manifestsBase\ILS\UUIDUTIL\"
 
 
 # 14. ReceiverConversion
-d:\tools\kompose convert -f "D:\contAIn\OpenSourceJava\ils\receiver" --provider openshift -o "$manifestsBase\ILS\Receiver\"
-
-
+d:\tools\kompose convert -f "D:\contAIn\OpenSourceJava\ils\receiver\docker-compose.yml" --provider openshift -o "$manifestsBase\ILS\Receiver\"
 
 
 Write-Host "All conversions completed successfully!" -ForegroundColor Greenrovider openshift -o C:\Users\nl07428\Desktop\contAIn\alfresco-university\envs\sandbox\acs\developer\OpenShift\manifests\ILSTools\RHKIE\

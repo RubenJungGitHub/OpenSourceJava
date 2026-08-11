@@ -16,7 +16,7 @@ spec:
         io.kompose.service: alfresco
     spec:
       imagePullSecrets:
-        - name: dockerhub-secret
+        - name: alfrescoquayio
       securityContext:
         runAsNonRoot: true
         fsGroup: 1000900000
@@ -57,11 +57,3 @@ spec:
   test: false
   triggers:
     - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-          - alfresco
-        from:
-          kind: ImageStreamTag
-          name: alfresco:23.2.1
-      type: ImageChange
