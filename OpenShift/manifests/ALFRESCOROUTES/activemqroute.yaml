@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: alfresco-activemq-route
+  labels:
+    app: alfresco
+spec:
+  to:
+    kind: Service
+    name: activemq
+  port:
+    targetPort: 8161
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

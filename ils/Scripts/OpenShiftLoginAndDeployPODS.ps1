@@ -29,8 +29,9 @@ oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-"
 
 # Define which components to process in this run
 $PODS = @(
-    "ActiveMQ",
-    "Alfresco"
+    #"ActiveMQ",
+    #"Alfresco",
+    "Routes"
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -104,5 +105,18 @@ if ($PODS -contains "Alfresco" -or $PODS -contains "alfresco") {
     Write-Host "[INFO] Waiting for Share pod to become ready..." -ForegroundColor Yellow
     oc rollout status dc/share -n $project --timeout=300s
 }
+
+
+# --- STAGE 3: Core Alfresco & Search Services ---
+if ($PODS -contains "Routes") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ALFRESCOROUTES\'
+    Write-Host "[INFO] Starting recreation of Alfresco routes..." -ForegroundColor Cyan
+    Write-Host "[INFO] Deploying individual route manifests..." -ForegroundColor Cyan
+    oc apply -R -f $folder -n $project
+
+    Write-Host "[INFO] Retrieving generated route URLs..." -ForegroundColor Yellow
+    oc get routes -l app=alfresco -n $project
+}
+
 
 Write-Host "[SUCCESS] Complete Alfresco enterprise stack deployment sequence finished!" -ForegroundColor Green

@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: alfresco-proxy-route
+  labels:
+    app: alfresco
+spec:
+  to:
+    kind: Service
+    name: proxy
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
