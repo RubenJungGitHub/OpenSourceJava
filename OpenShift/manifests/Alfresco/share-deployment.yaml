@@ -1,0 +1,41 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: share
+  namespace: contain-dvl
+  labels:
+    io.kompose.service: share
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: share
+  template:
+    metadata:
+      labels:
+        io.kompose.service: share
+    spec:
+      containers:
+        - name: share
+          image: quay.io/alfresco/alfresco-share:23.2.1
+          ports:
+            - containerPort: 8080
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: true
+          env:
+            - name: REPO_HOST
+              value: "alfresco"
+            - name: REPO_PORT
+              value: "8082"
+            - name: JAVA_OPTS
+              value: >-
+                -XX:MinRAMPercentage=50 
+                -XX:MaxRAMPercentage=80 
+                -Dorg.apache.catalina.webresources.Cache.maxSize=200000 
+                -Dalfresco.host=alfresco 
+                -Dalfresco.port=8082 
+                -Dalfresco.context= 
+                -Dalfresco.protocol=http
+                -Dalfresco.url=http://alfresco:8082
+  strategy:
+    type: Recreate

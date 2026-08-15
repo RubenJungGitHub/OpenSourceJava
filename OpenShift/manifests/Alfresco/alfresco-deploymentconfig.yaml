@@ -18,8 +18,8 @@ spec:
       imagePullSecrets:
         - name: alfrescoquayio
       securityContext:
-        runAsNonRoot: true
-        fsGroup: 1000900000
+        runAsUser: 0
+        fsGroup: 0
       containers:
         - env:
             - name: JAVA_OPTS
@@ -27,6 +27,9 @@ spec:
             - name: JAVA_TOOL_OPTIONS
               value: -Dencryption.keystore.type=JCEKS -Dencryption.cipherAlgorithm=DESede/CBC/PKCS5Padding -Dencryption.keyAlgorithm=DESede -Dencryption.keystore.location=/usr/local/tomcat/shared/classes/alfresco/extension/keystore/keystore -Dmetadata-keystore.password=mp6yc0UD9e -Dmetadata-keystore.aliases=metadata -Dmetadata-keystore.metadata.password=oKIWzVdEdA -Dmetadata-keystore.metadata.algorithm=DESede
           image: quay.io/alfresco/alfresco-content-repository:23.2.1
+          securityContext:
+            allowPrivilegeEscalation: true
+            runAsUser: 0
           livenessProbe:
             exec:
               command:
@@ -34,7 +37,7 @@ spec:
                 - -f
                 - http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/probes/-ready-
             failureThreshold: 3
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             periodSeconds: 30
             timeoutSeconds: 3
           name: alfresco

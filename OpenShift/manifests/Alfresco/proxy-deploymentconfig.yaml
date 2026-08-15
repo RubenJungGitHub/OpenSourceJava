@@ -4,46 +4,73 @@ metadata:
   labels:
     io.kompose.service: proxy
   name: proxy
+  namespace: contain-dvl
 spec:
   replicas: 1
   selector:
     io.kompose.service: proxy
+  strategy:
+    type: Rolling
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
   template:
     metadata:
       labels:
         io.kompose.service: proxy
     spec:
       containers:
-        - image: ' '
-          name: proxy
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-          ports:
-            - containerPort: 8080
-              protocol: TCP
-          resources:
-            limits:
-              memory: "134217728"
-          volumeMounts:
-            - mountPath: /var/cache/nginx
-              name: nginx-cache
-            - mountPath: /var/run
-              name: nginx-run
-      volumes:
-        - name: nginx-cache
-          emptyDir: {}
-        - name: nginx-run
-          emptyDir: {}
+      - image: alfresco/alfresco-acs-nginx@sha256:a437377ae98c6bc8a96be0c79c8ee147e5bc89cb880210b4b56255679a0ab2c2
+        imagePullPolicy: IfNotPresent
+        name: proxy
+        env:
+          - name: REPO_URL
+            value: "http://alfresco:8082"
+          - name: SHARE_URL
+            value: "http://share:8080"
+          - name: DISABLE_ADW
+            value: "true"
+          - name: DISABLE_SYNCSERVICE
+            value: "true"
+          - name: DISABLE_PROMETHEUS
+            value: "true"
+          - name: DISABLE_CONTROL_CENTER
+            value: "true"
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            memory: "134217728"
+        securityContext:
+          allowPrivilegeEscalation: true
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /var/cache/nginx
+          name: nginx-cache
+        - mountPath: /var/run
+          name: nginx-run
       restartPolicy: Always
+      securityContext:
+        fsGroup: 0
+        runAsUser: 0
+      volumes:
+      - emptyDir: {}
+        name: nginx-cache
+      - emptyDir: {}
+        name: nginx-run
   test: false
   triggers:
-    - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-          - proxy
-        from:
-          kind: ImageStreamTag
-          name: proxy:3.4.2
-      type: ImageChange
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - proxy
+      from:
+        kind: ImageStreamTag
+        name: proxy:3.4.2
+        namespace: contain-dvl
+    type: ImageChange

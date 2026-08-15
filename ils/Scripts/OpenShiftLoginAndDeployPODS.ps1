@@ -1,13 +1,12 @@
 ﻿$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-$token  = 'sha256~Ef6Iy10zbJSomF27ubQApUZngRyHBT7vZ1VTghkZz_k'
-$server = 'https://api.ocp0.anders-nogic.atos.net:6443'
-$project = "contain-dvl"
-#------------------------------------------------------------------
-$server = 'https://api.ocp0.anders-nogic.atos.net:6443'
-$project = "contain-dvl"
-#------------------------------------------------------------------
+$token  = 'sha256~ck73qr_Rdd4qKA1zBqzYlPJmR1WKB_ares3uY4rTEWI'
 
+#------------------------------------------------------------------
+$server = 'https://api.ocp0.anders-nogic.atos.net:6443'
+$project = "contain-dvl"
+
+cls
 # 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
 Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
 oc login --token=$token --server=$server
@@ -30,8 +29,8 @@ oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-"
 # Define which components to process in this run
 $PODS = @(
     #"ActiveMQ",
-    #"Alfresco",
-    "Routes"
+    "Alfresco"
+    #"Routes"
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -76,9 +75,25 @@ if ($PODS -contains "Alfresco" -or $PODS -contains "alfresco") {
     oc patch dc/search -n $project --type=merge -p $patchSecret 2>$null
     oc patch dc/share -n $project --type=merge -p $patchSecret 2>$null
 
-    # Apply root security patch to Search so it can initialize safely
-    $patchSearch = '{"spec":{"template":{"spec":{"securityContext":{"runAsUser":0,"fsGroup":0},"containers":[{"name":"search","securityContext":{"allowPrivilegeEscalation":true,"runAsUser":0}}]}}}}'
-    oc patch dc/search -n $project --type=merge -p $patchSearch
+# Fetch Search DeploymentConfig, modify security context in memory, and apply
+    $dcSearch = oc get dc search -n $project -o json | ConvertFrom-Json
+    if (-not $dcSearch.spec.template.spec.securityContext) {
+        $dcSearch.spec.template.spec | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
+    }
+    $dcSearch.spec.template.spec.securityContext.runAsUser = 0
+    $dcSearch.spec.template.spec.securityContext.fsGroup = 0
+
+    foreach ($container in $dcSearch.spec.template.spec.containers) {
+        if ($container.name -eq "search") {
+            if (-not $container.securityContext) {
+                $container | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
+            }
+            $container.securityContext.allowPrivilegeEscalation = $true
+            $container.securityContext.runAsUser = 0
+        }
+    }
+    $dcSearch | ConvertTo-Json -Depth 20 | oc apply -f -
+
 
     # Trigger rollout for core Alfresco
     oc rollout latest dc/alfresco -n $project
@@ -94,9 +109,25 @@ if ($PODS -contains "Alfresco" -or $PODS -contains "alfresco") {
     oc delete -R -f $shareFolder -n $project --ignore-not-found
     oc apply -R -f $shareFolder -n $project
 
-    # Apply root security context patch to Share to bypass Tomcat path permission blocks
-    $patchShare = '{"spec":{"template":{"spec":{"securityContext":{"runAsUser":0,"fsGroup":0},"containers":[{"name":"share","securityContext":{"allowPrivilegeEscalation":true,"runAsUser":0}}]}}}}'
-    oc patch dc/share -n $project --type=merge -p $patchShare
+    # Apply root security context patch to Share using a clean hashtable
+# Fetch Share DeploymentConfig, modify security context in memory, and apply
+    $dcShare = oc get dc share -n $project -o json | ConvertFrom-Json
+    if (-not $dcShare.spec.template.spec.securityContext) {
+        $dcShare.spec.template.spec | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
+    }
+    $dcShare.spec.template.spec.securityContext.runAsUser = 0
+    $dcShare.spec.template.spec.securityContext.fsGroup = 0
+
+    foreach ($container in $dcShare.spec.template.spec.containers) {
+        if ($container.name -eq "share") {
+            if (-not $container.securityContext) {
+                $container | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
+            }
+            $container.securityContext.allowPrivilegeEscalation = $true
+            $container.securityContext.runAsUser = 0
+        }
+    }
+    $dcShare | ConvertTo-Json -Depth 20 | oc apply -f -
 
     # Trigger rollout for Share
     oc rollout latest dc/share -n $project
