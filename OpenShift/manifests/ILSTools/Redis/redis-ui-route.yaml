@@ -1,0 +1,17 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: redis-ui
+  namespace: contain-dvl
+  labels:
+    io.kompose.service: redis
+spec:
+  host: redis-ui-contain-dvl.apps.ocp0.anders-nogic.atos.net
+  to:
+    kind: Service
+    name: redis
+  port:
+    targetPort: 8001
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

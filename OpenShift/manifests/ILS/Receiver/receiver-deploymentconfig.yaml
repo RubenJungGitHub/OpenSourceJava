@@ -13,6 +13,8 @@ spec:
       labels:
         io.kompose.service: receiver
     spec:
+      imagePullSecrets:
+        - name: containgithubrepos
       containers:
         - env:
             - name: APP_KEYSTORE_PATH
@@ -20,14 +22,15 @@ spec:
             - name: SPRING_CONFIG_LOCATION
               value: /app/data/application.yaml
             - name: SPRING_DATASOURCE_PASSWORD
-              value: contain
+              value: alfresco
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
             - name: SPRING_DATASOURCE_USERNAME
-              value: contain
+              value: alfresco
             - name: SPRING_REDIS_HOST
               value: Redis-service
-          image: ' '
+          image: 'ghcr.io/rubenjunggithub/ils-receiver:v1.0'
+          imagePullPolicy: IfNotPresent
           name: receiver
           ports:
             - containerPort: 8080
@@ -36,11 +39,3 @@ spec:
   test: false
   triggers:
     - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-          - receiver
-        from:
-          kind: ImageStreamTag
-          name: receiver:latest
-      type: ImageChange

@@ -29,10 +29,15 @@ oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-"
 # Define which components to process in this run
 $PODS = @(
     #"ActiveMQ",
-    #"Postgres",
+    #"Postgres"
     #"Alfresco"
     #"Routes"
-    "AlfrescoQueuePoller"
+    #"AlfrescoQueuePoller"
+    #"MongoDB"
+    "REDIS"
+    #"RHKBC",
+    #"RHKIE",
+    #"Receiver"
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -152,7 +157,36 @@ if ($PODS -contains "Routes") {
     oc get routes -l app=alfresco -n $project
 }
 
-# --- STAGE 5: AlfrescoQueuePoller---
+# --- STAGE 5: Redis---
+if ($PODS -contains "Redis") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\Redis'
+    Write-Host "[INFO] Starting recreation of Redis..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+    
+    Write-Host "[INFO] Ensuring Redis UI Route exists..." -ForegroundColor Cyan
+    oc expose service redis --name=redis-ui --port=8001 --target-port=8001 --dry-run=client -o yaml | oc apply -f - -n contain-dvl
+}
+
+# --- STAGE 6: MonogDB---
+if ($PODS -contains "MongoDB") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\MongoDB'
+    Write-Host "[INFO] Starting recreation of MongoDB..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+}
+
+
+# --- STAGE 7: Receiver---
+if ($PODS -contains "Receiver") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Receiver\'
+    Write-Host "[INFO] Starting recreation of receiver..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+}
+
+
+# --- STAGE 8: AlfrescoQueuePoller---
 if ($PODS -contains "AlfrescoQueuePoller") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\Alfrescoqueuepoller\'
     Write-Host "[INFO] Starting recreation of Alfresco queupoller..." -ForegroundColor Cyan

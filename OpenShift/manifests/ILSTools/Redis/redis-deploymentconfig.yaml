@@ -4,6 +4,7 @@ metadata:
   labels:
     io.kompose.service: redis
   name: redis
+  namespace: contain-dvl
 spec:
   replicas: 1
   selector:
@@ -13,22 +14,50 @@ spec:
       labels:
         io.kompose.service: redis
     spec:
+      imagePullSecrets:
+        - name: containgithubrepos
       containers:
-        - image: ' '
-          livenessProbe:
-            exec:
-              command:
-                - redis-cli
-                - ping
-            failureThreshold: 5
-            periodSeconds: 5
-            timeoutSeconds: 2
+        - image: redis/redis-stack:latest
           name: redis-service
+          # Remove the custom command and args completely!
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+          env:
+            - name: PORT
+              value: "8001"
+            - name: RI_APP_PORT
+              value: "8001"
+            - name: REDISINSIGHT_HOST
+              value: "0.0.0.0"
+            - name: RI_FILES_LOGGER
+              value: "true"
+            - name: HOME
+              value: /tmp   # Crucial: Gives RedisInsight a writable home directory for its runtime files
           ports:
             - containerPort: 6379
               protocol: TCP
             - containerPort: 8001
               protocol: TCP
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+            - name: redis-logs
+              mountPath: /redisinsight
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 20   # Give it a bit more time to spin up both services
+            failureThreshold: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+      volumes:
+        - name: redis-data
+          emptyDir: {}
+        - name: redis-logs
+          emptyDir: {}
       restartPolicy: Always
   test: false
   triggers:

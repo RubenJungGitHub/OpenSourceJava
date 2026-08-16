@@ -9,7 +9,7 @@ $ErrorActionPreference = "Stop"
 # ==========================================
 # 1. CONFIGURATION
 # ==========================================
-$localRepo = "vocbench-vocbench"          # Local Docker repository name
+$localRepo = "mongo"          # Local Docker repository name
 $localTag  = "latest"                # Local Docker tag
 $ghUser    = "RubenJungGitHub"       # Your GitHub username
 $targetTag = "v1.0"                  # Target tag for GHCR
