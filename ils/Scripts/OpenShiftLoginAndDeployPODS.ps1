@@ -44,6 +44,8 @@ if ($PODS -contains "Postgres" -or $PODS -contains "postgres") {
 
     Write-Host "[INFO] Waiting for PostgreSQL pod to become ready..." -ForegroundColor Yellow
     oc rollout status dc/postgres -n $project --timeout=120s
+    #Foreward port
+    oc port-forward svc/postgres 5432:5432 -n contain-dvl
 }
 
 # --- STAGE 2: ActiveMQ Infrastructure ---

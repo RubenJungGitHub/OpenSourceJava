@@ -7,6 +7,13 @@ oc get pods -n contain-dvl
 $manifestPath = "C:\Users\nl07428\Desktop\contAIn\alfresco-university\envs\sandbox\acs\developer\OpenShift\manifests\Alfresco\alfresco-deploymentconfig.yaml"
 
 
+#Restart POD.
+oc scale dc/alfresco --replicas=0 -n contain-dvl
+#Wait 5 secs 
+Start-Sleep -Seconds 5
+oc scale dc/alfresco --replicas=1 -n contain-dvl
+
+
 # 1. Delete the incorrect secret
 #oc delete secret alfrescoquayio -n $project --ignore-not-found=true
 
@@ -50,3 +57,19 @@ oc get pods -n $project --selector=openshift.io/deployer-pod-name.name=alfresco
 
 # 3. Check events in the namespace to see if it's struggling to pull or schedule
 oc get events -n $project --sort-by='.metadata.creationTimestamp' | Select-Object -Last 15
+
+
+PS D:\contAIn\OpenSourceJava\OpenShift\manifests\Alfresco> oc get pod -l io.kompose.service=alfresco -n contain-dvl -o jsonpath="{.items[0].spec.containers[0].ports[*].containerPort}"
+
+
+# 1. Get the latest Share pod name and store it in a variable and check repos connectivity.
+$sharePod = (oc get pods -n contain-dvl -l io.kompose.service=share --sort-by='.metadata.creationTimestamp' -o jsonpath="{.items[-1].metadata.name}")
+# 2. Display the pod name
+Write-Host "[INFO] Latest Share Pod: $sharePod" -ForegroundColor Cyan
+
+# 3. List the environment variables for that pod
+oc set env pod/$sharePod --list -n contain-dvl
+
+oc exec $sharePod -n contain-dvl -- curl -v http://alfresco:8082/alfresco/s/api/server
+
+oc exec $sharePod -n contain-dvl -- curl --max-time 5 -I http://alfresco:8082/alfresco/
