@@ -4,6 +4,7 @@ metadata:
   labels:
     io.kompose.service: elasticsearch
   name: elasticsearch
+  namespace: contain-dvl
 spec:
   replicas: 1
   selector:
@@ -14,26 +15,25 @@ spec:
         io.kompose.service: elasticsearch
     spec:
       securityContext:
-        runAsUser: 0
-        fsGroup: 0
+        runAsNonRoot: true
+        fsGroup: 1000900000  # Allows file permissions to work inside the allowed OpenShift range
       containers:
         - env:
             - name: discovery.type
               value: single-node
             - name: xpack.security.enabled
               value: "false"
-          image: ' '
+          image: 'elasticsearch:7.10.1'
           name: elasticsearch
           ports:
             - containerPort: 9200
               protocol: TCP
           securityContext:
-            allowPrivilegeEscalation: true
-            runAsUser: 0
+            allowPrivilegeEscalation: false
+            runAsUser: 1000900000  # Runs Elasticsearch as a non-root user within the allocated range
             capabilities:
-              add:
-                - IPC_LOCK
-                - SYS_CHROOT
+              drop:
+                - ALL
           resources:
             limits:
               memory: "2147483648"
@@ -47,5 +47,5 @@ spec:
           - elasticsearch
         from:
           kind: ImageStreamTag
-          name: elasticsearch:7.10.1
+          name: 'elasticsearch:7.10.1'
       type: ImageChange

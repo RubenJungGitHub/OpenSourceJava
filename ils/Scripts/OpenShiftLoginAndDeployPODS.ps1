@@ -1,6 +1,6 @@
 ﻿$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-$token  = 'sha256~ck73qr_Rdd4qKA1zBqzYlPJmR1WKB_ares3uY4rTEWI'
+$token  = 'sha256~IfQlNQnkzr_w8irRqUdFynXxfvZ_Z6pY7fmDRqt1Hmg'
 
 #------------------------------------------------------------------
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
@@ -29,12 +29,13 @@ oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-"
 # Define which components to process in this run
 $PODS = @(
     #"ActiveMQ",
+    "Postgres",
     "Alfresco"
     #"Routes"
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
-if ($PODS -contains "Postress" -or $PODS -contains "postgres") {
+if ($PODS -contains "Postgres" -or $PODS -contains "postgres") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\AFFRESCOPOSTGRESSFIRST\'
     Write-Host "[INFO] Starting recreation of PostgreSQL..." -ForegroundColor Cyan
     
@@ -75,7 +76,7 @@ if ($PODS -contains "Alfresco" -or $PODS -contains "alfresco") {
     oc patch dc/search -n $project --type=merge -p $patchSecret 2>$null
     oc patch dc/share -n $project --type=merge -p $patchSecret 2>$null
 
-# Fetch Search DeploymentConfig, modify security context in memory, and apply
+    # Fetch Search DeploymentConfig, modify security context in memory, and apply
     $dcSearch = oc get dc search -n $project -o json | ConvertFrom-Json
     if (-not $dcSearch.spec.template.spec.securityContext) {
         $dcSearch.spec.template.spec | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
@@ -110,7 +111,7 @@ if ($PODS -contains "Alfresco" -or $PODS -contains "alfresco") {
     oc apply -R -f $shareFolder -n $project
 
     # Apply root security context patch to Share using a clean hashtable
-# Fetch Share DeploymentConfig, modify security context in memory, and apply
+    # Fetch Share DeploymentConfig, modify security context in memory, and apply
     $dcShare = oc get dc share -n $project -o json | ConvertFrom-Json
     if (-not $dcShare.spec.template.spec.securityContext) {
         $dcShare.spec.template.spec | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
@@ -149,5 +150,5 @@ if ($PODS -contains "Routes") {
     oc get routes -l app=alfresco -n $project
 }
 
-
+oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 Write-Host "[SUCCESS] Complete Alfresco enterprise stack deployment sequence finished!" -ForegroundColor Green

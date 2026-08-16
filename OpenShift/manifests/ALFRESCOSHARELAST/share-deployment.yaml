@@ -1,0 +1,45 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: share
+  name: share
+  namespace: contain-dvl
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: share
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: share
+    spec:
+      imagePullSecrets:
+        - name: alfrescoquayio
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      containers:
+        - name: share
+          image: 'quay.io/alfresco/alfresco-share@sha256:e9248cd44bfd26414e79822ab7b6c5f18ff512db855520fae8103be63ae1ea91'
+          env:
+            - name: JAVA_OPTS
+              value: '-XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80 -Dorg.apache.catalina.webresources.Cache.maxSize=200000 -Dalfresco.host=alfresco -Dalfresco.port=8082 -Dalfresco.context=alfresco -Dalfresco.protocol=http'
+            - name: REPO_HOST
+              value: alfresco
+            - name: REPO_PORT
+              value: '8082'
+          resources:
+            limits:
+              memory: '1073741824'
+            requests:
+              memory: '1073741824'
+          securityContext:
+            allowPrivilegeEscalation: true
+            runAsUser: 0
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+  triggers:
+    - type: ConfigChange
