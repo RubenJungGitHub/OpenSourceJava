@@ -29,9 +29,10 @@ oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-"
 # Define which components to process in this run
 $PODS = @(
     #"ActiveMQ",
-    "Postgres",
-    "Alfresco"
+    #"Postgres",
+    #"Alfresco"
     #"Routes"
+    "AlfrescoQueuePoller"
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -141,10 +142,9 @@ if ($PODS -contains "Alfresco" -or $PODS -contains "alfresco") {
 }
 
 
-# --- STAGE 3: Core Alfresco & Search Services ---
+# --- STAGE 4: Core Alfresco & Search Services ---
 if ($PODS -contains "Routes") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ALFRESCOROUTES\'
-    Write-Host "[INFO] Starting recreation of Alfresco routes..." -ForegroundColor Cyan
     Write-Host "[INFO] Deploying individual route manifests..." -ForegroundColor Cyan
     oc apply -R -f $folder -n $project
 
@@ -152,5 +152,16 @@ if ($PODS -contains "Routes") {
     oc get routes -l app=alfresco -n $project
 }
 
+# --- STAGE 5: AlfrescoQueuePoller---
+if ($PODS -contains "AlfrescoQueuePoller") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\Alfrescoqueuepoller\'
+    Write-Host "[INFO] Starting recreation of Alfresco queupoller..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+}
+
+
+
+
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
-Write-Host "[SUCCESS] Complete Alfresco enterprise stack deployment sequence finished!" -ForegroundColor Green
+Write-Host "[SUCCESS] Completed deployment!" -ForegroundColor Green

@@ -13,20 +13,30 @@ spec:
       labels:
         io.kompose.service: alfrescoqueuepoller
     spec:
+      # ---> 1. Add the imagePullSecrets block here <---
+      imagePullSecrets:
+        - name: containgithubrepos
       containers:
         - env:
             - name: SPRING_CONFIG_LOCATION
               value: /app/data/application.yaml
             - name: SPRING_DATASOURCE_PASSWORD
-              value: contain
+              value: alfresco
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
             - name: SPRING_DATASOURCE_USERNAME
-              value: contain
-          image: ' '
+              value: alfresco
+            # ---> 2. Override ActiveMQ URLs to use the internal service name <---
+            - name: ACTIVEMQ_ALFRESCOSOURCE_BROKERURL
+              value: tcp://activemq:61616
+            - name: ACTIVEMQ_MIGRATIONHUB_BROKERURL
+              value: tcp://activemq:61616
+          # ---> 3. Point to your GitHub Container Registry image tag <---
+          image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-alfrescoqueuepoller:v1.0'  # (Replace with your actual repo name if different)
+          imagePullPolicy: IfNotPresent
           name: alfrescoqueuepoller
           ports:
-            - containerPort: 3002
+            - containerPort: 5002
               protocol: TCP
       restartPolicy: Always
   test: false
@@ -39,4 +49,5 @@ spec:
         from:
           kind: ImageStreamTag
           name: alfrescoqueuepoller:latest
-      type: ImageChange
+      type: ConfigChange
+          # - imageChangeParams: ... (remove this block)
