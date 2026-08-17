@@ -1,6 +1,6 @@
 ﻿$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-$token  = 'sha256~IfQlNQnkzr_w8irRqUdFynXxfvZ_Z6pY7fmDRqt1Hmg'
+$token  = 'sha256~v0crhgj5lf7sho9z-0a2jm4UxstM4YJ59_F3aa4Vz6w'
 
 #------------------------------------------------------------------
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
@@ -35,8 +35,8 @@ $PODS = @(
     #"AlfrescoQueuePoller"
     #"MongoDB"
     #"REDIS"
-    #"RHBC"
-    "RHKIE"
+    "RHBC"
+    #"RHKIE"
     #"Receiver"
 )
 
@@ -209,20 +209,44 @@ if ($PODS -contains "MongoDB") {
 
 
 
-# --- STAGE 7: RHBC---
+# --- STAGE 7: RHBC ---
 if ($PODS -contains "RHBC") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\RHBC'
-    Write-Host "[INFO] Starting recreation of RH BC..." -ForegroundColor Cyan
-    oc delete -R -f $folder -n $project --ignore-not-found
+    Write-Host "[INFO] Starting recreation of Red Hat Business Central..." -ForegroundColor Cyan
     
-    # Get the exact name of your stuck business-central pod
-    $podName = (oc get pods -l io.kompose.service=business-central -n contain-dvl -o jsonpath='{.items[0].metadata.name}')
-
-    # Force delete it with a grace period of 0 seconds
-    oc delete pod $podName -n contain-dvl --force --grace-period=0
+    # 1. Apply the manifests from your folder first (creates DC, Services, etc.)
     oc apply -R -f $folder -n $project
-    oc expose svc/business-central --port=8080 -n contain-dvl
- }
+    
+    # 2. Check if a stuck business-central pod exists before attempting a force delete
+    $podName = (oc get pods -l io.kompose.service=business-central -n $project -o jsonpath='{.items[0].metadata.name}' 2>$null)
+    if ($podName) {
+        Write-Host "[INFO] Cleaning up existing pod: $podName" -ForegroundColor Yellow
+        oc delete pod $podName -n $project --force --grace-period=0 --ignore-not-found
+    }
+
+    # Also force deletion
+    Write-Host "[INFO] Cleaning up existing Business Central pods..." -ForegroundColor Yellow
+    oc delete pods -l io.kompose.service=business-central -n $project --force --grace-period=0 --ignore-not-found
+
+    # 3. Trigger a rollout restart to ensure the DeploymentConfig spins up fresh
+    oc rollout restart dc/business-central -n $project
+
+    # 4. Create or ensure a secure Edge route with HTTP-to-HTTPS redirect exists
+    $routeExists = (oc get route business-central -n $project --ignore-not-found)
+    $routeType = (oc get route business-central -n $project -o jsonpath='{.spec.tls.termination}' --ignore-not-found)
+    $redirectPolicy = (oc get route business-central -n $project -o jsonpath='{.spec.tls.insecureEdgeTerminationPolicy}' --ignore-not-found)
+
+    if (-not $routeExists) {
+        Write-Host "[INFO] Exposing Business Central as a secure edge route with HTTP redirect..." -ForegroundColor Cyan
+        oc create route edge business-central --service=business-central --port=8080 --insecure-policy='Redirect' -n $project
+    } elseif ($routeType -ne "edge" -or $redirectPolicy -ne "Redirect") {
+        Write-Host "[INFO] Updating/recreating route to ensure Edge termination and Redirect policy..." -ForegroundColor Yellow
+        oc delete route business-central -n $project
+        oc create route edge business-central --service=business-central --port=8080 --insecure-policy='Redirect' -n $project
+    } else {
+        Write-Host "[INFO] Secure Edge route with Redirect policy already exists." -ForegroundColor Green
+    }
+}
 
 
  # --- STAGE 7: RHKIE---

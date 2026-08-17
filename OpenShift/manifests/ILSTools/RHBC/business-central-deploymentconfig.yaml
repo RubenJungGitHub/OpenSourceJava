@@ -37,7 +37,7 @@ spec:
       containers:
         - env:
             - name: JAVA_OPTS
-              value: -Xms512m -Xmx2048m -Djava.net.preferIPv4Stack=true -Dorg.kie.demo=false -Dorg.kie.example=false
+              value: -Xms512m -Xmx2048m -Djava.net.preferIPv4Stack=true -Dorg.kie.demo=false -Dorg.kie.example=false -Dwildfly.undertow.support.proxy.address=true
             - name: KIE_ADMIN_PWD
               value: admin
             - name: KIE_ADMIN_USER
