@@ -4,6 +4,7 @@ metadata:
   labels:
     io.kompose.service: business-central
   name: business-central
+  namespace: contain-dvl
 spec:
   replicas: 1
   selector:
@@ -15,6 +16,24 @@ spec:
       labels:
         io.kompose.service: business-central
     spec:
+      initContainers:
+        - name: init-wildfly-config
+          image: quay.io/kiegroup/business-central-workbench-showcase:latest
+          command:
+            - "sh"
+            - "-c"
+            - |
+              echo "Copying default standalone configuration and content..."
+              cp -r /opt/jboss/wildfly/standalone/* /opt/jboss/wildfly-data/ 2>/dev/null || true
+              
+              echo "Fixing permissions for non-root execution..."
+              chown -R 1000:0 /opt/jboss/wildfly-data || true
+              chmod -R u+rwX /opt/jboss/wildfly-data || true
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: standalone-data
+              mountPath: /opt/jboss/wildfly-data
       containers:
         - env:
             - name: JAVA_OPTS
@@ -23,22 +42,21 @@ spec:
               value: admin
             - name: KIE_ADMIN_USER
               value: admin
-          image: ' '
+          image: quay.io/kiegroup/business-central-workbench-showcase:latest
           name: business-central
           ports:
             - containerPort: 8080
               protocol: TCP
             - containerPort: 8001
               protocol: TCP
+          resources: {}
+          volumeMounts:
+            - name: standalone-data
+              mountPath: /opt/jboss/wildfly/standalone
+      volumes:
+        - name: standalone-data
+          emptyDir: {}
       restartPolicy: Always
   test: false
   triggers:
     - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-          - business-central
-        from:
-          kind: ImageStreamTag
-          name: business-central:7.73.0.Final
-      type: ImageChange

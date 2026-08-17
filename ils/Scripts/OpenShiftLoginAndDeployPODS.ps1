@@ -35,8 +35,8 @@ $PODS = @(
     #"AlfrescoQueuePoller"
     #"MongoDB"
     #"REDIS"
-    "RHKBC"
-    #"RHKIE",
+    #"RHBC"
+    "RHKIE"
     #"Receiver"
 )
 
@@ -168,16 +168,75 @@ if ($PODS -contains "Redis") {
     oc expose service redis --name=redis-ui --port=8001 --target-port=8001 --dry-run=client -o yaml | oc apply -f - -n contain-dvl
 }
 
-# --- STAGE 6: MonogDB---
+# --- STAGE 6: MongoDB ---
 if ($PODS -contains "MongoDB") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\MongoDB'
     Write-Host "[INFO] Starting recreation of MongoDB..." -ForegroundColor Cyan
+    
     oc delete -R -f $folder -n $project --ignore-not-found
     oc apply -R -f $folder -n $project
+
+    Write-Host "[INFO] Waiting for MongoDB pod to be ready..." -ForegroundColor Yellow
+    
+    # Loop until the pod status is 'Running' and ready (timeout after ~90 seconds)
+    $maxTries = 30
+    $tries = 0
+    $podRunning = $false
+
+    while (-not $podRunning -and $tries -lt $maxTries) {
+        Start-Sleep -Seconds 3
+        $tries++
+        
+        # Check if any pod matching the service is running
+        $podStatus = oc get pods -l io.kompose.service=mongodb -n $project --no-headers 2>$null
+        if ($podStatus -match "Running" -and $podStatus -match "1/1") {
+            $podRunning = $true
+        } else {
+            Write-Host "[INFO] Waiting for pod startup ($tries/$maxTries)..." -ForegroundColor DarkGray
+        }
+    }
+
+    if ($podRunning) {
+        Write-Host "[SUCCESS] MongoDB pod is running! Opening port-forward..." -ForegroundColor Green
+        Write-Host "[NOTE] This will block the terminal. Keep this window open while using MongoDB Compass." -ForegroundColor Cyan
+        
+        # Execute port-forward (this will lock the script session here, which is intended for port forwarding)
+        oc port-forward svc/mongodb 27017:27017 -n $project
+    } else {
+        Write-Host "[ERROR] MongoDB pod failed to start in time. Check 'oc get pods -n $project' for details." -ForegroundColor Red
+    }
 }
 
 
-# --- STAGE 7: Receiver---
+
+# --- STAGE 7: RHBC---
+if ($PODS -contains "RHBC") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\RHBC'
+    Write-Host "[INFO] Starting recreation of RH BC..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+    
+    # Get the exact name of your stuck business-central pod
+    $podName = (oc get pods -l io.kompose.service=business-central -n contain-dvl -o jsonpath='{.items[0].metadata.name}')
+
+    # Force delete it with a grace period of 0 seconds
+    oc delete pod $podName -n contain-dvl --force --grace-period=0
+    oc apply -R -f $folder -n $project
+    oc expose svc/business-central --port=8080 -n contain-dvl
+ }
+
+
+ # --- STAGE 7: RHKIE---
+if ($PODS -contains "RHKIE") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\RHKIE'
+    Write-Host "[INFO] Starting recreation of RH KIE..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+        oc apply -R -f $folder -n $project
+    oc expose svc/business-central --port=8080 -n contain-dvl
+    }
+
+
+
+# --- STAGE 8: Receiver---
 if ($PODS -contains "Receiver") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Receiver\'
     Write-Host "[INFO] Starting recreation of receiver..." -ForegroundColor Cyan
@@ -186,7 +245,7 @@ if ($PODS -contains "Receiver") {
 }
 
 
-# --- STAGE 8: AlfrescoQueuePoller---
+# --- STAGE 9: AlfrescoQueuePoller---
 if ($PODS -contains "AlfrescoQueuePoller") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\Alfrescoqueuepoller\'
     Write-Host "[INFO] Starting recreation of Alfresco queupoller..." -ForegroundColor Cyan
