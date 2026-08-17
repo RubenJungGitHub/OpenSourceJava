@@ -34,8 +34,8 @@ $PODS = @(
     #"Routes"
     #"AlfrescoQueuePoller"
     #"MongoDB"
-    "REDIS"
-    #"RHKBC",
+    #"REDIS"
+    "RHKBC"
     #"RHKIE",
     #"Receiver"
 )
