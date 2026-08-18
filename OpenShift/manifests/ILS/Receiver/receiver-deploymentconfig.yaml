@@ -15,6 +15,13 @@ spec:
     spec:
       imagePullSecrets:
         - name: containgithubrepos
+      initContainers:
+        - name: wait-for-kie-server
+          image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+          command:
+            - 'sh'
+            - '-c'
+            - 'echo "Waiting for kie-server..."; until curl -s http://kie-server:57000/kie-server/services/rest/server; do sleep 5; done; echo "kie-server is reachable!"'
       containers:
         - env:
             - name: APP_KEYSTORE_PATH
@@ -28,7 +35,30 @@ spec:
             - name: SPRING_DATASOURCE_USERNAME
               value: alfresco
             - name: SPRING_REDIS_HOST
-              value: Redis-service
+              value: redis
+            - name: ILS_RULEENGINECONTAINERENDPOINT
+              value: http://kie-server:57000/kie-server/services/rest/server
+            - name: ILS_RULEENGINEENDPOINT
+              value: http://kie-server:57000/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+            - name: ILS_RULEENGINEUSERNAME
+              value: admin
+            - name: ILS_RULEENGINEPASSWORD
+              value: admin
+            # Explicit Spring Boot MongoDB Environment Variables:
+            - name: SPRING_DATA_MONGODB_HOST
+              value: mongodb
+            - name: SPRING_DATA_MONGODB_PORT
+              value: "27017"
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: ilstools
+            - name: SPRING_DATA_MONGODB_USERNAME
+              value: admin
+            - name: SPRING_DATA_MONGODB_PASSWORD
+              value: admin
+            - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
+              value: admin
+            - name: SPRING_DATA_MONGODB_URI
+              value: mongodb://admin:admin@mongodb:27017/ilstools?authSource=admin
           image: 'ghcr.io/rubenjunggithub/ils-receiver:v1.0'
           imagePullPolicy: IfNotPresent
           name: receiver

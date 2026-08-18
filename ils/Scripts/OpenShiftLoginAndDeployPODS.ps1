@@ -36,8 +36,8 @@ $PODS = @(
     #"MongoDB"
     #"REDIS"
     #"RHBC"
-    "RHKIE"
-    #"Receiver"
+    #"RHKIE"
+    "Receiver"
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---

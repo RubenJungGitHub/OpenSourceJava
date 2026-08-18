@@ -73,3 +73,9 @@ oc set env pod/$sharePod --list -n contain-dvl
 oc exec $sharePod -n contain-dvl -- curl -v http://alfresco:8082/alfresco/s/api/server
 
 oc exec $sharePod -n contain-dvl -- curl --max-time 5 -I http://alfresco:8082/alfresco/
+
+
+#Get Pod tail logs 
+$PodName = "receiver"
+$pod = (oc get pods --no-headers | Where-Object { $_ -match "receiver" -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=100
+$pod
