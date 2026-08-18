@@ -24,11 +24,11 @@ spec:
             - name: KIE_ADMIN_USER
               value: admin
             - name: KIE_MAVEN_REPO
-              value: http://business-central:8080/business-central/maven2
+              value: http://business-central-contain-dvl:8080/business-central/maven2
             - name: KIE_SCANNER_INTERVAL
               value: "5000"
             - name: KIE_SERVER_CONTROLLER
-              value: http://business-central:8080/business-central/rest/controller
+              value: http://business-central-contain-dvl:8080/business-central/rest/controller
             - name: KIE_SERVER_ID
               value: rhpam-poc-server
             - name: KIE_SERVER_LOCATION

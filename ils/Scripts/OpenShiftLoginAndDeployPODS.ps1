@@ -1,6 +1,6 @@
 ﻿$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-$token  = 'sha256~v0crhgj5lf7sho9z-0a2jm4UxstM4YJ59_F3aa4Vz6w'
+$token  = 'sha256~mZONPxe_dnp8mD4RTyDCggAan6FZTusGUZQF_YCkBBo'
 
 #------------------------------------------------------------------
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
@@ -35,8 +35,8 @@ $PODS = @(
     #"AlfrescoQueuePoller"
     #"MongoDB"
     #"REDIS"
-    "RHBC"
-    #"RHKIE"
+    #"RHBC"
+    "RHKIE"
     #"Receiver"
 )
 
