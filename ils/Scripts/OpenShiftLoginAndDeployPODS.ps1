@@ -258,16 +258,31 @@ if ($PODS -contains "RHKIE") {
     oc expose svc/business-central --port=8080 -n contain-dvl
     }
 
-
-
-# --- STAGE 8: Receiver---
+# --- STAGE 8: Receiver ---
 if ($PODS -contains "Receiver") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Receiver\'
     Write-Host "[INFO] Starting recreation of receiver..." -ForegroundColor Cyan
     oc delete -R -f $folder -n $project --ignore-not-found
     oc apply -R -f $folder -n $project
-}
 
+    Write-Host "[INFO] Waiting for receiver pod to be ready..." -ForegroundColor Yellow
+    oc rollout status dc/receiver -n $project --timeout=180s
+
+    # Check if the route already exists; if not, create it
+    $routeCheck = oc get route receiver -n $project --ignore-not-found
+    if (-not $routeCheck) {
+        Write-Host "[INFO] Exposing receiver service with an OpenShift Route..." -ForegroundColor Cyan
+        oc expose service receiver --port=8080 -n $project
+    }
+
+    # Retrieve the route host and open Swagger UI
+    $routeHost = oc get route receiver -n $project -o jsonpath='{.spec.host}'
+    $swaggerUrl = "http://${routeHost}/swagger-ui/index.html"
+
+    Write-Host "[SUCCESS] Receiver Swagger UI is ready!" -ForegroundColor Green
+    Write-Host "URL: $swaggerUrl" -ForegroundColor Cyan
+    Start-Process $swaggerUrl
+}
 
 # --- STAGE 9: AlfrescoQueuePoller---
 if ($PODS -contains "AlfrescoQueuePoller") {
