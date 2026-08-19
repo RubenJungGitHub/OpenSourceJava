@@ -1,6 +1,6 @@
 ﻿$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-$token  = 'sha256~mZONPxe_dnp8mD4RTyDCggAan6FZTusGUZQF_YCkBBo'
+$token  = 'sha256~UaQBCubCPbHDkc3D6AO6C1H3awjEpOt-hLeqRcwlVJw'
 
 #------------------------------------------------------------------
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
