@@ -20,6 +20,24 @@ spec:
       securityContext:
         runAsUser: 0
         fsGroup: 0
+      initContainers:
+        - name: init-shared-pvc
+          image: quay.io/alfresco/alfresco-content-repository:23.2.1
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "Checking if shared PVC needs initialization..."
+              if [ ! -f /mnt/shared/classes/alfresco/extension/keystore/keystore ]; then
+                echo "Keystore not found in PVC. Copying default files from image..."
+                mkdir -p /mnt/shared
+                cp -a /usr/local/tomcat/shared/. /mnt/shared/
+                echo "Initialization complete."
+              else
+                echo "Shared PVC already initialized. Skipping."
+              fi
+          volumeMounts:
+            - mountPath: /mnt/shared
+              name: alfresco-shared-volume
       containers:
         - env:
             - name: JAVA_OPTS
@@ -52,11 +70,16 @@ spec:
           volumeMounts:
             - mountPath: /usr/local/tomcat/alf_data
               name: alfresco-content-data
+            - mountPath: /usr/local/tomcat/shared
+              name: alfresco-shared-volume
       restartPolicy: Always
       volumes:
         - name: alfresco-content-data
           persistentVolumeClaim:
             claimName: alfresco-content-data
+        - name: alfresco-shared-volume
+          persistentVolumeClaim:
+            claimName: alfresco-shared-pvc
   test: false
   triggers:
     - type: ConfigChange

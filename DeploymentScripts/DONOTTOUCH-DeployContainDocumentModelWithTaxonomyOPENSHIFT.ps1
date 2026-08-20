@@ -1,28 +1,4 @@
-﻿
-
-
-# --- 1. CONFIGURATION ---
-$projectRoot = "D:\contAIn\alfrescotaxintegration"
-$namespace = "contain-dvl" # Update with your OpenShift namespace if needed
-$constraintJarPath = "$projectRoot\contain-alfresco\contain-alfresco-platform\target\"
-$ModelPath = "$projectRoot\contain-alfresco\contain-alfresco-share\src\main\resources\alfresco\web-extension"
-
-# Internal Tomcat Paths (both live inside the same container now)
-$targetLibPath = "/usr/local/tomcat/webapps/alfresco/WEB-INF/lib/"
-$shareExtPath  = "/usr/local/tomcat/shared/classes/alfresco/web-extension/"
-
-$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
-$quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-$token  = 'sha256~UaQBCubCPbHDkc3D6AO6C1H3awjEpOt-hLeqRcwlVJw'
-
-#------------------------------------------------------------------
-$server = 'https://api.ocp0.anders-nogic.atos.net:6443'
-$project = "contain-dvl"
-
-cls
-# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
-Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
-oc login --token=$token --server=$server
+﻿cls
 
 
 function Test-AlfrescoReady {
@@ -32,7 +8,7 @@ function Test-AlfrescoReady {
     $count = 0
     while ($count -lt $maxRetries) {
         # Fetch full JSON and let PowerShell handle the property lookup cleanly
-        $podsJson = oc get pod $podName -n contain-dvl -o json 2>$null | ConvertFrom-Json
+        $podsJson = oc get pod alfresco-1-l95kk -n contain-dvl -o json 2>$null | ConvertFrom-Json
         $conditions = @($podsJson.status.conditions)
 
         # Filter for the Ready condition status safely
@@ -53,6 +29,26 @@ function Test-AlfrescoReady {
 }
 
 
+
+# --- 1. CONFIGURATION ---
+$projectRoot = "D:\contAIn\taxonomyservice"
+$namespace = "contain-dvl" # Update with your OpenShift namespace if needed
+$constraintJarPath = "$projectRoot\alfrescointegration\target"
+
+# Internal Tomcat Paths (both live inside the same container now)
+$targetLibPath = "/usr/local/tomcat/webapps/alfresco/WEB-INF/lib/"
+$shareExtPath  = "/usr/local/tomcat/shared/classes/alfresco/web-extension/"
+
+$token  = 'sha256~6LAo7RkcnrBsN18oDYIT1fTYE7N4qNwsF_JvlmIgwF8'
+
+#------------------------------------------------------------------
+$server = 'https://api.ocp0.anders-nogic.atos.net:6443'
+$project = "contain-dvl"
+
+cls
+# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
+Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
+oc login --token=$token --server=$server
 
 Set-Location $projectRoot
 
@@ -83,103 +79,38 @@ if (!(Test-AlfrescoReady $alfrescoPod $namespace))
 }
 
 # ==========================================
-# STAGE 2: INJECTION LOGIC (JAR)
+# STAGE 2: INJECTION LOGIC (JAR & SHARE CONFIG)
 # ==========================================
 Write-Host "--- STAGE 2: Injecting Constraint JAR & Share Config ---" -ForegroundColor Yellow
 
 # A. Remove old JAR version first
-Write-Host "Removing old JAR version..." -ForegroundColor DarkGray
-oc exec $alfrescoPod -n $namespace -- rm -f "${targetLibPath}contain-alfresco-platform-1.0-SNAPSHOT.jar"
+oc exec $alfrescoPod -n $namespace -- rm -f "${targetLibPath}alfrescointegration-1.0-SNAPSHOT.jar"
 
-# Validate that it is actually gone
-Write-Host "Validating old JAR removal..." -ForegroundColor Cyan
-$checkOld = oc exec $alfrescoPod -n $namespace -- sh -c "if [ -f '${targetLibPath}contain-alfresco-platform-1.0-SNAPSHOT.jar' ]; then echo 'EXISTS'; else echo 'REMOVED'; fi"
-
-if ($checkOld.Trim() -eq "EXISTS") {
-    Write-Host "[WARNING] Old JAR file still exists in the container!" -ForegroundColor Yellow
-} else {
-    Write-Host "Old JAR successfully removed." -ForegroundColor Green
-}
-
-
+# B. Find and copy the new Constraint JAR
 $jarFile = Get-ChildItem -Path $constraintJarPath -Filter "*.jar" | Where-Object { $_.Name -notmatch "sources|javadoc" } | Select-Object -First 1
 
 if ($jarFile) {
-    Write-Host "Deploying Platform JAR: $($jarFile.Name)" -ForegroundColor Green
-    
-    # Stream local file via native Windows tar directly into the container's target directory
-    tar.exe -cf - -C "$($jarFile.DirectoryName)" "$($jarFile.Name)" | oc exec -i -n $namespace $alfrescoPod -- tar xf - -C "$targetLibPath"
-    
-    $repoDest = "$targetLibPath$($jarFile.Name)"
-    
-    # Verify it landed safely
-    Write-Host "Verifying JAR in repository lib..." -ForegroundColor Cyan
-    $verifyCheck = oc exec $alfrescoPod -n $namespace -- sh -c "if [ -f '$repoDest' ]; then echo 'EXISTS'; else echo 'MISSING'; fi"
-
-    if ($verifyCheck.Trim() -eq "EXISTS") {
-        Write-Host "Platform JAR successfully verified at: $repoDest" -ForegroundColor Green
-    } else {
-        Write-Host "[ERROR] Platform JAR verification failed! The file is missing from the container." -ForegroundColor Red
-        exit 1
-    }
+    Write-Host "Deploying Constraint JAR: $($jarFile.Name)" -ForegroundColor Green
+    oc cp $jarFile.FullName "$namespace/${alfrescoPod}:${targetLibPath}$($jarFile.Name)"
 } else {
-    Write-Host "[ERROR] Platform JAR not found. Did you run 'mvn clean install'?" -ForegroundColor Red
-    exit
+    Write-Host "No JAR found in $constraintJarPath. Did you run 'mvn clean install'?" -ForegroundColor Red
 }
 
-# ==========================================
-# STAGE 3: Injecting and Validating Share Config
-# ==========================================
-Write-Host "--- STAGE 3: Injecting and Validating Share Config ---" -ForegroundColor Yellow
+# C. Inject Share Config XML
+$shareXml = "$projectRoot\share-config-custom.xml"
+$targetShareName = "share-config-custom.xml"
 
-$localSharePath = "$ModelPath\share-config-custom.xml"
-$shareFileObj = Get-Item $localSharePath
-$remoteShareFile = "$shareExtPath$($shareFileObj.Name)"
+Write-Host "Injecting Share Config: $targetShareName" -ForegroundColor Green
+oc cp "$shareXml" "$namespace/${alfrescoPod}:${shareExtPath}${targetShareName}"
 
-# A. Ensure the target directory exists inside the container first
-Write-Host "Ensuring remote web-extension directory exists..." -ForegroundColor DarkGray
-oc exec $alfrescoPod -n $namespace -- mkdir -p "$shareExtPath"
-
-# B. Remove old Share config version if present
-Write-Host "Removing old Share config..." -ForegroundColor DarkGray
-oc exec $alfrescoPod -n $namespace -- rm -f "$remoteShareFile"
-
-# Validate that the old config is gone
-Write-Host "Validating old Share config removal..." -ForegroundColor Cyan
-$checkOldShare = oc exec $alfrescoPod -n $namespace -- sh -c "if [ -f '$remoteShareFile' ]; then echo 'EXISTS'; else echo 'REMOVED'; fi"
-
-if ($checkOldShare.Trim() -eq "EXISTS") {
-    Write-Host "[WARNING] Old Share config file still exists in the container!" -ForegroundColor Yellow
-} else {
-    Write-Host "Old Share config successfully removed." -ForegroundColor Green
-}
-
-# C. Copy the new Share config using tar
-Write-Host "Copying new Share config via tar stream..." -ForegroundColor DarkGray
-tar.exe -cf - -C "$($shareFileObj.DirectoryName)" "$($shareFileObj.Name)" | oc exec -i -n $namespace $alfrescoPod -- tar xf - -C "$shareExtPath"
-
-# D. Validate that the new Share config landed safely
-Write-Host "Verifying Share config in container..." -ForegroundColor Cyan
-$verifyShare = oc exec $alfrescoPod -n $namespace -- sh -c "if [ -f '$remoteShareFile' ]; then echo 'EXISTS'; else echo 'MISSING'; fi"
-
-if ($verifyShare.Trim() -eq "EXISTS") {
-    Write-Host "Share config successfully verified at: $remoteShareFile" -ForegroundColor Green
-} else {
-    Write-Host "[ERROR] Share config verification failed! The file is missing from the container." -ForegroundColor Red
-    exit 1
-}
-
-# E. Scrub Windows Junk (BOM and CRLF) & Set Permissions
-Write-Host "Cleaning encoding and setting permissions..." -ForegroundColor DarkGray
-oc exec $alfrescoPod -n $namespace -- sed -i '1s/^\xEF\xBB\xBF//' "$remoteShareFile"
-oc exec $alfrescoPod -n $namespace -- sed -i 's/\r$//' "$remoteShareFile"
-oc exec $alfrescoPod -n $namespace -- chmod 666 "$remoteShareFile"
-
-Write-Host "Share configuration deployment complete!" -ForegroundColor Green
+# Scrub Windows Junk (BOM and CRLF) & Set Permissions for Share config
+oc exec $alfrescoPod -n $namespace -- sed -i '1s/^\xEF\xBB\xBF//' "${shareExtPath}${targetShareName}"
+oc exec $alfrescoPod -n $namespace -- sed -i 's/\r$//' "${shareExtPath}${targetShareName}"
+oc exec $alfrescoPod -n $namespace -- chmod 666 "${shareExtPath}${targetShareName}"
 
 
 # ==========================================
-# STAGE 4: ALFRESCO HEALTH CHECK
+# STAGE 3: ALFRESCO HEALTH CHECK
 # ==========================================
 function Wait-For-Alfresco-OpenShift {
     param($maxRetries = 60)

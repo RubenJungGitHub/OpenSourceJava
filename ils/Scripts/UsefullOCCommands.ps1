@@ -77,6 +77,6 @@ oc exec $sharePod -n contain-dvl -- curl --max-time 5 -I http://alfresco:8082/al
 
 #Get Pod tail logs 
 cls
-$PodName = "receiver"
+$PodName = "Alfresco"
 oc get pods -l io.kompose.service=$PodName
-$pod = (oc get pods --no-headers | Where-Object { $_ -match "receiver" -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=100
+$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=200

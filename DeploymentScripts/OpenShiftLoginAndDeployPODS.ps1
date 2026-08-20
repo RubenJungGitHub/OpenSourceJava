@@ -26,18 +26,20 @@ oc create secret docker-registry alfrescoquayio `
 oc secrets link default alfrescoquayio --for=pull -n $project
 oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-", "value": {"name": "alfrescoquayio"}}]' -n $project 2>$null
 
+
+#ALLWAYS REDEPLOY POSTGRESS IF ALFRESO IS REDEPLOYED!
 # Define which components to process in this run
 $PODS = @(
     #"ActiveMQ",
-    #"Postgres"
-    #"Alfresco"
+    "Postgres",
+    "Alfresco"
     #"Routes"
     #"AlfrescoQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC"
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -51,7 +53,8 @@ if ($PODS -contains "Postgres" -or $PODS -contains "postgres") {
     Write-Host "[INFO] Waiting for PostgreSQL pod to become ready..." -ForegroundColor Yellow
     oc rollout status dc/postgres -n $project --timeout=120s
     #Foreward port
-    oc port-forward svc/postgres 5432:5432 -n contain-dvl
+    Start-Job -ScriptBlock { oc port-forward svc/postgres 5432:5432 -n contain-dvl }
+    #oc port-forward svc/postgres 5432:5432 -n contain-dvl
 }
 
 # --- STAGE 2: ActiveMQ Infrastructure ---
@@ -144,10 +147,43 @@ if ($PODS -contains "Alfresco" -or $PODS -contains "alfresco") {
     # Wait for Share to finish rolling out and starting
     Write-Host "[INFO] Waiting for Share pod to become ready..." -ForegroundColor Yellow
     oc rollout status dc/share -n $project --timeout=300s
-}
 
 
-# --- STAGE 4: Core Alfresco & Search Services ---
+
+    #NOT YET WORKING!!!!!!
+    # Create the license directory inside the container/PVC if it doesn't exist and copy it over
+    Write-Host "[INFO] Finding active Alfresco pod..." -ForegroundColor Cyan
+    $alfrescoPod = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -match "alfresco" -and $_ -match "Running" } | Select-Object -First 1).Split()[0]
+
+    if (-not $alfrescoPod) {
+        Write-Host "[ERROR] Could not find a running Alfresco pod!" -ForegroundColor Red
+    } else {
+        Write-Host "[INFO] Found Alfresco pod: $alfrescoPod" -ForegroundColor Cyan
+    
+        $localLicense = "D:\contAIn\alfresco-university\license\acs\Alfresco-ent23-EvidenBelgiumNVExpiration2026-09-19.lic"
+    
+        if (Test-Path $localLicense) {
+            Write-Host "[INFO] Uploading license to the correct singular 'license' directory..." -ForegroundColor Cyan
+
+            $localLicense = "D:\contAIn\alfresco-university\license\acs\Alfresco-ent23-EvidenBelgiumNVExpiration2026-09-19.lic"
+            $fileBytes = [System.IO.File]::ReadAllBytes($localLicense)
+            $encodedContent = [Convert]::ToBase64String($fileBytes)
+
+            # Note the change from 'licenses' to 'license' (singular)
+            $remoteCommand = "mkdir -p /usr/local/tomcat/alf_data/license && echo '$encodedContent' | base64 -d > /usr/local/tomcat/alf_data/license/Alfresco-ent23.lic"
+
+            oc exec -n contain-dvl $alfrescoPod -- sh -c "$remoteCommand"
+
+            Write-Host "[INFO] Restarting Alfresco pod so it registers the new license..." -ForegroundColor Yellow
+            oc delete pod $alfrescoPod -n contain-dvl
+        } else {
+            Write-Host "[ERROR] Local license file not found on local path: $localLicense" -ForegroundColor Red
+        }
+    }
+ }
+
+
+# --- STAGE 4 Routes ---
 if ($PODS -contains "Routes") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ALFRESCOROUTES\'
     Write-Host "[INFO] Deploying individual route manifests..." -ForegroundColor Cyan
