@@ -345,12 +345,37 @@ if ($PODS -contains "SharePointSubscription") {
 }
 
 
-# --- STAGE 11: SharePointNotificationService---
+# --- STAGE 11: SharePointNotificationService ---
 if ($PODS -contains "SharePointNotification") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\NotificationService\'
     Write-Host "[INFO] Starting recreation of Sharepoint notification service..." -ForegroundColor Cyan
+    
     oc delete -R -f $folder -n $project --ignore-not-found
     oc apply -R -f $folder -n $project
+
+    Write-Host "[INFO] Waiting for notificationservice to become ready..." -ForegroundColor Yellow
+    oc rollout status dc/notificationservice -n $project --timeout=120s
+
+    Write-Host "[INFO] Ensuring public secured route for notificationservice webhooks..." -ForegroundColor Cyan
+    
+    # 1. Create the route if it doesn't already exist
+    if (-not (oc get route notificationservice -n $project --ignore-not-found)) {
+        oc expose service notificationservice --port=5001 -n $project
+    }
+
+    # 2. Patch the route using escaped quotes so oc.exe receives valid JSON
+    $patch = '{"spec":{"tls":{"termination":"edge","insecureEdgeTerminationPolicy":"Redirect"}}}'.Replace('"', '\"')
+    oc patch route notificationservice --type=merge -p $patch -n $project | Out-Null
+
+    Start-Sleep -Seconds 2
+    
+    # 3. Fetch and display the final secured public URL
+    $publicUrl = & oc get route notificationservice -n $project -o jsonpath='{.spec.host}' 2>$null
+    if ($publicUrl) {
+        Write-Host "[SUCCESS] Secured Webhook endpoint ready at: https://$publicUrl" -ForegroundColor Green
+    } else {
+        Write-Warning "[WARNING] Route was created, but failed to fetch the public host automatically. Check 'oc get routes -n $project'."
+    }
 }
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
