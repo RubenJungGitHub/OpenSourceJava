@@ -353,8 +353,5 @@ if ($PODS -contains "SharePointNotification") {
     oc apply -R -f $folder -n $project
 }
 
-
-
-
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 Write-Host "[SUCCESS] Completed deployment!" -ForegroundColor Green

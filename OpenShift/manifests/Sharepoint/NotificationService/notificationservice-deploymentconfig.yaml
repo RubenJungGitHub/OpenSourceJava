@@ -15,25 +15,27 @@ spec:
       labels:
         io.kompose.service: notificationservice
     spec:
+      imagePullSecrets:
+        - name: containgithubrepos
       containers:
         - env:
             - name: SPRING_ACTIVEMQ_BROKER_URL
-              value: tcp://developer-activemq-1:61616
+              value: tcp://activemq:61616
             - name: SPRING_ACTIVEMQ_PASSWORD
               value: admin
             - name: SPRING_ACTIVEMQ_USER
               value: admin
             - name: SPRING_DATASOURCE_PASSWORD
-              value: contain
+              value: alfresco
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+              value: jdbc:postgresql://postgres:5432/contAInBallenbak
             - name: SPRING_DATASOURCE_USERNAME
-              value: contain
+              value: alfresco
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO
               value: update
             - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
               value: org.hibernate.dialect.PostgreSQLDialect
-          image: ' '
+          image: 'ghcr.io/rubenjunggithub/sharepoint-notificationservice:v1.0'
           name: notificationservice
           ports:
             - containerPort: 5001
@@ -56,4 +58,4 @@ spec:
         from:
           kind: ImageStreamTag
           name: notificationservice:latest
-      type: ImageChange
+      type: ConfigChange
