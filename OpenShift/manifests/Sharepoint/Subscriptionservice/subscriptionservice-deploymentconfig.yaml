@@ -13,19 +13,22 @@ spec:
       labels:
         io.kompose.service: subscriptionservice
     spec:
+      imagePullSecrets:
+        - name: containgithubrepos
       containers:
         - env:
             - name: SPRING_DATASOURCE_PASSWORD
-              value: contain
+              value: alfresco
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+              value: jdbc:postgresql://postgres:5432/contAInBallenbak
             - name: SPRING_DATASOURCE_USERNAME
-              value: contain
+              value: alfresco
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO
               value: update
             - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
               value: org.hibernate.dialect.PostgreSQLDialect
-          image: ' '
+          image: 'ghcr.io/rubenjunggithub/sharepoint-subscriptionservice:v1.0'
+          imagePullPolicy: IfNotPresent
           name: subscriptionservice
           ports:
             - containerPort: 3000
@@ -34,11 +37,3 @@ spec:
   test: false
   triggers:
     - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-          - subscriptionservice
-        from:
-          kind: ImageStreamTag
-          name: subscriptionservice:latest
-      type: ImageChange

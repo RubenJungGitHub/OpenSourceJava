@@ -16,7 +16,7 @@ spec:
         io.kompose.service: uuidutil
     spec:
       containers:
-        - image: ' '
+        - image: 'ghcr.io/rubenjunggithub/ils-uuidutil:v1.0'
           name: uuidutil
           ports:
             - containerPort: 5002
