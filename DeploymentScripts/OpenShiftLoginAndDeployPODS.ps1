@@ -1,6 +1,6 @@
 ﻿$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-$token  = 'sha256~UaQBCubCPbHDkc3D6AO6C1H3awjEpOt-hLeqRcwlVJw'
+$token  = 'sha256~6j8DfxNYZ9H4mqseMgHZVkYhUP9kHjspdfvyy0hqd4Y'
 
 #------------------------------------------------------------------
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
@@ -31,10 +31,10 @@ oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-"
 # Define which components to process in this run
 $PODS = @(
     #"ActiveMQ",
-    "Postgres",
-    "Alfresco"
+    #"Postgres",
+    #"Alfresco"
     #"Routes"
-    #"AlfrescoQueuePoller"
+    "AlfrescoQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC"

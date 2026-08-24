@@ -1,0 +1,16 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: alfresco-custom-build
+  namespace: contain-dvl
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: alfresco:custom
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.openshift

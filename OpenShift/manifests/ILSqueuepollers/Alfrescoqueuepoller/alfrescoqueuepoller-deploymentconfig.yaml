@@ -31,6 +31,22 @@ spec:
               value: tcp://activemq:61616
             - name: ACTIVEMQ_MIGRATIONHUB_BROKERURL
               value: tcp://activemq:61616
+            - name: ILS_PROCESSALFRESCONODEPOINT
+              value: http://receiver:55500/api/ProcessChangedAlfrescoNode
+            - name: SPRING_DATA_MONGODB_HOST
+              value: mongodb
+            - name: SPRING_DATA_MONGODB_PORT
+              value: "27017"
+            - name: SPRING_DATA_MONGODB_DATABASE
+              value: ilstools
+            - name: SPRING_DATA_MONGODB_USERNAME
+              value: admin
+            - name: SPRING_DATA_MONGODB_PASSWORD
+              value: admin
+            - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
+              value: admin
+            - name: SPRING_DATA_MONGODB_URI
+              value: mongodb://admin:admin@mongodb:27017/ilstools?authSource=admin
           # ---> 3. Point to your GitHub Container Registry image tag <---
           image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-alfrescoqueuepoller:v1.0'  # (Replace with your actual repo name if different)
           imagePullPolicy: IfNotPresent

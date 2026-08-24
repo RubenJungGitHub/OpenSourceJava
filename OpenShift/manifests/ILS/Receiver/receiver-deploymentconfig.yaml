@@ -24,6 +24,10 @@ spec:
             - 'echo "Waiting for kie-server..."; until curl -s http://kie-server:57000/kie-server/services/rest/server; do sleep 5; done; echo "kie-server is reachable!"'
       containers:
         - env:
+            - name: REDIS_HOST
+              value: redis  # Or the exact service name of Redis in your OpenShift namespace
+            - name: REDIS_PORT
+              value: "6379"
             - name: APP_KEYSTORE_PATH
               value: /app/config/Containselfsigned_cert.p12
             - name: SPRING_CONFIG_LOCATION

@@ -1,16 +1,22 @@
 apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
-  labels:
-    io.kompose.service: alfresco
   name: alfresco
+  namespace: contain-dvl
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: alfresco-custom-build
+  namespace: contain-dvl
 spec:
-  lookupPolicy:
-    local: false
-  tags:
-    - from:
-        kind: DockerImage
-        name: quay.io/alfresco/alfresco-content-repository:23.2.1
-      name: 23.2.1
-      referencePolicy:
-        type: ""
+  output:
+    to:
+      kind: ImageStreamTag
+      name: alfresco:custom
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.openshift

@@ -91,7 +91,7 @@ ils:
   uudiutilendpoint: http://localhost:5002/api/GetUUID
   bindendpoint: http://localhost:55000/api/Bind
   processspitemsendpoint: http://localhost:55000/api/ProcessChangedSharepointItem
-  processalfresconodepoint: http://localhost:55000/api/ProcessChangedAlfrescoNode
+  processalfresconodepoint: ${PROCESSALFRESCONODEPOINT:http://localhost:55000/api/ProcessChangedAlfrescoNode}
   logiodeletedfromplatformendpoint: http://localhost:55000/api/logiodeletedfromplatform
   relocateendpoint: http://localhost:55000/api/MigrateIO
   ruleenginemoveendpoint: http://localhost:55000/api/rules
