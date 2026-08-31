@@ -1,8 +1,10 @@
 ﻿$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-$token  = 'sha256~6j8DfxNYZ9H4mqseMgHZVkYhUP9kHjspdfvyy0hqd4Y'
+
+
 
 #------------------------------------------------------------------
+$token  = 'sha256~7hIqe2r898fWMgabcna1DXwYFnJTIvSmPjdc1ea9aGc'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -43,8 +45,9 @@ $PODS = @(
     #"RHKIE"
     #"Receiver"
     #"SharePointSubscription"
-    "SharePointNotification"
-
+    #"SharePointNotification"
+    #'GraphDB'
+    'VocBench3'
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -345,7 +348,44 @@ if ($PODS -contains "SharePointSubscription") {
 }
 
 
-# --- STAGE 11: SharePointNotificationService ---
+# --- STAGE 11: GraphDB---
+if ($PODS -contains "GraphDB") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\GraphDB'
+    Write-Host "[INFO] Starting recreation of GraphDB service..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+}
+
+# --- STAGE 12: VocBench3 ---
+if ($PODS -contains "VocBench3") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\VocBench3'
+    Write-Host "[INFO] Starting recreation of VocBench3 service..." -ForegroundColor Cyan
+    
+    # 1. Delete old deployment and resources first to release volume locks
+    oc delete -R -f $folder -n $project --ignore-not-found
+
+    # 2. Force-clean the specific PVC if it exists (handles stuck Terminating states)
+    $pvcExists = oc get pvc vocbench-pvc-new -n $project --ignore-not-found
+    if ($pvcExists) {
+        Write-Host "[INFO] Cleaning up old PVC: vocbench-pvc-new" -ForegroundColor Yellow
+        $patchPath = "$env:TEMP\pvc-patch.json"
+        '{"metadata":{"finalizers":null}}' | Out-File -FilePath $patchPath -Encoding utf8 -NoNewline
+        
+        try {
+            oc patch pvc vocbench-pvc-new -n $project --type=merge --patch-file="$patchPath" 2>&1 | Out-Null
+        } catch {
+            # Catch block handles cases where the PVC is already partially deleted
+        }
+        
+        Remove-Item -Path $patchPath -Force -ErrorAction SilentlyContinue
+        oc delete pvc vocbench-pvc-new -n $project --grace-period=0 --force --ignore-not-found
+    }
+
+    # 3. Deploy fresh manifests
+    oc apply -R -f $folder -n $project
+}
+
+# --- STAGE 13: SharePointNotificationService ---
 if ($PODS -contains "SharePointNotification") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\NotificationService\'
     Write-Host "[INFO] Starting recreation of Sharepoint notification service..." -ForegroundColor Cyan
@@ -377,6 +417,10 @@ if ($PODS -contains "SharePointNotification") {
         Write-Warning "[WARNING] Route was created, but failed to fetch the public host automatically. Check 'oc get routes -n $project'."
     }
 }
+
+
+
+
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 Write-Host "[SUCCESS] Completed deployment!" -ForegroundColor Green

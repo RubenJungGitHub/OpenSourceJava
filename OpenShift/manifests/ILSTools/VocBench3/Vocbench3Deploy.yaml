@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vocbench
+  namespace: contain-dvl
+  labels:
+    app: vocbench
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vocbench
+  template:
+    metadata:
+      labels:
+        app: vocbench
+    spec:
+      restartPolicy: Always
+      serviceAccountName: default
+      securityContext:
+        seLinuxOptions:
+          level: 's0:c30,c15'
+        runAsNonRoot: true
+        fsGroup: 1000900000
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: init-vocbench-data
+          image: 'docker.io/internetofwater/vocbench3:latest'
+          command:
+            - sh
+            - -c
+            - |
+              echo "Checking persistent volume state..."
+              if [ ! "$(ls -A /mnt/pvc 2>/dev/null)" ]; then
+                echo "PVC is empty. Initializing with default distribution files..."
+                if [ -d /opt/vocbench3/data ]; then
+                  cp -R /opt/vocbench3/data/. /mnt/pvc/
+                fi
+              fi
+              
+              mkdir -p /mnt/pvc/customForms /mnt/pvc/users /mnt/pvc/projects /mnt/pvc/config
+              
+              if [ ! -f /mnt/pvc/customForms/customForms.xml ]; then
+                echo '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><customForms></customForms>' > /mnt/pvc/customForms/customForms.xml
+              fi
+              
+              chmod -R 777 /mnt/pvc
+              echo "Initialization complete."
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000900000
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: vocbench-data
+              mountPath: /mnt/pvc
+      containers:
+        - name: vocbench
+          image: 'docker.io/internetofwater/vocbench3:latest'
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              echo "Starting VocBench wrapper script..."
+              echo "Staging application to a writable directory for non-root execution..."
+              
+              mkdir -p /tmp/vocbench-run
+              cp -R /app/vocbench3/semanticturkey-6.0/. /tmp/vocbench-run/
+              cd /tmp/vocbench-run
+              
+              # Temporarily isolate the war file to prevent the webbundle race condition
+              if ls deploy/vocbench3*.war 1>/dev/null 2>&1; then
+                mkdir -p /tmp/hold
+                mv deploy/vocbench3*.war /tmp/hold/
+                echo "WAR file temporarily isolated."
+              fi
+              
+              # Start Karaf server explicitly via the shell interpreter in the background
+              sh ./bin/karaf server &
+              KARAF_PID=$!
+              
+              echo "Waiting 30 seconds for Karaf and Semantic Turkey core to boot..."
+              sleep 30
+              
+              echo "Restoring WAR file to deploy directory for sequential installation..."
+              if ls /tmp/hold/vocbench3*.war 1>/dev/null 2>&1; then
+                mv /tmp/hold/vocbench3*.war deploy/
+              fi
+              
+              # Keep container alive tracking the Karaf process
+              wait $KARAF_PID
+          env:
+            - name: VB_APP_URL
+              value: 'https://vocbench-contain-dvl.apps.ocp0.anders-nogic.atos.net/vocbench3'
+            - name: VB_EXTERNAL_URL
+              value: 'https://vocbench-contain-dvl.apps.ocp0.anders-nogic.atos.net/vocbench3'
+          resources:
+            limits:
+              cpu: '2'
+              memory: 3Gi
+            requests:
+              cpu: 1000m
+              memory: 1.5Gi
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1000900000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: st-port
+              containerPort: 1979
+              protocol: TCP
+          volumeMounts:
+            - name: vocbench-data
+              mountPath: /opt/vocbench3/data
+            - name: vocbench-log
+              mountPath: /opt/vocbench3/log
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      volumes:
+        - name: vocbench-data
+          persistentVolumeClaim:
+            claimName: vocbench-pvc-new
+        - name: vocbench-log
+          emptyDir: {}

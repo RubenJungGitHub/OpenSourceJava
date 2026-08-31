@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: graphdb
+  namespace: contain-dvl
+  labels:
+    app: graphdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: graphdb
+  template:
+    metadata:
+      labels:
+        app: graphdb
+    spec:
+      restartPolicy: Always
+      serviceAccountName: default
+      securityContext:
+        seLinuxOptions:
+          level: 's0:c30,c15'
+        runAsNonRoot: true
+        fsGroup: 1000900000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: graphdb
+          image: 'ontotext/graphdb:10.6.2'
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: '2'
+              memory: 3Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1000900000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          ports:
+            - name: http
+              containerPort: 7200
+              protocol: TCP
+          volumeMounts:
+            - name: graphdb-data
+              mountPath: /opt/graphdb/home/data
+            - name: graphdb-work
+              mountPath: /opt/graphdb/home/work
+            - name: graphdb-tmp
+              mountPath: /opt/graphdb/home/tmp
+            - name: graphdb-logs
+              mountPath: /opt/graphdb/home/logs
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      volumes:
+        - name: graphdb-data
+          persistentVolumeClaim:
+            claimName: graphdb-pvc
+        - name: graphdb-work
+          emptyDir: {}
+        - name: graphdb-tmp
+          emptyDir: {}
+        - name: graphdb-logs
+          emptyDir: {}

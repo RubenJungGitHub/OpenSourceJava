@@ -1,4 +1,4 @@
-﻿    $token  = 'sha256~UaQBCubCPbHDkc3D6AO6C1H3awjEpOt-hLeqRcwlVJw'
+﻿    $token  = 'sha256~Akt2sR_y1ii545gfs9V2MZcoe1rcGle9iKP0rms_Ub0'
 
 #------------------------------------------------------------------
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
@@ -37,3 +37,5 @@ if ($shareXmlCheck -notmatch "EXISTS") {
 } else {
     Write-Host "[SUCCESS] Share configuration XML verified in place." -ForegroundColor Green
 }
+
+oc rsh deployment/alfresco -n contain-dvl

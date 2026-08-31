@@ -17,6 +17,8 @@ spec:
         - name: containgithubrepos
       containers:
         - env:
+            - name: SHAREPOINT_WEBHOOK_URL
+              value: "https://gangrenous-kandis-unmunched.ngrok-free.dev/api/WebHookListener"
             - name: SPRING_DATASOURCE_PASSWORD
               value: alfresco
             - name: SPRING_DATASOURCE_URL
