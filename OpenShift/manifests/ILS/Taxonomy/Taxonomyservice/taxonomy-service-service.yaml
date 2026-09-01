@@ -2,12 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    io.kompose.service: taxonomy-service
-  name: taxonomy-service
+    io.kompose.service: taxonomyservice
+  name: taxonomyservice
 spec:
   ports:
-    - name: "54000"
-      port: 54000
-      targetPort: 54000
+    - name: "53000"
+      port: 53000
+      targetPort: 53000
   selector:
-    io.kompose.service: taxonomy-service
+    io.kompose.service: taxonomyservice

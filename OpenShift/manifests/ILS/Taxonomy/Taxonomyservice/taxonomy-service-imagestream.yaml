@@ -2,15 +2,15 @@ apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
   labels:
-    io.kompose.service: taxonomy-service
-  name: taxonomy-service
+    io.kompose.service: taxonomyservice
+  name: taxonomyservice
 spec:
   lookupPolicy:
     local: false
   tags:
     - from:
         kind: DockerImage
-        name: taxonomy-service
+        name: taxonomyservice
       name: latest
       referencePolicy:
         type: ""

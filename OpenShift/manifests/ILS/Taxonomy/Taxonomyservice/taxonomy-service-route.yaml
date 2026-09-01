@@ -1,0 +1,18 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: taxonomyservice
+  namespace: contain-dvl
+  labels:
+    io.kompose.service: taxonomyservice
+spec:
+  to:
+    kind: Service
+    name: taxonomyservice
+    weight: 100
+  port:
+    targetPort: 53000
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

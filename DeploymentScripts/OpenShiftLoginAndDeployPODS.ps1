@@ -46,8 +46,10 @@ $PODS = @(
     #"Receiver"
     #"SharePointSubscription"
     #"SharePointNotification"
-    'GraphDB'
+    #'GraphDB'
     #'VocBench3'
+    'TaxonomyService'
+    #'TaxonomyCacher'
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -433,6 +435,24 @@ if ($PODS -contains "SharePointNotification") {
 
 
 
+# --- STAGE 14: TaxonomyService ---
+if ($PODS -contains "TaxonomyService") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Taxonomy\Taxonomyservice\'
+    Write-Host "[INFO] Starting recreation of TaxonomyService..." -ForegroundColor Cyan
+    
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+}
+
+
+# --- STAGE 15: TaxonomyCacher ---
+if ($PODS -contains "TaxonomyCacher") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Taxonomy\Taxonomycacher\'
+    Write-Host "[INFO] Starting recreation of Taxonomycacher..." -ForegroundColor Cyan
+    
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+}
 
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl

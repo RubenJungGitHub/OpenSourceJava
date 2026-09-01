@@ -4,6 +4,7 @@ metadata:
   labels:
     io.kompose.service: taxonomycacher
   name: taxonomycacher
+  namespace: contain-dvl
 spec:
   replicas: 1
   selector:
@@ -16,8 +17,8 @@ spec:
       containers:
         - env:
             - name: SPRING_DATA_MONGODB_URI
-              value: mongodb://host.docker.internal:27017/tbl_iolog
-          image: ' '
+              value: mongodb://mongodb:27017/tbl_iolog
+          image: 'ghcr.io/rubenjunggithub/ils-taxonomycacher:v1.0'
           name: taxonomycacher
           ports:
             - containerPort: 60000
@@ -26,11 +27,3 @@ spec:
   test: false
   triggers:
     - type: ConfigChange
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-          - taxonomycacher
-        from:
-          kind: ImageStreamTag
-          name: taxonomycacher:latest
-      type: ImageChange
