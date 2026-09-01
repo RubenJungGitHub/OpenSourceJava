@@ -15,37 +15,26 @@ spec:
       labels:
         app: graphdb
     spec:
-      restartPolicy: Always
-      serviceAccountName: default
-      securityContext:
-        seLinuxOptions:
-          level: 's0:c30,c15'
-        runAsNonRoot: true
-        fsGroup: 1000900000
-        seccompProfile:
-          type: RuntimeDefault
+      imagePullSecrets:
+        - name: alfrescoquayio
+        - name: containgithubrepos
       containers:
         - name: graphdb
           image: 'ontotext/graphdb:10.6.2'
           imagePullPolicy: IfNotPresent
+          env:
+            - name: GDB_HEAP_SIZE
+              value: "2G"
           resources:
             limits:
               cpu: '2'
               memory: 3Gi
             requests:
               cpu: 500m
-              memory: 1Gi
-          securityContext:
-            capabilities:
-              drop:
-                - ALL
-            runAsUser: 1000900000
-            runAsNonRoot: true
-            allowPrivilegeEscalation: false
+              memory: 2Gi
           ports:
-            - name: http
-              containerPort: 7200
-              protocol: TCP
+            - containerPort: 7200
+              name: http
           volumeMounts:
             - name: graphdb-data
               mountPath: /opt/graphdb/home/data
@@ -55,8 +44,6 @@ spec:
               mountPath: /opt/graphdb/home/tmp
             - name: graphdb-logs
               mountPath: /opt/graphdb/home/logs
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
       volumes:
         - name: graphdb-data
           persistentVolumeClaim:

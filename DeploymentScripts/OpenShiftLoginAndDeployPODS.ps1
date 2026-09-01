@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~7hIqe2r898fWMgabcna1DXwYFnJTIvSmPjdc1ea9aGc'
+$token  = 'sha256~eSFDzs0frKC8TEi-DTqbiYKUmjtNnzQwPABk5UGZQVM'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -46,8 +46,8 @@ $PODS = @(
     #"Receiver"
     #"SharePointSubscription"
     #"SharePointNotification"
-    #'GraphDB'
-    'VocBench3'
+    'GraphDB'
+    #'VocBench3'
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -352,8 +352,21 @@ if ($PODS -contains "SharePointSubscription") {
 if ($PODS -contains "GraphDB") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\GraphDB'
     Write-Host "[INFO] Starting recreation of GraphDB service..." -ForegroundColor Cyan
+    
+    # Delete existing resources safely
     oc delete -R -f $folder -n $project --ignore-not-found
+    
+    # Apply the correct Deployment/Service/PVC manifests
     oc apply -R -f $folder -n $project
+    
+    # Check if the route already exists before trying to expose it to prevent script failure
+    $routeExists = oc get route graphdb-service -n $project --ignore-not-found
+    if (-not $routeExists) {
+        Write-Host "[INFO] Exposing GraphDB service route..." -ForegroundColor Cyan
+        oc expose service graphdb-service --port=7200 -n $project
+    } else {
+        Write-Host "[INFO] GraphDB route already exists, skipping exposure." -ForegroundColor Green
+    }
 }
 
 # --- STAGE 12: VocBench3 ---
