@@ -48,8 +48,8 @@ $PODS = @(
     #"SharePointNotification"
     #'GraphDB'
     #'VocBench3'
-    'TaxonomyService'
-    #'TaxonomyCacher'
+    #'TaxonomyService'
+    'TaxonomyCacher'
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---

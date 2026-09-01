@@ -15,11 +15,22 @@ spec:
         io.kompose.service: taxonomycacher
     spec:
       containers:
-        - env:
+        - name: taxonomycacher
+          image: 'ghcr.io/rubenjunggithub/ils-taxonomycacher:v1.0'
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Copying config to a writable location..."
+              cp /app/data/application.yaml /tmp/application.yaml
+              echo "Patching Redis host to 'redis'..."
+              sed -i 's/Redis-service/redis/g' /tmp/application.yaml
+              echo "Starting application with patched config..."
+              exec java -jar /app/app.jar --spring.config.location=file:/tmp/application.yaml
+          env:
             - name: SPRING_DATA_MONGODB_URI
               value: mongodb://mongodb:27017/tbl_iolog
-          image: 'ghcr.io/rubenjunggithub/ils-taxonomycacher:v1.0'
-          name: taxonomycacher
+            - name: ILS_TAXONOMYSERVICEENDPOINT
+              value: https://taxonomyservice.contain-dvl.svc.cluster.local:53000/api
           ports:
             - containerPort: 60000
               protocol: TCP
