@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~eSFDzs0frKC8TEi-DTqbiYKUmjtNnzQwPABk5UGZQVM'
+$token  = 'sha256~z4pgtHmx-bGICi4hgcsftfc6fLua01LgjuS4L7ny4vo'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -39,17 +39,18 @@ $PODS = @(
     #"ActiveMQ"
     #"Routes"
     #"AlfrescoQueuePoller"
+    "SharepointQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC"
     #"RHKIE"
     #"Receiver"
+    #"SharePointNotification",
     #"SharePointSubscription"
-    #"SharePointNotification"
     #'GraphDB'
     #'VocBench3'
     #'TaxonomyService'
-    'TaxonomyCacher'
+    #'TaxonomyCacher'
 )
 
 # --- STAGE 1: PostgreSQL Infrastructure ---
@@ -244,13 +245,18 @@ if ($PODS -contains "MongoDB") {
         }
     }
 
-    if ($podRunning) {
-        Write-Host "[SUCCESS] MongoDB pod is running! Opening port-forward..." -ForegroundColor Green
-        Write-Host "[NOTE] This will block the terminal. Keep this window open while using MongoDB Compass." -ForegroundColor Cyan
+if ($podRunning) {
+        Write-Host "[SUCCESS] MongoDB pod is running! Starting port-forward in background..." -ForegroundColor Green
         
-        # Execute port-forward (this will lock the script session here, which is intended for port forwarding)
-        oc port-forward svc/mongodb 27017:27017 -n $project
-    } else {
+        # Start port-forwarding as a background job so the script can continue
+        Start-Job -ScriptBlock {
+            param($proj)
+            oc port-forward svc/mongodb 27017:27017 -n $proj
+        } -ArgumentList $project
+        
+        Write-Host "[INFO] Port-forward is running in the background. You can now use MongoDB Compass." -ForegroundColor Cyan
+    }
+    else {
         Write-Host "[ERROR] MongoDB pod failed to start in time. Check 'oc get pods -n $project' for details." -ForegroundColor Red
     }
 }
@@ -340,14 +346,14 @@ if ($PODS -contains "AlfrescoQueuePoller") {
     oc apply -R -f $folder -n $project
 }
 
-
-# --- STAGE 10: SharePointSubscription---
-if ($PODS -contains "SharePointSubscription") {
-    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\Subscriptionservice\'
-    Write-Host "[INFO] Starting recreation of Sharepoint subscription service..." -ForegroundColor Cyan
+# --- STAGE 10: SharepointQueuePoller---
+if ($PODS -contains "SharepointQueuePoller") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\SharepointQueuePoller\'
+    Write-Host "[INFO] Starting recreation of SharepointQueuePoller queupoller..." -ForegroundColor Cyan
     oc delete -R -f $folder -n $project --ignore-not-found
     oc apply -R -f $folder -n $project
 }
+
 
 
 # --- STAGE 11: GraphDB---
@@ -431,11 +437,28 @@ if ($PODS -contains "SharePointNotification") {
     } else {
         Write-Warning "[WARNING] Route was created, but failed to fetch the public host automatically. Check 'oc get routes -n $project'."
     }
+
+    # 4. Repeatable Local Bridge Setup (Kill old port-forwards and spin up a fresh one)
+    Write-Host "[INFO] Cleaning up any existing local port-forwards on port 5001..." -ForegroundColor Cyan
+    Get-Process -Name "oc" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like "*port-forward*5001:5001*" } | Stop-Process -Force -ErrorAction SilentlyContinue
+
+    Write-Host "[INFO] Starting fresh background port-forward for ngrok bridge..." -ForegroundColor Cyan
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/notificationservice 5001:5001 -n $project"
+
+    Write-Host "[SUCCESS] Stage 14 complete. Local port-forward active on port 5001. Ready for ngrok!" -ForegroundColor Green
 }
 
 
+# --- STAGE 14: SharePointSubscription---
+if ($PODS -contains "SharePointSubscription") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\Subscriptionservice\'
+    Write-Host "[INFO] Starting recreation of Sharepoint subscription service..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+}
 
-# --- STAGE 14: TaxonomyService ---
+
+# --- STAGE 15: TaxonomyService ---
 if ($PODS -contains "TaxonomyService") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Taxonomy\Taxonomyservice\'
     Write-Host "[INFO] Starting recreation of TaxonomyService..." -ForegroundColor Cyan
@@ -445,7 +468,7 @@ if ($PODS -contains "TaxonomyService") {
 }
 
 
-# --- STAGE 15: TaxonomyCacher ---
+# --- STAGE 16: TaxonomyCacher ---
 if ($PODS -contains "TaxonomyCacher") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Taxonomy\Taxonomycacher\'
     Write-Host "[INFO] Starting recreation of Taxonomycacher..." -ForegroundColor Cyan

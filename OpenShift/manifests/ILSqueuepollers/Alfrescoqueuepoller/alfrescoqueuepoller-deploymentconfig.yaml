@@ -46,8 +46,7 @@ spec:
             - name: SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE
               value: admin
             - name: SPRING_DATA_MONGODB_URI
-              value: mongodb://admin:admin@mongodb:27017/ilstools?authSource=admin
-          # ---> 3. Point to your GitHub Container Registry image tag <---
+              value: "mongodb://mongodb.contain-dvl.svc.cluster.local:27017/contAInBallenbak"
           image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-alfrescoqueuepoller:v1.0'  # (Replace with your actual repo name if different)
           imagePullPolicy: IfNotPresent
           name: alfrescoqueuepoller

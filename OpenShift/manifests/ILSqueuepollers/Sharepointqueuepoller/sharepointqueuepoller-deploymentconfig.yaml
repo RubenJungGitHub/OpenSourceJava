@@ -18,12 +18,24 @@ spec:
             - name: SPRING_CONFIG_LOCATION
               value: /app/data/application.yaml
             - name: SPRING_DATASOURCE_PASSWORD
-              value: contain
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
+              value: alfresco
             - name: SPRING_DATASOURCE_USERNAME
-              value: contain
-          image: ' '
+              value: alfresco
+            # 👇 Fixed to use internal OpenShift service 'postgres' instead of 'postgres-db'
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/contAInBallenbak
+            - name: ACTIVEMQ_ALFRESCOSOURCE_BROKERURL
+              value: tcp://activemq:61616
+            - name: ACTIVEMQ_MIGRATIONHUB_BROKERURL
+              value: tcp://activemq:61616
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://mongodb.contain-dvl.svc.cluster.local:27017/contAInBallenbak"
+            # 👇 Ensures the baseurl property gets overridden inside the cluster
+            - name: ILS_BASEURL
+              value: "http://receiver.contain-dvl.svc.cluster.local:55500"
+            - name: ILS_PROCESSSPITEMSENDPOINT
+              value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/ProcessChangedSharepointItem"
+          image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-sharepointqueuepoller:v1.0'
           name: sharepointqueuepoller
           ports:
             - containerPort: 3001
@@ -39,4 +51,4 @@ spec:
         from:
           kind: ImageStreamTag
           name: sharepointqueuepoller:latest
-      type: ImageChange
+      type: ConfigChange

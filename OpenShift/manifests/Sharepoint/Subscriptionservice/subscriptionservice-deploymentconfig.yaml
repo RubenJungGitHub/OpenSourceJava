@@ -26,9 +26,9 @@ spec:
             - name: SPRING_DATASOURCE_USERNAME
               value: alfresco
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO
-              value: update
-            - name: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
-              value: org.hibernate.dialect.PostgreSQLDialect
+              value: create
+            - name: SPRING_JPA_GENERATE_DDL
+              value: "true"
           image: 'ghcr.io/rubenjunggithub/sharepoint-subscriptionservice:v1.0'
           imagePullPolicy: IfNotPresent
           name: subscriptionservice

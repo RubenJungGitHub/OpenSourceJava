@@ -18,12 +18,16 @@ spec:
             - name: SPRING_CONFIG_LOCATION
               value: /app/data/application.yaml
             - name: SPRING_DATASOURCE_PASSWORD
-              value: contain
+              value: alfresco
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
             - name: SPRING_DATASOURCE_USERNAME
-              value: contain
-          image: ' '
+              value: alfresco
+            - name: APP_RECEIVER_URL 
+              value: "http://receiver.contain-dvl.svc.cluster.local:8080"
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://mongodb.contain-dvl.svc.cluster.local:27017/contAInBallenbak"
+          image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-migrationqueuepoller:v1.0'
           name: migrationqueuepoller
           ports:
             - containerPort: 3003
@@ -39,4 +43,4 @@ spec:
         from:
           kind: ImageStreamTag
           name: migrationqueuepoller:latest
-      type: ImageChange
+      type: ConfigChange

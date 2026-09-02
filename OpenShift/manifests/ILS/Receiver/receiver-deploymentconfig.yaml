@@ -24,6 +24,12 @@ spec:
             - 'echo "Waiting for kie-server..."; until curl -s http://kie-server:57000/kie-server/services/rest/server; do sleep 5; done; echo "kie-server is reachable!"'
       containers:
         - env:
+            - name: ALFRESCO_BASEURL
+              value: "https://alfresco-proxy-route-contain-dvl.apps.ocp0.anders-nogic.atos.net/"
+            - name: ALFRESCO_USERNAME
+              value: "admin"
+            - name: ALFRESCO_PASSWORD
+              value: "admin"
             - name: REDIS_HOST
               value: redis  # Or the exact service name of Redis in your OpenShift namespace
             - name: REDIS_PORT
@@ -63,6 +69,8 @@ spec:
               value: admin
             - name: SPRING_DATA_MONGODB_URI
               value: mongodb://admin:admin@mongodb:27017/ilstools?authSource=admin
+            - name: ILS_UUDIUTILENDPOINT
+              value: "http://uuidutil-route-contain-dvl.apps.ocp0.anders-nogic.atos.net/api/GetUUID"
           image: 'ghcr.io/rubenjunggithub/ils-receiver:v1.0'
           imagePullPolicy: IfNotPresent
           name: receiver
