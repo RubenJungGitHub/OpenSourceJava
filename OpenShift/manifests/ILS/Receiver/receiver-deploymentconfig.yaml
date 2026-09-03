@@ -70,7 +70,25 @@ spec:
             - name: SPRING_DATA_MONGODB_URI
               value: mongodb://admin:admin@mongodb:27017/ilstools?authSource=admin
             - name: ILS_UUDIUTILENDPOINT
-              value: "http://uuidutil-route-contain-dvl.apps.ocp0.anders-nogic.atos.net/api/GetUUID"
+              value: "http://uuidutil-service:5002/api/GetUUID"
+            - name: ILS_BASEURL
+              value: "http://receiver:55500"
+            - name: ILS_BINDENDPOINT
+              value: "http://receiver:55500/api/Bind"
+            - name: ILS_TAXONOMYSERVICEENDPOINT
+              value: "https://taxonomyservice:53000/api"
+            - name: ILS_RULEENGINEMOVEENDPOINT
+              value: "http://receiver:55500/api/rules"
+            - name: ILS_RELOCATEENDPOINT
+              value: "http://receiver:55500/api/MigrateIO"
+            - name: ILS_RULEENGINECONTAINERENDPOINT
+              value: "http://kie-server:57000/kie-server/services/rest/server"
+            - name: ILS_RULEENGINEENDPOINT
+              value: "http://kie-server:57000/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn"
+            - name: ILS_RULEENGINEPROJECTNAME
+              value: "contAlnMigrationRuleset"
+            - name: ILS_DELTALINKFILE
+              value: "/app/data/storeddeltalinks.csv"
           image: 'ghcr.io/rubenjunggithub/ils-receiver:v1.0'
           imagePullPolicy: IfNotPresent
           name: receiver
