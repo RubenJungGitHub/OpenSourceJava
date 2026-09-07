@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~cNN5AZSeOe_SfVP13VskWe41ccKTHKF4iEKe03wZ1Fk'
+$token  = 'sha256~SKBL2bQtpJijeFPX1hOr-1Ndwaw5PXOZYoXmtiJ7V64'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -39,11 +39,12 @@ $PODS = @(
     #"ActiveMQ"
     #"Routes"
     #"AlfrescoQueuePoller"
-    "SharepointQueuePoller"
+    #"SharepointQueuePoller",
+    #"MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"
-    #"RHBC"
-    #"RHKIE"
+    #"RHBC",
+    "RHKIE"
     #"Receiver"
     #"SharePointNotification",
     #"SharePointSubscription"
@@ -261,66 +262,121 @@ if ($podRunning) {
     }
 }
 
-
-
-# --- STAGE 7: RHBC ---
 if ($PODS -contains "RHBC") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\RHBC'
-    Write-Host "[INFO] Starting recreation of Red Hat Business Central..." -ForegroundColor Cyan
+    Write-Host "[INFO] Starting deployment of Red Hat Business Central..." -ForegroundColor Cyan
     
-    # 1. Apply the manifests from your folder first (creates DC, Services, etc.)
-    oc apply -R -f $folder -n $project
+    # Save global error preference
+    $oldErrorPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+
+    # 1. Apply the manifests safely
+    $applyOutput = oc apply -R -f $folder -n $project 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        $ErrorActionPreference = $oldErrorPreference
+        Write-Error "[ERROR] Failed to apply manifests:`n$applyOutput"
+        exit 1
+    } else {
+        Write-Host "[INFO] Manifests applied successfully." -ForegroundColor Green
+    }
     
-    # 2. Check if a stuck business-central pod exists before attempting a force delete
-    $podName = (oc get pods -l io.kompose.service=business-central -n $project -o jsonpath='{.items[0].metadata.name}' 2>$null)
-    if ($podName) {
-        Write-Host "[INFO] Cleaning up existing pod: $podName" -ForegroundColor Yellow
-        oc delete pod $podName -n $project --force --grace-period=0 --ignore-not-found
+    # 2. Trigger a safe restart using scale down/up for DeploymentConfig compatibility
+    Write-Host "[INFO] Restarting Business Central DeploymentConfig..." -ForegroundColor Yellow
+    
+    # Scale down to 0
+    $scaleDownOutput = oc scale dc/business-central --replicas=0 -n $project 2>&1
+    Start-Sleep -Seconds 5
+    
+    # Scale back up to 1 to force a clean pod recreation with your configuration
+    $scaleUpOutput = oc scale dc/business-central --replicas=1 -n $project 2>&1
+    $rolloutOutput = "$scaleDownOutput`n$scaleUpOutput"
+
+    if ($LASTEXITCODE -ne 0) {
+        $ErrorActionPreference = $oldErrorPreference
+        Write-Error "[ERROR] Restart failed:`n$rolloutOutput"
+        exit 1
+    } else {
+        Write-Host "[INFO] Business Central successfully restarted." -ForegroundColor Green
     }
 
-    # Also force deletion
-    Write-Host "[INFO] Cleaning up existing Business Central pods..." -ForegroundColor Yellow
-    oc delete pods -l io.kompose.service=business-central -n $project --force --grace-period=0 --ignore-not-found
+    # Restore global error preference
+    $ErrorActionPreference = $oldErrorPreference
 
-    # 3. Trigger a rollout restart to ensure the DeploymentConfig spins up fresh
-    oc rollout restart dc/business-central -n $project
 
-    # 4. Create or ensure a secure Edge route with HTTP-to-HTTPS redirect exists
-    $routeExists = (oc get route business-central -n $project --ignore-not-found)
-    $routeType = (oc get route business-central -n $project -o jsonpath='{.spec.tls.termination}' --ignore-not-found)
-    $redirectPolicy = (oc get route business-central -n $project -o jsonpath='{.spec.tls.insecureEdgeTerminationPolicy}' --ignore-not-found)
+    if ($LASTEXITCODE -ne 0) {
+        $ErrorActionPreference = $oldErrorPreference
+        Write-Error "[ERROR] Rollout restart failed:`n$rolloutOutput"
+        exit 1
+    } else {
+        Write-Host "[INFO] Rollout restart triggered." -ForegroundColor Green
+    }
 
+    # Restore global error preference before moving to the next section
+    $ErrorActionPreference = $oldErrorPreference
+
+    # 3. Create or ensure a secure Edge route with HTTP-to-HTTPS redirect exists
+    $routeExists = oc get route business-central -n $project --ignore-not-found 2>$null
     if (-not $routeExists) {
         Write-Host "[INFO] Exposing Business Central as a secure edge route with HTTP redirect..." -ForegroundColor Cyan
-        oc create route edge business-central --service=business-central --port=8080 --insecure-policy='Redirect' -n $project
-    } elseif ($routeType -ne "edge" -or $redirectPolicy -ne "Redirect") {
-        Write-Host "[INFO] Updating/recreating route to ensure Edge termination and Redirect policy..." -ForegroundColor Yellow
-        oc delete route business-central -n $project
-        oc create route edge business-central --service=business-central --port=8080 --insecure-policy='Redirect' -n $project
+        oc create route edge business-central --service=business-central --port=8080 --insecure-policy='Redirect' -n $project 2>&1 | Out-Null
     } else {
-        Write-Host "[INFO] Secure Edge route with Redirect policy already exists." -ForegroundColor Green
+        $routeType = oc get route business-central -n $project -o jsonpath='{.spec.tls.termination}' 2>$null
+        $redirectPolicy = oc get route business-central -n $project -o jsonpath='{.spec.tls.insecureEdgeTerminationPolicy}' 2>$null
+
+        if ($routeType -ne "edge" -or $redirectPolicy -ne "Redirect") {
+            Write-Host "[INFO] Updating/recreating route to ensure Edge termination and Redirect policy..." -ForegroundColor Yellow
+            oc delete route business-central -n $project --ignore-not-found 2>&1 | Out-Null
+            oc create route edge business-central --service=business-central --port=8080 --insecure-policy='Redirect' -n $project 2>&1 | Out-Null
+        } else {
+            Write-Host "[INFO] Secure Edge route with Redirect policy already exists." -ForegroundColor Green
+        }
     }
 }
 
-
- # --- STAGE 7: RHKIE---
+# --- STAGE 7: RHKIE---
 if ($PODS -contains "RHKIE") {
+
+    Write-Host "[INFO] Cleaning up and linking correct image pull secrets..." -ForegroundColor Cyan
+    $global:ErrorActionPreference = "Continue"
+    oc secret unlink default containgithubrepos alfrescoquayio dockerhub-secret -n $project
+    oc secret link default containgithubrepos alfrescoquayio dockerhub-secret --for=pull -n $project
+    $global:ErrorActionPreference = "Stop"
+
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\RHKIE'
     Write-Host "[INFO] Starting recreation of RH KIE..." -ForegroundColor Cyan
+    
+    $global:ErrorActionPreference = "Continue"
+    
     oc delete -R -f $folder -n $project --ignore-not-found
-        oc apply -R -f $folder -n $project
-    oc expose svc/business-central --port=8080 -n contain-dvl
-    }
+    oc apply -R -f $folder -n $project
+    
+    Write-Host "[INFO] Waiting for kie-server deployment to complete..." -ForegroundColor Cyan
+    oc rollout status dc/kie-server -n $project --timeout=180s
+    
+    $global:ErrorActionPreference = "Stop"
+
+    #Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/kie-server 57000:57000 -n $project"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/kie-server 8080:8080 -n $project"
+    
+    $global:ErrorActionPreference = "Continue"
+    oc expose svc/business-central --port=8080 -n $project
+    $global:ErrorActionPreference = "Stop"
+}
 
 # --- STAGE 8: Receiver ---
 if ($PODS -contains "Receiver") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Receiver\'
     Write-Host "[INFO] Starting recreation of receiver..." -ForegroundColor Cyan
+    
+    $global:ErrorActionPreference = "Continue"
+    
     oc delete -R -f $folder -n $project --ignore-not-found
     oc apply -R -f $folder -n $project
 
     Write-Host "[INFO] Waiting for receiver pod to be ready..." -ForegroundColor Yellow
     oc rollout status dc/receiver -n $project --timeout=180s
+
+    $global:ErrorActionPreference = "Stop"
 
     # Check if the route already exists; if not, create it
     $routeCheck = oc get route receiver -n $project --ignore-not-found
@@ -356,7 +412,17 @@ if ($PODS -contains "SharepointQueuePoller") {
 
 
 
-# --- STAGE 11: GraphDB---
+# --- STAGE 11: MigrationQueuePoller---
+if ($PODS -contains "MigrationQueuePoller") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\MigrationQueuePoller\'
+    Write-Host "[INFO] Starting recreation of MigrationQueuePoller queupoller..." -ForegroundColor Cyan
+    oc delete -R -f $folder -n $project --ignore-not-found
+    oc apply -R -f $folder -n $project
+}
+
+
+
+# --- STAGE 12: GraphDB---
 if ($PODS -contains "GraphDB") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\GraphDB'
     Write-Host "[INFO] Starting recreation of GraphDB service..." -ForegroundColor Cyan
@@ -377,7 +443,7 @@ if ($PODS -contains "GraphDB") {
     }
 }
 
-# --- STAGE 12: VocBench3 ---
+# --- STAGE 13: VocBench3 ---
 if ($PODS -contains "VocBench3") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\VocBench3'
     Write-Host "[INFO] Starting recreation of VocBench3 service..." -ForegroundColor Cyan
@@ -406,7 +472,7 @@ if ($PODS -contains "VocBench3") {
     oc apply -R -f $folder -n $project
 }
 
-# --- STAGE 13: SharePointNotificationService ---
+# --- STAGE 14: SharePointNotificationService ---
 if ($PODS -contains "SharePointNotification") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\NotificationService\'
     Write-Host "[INFO] Starting recreation of Sharepoint notification service..." -ForegroundColor Cyan
@@ -449,7 +515,7 @@ if ($PODS -contains "SharePointNotification") {
 }
 
 
-# --- STAGE 14: SharePointSubscription---
+# --- STAGE 15: SharePointSubscription---
 if ($PODS -contains "SharePointSubscription") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\Subscriptionservice\'
     Write-Host "[INFO] Starting recreation of Sharepoint subscription service..." -ForegroundColor Cyan
@@ -458,7 +524,7 @@ if ($PODS -contains "SharePointSubscription") {
 }
 
 
-# --- STAGE 15: TaxonomyService ---
+# --- STAGE 16: TaxonomyService ---
 if ($PODS -contains "TaxonomyService") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Taxonomy\Taxonomyservice\'
     Write-Host "[INFO] Starting recreation of TaxonomyService..." -ForegroundColor Cyan
@@ -468,7 +534,7 @@ if ($PODS -contains "TaxonomyService") {
 }
 
 
-# --- STAGE 16: TaxonomyCacher ---
+# --- STAGE 17: TaxonomyCacher ---
 if ($PODS -contains "TaxonomyCacher") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Taxonomy\Taxonomycacher\'
     Write-Host "[INFO] Starting recreation of Taxonomycacher..." -ForegroundColor Cyan

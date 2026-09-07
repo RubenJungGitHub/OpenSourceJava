@@ -4,6 +4,7 @@ metadata:
   labels:
     io.kompose.service: receiver
   name: receiver
+  namespace: contain-dvl
 spec:
   replicas: 1
   selector:
@@ -15,15 +16,10 @@ spec:
     spec:
       imagePullSecrets:
         - name: containgithubrepos
-      initContainers:
-        - name: wait-for-kie-server
-          image: registry.access.redhat.com/ubi8/ubi-minimal:latest
-          command:
-            - 'sh'
-            - '-c'
-            - 'echo "Waiting for kie-server..."; until curl -s http://kie-server:57000/kie-server/services/rest/server; do sleep 5; done; echo "kie-server is reachable!"'
       containers:
         - env:
+            - name: SPRING_CONFIG_LOCATION
+              value: optional:file:/app/data/application.yaml
             - name: ALFRESCO_BASEURL
               value: "https://alfresco-proxy-route-contain-dvl.apps.ocp0.anders-nogic.atos.net/"
             - name: ALFRESCO_USERNAME
@@ -31,13 +27,11 @@ spec:
             - name: ALFRESCO_PASSWORD
               value: "admin"
             - name: REDIS_HOST
-              value: redis  # Or the exact service name of Redis in your OpenShift namespace
+              value: redis
             - name: REDIS_PORT
               value: "6379"
             - name: APP_KEYSTORE_PATH
               value: /app/config/Containselfsigned_cert.p12
-            - name: SPRING_CONFIG_LOCATION
-              value: /app/data/application.yaml
             - name: SPRING_DATASOURCE_PASSWORD
               value: alfresco
             - name: SPRING_DATASOURCE_URL
@@ -47,14 +41,13 @@ spec:
             - name: SPRING_REDIS_HOST
               value: redis
             - name: ILS_RULEENGINECONTAINERENDPOINT
-              value: http://kie-server:57000/kie-server/services/rest/server
+              value: "http://kie-server.contain-dvl.svc.cluster.local:57000/kie-server/services/rest/server"
             - name: ILS_RULEENGINEENDPOINT
-              value: http://kie-server:57000/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn
+              value: "http://kie-server.contain-dvl.svc.cluster.local:57000/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn"
             - name: ILS_RULEENGINEUSERNAME
               value: admin
             - name: ILS_RULEENGINEPASSWORD
               value: admin
-            # Explicit Spring Boot MongoDB Environment Variables:
             - name: SPRING_DATA_MONGODB_HOST
               value: mongodb
             - name: SPRING_DATA_MONGODB_PORT
@@ -79,12 +72,6 @@ spec:
               value: "https://taxonomyservice:53000/api"
             - name: ILS_RULEENGINEMOVEENDPOINT
               value: "http://receiver:55500/api/rules"
-            - name: ILS_RELOCATEENDPOINT
-              value: "http://receiver:55500/api/MigrateIO"
-            - name: ILS_RULEENGINECONTAINERENDPOINT
-              value: "http://kie-server:57000/kie-server/services/rest/server"
-            - name: ILS_RULEENGINEENDPOINT
-              value: "http://kie-server:57000/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn"
             - name: ILS_RULEENGINEPROJECTNAME
               value: "contAlnMigrationRuleset"
             - name: ILS_DELTALINKFILE
@@ -95,6 +82,16 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
+          volumeMounts:
+            - mountPath: /app/data
+              name: receiver-data
+            - mountPath: /app/config
+              name: receiver-config
+      volumes:
+        - name: receiver-data
+          emptyDir: {}
+        - name: receiver-config
+          emptyDir: {}
       restartPolicy: Always
   test: false
   triggers:

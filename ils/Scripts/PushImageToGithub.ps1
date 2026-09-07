@@ -9,10 +9,11 @@ $ErrorActionPreference = "Stop"
 # ==========================================
 # 1. CONFIGURATION
 # ==========================================
-$localRepo = "mongo"          # Local Docker repository name
-$localTag  = "latest"                # Local Docker tag
-$ghUser    = "RubenJungGitHub"       # Your GitHub username
-$targetTag = "v1.0"                  # Target tag for GHCR
+$localRepo  = "receiver"             # Local Docker repository name in Docker Desktop
+$remoteRepo = "ils-" + $localRepo         # Exact name for your GitHub package repository
+$localTag   = "latest"               # Local Docker tag
+$ghUser     = "RubenJungGitHub"      # Your GitHub username
+$targetTag  = "v1.0"                 # Target tag for GHCR
 
 # IMPORTANT: Replace with your actual Classic Personal Access Token (ghp_...)
 $githubToken = "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" 
@@ -60,11 +61,7 @@ Write-Host "Found local image: $localImage" -ForegroundColor Cyan
 # ==========================================
 # 4. CONSTRUCT TARGET & TAG IMAGE
 # ==========================================
-# Formats ghcr.io path ensuring username and repository are strictly lowercased
-$ghcrImage = "ghcr.io/$($ghUser.ToLower())/$($localRepo.ToLower()):$targetTag"
-
-Write-Host "Tagging as:       $ghcrImage" -ForegroundColor Yellow
-
+$ghcrImage = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
 docker tag $localImage $ghcrImage
 
 if ($LASTEXITCODE -ne 0) {

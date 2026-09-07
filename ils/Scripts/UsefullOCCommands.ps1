@@ -1,5 +1,13 @@
 ﻿
+#------------------------------------------------------------------
+$token  = 'sha256~SKBL2bQtpJijeFPX1hOr-1Ndwaw5PXOZYoXmtiJ7V64'
+$server = 'https://api.ocp0.anders-nogic.atos.net:6443'
+$project = "contain-dvl"
 
+cls
+# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
+Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
+oc login --token=$token --server=$server
 
 $project = "contain-dvl"
 #List all pods in project
@@ -77,9 +85,26 @@ oc exec $sharePod -n contain-dvl -- curl --max-time 5 -I http://alfresco:8082/al
 
 #Get Pod tail logs 
 cls
-$PodName = "vocbench-7959594c5f-ssc77"
+$PodName = "kie-server"
+#$PodName = "receiver-1-7987x"
 oc get pods -l io.kompose.service=$PodName
-$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=300
+$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=500
+Write-Host "[INFO] Found pod ... " $pod -ForegroundColor Cyan
+
 oc describe deployment $pod -n contain-dvl
 oc get events -n contain-dvl --sort-by='.metadata.creationTimestamp'
 oc get routes -n contain-dvl
+
+
+
+#Restart pod
+cls
+$PodName = "KIE"
+oc get pods -l io.kompose.service=$PodName
+
+# 1. View logs of the current active pod first
+$pod = (oc get pods --no-headers -l io.kompose.service=$PodName | Where-Object { $_ -match "Running" } | Select-Object -First 1).Split()[0]
+if ($pod) { oc logs $pod --tail=300 }
+
+# 2. Trigger a proper rollout restart on the parent DeploymentConfig
+oc rollout restart dc/$PodName -n contain-dnv

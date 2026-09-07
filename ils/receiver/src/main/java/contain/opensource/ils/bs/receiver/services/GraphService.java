@@ -848,8 +848,7 @@ public class GraphService {
         String cleancontainerfrom = SPItem.containerfrom.replace("\"", "");
         String cleanClassification = SPItem.classificationID.replace("\"", "").replace("-", "");
         String cleanMarking = SPItem.markingID.replace("\"", "").replace("-", "");
-
-        // Bouw de URL exact zoals Swagger het doet
+         // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
                 .queryParam("platformfrom", cleanPlatformFrom)
                 .queryParam("containerfrom", cleancontainerfrom)
@@ -858,6 +857,9 @@ public class GraphService {
                 .build()
                 .encode()
                 .toUri();
+
+       System.out.println("In item must migrate check : " + SPItem.getTitle() + ", Description: " + SPItem.getDescription() + " Rule Engine URL: " + targetUri.toString());
+  
 
         HttpClient client = HttpClient.newHttpClient();
         // 1. Bouw de Request (gebruik de URL die je net hebt samengesteld)
@@ -1043,6 +1045,7 @@ public class GraphService {
         String siteId = null;
         // String driveId = null;
         String action = "";
+        System.out.println("Processing sharepoint item: " + ItemWebUrl + " , ListItemID: " + ListItemID );
         Hashtable<String, String> migrationinfo = new Hashtable<>();
         try {
             accessToken = getGraphToken();

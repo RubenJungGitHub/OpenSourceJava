@@ -4,10 +4,13 @@ metadata:
   labels:
     io.kompose.service: kie-server
   name: kie-server
+  namespace: contain-dvl
 spec:
   ports:
-    - name: "57000"
-      port: 57000
-      targetPort: 8080
+  - name: "8080"
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
   selector:
     io.kompose.service: kie-server
+  type: ClusterIP

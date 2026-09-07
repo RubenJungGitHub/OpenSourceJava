@@ -19,14 +19,24 @@ spec:
               value: /app/data/application.yaml
             - name: SPRING_DATASOURCE_PASSWORD
               value: alfresco
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://postgres-db:5432/contAInBallenbak
             - name: SPRING_DATASOURCE_USERNAME
               value: alfresco
-            - name: APP_RECEIVER_URL 
-              value: "http://receiver.contain-dvl.svc.cluster.local:8080"
+            # 👇 Fixed to use internal OpenShift service 'postgres' instead of 'postgres-db'
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/contAInBallenbak
+            - name: ACTIVEMQ_ALFRESCOSOURCE_BROKERURL
+              value: tcp://activemq:61616
+            - name: ACTIVEMQ_MIGRATIONHUB_BROKERURL
+              value: tcp://activemq:61616
             - name: SPRING_DATA_MONGODB_URI
               value: "mongodb://mongodb.contain-dvl.svc.cluster.local:27017/contAInBallenbak"
+            # 👇 Ensures the baseurl property gets overridden inside the cluster
+            - name: ILS_BASEURL
+              value: "http://receiver.contain-dvl.svc.cluster.local:55500"
+            - name: ILS_PROCESSSPITEMSENDPOINT
+              value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/ProcessChangedSharepointItem"
+            - name: ILS_LOGIODELETEDFROMPLATFORMENDPOINT
+              value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/logiodeletedfromplatform"
           image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-migrationqueuepoller:v1.0'
           name: migrationqueuepoller
           ports:

@@ -1,9 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: maven-settings
+  namespace: contain-dvl
+data:
+  settings.xml: |
+    <settings>
+      <servers>
+        <server>
+          <id>business-central</id>
+          <username>admin</username>
+          <password>admin</password>
+        </server>
+        <server>
+          <id>guvnor-m2-repo</id>
+          <username>admin</username>
+          <password>admin</password>
+        </server>
+      </servers>
+      <profiles>
+        <profile>
+          <id>guvnor-m2-repo</id>
+          <repositories>
+            <repository>
+              <id>guvnor-m2-repo</id>
+              <name>Guvnor M2 Repo</name>
+              <url>http://business-central.contain-dvl.svc.cluster.local:8280/business-central/maven2</url>
+              <layout>default</layout>
+              <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+              </releases>
+              <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+              </snapshots>
+            </repository>
+          </repositories>
+        </profile>
+      </profiles>
+      <activeProfiles>
+        <activeProfile>guvnor-m2-repo</activeProfile>
+      </activeProfiles>
+    </settings>
+---
 apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
   labels:
     io.kompose.service: kie-server
   name: kie-server
+  namespace: contain-dvl
 spec:
   replicas: 1
   selector:
@@ -17,30 +64,44 @@ spec:
     spec:
       containers:
         - env:
+            - name: HOME
+              value: "/tmp"
             - name: JAVA_OPTS
-              value: -Dkie.maven.offline.force=false -Dorg.kie.server.sync.deploy=true
+              value: -Dkie.maven.offline.force=false -Dorg.kie.server.sync.deploy=true -Dmaven.repo.local=/tmp/.m2/repository -Dkie.maven.settings.custom=/opt/custom-maven/settings.xml
             - name: KIE_ADMIN_PWD
               value: admin
             - name: KIE_ADMIN_USER
               value: admin
-            - name: KIE_MAVEN_REPO
-              value: http://business-central:8280/business-central/maven2
             - name: KIE_SERVER_CONTROLLER
-              value: http://business-central:8280/business-central/rest/controller
+              value: "http://business-central.contain-dvl.svc.cluster.local:8280/business-central/rest/controller"
             - name: KIE_SERVER_CONTROLLER_USER
               value: admin
             - name: KIE_SERVER_CONTROLLER_PASSWORD
               value: admin
+            - name: KIE_SERVER_CREDENTIALS_USER
+              value: admin
+            - name: KIE_SERVER_CREDENTIALS_PASSWORD
+              value: admin
+            - name: KIE_MAVEN_SETTINGS_CUSTOM
+              value: "/opt/custom-maven/settings.xml"
             - name: KIE_SERVER_ID
               value: rhpam-poc-server
             - name: KIE_SERVER_LOCATION
-              value: http://kie-server:8080/kie-server/services/rest/server
-          image: ' '
+              value: "http://kie-server.contain-dvl.svc.cluster.local:8080/kie-server/services/rest/server"
+            - name: org.appformer.m2repo.url
+              value: "http://business-central.contain-dvl.svc.cluster.local:8280/business-central/maven2"
+          image: 'kie-server:7.73.0.Final'
           name: kie-server
           ports:
             - containerPort: 8080
               protocol: TCP
-      restartPolicy: Always
+          volumeMounts:
+            - name: maven-settings-volume
+              mountPath: /opt/custom-maven
+      volumes:
+        - name: maven-settings-volume
+          configMap:
+            name: maven-settings
   test: false
   triggers:
     - type: ConfigChange
