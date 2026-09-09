@@ -922,7 +922,26 @@ public class GraphService {
                     .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,OData__UIVersionString,markingexternaltax, markingexternaltaxsystemid,classificationexternaltax, classificationexternaltaxsystemid),driveItem")
                     .get();
             if (li != null) {
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    // This serializes the entire fields object, including all expanded custom
+                    // columns
+                    String allFieldsJson = objectMapper.writeValueAsString(li.fields);
+                    System.out.println("ALL SHAREPOINT FIELDS: " + allFieldsJson);
+                } catch (Exception e) {
+                    System.err.println("Failed to serialize fields: " + e.getMessage());
+                }
                 FieldValueSet fields = li.fields;
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    java.util.Map<String, Object> fieldsMap = mapper.convertValue(li.fields, java.util.Map.class);
+
+                    for (java.util.Map.Entry<String, Object> entry : fieldsMap.entrySet()) {
+                        System.out.println("Field: " + entry.getKey() + " = " + entry.getValue());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 AlfrescoConstants.ContainPlatforms moveTo = null;
                 SharePointItemResponse SPItem = null;
                 if (fields != null) {
@@ -974,6 +993,7 @@ public class GraphService {
                         Object title = adm.get("Title");
                         Object filename = driveItem.name;
                         Object description = adm.get("containIODescription");
+                        // Object description = adm.get("Description");
                         if (adm.get("classificationexternaltaxsystemid") != null) {
                             classificationID = adm.get("classificationexternaltaxsystemid").getAsString();
                             // classification = adm.get("classificationexternaltax").getAsString();
@@ -1028,7 +1048,7 @@ public class GraphService {
                                     + " , Marking: " + SPItem.getMarking())
                             + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
-                    System.out.println("Item " + li.id + " marked for move to " + moveTo);
+                    System.out.println("Item " + li.id + " marked for move to " + SPItem.getplatformto() + " in container " + SPItem.getcontainerto());
                 }
                 return SPItem;
             }

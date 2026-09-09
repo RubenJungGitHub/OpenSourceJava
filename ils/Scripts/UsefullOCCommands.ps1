@@ -82,11 +82,15 @@ oc exec $sharePod -n contain-dvl -- curl -v http://alfresco:8082/alfresco/s/api/
 
 oc exec $sharePod -n contain-dvl -- curl --max-time 5 -I http://alfresco:8082/alfresco/
 
+#Check KIE containers
+$kiePod = (oc get pods -n contain-dvl -l io.kompose.service=kie-server --no-headers | Select-Object -First 1).Split()[0]
+oc exec $kiePod -n contain-dvl -- curl -s -u admin:admin http://localhost:8080/kie-server/services/rest/server/containers
+
 
 #Get Pod tail logs 
 cls
 $PodName = "kie-server"
-#$PodName = "receiver-1-7987x"
+#$PodName = "receiver"
 oc get pods -l io.kompose.service=$PodName
 $pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=500
 Write-Host "[INFO] Found pod ... " $pod -ForegroundColor Cyan

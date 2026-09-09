@@ -46,7 +46,7 @@ $PODS = @(
     #"ActiveMQ"
     #"Routes"
     #"AlfrescoQueuePoller"
-    #"SharepointQueuePoller",
+    #"SharepointQueuePoller"
     #"MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"

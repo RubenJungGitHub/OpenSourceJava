@@ -18,6 +18,8 @@ spec:
         - name: containgithubrepos
       containers:
         - env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
             - name: SPRING_CONFIG_LOCATION
               value: optional:file:/app/data/application.yaml
             - name: ALFRESCO_BASEURL
@@ -85,12 +87,8 @@ spec:
           volumeMounts:
             - mountPath: /app/data
               name: receiver-data
-            - mountPath: /app/config
-              name: receiver-config
       volumes:
         - name: receiver-data
-          emptyDir: {}
-        - name: receiver-config
           emptyDir: {}
       restartPolicy: Always
   test: false

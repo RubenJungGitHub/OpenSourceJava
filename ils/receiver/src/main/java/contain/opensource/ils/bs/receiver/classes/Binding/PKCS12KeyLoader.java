@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 
 import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
-import  contain.opensource.shared.configurationproperties.ILSRestProperties;
+import contain.opensource.shared.configurationproperties.ILSRestProperties;
+
 /**
  * Utility class for loading PKCS12 private keys from a keystore file.
  * 
@@ -52,12 +53,19 @@ public class PKCS12KeyLoader {
     private PrivateKey cachedKey;
 
     @Autowired
-  public PKCS12KeyLoader(ILSRestProperties ilsproperties) {
-        this.keyStorePath = ilsproperties.getkeystorepath();
-  }
+    public PKCS12KeyLoader(ILSRestProperties ilsproperties, 
+                           @Value("${APP_KEYSTORE_PATH:/app/config/Containselfsigned_cert.p12}") String defaultPath) {
+        String path = (ilsproperties != null) ? ilsproperties.getkeystorepath() : null;
+        // Fallback if properties contain a local Windows path or are null/empty
+        if (path == null || path.startsWith("D:") || path.startsWith("C:")) {
+            this.keyStorePath = defaultPath;
+        } else {
+            this.keyStorePath = path;
+        }
+    }
 
-    //Hard coded. this should be derived from propertiess
     public PKCS12KeyLoader() {
+        this.keyStorePath = System.getenv().getOrDefault("APP_KEYSTORE_PATH", "/app/config/Containselfsigned_cert.p12");
     }
 
     public synchronized PrivateKey getPrivateKey() throws Exception {
@@ -68,19 +76,26 @@ public class PKCS12KeyLoader {
         return cachedKey;
     }
 
-    // <<< Add this getter
     public String getKeyStorePath() {
         return keyStorePath;
     }
 
     private PrivateKey loadPrivateKeyInternal() throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        try (FileInputStream fis = new FileInputStream(keyStorePath)) {
-            keyStore.load(fis, AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
+        try {
+            KeyStore keyStore = KeyStore.getInstance("PKCS12");
+            try (FileInputStream fis = new FileInputStream(keyStorePath)) {
+                keyStore.load(fis, AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
+            }
+            Key key = keyStore.getKey(
+                    AlfrescoConstants.p12PrivateKeyFileAlias,
+                    AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
+            return (PrivateKey) key;
+        } catch (Exception ex) {
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED
+                    + "Fout bij aanroepen loadPrivateKeyInternal in PKCS12KeyLoader: " +
+                    ex.getMessage()
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+            throw ex; // Re-throw so it doesn't return a silent null pointer later
         }
-        Key key = keyStore.getKey(
-                AlfrescoConstants.p12PrivateKeyFileAlias,
-                AlfrescoConstants.p12PrivateKeyFilePassword.toCharArray());
-        return (PrivateKey) key;
     }
 }
