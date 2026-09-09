@@ -4,9 +4,16 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~SKBL2bQtpJijeFPX1hOr-1Ndwaw5PXOZYoXmtiJ7V64'
+$token  = 'sha256~MOO6GVPsq9DD7qqcGIGmg7eQlxuw9mrtKyHCjGLO87A'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
+
+$localTag   = "latest"               # Local Docker tag
+$ghUser     = "RubenJungGitHub"      # Your GitHub username
+
+# IMPORTANT: Replace with your actual Classic Personal Access Token (ghp_...)
+$githubToken = "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" 
+
 
 cls
 # 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
@@ -44,8 +51,8 @@ $PODS = @(
     #"MongoDB"
     #"REDIS"
     #"RHBC",
-    "RHKIE"
-    #"Receiver"
+    #"RHKIE"
+    "Receiver"
     #"SharePointNotification",
     #"SharePointSubscription"
     #'GraphDB'
@@ -365,11 +372,58 @@ if ($PODS -contains "RHKIE") {
 
 # --- STAGE 8: Receiver ---
 if ($PODS -contains "Receiver") {
+
+    #First push new image to GH
+    $container  = "receiver"
+    $localRepo  = "ils-" + $container              # Local Docker repository name in Docker Desktop (ils-receiver)
+    $remoteRepo = "ils-" + $container              # Exact name for your GitHub package repository
+    $localTag   = "latest"                         # Local Docker tag
+    $targetTag  = "v1.0"                           # Target tag for GHCR
+
+    # ==========================================
+    # 2. BUILD FRESH DOCKER IMAGE LOCALLY
+    # ==========================================
+    
+    $PSNativeCommandUseErrorActionPreference = $false
+    Write-Host "[INFO] Building fresh Docker image via Docker Compose (no-cache)..." -ForegroundColor Cyan
+
+    $oldPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
+
+    try {
+        # Pointing to the root 'ils' folder where docker-compose.yml actually lives
+        cmd /c "docker compose -f D:\contAIn\OpenSourceJava\ils\receiver\docker-compose.yml build --no-cache receiver"
+    } finally {
+        $ErrorActionPreference = $oldPreference
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker build failed!" -ForegroundColor Red
+        exit 1
+    }
+
+    $localImage = "$localRepo`:latest"
+    $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
+
+    Write-Host "[INFO] Tagging local image to $ghcrImage..." -ForegroundColor Cyan
+    docker tag $localImage $ghcrImage
+
+    Write-Host "[INFO] Pushing fresh image to GitHub..." -ForegroundColor Green
+    docker push $ghcrImage
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker push failed!" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
+
+
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Receiver\'
     Write-Host "[INFO] Starting recreation of receiver..." -ForegroundColor Cyan
     
     $global:ErrorActionPreference = "Continue"
     
+    # Deleting and re-applying handles the fresh deployment automatically because of imagePullPolicy: Always
     oc delete -R -f $folder -n $project --ignore-not-found
     oc apply -R -f $folder -n $project
 

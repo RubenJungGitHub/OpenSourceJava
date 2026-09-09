@@ -848,7 +848,7 @@ public class GraphService {
         String cleancontainerfrom = SPItem.containerfrom.replace("\"", "");
         String cleanClassification = SPItem.classificationID.replace("\"", "").replace("-", "");
         String cleanMarking = SPItem.markingID.replace("\"", "").replace("-", "");
-         // Bouw de URL exact zoals Swagger het doet
+        // Bouw de URL exact zoals Swagger het doet
         URI targetUri = UriComponentsBuilder.fromHttpUrl(ILSProperties.getruleenginemoveendpoint())
                 .queryParam("platformfrom", cleanPlatformFrom)
                 .queryParam("containerfrom", cleancontainerfrom)
@@ -858,8 +858,8 @@ public class GraphService {
                 .encode()
                 .toUri();
 
-       System.out.println("In item must migrate check : " + SPItem.getTitle() + ", Description: " + SPItem.getDescription() + " Rule Engine URL: " + targetUri.toString());
-  
+        System.out.println("In item must migrate check : " + SPItem.getTitle() + ", Description: "
+                + SPItem.getDescription() + " Rule Engine URL: " + targetUri.toString());
 
         HttpClient client = HttpClient.newHttpClient();
         // 1. Bouw de Request (gebruik de URL die je net hebt samengesteld)
@@ -909,6 +909,7 @@ public class GraphService {
             if (accessToken == null || accessToken.isEmpty()) {
                 accessToken = getGraphToken();
             }
+
             boolean hasUUID = false;
             boolean mustMove = false;
             GraphServiceClient<?> graphClient = getGraphClient(AlfrescoConstants.tenantId);
@@ -987,9 +988,12 @@ public class GraphService {
                         String titleStr = title != null ? title.toString().replace("\"", "") : "";
                         String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
                         String descriptionStr = description != null ? description.toString().replace("\"", "") : "";
-                        SPItem.title = titleStr;
-                        SPItem.filename = filenameStr;
-                        SPItem.description = descriptionStr;
+
+                        // FIX APPLIED HERE: Use proper setters or capitalized public fields
+                        SPItem.setTitle(titleStr);
+                        SPItem.setFileName(filenameStr);
+                        SPItem.Description = descriptionStr;
+
                         SPItem.mimetype = mimeType;
                         SPItem.setpath(driveItem.webUrl);
                         SPItem.UUID = uuidValue;
@@ -1018,6 +1022,12 @@ public class GraphService {
                 itemmustmigrate(SPItem);
 
                 if (SPItem.getmustmove()) {
+                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN +
+                            ("SharePoint item needs to be migrated: " + SPItem.getTitle() + " , Description: "
+                                    + SPItem.getDescription() + " , Classification: " + SPItem.getclassification()
+                                    + " , Marking: " + SPItem.getMarking())
+                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
                     System.out.println("Item " + li.id + " marked for move to " + moveTo);
                 }
                 return SPItem;
@@ -1045,7 +1055,7 @@ public class GraphService {
         String siteId = null;
         // String driveId = null;
         String action = "";
-        System.out.println("Processing sharepoint item: " + ItemWebUrl + " , ListItemID: " + ListItemID );
+        System.out.println("Processing sharepoint item: " + ItemWebUrl + " , ListItemID: " + ListItemID);
         Hashtable<String, String> migrationinfo = new Hashtable<>();
         try {
             accessToken = getGraphToken();

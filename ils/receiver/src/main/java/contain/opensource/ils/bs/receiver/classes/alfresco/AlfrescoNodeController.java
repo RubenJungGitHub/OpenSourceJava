@@ -745,15 +745,24 @@ public class AlfrescoNodeController {
     try {
 
       this.nodeId = nodeid;
+      System.out.println("processalfresconodepoint nodeID " + nodeid + " secondpath " + secondpath);
+
       AlfrescoNodeResponse alfrescoresponse = GetNode(nodeid);
-      itemmustmigrate(alfresconNodeResponse);
+      try {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonOutput = objectMapper.writeValueAsString(alfrescoresponse);
+        System.out.println("AlfrescoNodeResponse JSON: " + jsonOutput);
+      } catch (Exception e) {
+        System.err.println("Failed to serialize response: " + e.getMessage());
+      }
+      itemmustmigrate(alfrescoresponse);
       migrationinfo.put("platformto",
           (alfrescoresponse.getplatformto() != null) ? alfrescoresponse.getplatformto().name() : "<NO MOVE>");
       migrationinfo.put("containerto",
           alfrescoresponse.getcontainerto() != null ? alfrescoresponse.getcontainerto() : "");
       alfrescoresponse.setpath(secondpath);
-      if (alfresconNodeResponse.getmustmove()) {
-        System.out.println("Item " + alfresconNodeResponse.getcontainerfrom() + " marked for move to "
+      if (alfrescoresponse.getmustmove()) {
+        System.out.println("Item " + alfrescoresponse.getcontainerfrom() + " marked for move to "
             + alfrescoresponse.getplatformto() + " ->" + alfrescoresponse.getcontainerto());
       }
 

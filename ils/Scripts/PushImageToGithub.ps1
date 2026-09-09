@@ -9,11 +9,18 @@ $ErrorActionPreference = "Stop"
 # ==========================================
 # 1. CONFIGURATION
 # ==========================================
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++
+#NOTE : A::ALLWAYS DEPLOY NEW JAR TO DOCKER FIRST!!!!!!!!!!!!
+#++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 $localRepo  = "receiver"             # Local Docker repository name in Docker Desktop
 $remoteRepo = "ils-" + $localRepo         # Exact name for your GitHub package repository
 $localTag   = "latest"               # Local Docker tag
 $ghUser     = "RubenJungGitHub"      # Your GitHub username
-$targetTag  = "v1.0"                 # Target tag for GHCR
+$targetTag  = "v1.3"                 # Target tag for GHCR
 
 # IMPORTANT: Replace with your actual Classic Personal Access Token (ghp_...)
 $githubToken = "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" 
