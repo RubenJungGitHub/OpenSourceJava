@@ -37,6 +37,8 @@ spec:
               value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/ProcessChangedSharepointItem"
             - name: ILS_LOGIODELETEDFROMPLATFORMENDPOINT
               value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/logiodeletedfromplatform"
+            - name: ILS_RELOCATEENDPOINT
+              value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/MigrateIO"
           image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-migrationqueuepoller:v1.0'
           name: migrationqueuepoller
           ports:

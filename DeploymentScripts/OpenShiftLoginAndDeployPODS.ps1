@@ -47,12 +47,12 @@ $PODS = @(
     #"Routes"
     #"AlfrescoQueuePoller"
     #"SharepointQueuePoller"
-    #"MigrationQueuePoller"
+    "MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification",
     #"SharePointSubscription"
     #'GraphDB'
