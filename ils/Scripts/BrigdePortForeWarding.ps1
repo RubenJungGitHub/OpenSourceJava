@@ -1,7 +1,4 @@
-﻿
-
-
-$token  = 'sha256~xfVnmSAWcr2EAsoXBgOzuFxnu0gez5qZthbOZrUYfWo'
+﻿$token  = 'sha256~xfVnmSAWcr2EAsoXBgOzuFxnu0gez5qZthbOZrUYfWo'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 cls
@@ -45,6 +42,10 @@ EnablePortFirst $port
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward service/postgres 5432:5432 -n contain-dvl"
 
 
+# Use 'start' to open these in separate windows
+Start-Process "C:\ContainOpenSource\NGrok\GrokonLocalHost-StartAll.cmd"
+
+
 
 
 
@@ -61,7 +62,7 @@ $podName = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -like "r
 if ($podName) {
     Write-Host "Found active receiver pod: $podName" -ForegroundColor Green
     # 3. Open port-forward in a new window
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
+    #Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
 } else {
     Write-Host "Error: No receiver pod found!" -ForegroundColor Red
 }
