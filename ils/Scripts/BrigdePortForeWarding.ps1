@@ -1,8 +1,51 @@
-﻿Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/mongodb 27017:27017 -n contain-dvl"
+﻿
+
+
+$token  = 'sha256~xfVnmSAWcr2EAsoXBgOzuFxnu0gez5qZthbOZrUYfWo'
+$server = 'https://api.ocp0.anders-nogic.atos.net:6443'
+$project = "contain-dvl"
+cls
+
+
+function EnablePortFirst{
+    param($port)
+    $connection = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
+    if ($connection) {
+        $pidVal = $connection.OwningProcess
+        $ProcessName = Get-Process -Id $pidVal | Select-Object Id, ProcessName, Path
+        Write-Host "Process $processName with PID $pidVal is using port $port. Stopping it..." -ForegroundColor Yellow
+        Stop-Process -Id $pidVal -Force
+    } else {
+        Write-Host "No active process found directly on port $port via Get-NetTCPConnection." -ForegroundColor Cyan
+    }
+}
+
+
+# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
+Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
+oc login --token=$token --server=$server
+$port = 27017
+EnablePortFirst $port
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/mongodb 27017:27017 -n contain-dvl"
+
+$port = 53000
+EnablePortFirst $port
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/taxonomyservice 53000:53000 -n contain-dvl"
+
+$port = 5001
+EnablePortFirst $port
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/notificationservice 5001:5001 -n contain-dvl"
+
+$port = 8080
+EnablePortFirst $port
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/kie-server 8080:8080 -n contain-dvl"
+
+$port = 5432
+EnablePortFirst $port
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward service/postgres 5432:5432 -n contain-dvl"
+
+
+
 
 
 #Optinonal open Java debug port from Open Shift (For receiver in this case)
