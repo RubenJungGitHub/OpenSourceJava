@@ -1,6 +1,6 @@
 ﻿
 #------------------------------------------------------------------
-$token  = 'sha256~SKBL2bQtpJijeFPX1hOr-1Ndwaw5PXOZYoXmtiJ7V64'
+$token  = 'sha256~xfVnmSAWcr2EAsoXBgOzuFxnu0gez5qZthbOZrUYfWo'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -89,8 +89,10 @@ oc exec $kiePod -n contain-dvl -- curl -s -u admin:admin http://localhost:8080/k
 
 #Get Pod tail logs 
 cls
-$PodName = "kie-server"
+#$PodName = "kie-server"
+$PodName = "Alfresco"
 #$PodName = "receiver"
+#$PodName = "Share"
 oc get pods -l io.kompose.service=$PodName
 $pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=500
 Write-Host "[INFO] Found pod ... " $pod -ForegroundColor Cyan
@@ -112,3 +114,6 @@ if ($pod) { oc logs $pod --tail=300 }
 
 # 2. Trigger a proper rollout restart on the parent DeploymentConfig
 oc rollout restart dc/$PodName -n contain-dnv
+
+
+oc get imagestreams -n contain-dvl

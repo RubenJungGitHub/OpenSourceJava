@@ -13,80 +13,26 @@ $shareExtPath  = "/usr/local/tomcat/shared/classes/alfresco/web-extension/"
 $quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
-#------------------------------------------------------------------
-$token  = 'sha256~MG4Qk-gd7r_blC80lx5rWG2o8g8gqrmnkXE3B92zB74'
-$server = 'https://api.ocp0.anders-nogic.atos.net:6443'
-$project = "contain-dvl"
+$token       = 'sha256~eSx4mibiPtW_V-Eh88mjrGcem9srlemkQySqiTpAzsM'
+$server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
+$project     = "contain-dvl"
+$namespace   = $project
+$projectRoot = "D:\contAIn\alfrescotaxintegration"
 
 cls
-function Test-AlfrescoReady {
-    param($podName, $ns, $maxRetries = 60)
-    Write-Host "Analyzing $podName conditions for health..." -ForegroundColor Cyan
-    $count = 0
-    while ($count -lt $maxRetries) {
-        $podsJson = oc get pod $podName -n $ns -o json 2>$null | ConvertFrom-Json
-        $conditions = @($podsJson.status.conditions)
-        $readyStatus = ($conditions | Where-Object { $_.type -eq "Ready" }).status
-
-        Write-Host "Ready Status is: '$readyStatus'" -ForegroundColor Yellow
-        
-        if ($readyStatus -eq "True") {
-            Write-Host "Pod $podName is fully READY and healthy according to OpenShift!" -ForegroundColor Green
-            return $true
-        }
-        
-        $count++
-        Write-Host "Pod still initializing... Attempt $count of $maxRetries" -ForegroundColor DarkGray
-        Start-Sleep -Seconds 5
-    }
-    return $false
-}
-
-function Wait-For-Alfresco-OpenShift {
-    param($maxRetries = 60)
-    Write-Host "Checking Alfresco Health via port-forward..." -ForegroundColor Cyan
-
-    $currentPod = (oc get pods -n $namespace --no-headers | Where-Object { $_ -match "^alfresco" } | Select-Object -First 1) -replace '\s+.*$', ''
-
-    $pfJob = Start-Job -ScriptBlock {
-        param($ns, $pod)
-        oc port-forward pod/$pod 8080:8080 -n $ns
-    } -ArgumentList $namespace, $currentPod
-
-    Start-Sleep -Seconds 3 
-
-    $count = 0
-    $isOnline = $false
-    while ($count -lt $maxRetries) {
-        try {
-            $response = Invoke-WebRequest -Uri "http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/probes/-ready-" -UseBasicParsing -TimeoutSec 2
-            if ($response.StatusCode -eq 200) {
-                Write-Host "ALFRESCO IS ONLINE!" -ForegroundColor Green
-                $isOnline = $true
-                break
-            }
-        } catch {
-            # Warming up...
-        }
-        $count++
-        Write-Host "Waiting for Alfresco... Attempt $count of $maxRetries" -ForegroundColor DarkGray
-        Start-Sleep -Seconds 5
-    }
-
-    Stop-Job $pfJob -ErrorAction SilentlyContinue
-    Remove-Job $pfJob -ErrorAction SilentlyContinue
-
-    return $isOnline
-}
-
 
 # ==========================================
-# 3. EXECUTION FLOW
+# STAGE 0: Login to OpenShift
 # ==========================================
-
 Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
-oc login --token=$token --server=$server
+oc login --token=$token --server=$server --insecure-skip-tls-verify=true
 
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[ERROR] Failed to login to OpenShift!" -ForegroundColor Red
+    exit 1
+}
+
+oc project $namespace
 Set-Location $projectRoot
 
 # ==========================================
@@ -103,23 +49,44 @@ if ($LASTEXITCODE -ne 0) {
 Set-Location $projectRoot
 
 # ==========================================
-# STAGE 2: Trigger Native Build with Direct Registry Push
+# STAGE 2: Trigger Native Build with ImageStream Tag Output
 # ==========================================
-Write-Host "--- STAGE 2: Triggering Build with Direct Registry Push ---" -ForegroundColor Yellow
+Write-Host "--- STAGE 2: Triggering Build with ImageStream Tag Output ---" -ForegroundColor Yellow
 
-# 1. Dynamically create the Dockerfile needed for the build strategy
+# Grant builder service account permissions
+oc policy add-role-to-user system:image-puller system:serviceaccount:$namespace:builder -n $namespace 2>$null
+
+$buildTag = "build-" + (Get-Date -Format "yyyyMMdd-HHmmss")
+$stagingDir = "$projectRoot\openshift-build-staging"
+
+if (Test-Path $stagingDir) { Remove-Item $stagingDir -Recurse -Force }
+New-Item -ItemType Directory -Path $stagingDir | Out-Null
+
+$sourceJar = "$projectRoot\contain-alfresco\contain-alfresco-platform\target\contain-alfresco-platform-1.0-SNAPSHOT.jar"
+if (-not (Test-Path $sourceJar)) {
+    Write-Host "[ERROR] Could not find compiled platform JAR at: $sourceJar" -ForegroundColor Red
+    exit 1
+}
+Copy-Item -Path $sourceJar -Destination $stagingDir
+
+# Define base image tag strategy
+$targetIs = "share"
+$detectedTag = "23.2.1"
+
+Write-Host "Using base ImageStreamTag: ${targetIs}:${detectedTag}" -ForegroundColor Green
+
+# Create Dockerfile for custom build
 $dockerfileContent = @"
-FROM quay.io/alfresco/alfresco-content-repository:23.2.1
+FROM ${targetIs}:${detectedTag}
 USER root
-COPY contain-alfresco/contain-alfresco-platform/target/*.jar /usr/local/tomcat/webapps/alfresco/WEB-INF/lib/
+COPY contain-alfresco-platform-1.0-SNAPSHOT.jar /usr/local/tomcat/webapps/alfresco/WEB-INF/lib/
 USER alfresco
 "@
-Set-Content -Path "$projectRoot\Dockerfile.openshift" -Value $dockerfileContent
+Set-Content -Path "$stagingDir\Dockerfile" -Value $dockerfileContent
 
-# 2. Ensure the ImageStream exists to hold the final artifact
 oc create imagestream alfresco-custom -n $namespace --dry-run=client -o yaml | oc apply -f -
 
-# 3. Create a BuildConfig using a DockerImage output spec pointing to the internal service registry
+# Create BuildConfig
 $buildConfigYaml = @"
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
@@ -127,114 +94,112 @@ metadata:
   name: alfresco-custom-build
   namespace: $namespace
 spec:
+  serviceAccount: builder
   output:
     to:
-      kind: DockerImage
-      name: "image-registry.openshift-image-registry.svc:5000/$namespace/alfresco-custom:latest"
+      kind: ImageStreamTag
+      name: "alfresco-custom:$buildTag"
   source:
     type: Binary
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: Dockerfile.openshift
+      dockerfilePath: Dockerfile
+      from:
+        kind: ImageStreamTag
+        name: "${targetIs}:${detectedTag}"
+        namespace: "$namespace"
 "@
 Set-Content -Path "$projectRoot\alfresco-build-pipeline.yaml" -Value $buildConfigYaml
 
-# 4. Apply and execute the build cleanly
 oc apply -f "$projectRoot\alfresco-build-pipeline.yaml" -n $namespace
 Start-Sleep -Seconds 2
 
-oc start-build alfresco-custom-build --from-dir="$projectRoot" --follow -n $namespace
+oc start-build alfresco-custom-build --from-dir="$stagingDir" --follow -n $namespace
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[ERROR] OpenShift internal build failed!" -ForegroundColor Red
     exit 1
 }
 
+Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
+
 # ==========================================
-# STAGE 3: Rollout New Image in OpenShift
+# STAGE 3: Rollout Using ImageStreamTag Reference
 # ==========================================
-Write-Host "--- STAGE 3: Rolling out new image ---" -ForegroundColor Magenta
-oc rollout restart deployment/alfresco -n $namespace 2>$null
+Write-Host "--- STAGE 3: Rolling out new image via DeploymentConfig ---" -ForegroundColor Magenta
+
+Write-Host "Updating dc/alfresco to use image stream tag: alfresco-custom:$buildTag" -ForegroundColor Cyan
+oc set image dc/alfresco alfresco=image-registry.openshift-image-registry.svc:5000/$namespace/alfresco-custom:$buildTag -n $namespace
+
 if ($LASTEXITCODE -ne 0) {
-    oc rollout restart dc/alfresco -n $namespace 2>$null
-}
-
-Write-Host "Waiting for old pod to terminate and new pod to spin up..." -ForegroundColor DarkGray
-Start-Sleep -Seconds 15
-
-# Re-resolve the new pod name dynamically
-$alfrescoPod = (oc get pods -n $namespace --no-headers | Where-Object { $_ -match "^alfresco" } | Select-Object -First 1) -replace '\s+.*$', ''
-
-if (-not $alfrescoPod) {
-    Write-Host "[ERROR] Could not resolve the newly deployed Alfresco pod." -ForegroundColor Red
+    Write-Host "[ERROR] Failed to update image on dc/alfresco." -ForegroundColor Red
     exit 1
 }
 
-Write-Host "Active new pod detected: $alfrescoPod" -ForegroundColor Green
+Write-Host "Triggering latest rollout for dc/alfresco..." -ForegroundColor Cyan
+oc rollout latest dc/alfresco -n $namespace
 
-if (!(Test-AlfrescoReady $alfrescoPod $namespace)) {
-    Write-Host "[ERROR] New Alfresco pod failed to become ready." -ForegroundColor Red
-    exit 1
-}
+# Monitor rollout with a built-in safety check for image pull errors
+$rolloutTimeout = 60
+$elapsed = 0
+$isHealthy = $false
 
-$healthCheckPassed = Wait-For-Alfresco-OpenShift
-
-if (-not $healthCheckPassed) {
-    Write-Host "[WARNING] Alfresco did not report healthy within the timeout window." -ForegroundColor Yellow
-    exit 1
-} else {
-    Write-Host "--- DEPLOYMENT AND HEALTH CHECK COMPLETED SUCCESSFULLY ---" -ForegroundColor Green
+while ($elapsed -lt $rolloutTimeout) {
+    Start-Sleep -Seconds 5
+    $elapsed += 5
     
-    # ==========================================
-    # DIAGNOSTIC: VERIFY FILES IN NEW OPENSHIFT POD
-    # ==========================================
-    Write-Host "--- Checking Files Inside New OpenShift Pod ---" -ForegroundColor Cyan
-    oc exec -n $namespace $alfrescoPod -c alfresco -- ls -la /usr/local/tomcat/webapps/alfresco/WEB-INF/lib/ | Select-String "contain|tax|integration"
+    # Check if a pod is throwing an image pull error
+    $pullErrorPod = (oc get pods -n $namespace --no-headers | Where-Object { $_ -match "^alfresco-" -and $_ -match "ErrImagePull|ImagePullBackOff|CrashLoopBackOff" } | Select-Object -First 1)
+    if ($pullErrorPod) {
+        Write-Host "[ERROR] Detected pod image pull or crash loop error. Aborting rollout wait." -ForegroundColor Red
+        oc describe pod (($pullErrorPod -split '\s+')[0]) -n $namespace
+        exit 1
+    }
+
+    # Check if rollout succeeded
+    $statusCheck = oc rollout status dc/alfresco -n $namespace --watch=false 2>$null
+    if ($statusCheck -match "successfully rolled out") {
+        $isHealthy = $true
+        break
+    }
+    Write-Host "Waiting for rollout... ($elapsed/${rolloutTimeout}s)" -ForegroundColor DarkGray
+}
+
+if (-not $isHealthy) {
+    Write-Host "[ERROR] Rollout timed out or failed to stabilize." -ForegroundColor Red
+    exit 1
 }
 
 # ==========================================
-# STAGE 4: Injecting Config to OpenShift Share (The Face)
+# STAGE 4: Injecting Config to OpenShift Share
 # ==========================================
 Write-Host "--- STAGE 4: Injecting Config to OpenShift Share ---" -ForegroundColor Yellow
 
-# Updated path matching your Maven project directory structure
 $shareXml = "$projectRoot\contain-alfresco\contain-alfresco-share\src\main\resources\alfresco\web-extension\share-config-custom.xml"
 $targetSharePath = "/usr/local/tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml"
 
-# 1. Safely find the running Share pod without throwing null errors
-$sharePod = ""
-$podsJson = oc get pods -n $namespace -o json 2>$null | ConvertFrom-Json
-if ($podsJson -and $podsJson.items) {
-    $sharePod = ($podsJson.items | Where-Object { $_.metadata.name -match "share" } | Select-Object -First 1).metadata.name
-}
-
-if (-not $sharePod) {
-    $sharePod = (oc get pods -n $namespace --no-headers -o custom-columns=":metadata.name" | Where-Object { $_ -match "share" } | Select-Object -First 1).Trim()
-}
+$sharePod = (oc get pods -n $namespace --no-headers -o custom-columns=":metadata.name" | Where-Object { $_ -match "share" } | Select-Object -First 1).Trim()
 
 if ($sharePod) {
     Write-Host "Found Share Pod: $sharePod" -ForegroundColor Green
 
     if (Test-Path $shareXml) {
-        # 2. Copy using tar via stdin/stdout redirection to avoid Windows drive-letter parsing issues
         Write-Host "Copying share-config-custom.xml to Share pod..." -ForegroundColor Cyan
         Get-Content -Path $shareXml -Raw -Encoding Byte | oc exec -i -n $namespace $sharePod -- sh -c "cat > $targetSharePath"
 
         if ($LASTEXITCODE -ne 0) {
             Write-Host "[ERROR] Failed to copy config file to Share pod." -ForegroundColor Red
         } else {
-            # 3. Scrub Windows Junk (BOM and CRLF) and fix permissions
             Write-Host "Scrubbing line endings and setting permissions..." -ForegroundColor Gray
             oc exec -n $namespace $sharePod -- sed -i '1s/^\xEF\xBB\xBF//' "$targetSharePath"
             oc exec -n $namespace $sharePod -- sed -i 's/\r$//' "$targetSharePath"
             oc exec -n $namespace $sharePod -- chmod 666 "$targetSharePath"
 
-            # 4. Restart Share deployment to load the UI config
             Write-Host "Restarting Share deployment to refresh UI..." -ForegroundColor Magenta
-            oc rollout restart deployment/share -n $namespace 2>$null
+            oc rollout latest dc/share -n $namespace 2>$null
             if ($LASTEXITCODE -ne 0) {
-                oc rollout restart dc/share -n $namespace 2>$null
+                oc rollout restart deployment/share -n $namespace 2>$null
             }
 
             Write-Host "--- SHARE CONFIGURATION INJECTED AND RESTARTED SUCCESSFULLY ---" -ForegroundColor Green
@@ -245,7 +210,13 @@ if ($sharePod) {
 } else {
     Write-Host "[WARNING] Could not find the OpenShift Share pod to inject configuration." -ForegroundColor Yellow
 }
+
+# ==========================================
+# STAGE 5: Cleaning up obsolete build pods
+# ==========================================
 Write-Host "--- STAGE 5: Cleaning up obsolete build pods ---" -ForegroundColor Cyan
-# Clean up failed/completed build pods
-oc delete pods --field-selector=status.phase=Failed --ignore-not-found=true
-oc delete pods --field-selector=status.phase=Succeeded --ignore-not-found=true
+
+oc delete pods --field-selector=status.phase=Failed --ignore-not-found=true -n $namespace
+oc delete pods --field-selector=status.phase=Succeeded --ignore-not-found=true -n $namespace
+
+Write-Host "--- ALL PIPELINE STAGES COMPLETED SUCCESSFULLY ---" -ForegroundColor Green

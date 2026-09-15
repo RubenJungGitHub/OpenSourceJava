@@ -36,18 +36,19 @@ oc secrets link default alfrescoquayio --for=pull -n $project
 oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-", "value": {"name": "alfrescoquayio"}}]' -n $project 2>$null
 
 
-#ALLWAYS REDEPLOY POSTGRESS IF ALFRESO IS REDEPLOYED!
+#ALLWAYS REDEPLOY POSTGRESS IF ALFRESOnew IS REDEPLOYED!
 # Define which components to process in this run
 $PODS = @(
     #-------------------------------------------
     #"Postgres",
-    #"Alfresco"
+    #"Alfresconew"
     #-------------------------------------------
+    "ALfrescoupdate"
     #"ActiveMQ"
     #"Routes"
     #"AlfrescoQueuePoller"
     #"SharepointQueuePoller"
-    "MigrationQueuePoller"
+    #"MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC",
@@ -94,8 +95,99 @@ if ($PODS -contains "ActiveMQ") {
     Start-Sleep -Seconds 15
 }
 
+# --- STAGE 2.5: Update ALfresco 
+if ($PODS -contains "ALfrescoupdate" -or $PODS -contains "aLfrescoupdate") {
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Alfresco\'
+    Write-Host "[INFO] Applying core Alfresco manifests non-destructively..." -ForegroundColor Cyan
+    
+    # 1. Apply manifests safely without deleting existing resources or data
+    oc apply -R -f $folder -n $project
+
+    # Force deployment configs to recognize the pull secret
+    $patchSecret = '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"alfrescoquayio"}]}}}}'
+    oc patch dc/alfresco -n $project --type=merge -p $patchSecret 2>$null
+    oc patch dc/search -n $project --type=merge -p $patchSecret 2>$null
+    oc patch dc/share -n $project --type=merge -p $patchSecret 2>$null
+
+    # Fetch Search DeploymentConfig, modify security context in memory, and apply
+    $dcSearch = oc get dc search -n $project -o json | ConvertFrom-Json
+    if (-not $dcSearch.spec.template.spec.securityContext) {
+        $dcSearch.spec.template.spec | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
+    }
+    $dcSearch.spec.template.spec.securityContext.runAsUser = 0
+    $dcSearch.spec.template.spec.securityContext.fsGroup = 0
+
+    foreach ($container in $dcSearch.spec.template.spec.containers) {
+        if ($container.name -eq "search") {
+            if (-not $container.securityContext) {
+                $container | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
+            }
+            $container.securityContext.allowPrivilegeEscalation = $true
+            $container.securityContext.runAsUser = 0
+        }
+    }
+    $dcSearch | ConvertTo-Json -Depth 20 | oc apply -f -
+
+    # 2. Trigger rolling update for core Alfresco to pull the new image with updated models
+    Write-Host "[INFO] Rolling out core Alfresco with the latest image..." -ForegroundColor Cyan
+    oc rollout latest dc/alfresco -n $project
+
+    # Wait for Alfresco to be fully ready
+    Write-Host "[INFO] Waiting for Alfresco repository pod to become ready..." -ForegroundColor Yellow
+    oc rollout status dc/alfresco -n $project --timeout=300s
+
+    # --- STAGE 4: Share Component (Last) ---
+    $shareFolder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ALFRESCOSHARELAST\'
+    Write-Host "[INFO] Applying Share manifests safely..." -ForegroundColor Cyan
+    
+    oc apply -R -f $shareFolder -n $project
+
+    # Apply root security context patch to Share using a clean hashtable
+    $dcShare = oc get dc share -n $project -o json | ConvertFrom-Json
+    if (-not $dcShare.spec.template.spec.securityContext) {
+        $dcShare.spec.template.spec | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
+    }
+    $dcShare.spec.template.spec.securityContext.runAsUser = 0
+    $dcShare.spec.template.spec.securityContext.fsGroup = 0
+
+    foreach ($container in $dcShare.spec.template.spec.containers) {
+        if ($container.name -eq "share") {
+            if (-not $container.securityContext) {
+                $container | Add-Member -MemberType NoteProperty -Name "securityContext" -Value (@{})
+            }
+            $container.securityContext.allowPrivilegeEscalation = $true
+            $container.securityContext.runAsUser = 0
+        }
+    }
+    $dcShare | ConvertTo-Json -Depth 20 | oc apply -f -
+
+    # Trigger rolling update for Share
+    oc rollout latest dc/share -n $project
+
+    # Wait for Share to finish rolling out and starting
+    Write-Host "[INFO] Waiting for Share pod to become ready..." -ForegroundColor Yellow
+    oc rollout status dc/share -n $project --timeout=300s
+
+    # Ensure license is present without breaking pods unnecessarily
+    Write-Host "[INFO] Checking active Alfresco pod for license..." -ForegroundColor Cyan
+    $alfrescoPod = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -match "alfresco" -and $_ -match "Running" } | Select-Object -First 1).Split()[0]
+
+    if (-not $alfrescoPod) {
+        Write-Host "[ERROR] Could not find a running Alfresco pod!" -ForegroundColor Red
+    } else {
+        $localLicense = "D:\contAIn\alfresco-university\license\acs\Alfresco-ent23-EvidenBelgiumNVExpiration2026-09-19.lic"
+        if (Test-Path $localLicense) {
+            $fileBytes = [System.IO.File]::ReadAllBytes($localLicense)
+            $encodedContent = [Convert]::ToBase64String($fileBytes)
+            $remoteCommand = "mkdir -p /usr/local/tomcat/alf_data/license && echo '$encodedContent' | base64 -d > /usr/local/tomcat/alf_data/license/Alfresco-ent23.lic"
+            oc exec -n contain-dvl $alfrescoPod -- sh -c "$remoteCommand"
+        }
+    }
+}
+
+
 # --- STAGE 3: Core Alfresco & Search Services ---
-if ($PODS -contains "Alfresco" -or $PODS -contains "alfresco") {
+if ($PODS -contains "Alfresconew" -or $PODS -contains "alfresconew") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Alfresco\'
     Write-Host "[INFO] Starting recreation of Core Alfresco stack..." -ForegroundColor Cyan
     
