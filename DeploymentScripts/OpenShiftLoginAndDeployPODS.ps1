@@ -43,7 +43,7 @@ $PODS = @(
     #"Postgres",
     #"Alfresconew"
     #-------------------------------------------
-    "ALfrescoupdate"
+    #"ALfrescoupdate"
     #"ActiveMQ"
     #"Routes"
     #"AlfrescoQueuePoller"
@@ -55,7 +55,7 @@ $PODS = @(
     #"RHKIE"
     #"Receiver"
     #"SharePointNotification",
-    #"SharePointSubscription"
+    "SharePointSubscription"
     #'GraphDB'
     #'VocBench3'
     #'TaxonomyService'
