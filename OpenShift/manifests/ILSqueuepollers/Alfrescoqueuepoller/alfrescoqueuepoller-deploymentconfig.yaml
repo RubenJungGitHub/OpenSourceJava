@@ -18,7 +18,6 @@ spec:
         - name: containgithubrepos
       containers:
         - env:
-       - env:
             - name: SPRING_CONFIG_LOCATION
               value: /app/data/application.yaml
             - name: SPRING_DATASOURCE_PASSWORD
@@ -37,8 +36,8 @@ spec:
             # 👇 Ensures the baseurl property gets overridden inside the cluster
             - name: ILS_BASEURL
               value: "http://receiver.contain-dvl.svc.cluster.local:55500"
-            - name: ILS_PROCESSSPITEMSENDPOINT
-              value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/ProcessChangedSharepointItem"
+            - name: ILS_PROCESSALFRESCONODEPOINT
+              value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/ProcessChangedAlfrescoNode"
             - name: ILS_LOGIODELETEDFROMPLATFORMENDPOINT
               value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/logiodeletedfromplatform"
             - name: relocateendpoint

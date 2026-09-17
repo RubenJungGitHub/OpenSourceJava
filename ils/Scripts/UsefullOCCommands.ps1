@@ -91,10 +91,10 @@ oc exec $kiePod -n contain-dvl -- curl -s -u admin:admin http://localhost:8080/k
 cls
 #$PodName = "kie-server"
 #$PodName = "Alfresco"
-#$PodName = "receiver"
-$PodName = "Share"
+$PodName = "receiver"
+#$PodName = "Share"
 oc get pods -l io.kompose.service=$PodName
-$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=100
+$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=500
 Write-Host "[INFO] Found pod ... " $pod -ForegroundColor Cyan
 
 oc describe deployment $pod -n contain-dvl

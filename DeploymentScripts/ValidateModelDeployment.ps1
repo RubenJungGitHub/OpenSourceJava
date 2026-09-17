@@ -4,7 +4,7 @@
 # 1. CONFIGURATION
 # ==========================================
 
-$token       = 'sha256~8UJKuUrXdrjrp-H83pYMD08SlUhkBf5QX_o9hJXm-ug'
+$token       = 'sha256~DuKy8_HidJfxyfyiOKiPqItPPGkItcXk37EFJJlHyxI'
 $server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $Namespace = "contain-dvl"
 $ProjectRoot = "D:\contAIn\alfrescotaxintegration"
