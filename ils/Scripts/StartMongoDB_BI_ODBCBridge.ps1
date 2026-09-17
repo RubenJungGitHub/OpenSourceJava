@@ -5,4 +5,5 @@
   --mongo-username "bi_user" `
   --mongo-password "bi_password" `
   --mongo-authenticationSource "admin" `
-  --sampleNamespaces "ilstools.*"
+  --sampleNamespaces "ilstools.*" `
+  --mongo-uri "mongodb://host.docker.internal:27017"

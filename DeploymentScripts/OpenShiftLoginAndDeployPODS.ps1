@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~MOO6GVPsq9DD7qqcGIGmg7eQlxuw9mrtKyHCjGLO87A'
+$token       = 'sha256~DuKy8_HidJfxyfyiOKiPqItPPGkItcXk37EFJJlHyxI'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -43,7 +43,7 @@ $PODS = @(
     #"Postgres",
     #"Alfresconew"
     #-------------------------------------------
-    #"ALfrescoupdate"
+    "ALfrescoupdate"
     #"ActiveMQ"
     #"Routes"
     #"AlfrescoQueuePoller"
@@ -54,8 +54,8 @@ $PODS = @(
     #"RHBC",
     #"RHKIE"
     #"Receiver"
-    #"SharePointNotification",
-    "SharePointSubscription"
+    #"SharePointNotification"
+    #"SharePointSubscription"
     #'GraphDB'
     #'VocBench3'
     #'TaxonomyService'

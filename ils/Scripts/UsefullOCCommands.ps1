@@ -1,6 +1,6 @@
 ﻿
 #------------------------------------------------------------------
-$token  = 'sha256~xfVnmSAWcr2EAsoXBgOzuFxnu0gez5qZthbOZrUYfWo'
+$token       = 'sha256~DuKy8_HidJfxyfyiOKiPqItPPGkItcXk37EFJJlHyxI'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -31,7 +31,7 @@ oc scale dc/alfresco --replicas=1 -n contain-dvl
 #  --type=kubernetes.io/dockerconfigjson `
 #  -n $project
 
-
+oc get deployment alfresco -n contain-dvl
 
 #oc create secret docker-registry alfrescoquayiocredentials `
 #  --docker-server=quay.io `
@@ -90,11 +90,11 @@ oc exec $kiePod -n contain-dvl -- curl -s -u admin:admin http://localhost:8080/k
 #Get Pod tail logs 
 cls
 #$PodName = "kie-server"
-$PodName = "Alfresco"
+#$PodName = "Alfresco"
 #$PodName = "receiver"
-#$PodName = "Share"
+$PodName = "Share"
 oc get pods -l io.kompose.service=$PodName
-$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=500
+$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=100
 Write-Host "[INFO] Found pod ... " $pod -ForegroundColor Cyan
 
 oc describe deployment $pod -n contain-dvl

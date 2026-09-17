@@ -6,8 +6,16 @@ net:
     PEMKeyFile: "D:/contain//OpenSourceJava/ils/receiver/src/main/resources/mongosqld.pem"
 
 security:
-  enabled: true # Change this from false to true
+  enabled: true
 
 schema:
   sample:
     namespaces: ["ilstools.*"]
+
+mongodb:
+  net:
+    uri: "mongodb://127.0.0.1:27017"
+    auth:
+      username: "bi_user"
+      password: "bi_password"
+      source: "admin"
