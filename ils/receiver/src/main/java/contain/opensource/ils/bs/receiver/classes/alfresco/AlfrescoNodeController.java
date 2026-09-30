@@ -63,11 +63,11 @@ public class AlfrescoNodeController {
   private String endpoint;
 
   public AlfrescoNodeResponse alfresconNodeResponse;
-  private final ILSRestProperties ilsproperties;
-  private final AlfrescoProperties alfrescoProperties;
-  private final TaxonomyServiceClient taxonomyServiceClient;
-  private final CloseableHttpClient httpClient;
-  private final RestTemplate restTemplate;
+  private  ILSRestProperties ilsproperties;
+  private  AlfrescoProperties alfrescoProperties;
+  private  TaxonomyServiceClient taxonomyServiceClient;
+  private CloseableHttpClient httpClient;
+  private  RestTemplate restTemplate;
 
   // (alongside your other fields like ilsproperties, taxonomyServiceClient, etc.)
  @Autowired
@@ -90,7 +90,7 @@ public class AlfrescoNodeController {
       this.password = alfrescoProperties.getPassword();
   }
 
-/*
+
   public AlfrescoNodeController() {
     this.httpClient = null;
   }
@@ -99,7 +99,6 @@ public class AlfrescoNodeController {
     this.nodeId = nodeId;
     this.httpClient = null;
   }
-*/
 
   /**
    * Retrieves the GUID (Global Unique Identifier) of an Alfresco site node.

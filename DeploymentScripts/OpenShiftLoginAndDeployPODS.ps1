@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token       = 'sha256~DuKy8_HidJfxyfyiOKiPqItPPGkItcXk37EFJJlHyxI'
+$token  = 'sha256~rFhYDrItm6LsQJxMi6vuPoawo4SNITpMlHt4hBb94go'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -47,13 +47,13 @@ $PODS = @(
     #"ActiveMQ"
     #"Routes"
     #"AlfrescoQueuePoller"
-    #"SharepointQueuePoller"
+    "SharepointQueuePoller"
     #"MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
