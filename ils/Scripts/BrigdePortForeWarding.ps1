@@ -29,6 +29,12 @@ $port = 53000
 EnablePortFirst $port
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/taxonomyservice 53000:53000 -n contain-dvl"
 
+$port = 55500
+EnablePortFirst $port
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/taxonomyservice 53000:53000 -n contain-dvl"
+
+
+
 $port = 5001
 EnablePortFirst $port
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/notificationservice 5001:5001 -n contain-dvl"

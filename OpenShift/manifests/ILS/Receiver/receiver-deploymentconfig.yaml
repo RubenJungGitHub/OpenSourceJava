@@ -75,7 +75,7 @@ spec:
             - name: ILS_RULEENGINEMOVEENDPOINT
               value: "http://receiver:55500/api/rules"
             - name: ILS_RULEENGINEPROJECTNAME
-              value: "com.myspace:contAlnMigrationRuleset"
+              value: "contAlnMigrationRuleset_1.0.0-SNAPSHOT"
             - name: ILS_DELTALINKFILE
               value: "/app/data/storeddeltalinks.csv"
           image: 'ghcr.io/rubenjunggithub/ils-receiver:v1.0'

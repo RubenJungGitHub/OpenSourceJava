@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~rFhYDrItm6LsQJxMi6vuPoawo4SNITpMlHt4hBb94go'
+$token  = 'sha256~XhMlbYc4HN89G4VjLPLEa4SPplCESldSOPh6dJp5mfg'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -47,13 +47,13 @@ $PODS = @(
     #"ActiveMQ"
     #"Routes"
     #"AlfrescoQueuePoller"
-    "SharepointQueuePoller"
+    #"SharepointQueuePoller"
     #"MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    #"Receiver"
+    "Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -62,12 +62,30 @@ $PODS = @(
     #'TaxonomyCacher'
 )
 
+#First start Desktop if not running
+if (Get-Process "Docker Desktop" -ErrorAction SilentlyContinue) {
+    Write-Host "Docker Desktop process is running." -ForegroundColor Green
+} 
+else 
+{
+    Write-Host "Docker Desktop is NOT running." -ForegroundColor Red
+    Write-Host "[INFO] Starting Docker Desktop..." -ForegroundColor Cyan
+    # Start Docker Desktop from its standard installation path
+    Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    
+    Write-Host "[INFO] Waiting for Docker engine to initialize (approx. 30 seconds)..." -ForegroundColor Yellow
+    Start-Sleep -Seconds 30
+}
+# Verify connection
+docker ps
+
+
 # --- STAGE 1: PostgreSQL Infrastructure ---
 if ($PODS -contains "Postgres" -or $PODS -contains "postgres") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\AFFRESCOPOSTGRESSFIRST\'
     Write-Host "[INFO] Starting recreation of PostgreSQL..." -ForegroundColor Cyan
     
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 
     Write-Host "[INFO] Waiting for PostgreSQL pod to become ready..." -ForegroundColor Yellow
@@ -84,7 +102,7 @@ if ($PODS -contains "ActiveMQ") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ALFRESCOACTIVEMQFIRST\'
     Write-Host "[INFO] Starting recreation of ActiveMQ..." -ForegroundColor Cyan
     
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 
     Write-Host "[INFO] Waiting for ActiveMQ pod to become ready..." -ForegroundColor Yellow
@@ -191,7 +209,7 @@ if ($PODS -contains "Alfresconew" -or $PODS -contains "alfresconew") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Alfresco\'
     Write-Host "[INFO] Starting recreation of Core Alfresco stack..." -ForegroundColor Cyan
     
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 
     # Force deployment configs to recognize the pull secret
@@ -231,7 +249,7 @@ if ($PODS -contains "Alfresconew" -or $PODS -contains "alfresconew") {
     $shareFolder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ALFRESCOSHARELAST\'
     Write-Host "[INFO] Deploying Share component from dedicated folder..." -ForegroundColor Cyan
     
-    oc delete -R -f $shareFolder -n $project --ignore-not-found
+    oc delete -R -f $shareFolder -n $project --ignore-not-found --wait=false
     oc apply -R -f $shareFolder -n $project
 
     # Apply root security context patch to Share using a clean hashtable
@@ -310,7 +328,7 @@ if ($PODS -contains "Routes") {
 if ($PODS -contains "Redis") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\Redis'
     Write-Host "[INFO] Starting recreation of Redis..." -ForegroundColor Cyan
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
     
     Write-Host "[INFO] Ensuring Redis UI Route exists..." -ForegroundColor Cyan
@@ -322,7 +340,7 @@ if ($PODS -contains "MongoDB") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSTools\MongoDB'
     Write-Host "[INFO] Starting recreation of MongoDB..." -ForegroundColor Cyan
     
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 
     Write-Host "[INFO] Waiting for MongoDB pod to be ready..." -ForegroundColor Yellow
@@ -414,7 +432,7 @@ if ($PODS -contains "RHBC") {
     $ErrorActionPreference = $oldErrorPreference
 
     # 3. Create or ensure a secure Edge route with HTTP-to-HTTPS redirect exists
-    $routeExists = oc get route business-central -n $project --ignore-not-found 2>$null
+    $routeExists = oc get route business-central -n $project --ignore-not-found --wait=false 2>$null
     if (-not $routeExists) {
         Write-Host "[INFO] Exposing Business Central as a secure edge route with HTTP redirect..." -ForegroundColor Cyan
         oc create route edge business-central --service=business-central --port=8080 --insecure-policy='Redirect' -n $project 2>&1 | Out-Null
@@ -424,7 +442,7 @@ if ($PODS -contains "RHBC") {
 
         if ($routeType -ne "edge" -or $redirectPolicy -ne "Redirect") {
             Write-Host "[INFO] Updating/recreating route to ensure Edge termination and Redirect policy..." -ForegroundColor Yellow
-            oc delete route business-central -n $project --ignore-not-found 2>&1 | Out-Null
+            oc delete route business-central -n $project --ignore-not-found --wait=false 2>&1 | Out-Null
             oc create route edge business-central --service=business-central --port=8080 --insecure-policy='Redirect' -n $project 2>&1 | Out-Null
         } else {
             Write-Host "[INFO] Secure Edge route with Redirect policy already exists." -ForegroundColor Green
@@ -446,7 +464,7 @@ if ($PODS -contains "RHKIE") {
     
     $global:ErrorActionPreference = "Continue"
     
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
     
     Write-Host "[INFO] Waiting for kie-server deployment to complete..." -ForegroundColor Cyan
@@ -516,7 +534,7 @@ if ($PODS -contains "Receiver") {
     $global:ErrorActionPreference = "Continue"
     
     # Deleting and re-applying handles the fresh deployment automatically because of imagePullPolicy: Always
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 
     Write-Host "[INFO] Waiting for receiver pod to be ready..." -ForegroundColor Yellow
@@ -525,7 +543,7 @@ if ($PODS -contains "Receiver") {
     $global:ErrorActionPreference = "Stop"
 
     # Check if the route already exists; if not, create it
-    $routeCheck = oc get route receiver -n $project --ignore-not-found
+    $routeCheck = oc get route receiver -n $project --ignore-not-found 
     if (-not $routeCheck) {
         Write-Host "[INFO] Exposing receiver service with an OpenShift Route..." -ForegroundColor Cyan
         oc expose service receiver --port=8080 -n $project
@@ -544,7 +562,7 @@ if ($PODS -contains "Receiver") {
 if ($PODS -contains "AlfrescoQueuePoller") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\Alfrescoqueuepoller\'
     Write-Host "[INFO] Starting recreation of Alfresco queupoller..." -ForegroundColor Cyan
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 }
 
@@ -552,7 +570,7 @@ if ($PODS -contains "AlfrescoQueuePoller") {
 if ($PODS -contains "SharepointQueuePoller") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\SharepointQueuePoller\'
     Write-Host "[INFO] Starting recreation of SharepointQueuePoller queupoller..." -ForegroundColor Cyan
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 }
 
@@ -562,7 +580,7 @@ if ($PODS -contains "SharepointQueuePoller") {
 if ($PODS -contains "MigrationQueuePoller") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\MigrationQueuePoller\'
     Write-Host "[INFO] Starting recreation of MigrationQueuePoller queupoller..." -ForegroundColor Cyan
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 }
 
@@ -574,7 +592,7 @@ if ($PODS -contains "GraphDB") {
     Write-Host "[INFO] Starting recreation of GraphDB service..." -ForegroundColor Cyan
     
     # Delete existing resources safely
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     
     # Apply the correct Deployment/Service/PVC manifests
     oc apply -R -f $folder -n $project
@@ -595,10 +613,10 @@ if ($PODS -contains "VocBench3") {
     Write-Host "[INFO] Starting recreation of VocBench3 service..." -ForegroundColor Cyan
     
     # 1. Delete old deployment and resources first to release volume locks
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
 
     # 2. Force-clean the specific PVC if it exists (handles stuck Terminating states)
-    $pvcExists = oc get pvc vocbench-pvc-new -n $project --ignore-not-found
+    $pvcExists = oc get pvc vocbench-pvc-new -n $project --ignore-not-found --wait=false
     if ($pvcExists) {
         Write-Host "[INFO] Cleaning up old PVC: vocbench-pvc-new" -ForegroundColor Yellow
         $patchPath = "$env:TEMP\pvc-patch.json"
@@ -611,7 +629,7 @@ if ($PODS -contains "VocBench3") {
         }
         
         Remove-Item -Path $patchPath -Force -ErrorAction SilentlyContinue
-        oc delete pvc vocbench-pvc-new -n $project --grace-period=0 --force --ignore-not-found
+        oc delete pvc vocbench-pvc-new -n $project --grace-period=0 --force --ignore-not-found --wait=false
     }
 
     # 3. Deploy fresh manifests
@@ -623,7 +641,7 @@ if ($PODS -contains "SharePointNotification") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\NotificationService\'
     Write-Host "[INFO] Starting recreation of Sharepoint notification service..." -ForegroundColor Cyan
     
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 
     Write-Host "[INFO] Waiting for notificationservice to become ready..." -ForegroundColor Yellow
@@ -632,7 +650,7 @@ if ($PODS -contains "SharePointNotification") {
     Write-Host "[INFO] Ensuring public secured route for notificationservice webhooks..." -ForegroundColor Cyan
     
     # 1. Create the route if it doesn't already exist
-    if (-not (oc get route notificationservice -n $project --ignore-not-found)) {
+    if (-not (oc get route notificationservice -n $project --ignore-not-found --wait=false)) {
         oc expose service notificationservice --port=5001 -n $project
     }
 
@@ -665,7 +683,7 @@ if ($PODS -contains "SharePointNotification") {
 if ($PODS -contains "SharePointSubscription") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\Subscriptionservice\'
     Write-Host "[INFO] Starting recreation of Sharepoint subscription service..." -ForegroundColor Cyan
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 }
 
@@ -674,8 +692,7 @@ if ($PODS -contains "SharePointSubscription") {
 if ($PODS -contains "TaxonomyService") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Taxonomy\Taxonomyservice\'
     Write-Host "[INFO] Starting recreation of TaxonomyService..." -ForegroundColor Cyan
-    
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 }
 
@@ -685,7 +702,7 @@ if ($PODS -contains "TaxonomyCacher") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILS\Taxonomy\Taxonomycacher\'
     Write-Host "[INFO] Starting recreation of Taxonomycacher..." -ForegroundColor Cyan
     
-    oc delete -R -f $folder -n $project --ignore-not-found
+    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 }
 

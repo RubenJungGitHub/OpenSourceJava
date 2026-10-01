@@ -1,6 +1,6 @@
 ﻿
 #------------------------------------------------------------------
-$token       = 'sha256~DuKy8_HidJfxyfyiOKiPqItPPGkItcXk37EFJJlHyxI'
+$token  = 'sha256~rFhYDrItm6LsQJxMi6vuPoawo4SNITpMlHt4hBb94go'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -91,10 +91,28 @@ oc exec $kiePod -n contain-dvl -- curl -s -u admin:admin http://localhost:8080/k
 cls
 #$PodName = "kie-server"
 #$PodName = "Alfresco"
-$PodName = "receiver"
+#$PodName = "alfrescoqueuepoller-1-c8rjw"
+$PodName = "migrationqueuepoller-1-5qwr6"
+$POdName = "activemq-1-glwfv"
+oc project "contain-dvl"
 #$PodName = "Share"
+
+Write-Host "[INFO] Searching for pod matching: $PodName..." -ForegroundColor Yellow
+
+# Find the first running pod matching your search term (ignoring deploys/builds)
+$podLine = (oc get pods --no-headers -n contain-dvl | Where-Object { $_ -match $PodName -and $_ -notmatch "deploy|build" } | Select-Object -First 1)
+
+if ($podLine) {
+    $pod = $podLine.Split()[0]
+    Write-Host "[INFO] Found pod: $pod" -ForegroundColor Cyan
+    Write-Host "----------------------------------------"
+    oc logs $pod --tail=100 -n contain-dvl
+} else {
+    Write-Host "[ERROR] No matching running pod found for '$SearchTerm'." -ForegroundColor Red
+}
+
 oc get pods -l io.kompose.service=$PodName
-$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=500
+$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=100
 Write-Host "[INFO] Found pod ... " $pod -ForegroundColor Cyan
 
 oc describe deployment $pod -n contain-dvl
@@ -105,12 +123,12 @@ oc get routes -n contain-dvl
 
 #Restart pod
 cls
-$PodName = "KIE"
+$PodName = "alfrescoqueuepoller-1-c8rjw"
 oc get pods -l io.kompose.service=$PodName
 
 # 1. View logs of the current active pod first
 $pod = (oc get pods --no-headers -l io.kompose.service=$PodName | Where-Object { $_ -match "Running" } | Select-Object -First 1).Split()[0]
-if ($pod) { oc logs $pod --tail=300 }
+if ($pod) { oc logs $pod --tail=100 }
 
 # 2. Trigger a proper rollout restart on the parent DeploymentConfig
 oc rollout restart dc/$PodName -n contain-dnv

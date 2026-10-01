@@ -40,9 +40,9 @@ spec:
             - name: relocateendpoint
               value: "http://receiver.contain-dvl.svc.cluster.local:55000/api/MigrateIO"
             - name: ILS_RULEENGINECONTAINERENDPOINT
-              value: "http://kie-server.contain-dvl.svc.cluster.local:57000/kie-server/services/rest/server"
+              value: "http://kie-server.contain-dvl.svc.cluster.local:8080/kie-server/services/rest/server"
             - name: ILS_RULEENGINEENDPOINT
-              value: "http://kie-server.contain-dvl.svc.cluster.local:57000/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn"
+              value: "http://kie-server.contain-dvl.svc.cluster.local:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn"
             - name: ILS_RULEENGINEPROJECTNAME
               value: "contAlnMigrationRuleset"
           image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-sharepointqueuepoller:v1.0'

@@ -40,7 +40,7 @@ spec:
               value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/ProcessChangedAlfrescoNode"
             - name: ILS_LOGIODELETEDFROMPLATFORMENDPOINT
               value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/logiodeletedfromplatform"
-            - name: relocateendpoint
+            - name: ILS_RELOCATEENDPOINT
               value: "http://receiver.contain-dvl.svc.cluster.local:55000/api/MigrateIO"
             - name: ILS_RULEENGINECONTAINERENDPOINT
               value: "http://kie-server.contain-dvl.svc.cluster.local:57000/kie-server/services/rest/server"
