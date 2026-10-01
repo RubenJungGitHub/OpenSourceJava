@@ -68,7 +68,7 @@ public class TaxonomyServiceClient {
 
     public String GetTaxLabel(String taxid) {
         if (taxid == null || taxid.isBlank()) {
-            return "No Marking Provided";
+            return "No label Provided";
         }
 
         // First check if value exists in redis for ddos prevention and performance

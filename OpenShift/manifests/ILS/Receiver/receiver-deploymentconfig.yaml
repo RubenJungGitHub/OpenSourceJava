@@ -23,7 +23,7 @@ spec:
             - name: SPRING_CONFIG_LOCATION
               value: optional:file:/app/data/application.yaml
             - name: ALFRESCO_BASEURL
-              value: "https://alfresco-proxy-route-contain-dvl.apps.ocp0.anders-nogic.atos.net/"
+              value: "https://alfresco-proxy-route-contain-dvl.apps.ocp0.anders-nogic.atos.net"
             - name: ALFRESCO_USERNAME
               value: "admin"
             - name: ALFRESCO_PASSWORD
