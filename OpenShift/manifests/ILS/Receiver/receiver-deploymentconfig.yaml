@@ -67,13 +67,13 @@ spec:
             - name: ILS_UUDIUTILENDPOINT
               value: "http://uuidutil-service:5002/api/GetUUID"
             - name: ILS_BASEURL
-              value: "http://receiver:55500"
+              value: "http://receiver:8080"
             - name: ILS_BINDENDPOINT
-              value: "http://receiver:55500/api/Bind"
+              value: "http://receiver:8080/api/Bind"
             - name: ILS_TAXONOMYSERVICEENDPOINT
               value: "https://taxonomyservice:53000/api"
             - name: ILS_RULEENGINEMOVEENDPOINT
-              value: "http://receiver:55500/api/rules"
+              value: "http://receiver:8080/api/rules"
             - name: ILS_RULEENGINEPROJECTNAME
               value: "contAlnMigrationRuleset_1.0.0-SNAPSHOT"
             - name: ILS_DELTALINKFILE

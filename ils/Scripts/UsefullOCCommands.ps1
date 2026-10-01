@@ -92,8 +92,8 @@ cls
 #$PodName = "kie-server"
 #$PodName = "Alfresco"
 #$PodName = "alfrescoqueuepoller-1-c8rjw"
-$PodName = "migrationqueuepoller-1-5qwr6"
-$POdName = "activemq-1-glwfv"
+$PodName = "migrationqueuepoller-1-k9z87"
+#$POdName = "activemq-1-glwfv"
 oc project "contain-dvl"
 #$PodName = "Share"
 

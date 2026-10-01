@@ -32,13 +32,13 @@ spec:
               value: "mongodb://mongodb.contain-dvl.svc.cluster.local:27017/contAInBallenbak"
             # 👇 Ensures the baseurl property gets overridden inside the cluster
             - name: ILS_BASEURL
-              value: "http://receiver.contain-dvl.svc.cluster.local:55500"
+              value: "http://receiver.contain-dvl.svc.cluster.local:8080"
             - name: ILS_PROCESSSPITEMSENDPOINT
-              value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/ProcessChangedSharepointItem"
+              value: "http://receiver.contain-dvl.svc.cluster.local:8080/api/ProcessChangedSharepointItem"
             - name: ILS_LOGIODELETEDFROMPLATFORMENDPOINT
-              value: "http://receiver.contain-dvl.svc.cluster.local:55500/api/logiodeletedfromplatform"
+              value: "http://receiver.contain-dvl.svc.cluster.local:8080/api/logiodeletedfromplatform"
             - name: relocateendpoint
-              value: "http://receiver.contain-dvl.svc.cluster.local:55000/api/MigrateIO"
+              value: "http://receiver.contain-dvl.svc.cluster.local:8080/api/MigrateIO"
             - name: ILS_RULEENGINECONTAINERENDPOINT
               value: "http://kie-server.contain-dvl.svc.cluster.local:8080/kie-server/services/rest/server"
             - name: ILS_RULEENGINEENDPOINT
