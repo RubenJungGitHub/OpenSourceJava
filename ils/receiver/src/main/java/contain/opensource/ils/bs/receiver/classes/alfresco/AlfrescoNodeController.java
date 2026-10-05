@@ -805,7 +805,7 @@ public class AlfrescoNodeController {
       if (classificationResult != null) {
         this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
         this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
-        System.out.println("Classification Result: " + classificationResult.label() + " with confidence: "
+        System.out.println("CSuggested classification Result: " + classificationResult.label() + " with confidence: "
             + classificationResult.confidence()); 
       }
     }
