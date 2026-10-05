@@ -79,6 +79,7 @@ public class AlfrescoConstants {
 
     public enum NodeTypeFields {
         UUID,
+        SuggestedClassification,
         Title
     }
 

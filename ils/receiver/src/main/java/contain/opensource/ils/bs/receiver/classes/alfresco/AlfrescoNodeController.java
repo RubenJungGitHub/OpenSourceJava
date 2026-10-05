@@ -540,10 +540,17 @@ public class AlfrescoNodeController {
         System.out.println("Item " + alfrescoresponse.getcontainerfrom() + " marked for move to "
             + alfrescoresponse.getplatformto() + " ->" + alfrescoresponse.getcontainerto());
       }
+      boolean SuggestedClassificationUpdateResult;
+      // =
+      // UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,Optional.ofNullable(secondpath),
+      // Optional.empty());
 
       if (!alfrescoresponse.HasUUID) {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
+      } else {
+        SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,
+            Optional.ofNullable(secondpath), Optional.empty());
       }
       BindObject(alfrescoresponse);
     } catch (Exception ex) {
@@ -806,7 +813,7 @@ public class AlfrescoNodeController {
         this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
         this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
         System.out.println("CSuggested classification Result: " + classificationResult.label() + " with confidence: "
-            + classificationResult.confidence()); 
+            + classificationResult.confidence());
       }
     }
   }
@@ -842,13 +849,15 @@ public class AlfrescoNodeController {
       String endpoint = String.format(
           "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s",
           cleanEndpoint, this.nodeId);
-      String propertyName;
+
       String Path = IOPath.orElse("Unknown");
       String propertyValue = fieldValue.orElse("Dummy");
       String action = "";
+      String jsonPropertiesBlock = "";
+      String classVal = "";
+      double confVal = 0;
       switch (field) {
-        case UUID:
-          propertyName = "contain:IOUUID";
+        case AlfrescoConstants.NodeTypeFields.UUID:
           System.out.println(
               AlfrescoConstants.RED + "Get UUID endpoint  : "
                   + ilsproperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
@@ -871,22 +880,51 @@ public class AlfrescoNodeController {
           } else {
             System.err.println("REST call failed with status: " + status);
           }
-          action = "Assign UUID " + propertyValue + "  to new Alfresco IO " + this.alfresconNodeResponse.entry.filename;
+
+          action = "Assign UUID " + propertyValue + " and suggested classification values to new Alfresco IO "
+              + this.alfresconNodeResponse.entry.filename;
+
+          // Haal de suggested values op
+          classVal = this.alfresconNodeResponse.Suggestedclassification;
+          confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
+
+          // Zet UUID én de suggested values tegelijk in de properties block
+          jsonPropertiesBlock = String.format(
+              "\"contain:IOUUID\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\"",
+              propertyValue, classVal, confVal);
           break;
-        case Title:
+
+        case AlfrescoConstants.NodeTypeFields.Title:
           action = "To do title update for ballenbak registration";
-          propertyName = "cm:title";
+          jsonPropertiesBlock = String.format("\"cm:title\": \"%s\"", propertyValue);
           break;
+
+        case AlfrescoConstants.NodeTypeFields.SuggestedClassification:
+          classVal = this.alfresconNodeResponse.Suggestedclassification;
+
+          // Gebruik hier direct de getter van je object:
+          confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
+
+          action = "Assign Suggested Classification " + classVal + " and Confidence " + confVal + " to Alfresco IO "
+              + this.alfresconNodeResponse.entry.filename;
+
+          jsonPropertiesBlock = String.format(
+              "\"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\"",
+              classVal, confVal);
+          propertyValue = classVal;
+          break;
+
         default:
           throw new IllegalArgumentException("Unsupported field: " + field);
       }
+
       String jsonBody = """
           {
             "properties": {
-              "%s": "%s"
+              %s
             }
           }
-          """.formatted(propertyName, propertyValue);
+          """.formatted(jsonPropertiesBlock);
 
       System.out.println(contain.opensource.shared.constants.AlfrescoConstants.MAGENTA + "Updating "
           + this.alfresconNodeResponse.entry.filename + " " + jsonBody

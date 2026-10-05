@@ -9,7 +9,7 @@
 $projectRoot = "D:\contAIn\alfrescotaxintegration"
 $namespace = "contain-dvl" 
 
-$token       = 'sha256~DuKy8_HidJfxyfyiOKiPqItPPGkItcXk37EFJJlHyxI'
+$token  = 'sha256~1uBaAj3MqzsxN7_jQ5SURwBWt6mPKG4xvBQSNvdol4g'
 $server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
 
 # --- GitHub Registry Configuration ---
@@ -160,7 +160,7 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 
 Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
 
-<
+
 # ==========================================
 # STAGE 2.6: Configure Repository Environment Properties
 # ==========================================
@@ -216,6 +216,12 @@ if (-not $repoHealthy) {
 # STAGE 4: Rollout Share Deployment
 # ==========================================
 Write-Host "--- STAGE 4: Rolling out new Share image via DeploymentConfig ---" -ForegroundColor Magenta
+
+# Zorg dat de juiste nieuwe unieke image-tag wordt gekoppeld aan de DeploymentConfig
+$targetShareImage = $targetImage -replace "repo", "share"
+if ($targetShareImage -eq $targetImage) { $targetShareImage = "$targetImage-share" }
+
+oc set image dc/share share=$targetShareImage -n $namespace
 oc rollout latest dc/share -n $namespace
 
 $elapsed = 0

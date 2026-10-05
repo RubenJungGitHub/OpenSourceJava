@@ -24,9 +24,10 @@ public class ClassificationController {
     public ResponseEntity<ClassificationResult> classifyByteArray(
             @RequestBody byte[] content) throws Exception {
 
-        if (content == null || content.length == 0) {
+       if (content == null || content.length == 0) {
             return ResponseEntity.badRequest().build();
         }
+
 
         // 1. Tika verwerkt de byte array rechtstreeks uit het geheugen
         String extractedText = tika.parseToString(new ByteArrayInputStream(content)).trim();
@@ -47,6 +48,11 @@ public class ClassificationController {
         }
 
         // 3. Controleer of er daadwerkelijk bruikbare tekst is overgebleven
+            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_CYAN
+                    + ("Extracted text to be classified : " + extractedText)
+                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
+        System.out.println("Extracted text to be classified : " + extractedText) ;
         if (extractedText.isBlank()) {
             return ResponseEntity.ok(new ClassificationResult("Unclassified", 0.0, "EMPTY_CONTENT"));
         }
