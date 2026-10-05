@@ -41,6 +41,9 @@ public abstract class IOObjectProperties {
     @JsonProperty("Suggestedclassification")
     public String Suggestedclassification;
 
+    @JsonProperty("SuggestedclassificationConfidence")
+    public double SuggestedclassificationConfidence;
+
     @JsonProperty("markingID")
     public String markingID;
 
@@ -164,6 +167,14 @@ public abstract class IOObjectProperties {
 
     public void setSuggestedClassification(String Suggestedclassification) {
         this.Suggestedclassification = Suggestedclassification;
+    }
+
+    public double getSuggestedClassificationConfidence() {
+        return this.SuggestedclassificationConfidence;
+    }
+
+    public void setSuggestedClassificationConfidence(double SuggestedclassificationConfidence) {
+        this.SuggestedclassificationConfidence = SuggestedclassificationConfidence;
     }
 
        public String getclassificationID() {

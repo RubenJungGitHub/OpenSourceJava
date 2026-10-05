@@ -62,13 +62,15 @@ Get-NetTCPConnection -LocalPort 5005 -ErrorAction SilentlyContinue | ForEach-Obj
     Write-Host "Cleared old process on port 5005."
 }
 
-# 2. Find the active receiver pod dynamically
-$podName = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -like "receiver-*" } | Select-Object -First 1).Split()[0]
+
+# 2. Find the active RUNNING receiver pod dynamically
+$podName = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -like "receiver-*" -and $_ -like "*Running*" } | Select-Object -First 1).Split()[0]
+
 Write-Host "Pod found " $podName
 if ($podName) {
     Write-Host "Found active receiver pod: $podName" -ForegroundColor Green
     # 3. Open port-forward in a new window
     Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
 } else {
-    Write-Host "Error: No receiver pod found!" -ForegroundColor Red
+    Write-Host "Error: No running receiver pod found!" -ForegroundColor Red
 }

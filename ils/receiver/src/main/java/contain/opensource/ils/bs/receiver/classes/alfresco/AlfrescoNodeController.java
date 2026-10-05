@@ -59,7 +59,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
 
-
 @Component
 public class AlfrescoNodeController {
   public String nodeId;
@@ -68,33 +67,32 @@ public class AlfrescoNodeController {
   private String endpoint;
 
   public AlfrescoNodeResponse alfresconNodeResponse;
-  private  ILSRestProperties ilsproperties;
-  private  AlfrescoProperties alfrescoProperties;
-  private  TaxonomyServiceClient taxonomyServiceClient;
+  private ILSRestProperties ilsproperties;
+  private AlfrescoProperties alfrescoProperties;
+  private TaxonomyServiceClient taxonomyServiceClient;
   private CloseableHttpClient httpClient;
-  private  RestTemplate restTemplate;
+  private RestTemplate restTemplate;
 
   // (alongside your other fields like ilsproperties, taxonomyServiceClient, etc.)
- @Autowired
+  @Autowired
   public AlfrescoNodeController(
       RestTemplate restTemplate,
       AlfrescoProperties alfrescoProperties,
       ILSRestProperties ilsproperties,
       TaxonomyServiceClient taxonomyServiceClient,
       CloseableHttpClient httpClient) {
-      
-      this.restTemplate = restTemplate;
-      this.alfrescoProperties = alfrescoProperties;
-      this.ilsproperties = ilsproperties;
-      this.taxonomyServiceClient = taxonomyServiceClient;
-      this.httpClient = httpClient;
 
-      // Initialize the endpoint and credentials from your configuration properties
-      this.endpoint = alfrescoProperties.getBaseUrl();
-      this.username = alfrescoProperties.getUsername();
-      this.password = alfrescoProperties.getPassword();
+    this.restTemplate = restTemplate;
+    this.alfrescoProperties = alfrescoProperties;
+    this.ilsproperties = ilsproperties;
+    this.taxonomyServiceClient = taxonomyServiceClient;
+    this.httpClient = httpClient;
+
+    // Initialize the endpoint and credentials from your configuration properties
+    this.endpoint = alfrescoProperties.getBaseUrl();
+    this.username = alfrescoProperties.getUsername();
+    this.password = alfrescoProperties.getPassword();
   }
-
 
   public AlfrescoNodeController() {
     this.httpClient = null;
@@ -762,7 +760,6 @@ public class AlfrescoNodeController {
     return alfresconNodeResponse;
   }
 
-
   private CloseableHttpResponse ProcessGetRequest(String endpoint) {
     CloseableHttpResponse response = null;
     String auth = Base64.getEncoder().encodeToString(
@@ -801,14 +798,23 @@ public class AlfrescoNodeController {
         throw new IOException("HTTP error " + response.getCode());
       }
       this.alfresconNodeResponse.content = in.readAllBytes();
-      this.alfresconNodeResponse.Suggestedclassification = ClassifyIO().toString();
+      // 1. Haal het ClassificationResult object op uit je ClassifyIO() methode
+      ClassificationResult classificationResult = ClassifyIO();
+
+      // 2. Zet de properties netjes door naar je alfresconNodeResponse
+      if (classificationResult != null) {
+        this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
+        this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
+        System.out.println("Classification Result: " + classificationResult.label() + " with confidence: "
+            + classificationResult.confidence()); 
+      }
     }
   }
 
-
-public ClassificationResult ClassifyIO() {
+  public ClassificationResult ClassifyIO() {
     RestTemplate restTemplate = new RestTemplate();
-    //FROM CONFIG!!!!!!
+    // FROM CONFIG!!!!!! (Let op: hier zou tzt de URL van je eigen service of
+    // cluster kunnen staan)
     String url = "http://localhost:8080/api/v1/classify";
 
     // 1. Geef aan dat het om een raw binary stream gaat
@@ -820,14 +826,13 @@ public ClassificationResult ClassifyIO() {
 
     // 3. Verstuur het request
     ResponseEntity<ClassificationResult> response = restTemplate.postForEntity(
-            url, 
-            requestEntity, 
-            ClassificationResult.class
-    );
+        url,
+        requestEntity,
+        ClassificationResult.class);
 
     return response.getBody();
-}
-  
+  }
+
   private boolean UpdateNode(NodeTypeFields field, Optional<String> IOPath,
       Optional<String> fieldValue) {
     try {

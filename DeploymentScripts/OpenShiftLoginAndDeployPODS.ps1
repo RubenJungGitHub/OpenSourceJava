@@ -707,23 +707,31 @@ if ($PODS -contains "TaxonomyCacher") {
     oc apply -R -f $folder -n $project
 }
 
-
 # --- STAGE 18: Ollama ---
 if ($PODS -like "*ollama*") {
-    Write-Host "[INFO] Recreating existing Ollama deployment..." -ForegroundColor Cyan
+    Write-Host "[INFO] Processing Ollama deployment..." -ForegroundColor Cyan
+    
+    # 1. Ruim oude versies op (geen losse check nodig dankzij --ignore-not-found)
     oc delete all -l app=ollama -n $project --ignore-not-found --wait=true
+
+    # 2. Maak de applicatie aan inclusief de vereiste /tmp mappen voor OpenShift rechten
+    oc new-app ollama/ollama:latest `
+        --name=ollama `
+        -e HOME=/tmp `
+        -e OLLAMA_MODELS=/tmp/models `
+        -e OLLAMA_HOST=0.0.0.0:11434 `
+        -n $project
+
+    # 3. Wacht netjes tot de pod daadwerkelijk 'Running' is
+    Write-Host "[INFO] Waiting for Ollama pod to be ready..." -ForegroundColor Cyan
+    oc rollout status deployment/ollama -n $project --watch=true
+
+    # 4. Trek automatisch het llama3.2 model binnen
+    Write-Host "[INFO] Pulling llama3.2 model into Ollama..." -ForegroundColor Cyan
+    oc exec deployment/ollama -n $project -- ollama pull llama3.2
 } else {
-    Write-Host "[INFO] Deploying new Ollama pod..." -ForegroundColor Cyan
+    Write-Host "[INFO] Skipping Ollama (not selected in `$PODS)..." -ForegroundColor Gray
 }
-
-# Maak de applicatie én service aan op basis van het officiële Ollama image
-oc new-app ollama/ollama:latest --name=ollama -n $project
-
-# Trek automatisch het gewenste model binnen zodra de pod beschikbaar is
-Write-Host "[INFO] Pulling llama3.2 model into Ollama..." -ForegroundColor Cyan
-Start-Sleep -Seconds 5
-oc exec -it deployment/ollama -n $project -- ollama pull llama3.2
-
 
 
 
