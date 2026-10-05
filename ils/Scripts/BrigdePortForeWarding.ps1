@@ -31,7 +31,7 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward s
 
 $port = 55500
 EnablePortFirst $port
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/taxonomyservice 53000:53000 -n contain-dvl"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/taxonomyservice 55000:55000 -n contain-dvl"
 
 
 
@@ -64,7 +64,7 @@ Get-NetTCPConnection -LocalPort 5005 -ErrorAction SilentlyContinue | ForEach-Obj
 
 # 2. Find the active receiver pod dynamically
 $podName = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -like "receiver-*" } | Select-Object -First 1).Split()[0]
-
+Write-Host "Pod found " $podName
 if ($podName) {
     Write-Host "Found active receiver pod: $podName" -ForegroundColor Green
     # 3. Open port-forward in a new window
