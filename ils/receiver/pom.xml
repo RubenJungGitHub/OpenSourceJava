@@ -37,7 +37,19 @@
 			<artifactId>javax.jms-api</artifactId>
 			<version>2.0.1</version>
 		</dependency>
+		<!-- 1. Tika Core (de basis API) -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>3.1.0</version>
+		</dependency>
 
+		<!-- 2. Tika Standard Parsers (Cruciaal voor PDF, DOCX, XLSX, etc.) -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers-standard-package</artifactId>
+			<version>3.1.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

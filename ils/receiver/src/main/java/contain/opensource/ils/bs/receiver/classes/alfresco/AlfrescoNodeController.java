@@ -54,6 +54,11 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
+import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.LinkedMultiValueMap;
+
 
 @Component
 public class AlfrescoNodeController {
@@ -757,6 +762,7 @@ public class AlfrescoNodeController {
     return alfresconNodeResponse;
   }
 
+
   private CloseableHttpResponse ProcessGetRequest(String endpoint) {
     CloseableHttpResponse response = null;
     String auth = Base64.getEncoder().encodeToString(
@@ -795,9 +801,33 @@ public class AlfrescoNodeController {
         throw new IOException("HTTP error " + response.getCode());
       }
       this.alfresconNodeResponse.content = in.readAllBytes();
+      this.alfresconNodeResponse.Suggestedclassification = ClassifyIO().toString();
     }
   }
 
+
+public ClassificationResult ClassifyIO() {
+    RestTemplate restTemplate = new RestTemplate();
+    //FROM CONFIG!!!!!!
+    String url = "http://localhost:8080/api/v1/classify";
+
+    // 1. Geef aan dat het om een raw binary stream gaat
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+    // 2. Stop de byte[] direct in de HttpEntity body
+    HttpEntity<byte[]> requestEntity = new HttpEntity<>(this.alfresconNodeResponse.content, headers);
+
+    // 3. Verstuur het request
+    ResponseEntity<ClassificationResult> response = restTemplate.postForEntity(
+            url, 
+            requestEntity, 
+            ClassificationResult.class
+    );
+
+    return response.getBody();
+}
+  
   private boolean UpdateNode(NodeTypeFields field, Optional<String> IOPath,
       Optional<String> fieldValue) {
     try {

@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~XhMlbYc4HN89G4VjLPLEa4SPplCESldSOPh6dJp5mfg'
+$token  = 'sha256~1uBaAj3MqzsxN7_jQ5SURwBWt6mPKG4xvBQSNvdol4g'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -46,6 +46,7 @@ $PODS = @(
     #"ALfrescoupdate"
     #"ActiveMQ"
     #"Routes"
+    #"Ollama"
     #"AlfrescoQueuePoller"
     #"SharepointQueuePoller"
     #"MigrationQueuePoller"
@@ -705,6 +706,25 @@ if ($PODS -contains "TaxonomyCacher") {
     oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
 }
+
+
+# --- STAGE 18: Ollama ---
+if ($PODS -like "*ollama*") {
+    Write-Host "[INFO] Recreating existing Ollama deployment..." -ForegroundColor Cyan
+    oc delete all -l app=ollama -n $project --ignore-not-found --wait=true
+} else {
+    Write-Host "[INFO] Deploying new Ollama pod..." -ForegroundColor Cyan
+}
+
+# Maak de applicatie én service aan op basis van het officiële Ollama image
+oc new-app ollama/ollama:latest --name=ollama -n $project
+
+# Trek automatisch het gewenste model binnen zodra de pod beschikbaar is
+Write-Host "[INFO] Pulling llama3.2 model into Ollama..." -ForegroundColor Cyan
+Start-Sleep -Seconds 5
+oc exec -it deployment/ollama -n $project -- ollama pull llama3.2
+
+
 
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl

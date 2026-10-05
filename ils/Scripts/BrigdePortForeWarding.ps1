@@ -1,4 +1,4 @@
-﻿$token  = 'sha256~rFhYDrItm6LsQJxMi6vuPoawo4SNITpMlHt4hBb94go'
+﻿$token  = 'sha256~1uBaAj3MqzsxN7_jQ5SURwBWt6mPKG4xvBQSNvdol4g'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 cls
@@ -68,7 +68,7 @@ $podName = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -like "r
 if ($podName) {
     Write-Host "Found active receiver pod: $podName" -ForegroundColor Green
     # 3. Open port-forward in a new window
-    #Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
 } else {
     Write-Host "Error: No receiver pod found!" -ForegroundColor Red
 }

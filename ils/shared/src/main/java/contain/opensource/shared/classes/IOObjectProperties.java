@@ -38,6 +38,8 @@ public abstract class IOObjectProperties {
     @JsonProperty("classification")
     public String classification;
 
+    @JsonProperty("Suggestedclassification")
+    public String Suggestedclassification;
 
     @JsonProperty("markingID")
     public String markingID;
@@ -153,6 +155,15 @@ public abstract class IOObjectProperties {
 
     public void setclassification(String classification) {
         this.classification = classification;
+    }
+
+
+    public String getSuggestedClassification() {
+        return this.Suggestedclassification;
+    }
+
+    public void setSuggestedClassification(String Suggestedclassification) {
+        this.Suggestedclassification = Suggestedclassification;
     }
 
        public String getclassificationID() {
