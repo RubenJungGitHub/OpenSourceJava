@@ -666,24 +666,24 @@ public class AlfrescoNodeController {
     }
   }
 
-  public AlfrescoNodeResponse GetNode(String nodeid) {
-    try {
-      this.nodeId = nodeid;
+public AlfrescoNodeResponse GetNode(String nodeid) {
+    this.nodeId = nodeid;
 
-      String cleanEndpoint = this.endpoint != null ? this.endpoint.replaceAll("/+$", "") : "";
+    String cleanEndpoint = this.endpoint != null ? this.endpoint.replaceAll("/+$", "") : "";
 
-      String endpoint = String.format(
-          "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s?include=path",
-          cleanEndpoint, this.nodeId);
-      System.out.println("Alfresco endpoint applied : " + endpoint);
+    String endpoint = String.format(
+        "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s?include=path",
+        cleanEndpoint, this.nodeId);
+    System.out.println("Alfresco endpoint applied : " + endpoint);
 
-      String auth = Base64.getEncoder().encodeToString(
-          (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
+    String auth = Base64.getEncoder().encodeToString(
+        (this.username + ":" + this.password).getBytes(StandardCharsets.UTF_8));
 
-      HttpGet request = new HttpGet(endpoint);
-      request.setHeader("Authorization", "Basic " + auth);
+    HttpGet request = new HttpGet(endpoint);
+    request.setHeader("Authorization", "Basic " + auth);
 
-      var response = this.httpClient.execute(request);
+    // try-with-resources zorgt ervoor dat de response ALTIJD netjes wordt gesloten en vrijgegeven
+    try (CloseableHttpResponse response = (CloseableHttpResponse) this.httpClient.execute(request)) {
       int status = response.getCode();
       if (status == 200) {
         String json = EntityUtils.toString(response.getEntity());
@@ -752,13 +752,13 @@ public class AlfrescoNodeController {
             e.printStackTrace();
           }
         } catch (Exception e) {
-          System.err.println("Exception getting node : " + e);
+          System.err.println("Exception parsing node json : " + e);
           e.printStackTrace();
         }
         System.out.println("Node metadata:");
         System.out.println(json);
       } else {
-        throw new RuntimeException("Unexpected status: " + status);
+        System.err.println("Alfresco returned unexpected status: " + status + " for node ID: " + this.nodeId);
       }
     } catch (Exception e) {
       System.err.println("Exception getting node : " + e);

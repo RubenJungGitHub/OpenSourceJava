@@ -78,6 +78,8 @@ spec:
               value: "contAlnMigrationRuleset_1.0.0-SNAPSHOT"
             - name: ILS_DELTALINKFILE
               value: "/app/data/storeddeltalinks.csv"
+            - name: GEMINI_API_KEY
+              value: "AQ.Ab8RN6KJQvQzYv9luncDlykEQGQTHlq-TTVo2yh5YFfvpXvavQ"
           image: 'ghcr.io/rubenjunggithub/ils-receiver:v1.0'
           imagePullPolicy: Always
           name: receiver
