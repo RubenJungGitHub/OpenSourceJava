@@ -810,8 +810,10 @@ public class AlfrescoNodeController {
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
+        this.alfresconNodeResponse.SuggestedBy = classificationResult.classifier();
         this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
         this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
+
         System.out.println("CSuggested classification Result: " + classificationResult.label() + " with confidence: "
             + classificationResult.confidence());
       }
@@ -822,7 +824,11 @@ public class AlfrescoNodeController {
     RestTemplate restTemplate = new RestTemplate();
     // FROM CONFIG!!!!!! (Let op: hier zou tzt de URL van je eigen service of
     // cluster kunnen staan)
-    String url = "http://localhost:8080/api/v1/classify";
+    // lamaservieEndpoint
+    // String url = "http://localhost:8080/api/v1/classifyllamaService";
+
+    // GeminiEndpoint
+    String url = "http://localhost:8080/api/v1/classifygeminiservice";
 
     // 1. Geef aan dat het om een raw binary stream gaat
     HttpHeaders headers = new HttpHeaders();
@@ -854,8 +860,9 @@ public class AlfrescoNodeController {
       String propertyValue = fieldValue.orElse("Dummy");
       String action = "";
       String jsonPropertiesBlock = "";
-      String classVal = "";
-      double confVal = 0;
+      String classVal = this.alfresconNodeResponse.Suggestedclassification;
+      Double confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
+      String classifier = this.alfresconNodeResponse.SuggestedBy;
       switch (field) {
         case AlfrescoConstants.NodeTypeFields.UUID:
           System.out.println(
@@ -885,13 +892,14 @@ public class AlfrescoNodeController {
               + this.alfresconNodeResponse.entry.filename;
 
           // Haal de suggested values op
-          classVal = this.alfresconNodeResponse.Suggestedclassification;
-          confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
+          // classVal = this.alfresconNodeResponse.Suggestedclassification;
+          // confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
+          // classifier = this.alfresconNodeResponse.SuggestedBy;
 
           // Zet UUID én de suggested values tegelijk in de properties block
           jsonPropertiesBlock = String.format(
-              "\"contain:IOUUID\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\"",
-              propertyValue, classVal, confVal);
+              "\"contain:IOUUID\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\",\n              \"contain:AUTOCLASSIFIER\": \"%s\"",
+              propertyValue, classVal, confVal, classifier);
           break;
 
         case AlfrescoConstants.NodeTypeFields.Title:
@@ -900,18 +908,17 @@ public class AlfrescoNodeController {
           break;
 
         case AlfrescoConstants.NodeTypeFields.SuggestedClassification:
-          classVal = this.alfresconNodeResponse.Suggestedclassification;
+          // classVal = this.alfresconNodeResponse.Suggestedclassification;
 
           // Gebruik hier direct de getter van je object:
-          confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
+          // confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
 
           action = "Assign Suggested Classification " + classVal + " and Confidence " + confVal + " to Alfresco IO "
               + this.alfresconNodeResponse.entry.filename;
 
           jsonPropertiesBlock = String.format(
-              "\"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\"",
-              classVal, confVal);
-          propertyValue = classVal;
+              "\"contain:IOUUID\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\",\n              \"contain:AUTOCLASSIFIER\": \"%s\"",
+              propertyValue, classVal, confVal, classifier);
           break;
 
         default:

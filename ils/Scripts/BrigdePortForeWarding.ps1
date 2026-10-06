@@ -1,4 +1,4 @@
-﻿$token  = 'sha256~1uBaAj3MqzsxN7_jQ5SURwBWt6mPKG4xvBQSNvdol4g'
+﻿$token  = 'sha256~3XGnrlIaQunA1km_mgGjJwcoj2zSukFOxqIKfKIicIA'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 cls
@@ -58,7 +58,7 @@ Start-Process "C:\ContainOpenSource\NGrok\GrokonLocalHost-StartAll.cmd"
 #Optinonal open Java debug port from Open Shift (For receiver in this case)
 # 1. Kill any existing process using port 5005
 Get-NetTCPConnection -LocalPort 5005 -ErrorAction SilentlyContinue | ForEach-Object {
-    Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
+ #   Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
     Write-Host "Cleared old process on port 5005."
 }
 
@@ -70,7 +70,7 @@ Write-Host "Pod found " $podName
 if ($podName) {
     Write-Host "Found active receiver pod: $podName" -ForegroundColor Green
     # 3. Open port-forward in a new window
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
+#    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
 } else {
     Write-Host "Error: No running receiver pod found!" -ForegroundColor Red
 }

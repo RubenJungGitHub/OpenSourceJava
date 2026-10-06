@@ -11,16 +11,16 @@ import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/v1")
-public class ClassificationController {
+public class llamaClassificationController {
 
     private final Tika tika = new Tika();
     private final LocalLlamaService llamaService;
 
-    public ClassificationController(LocalLlamaService llamaService) {
+    public llamaClassificationController(LocalLlamaService llamaService) {
         this.llamaService = llamaService;
     }
 
-    @PostMapping(value = "/classify", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @PostMapping(value = "/classifyllamaService", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ClassificationResult> classifyByteArray(
             @RequestBody byte[] content) throws Exception {
 
@@ -54,7 +54,7 @@ public class ClassificationController {
 
         System.out.println("Extracted text to be classified : " + extractedText) ;
         if (extractedText.isBlank()) {
-            return ResponseEntity.ok(new ClassificationResult("Unclassified", 0.0, "EMPTY_CONTENT"));
+            return ResponseEntity.ok(new ClassificationResult("llamaclassifier","Unclassified", 0.0, "EMPTY_CONTENT" ));
         }
 
         // 4. Truncation: voorkom dat hele lange documenten het LLM context window laten vollopen
@@ -80,7 +80,7 @@ public class ClassificationController {
 
         // 6. Query LLM
         String suggestedLabel = llamaService.evaluate(prompt);
-        ClassificationResult result = new ClassificationResult(suggestedLabel, 0.95, "SUCCESS");
+        ClassificationResult result = new ClassificationResult("llamaclassifier", suggestedLabel, 0.95, "SUCCESS");
 
         return ResponseEntity.ok(result);
     }
