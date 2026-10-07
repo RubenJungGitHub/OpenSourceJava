@@ -11,6 +11,7 @@ import contain.opensource.shared.constants.AlfrescoConstants;
 public abstract class IOObjectProperties {
 
     public boolean HasUUID = false;
+    public boolean HasSuggestedClassification = false;
     private boolean MustMove = false;
     public String UUID;
 

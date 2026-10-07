@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~3XGnrlIaQunA1km_mgGjJwcoj2zSukFOxqIKfKIicIA'
+$token  = 'sha256~j9Fb7romHI4YbZukHMv7tgWpDBLfOxKjCjItdLxuPf4'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -736,4 +736,18 @@ if ($PODS -like "*ollama*") {
 
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
+
+
+# --- STAGE 19: Docker Cleanup to Prevent WSL Disk Bloat ---
+Write-Host "[INFO] Cleaning up Docker build cache and dangling layers..." -ForegroundColor Cyan
+
+# Verwijdert de tijdelijke build cache die tijdens het bouwen van images wordt aangemaakt
+docker builder prune -f --all 2>$null
+
+# Verwijdert losse, niet-gekoppelde image-lagen en gestopte containers
+docker image prune -f 2>$null
+docker container prune -f 2>$null
+
+Write-Host "[SUCCESS] Docker disk cleanup completed!" -ForegroundColor Green
+
 Write-Host "[SUCCESS] Completed deployment!" -ForegroundColor Green

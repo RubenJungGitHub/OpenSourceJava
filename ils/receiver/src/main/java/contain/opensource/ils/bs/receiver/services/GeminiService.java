@@ -78,6 +78,6 @@ public class GeminiService {
             }
         }
 
-        return "Unclassified";
+        return "EX-Unclassified";
     }
 }

@@ -5,19 +5,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import javax.net.ssl.*;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Map;
-import java.util.stream.Collectors;
 import java.time.Duration;
 import contain.opensource.ils.bs.receiver.model.TaxonomyResponse;
 import contain.opensource.ils.bs.receiver.classes.redis.RedisManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
 
 //MIND YOU>.. ALL CERTIFICATES ARE TRUSTED.. THIS IS FOR DEV PURPOSES ONLY
 @Service

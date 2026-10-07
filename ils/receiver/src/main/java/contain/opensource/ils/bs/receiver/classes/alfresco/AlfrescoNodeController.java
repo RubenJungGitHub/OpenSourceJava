@@ -31,7 +31,6 @@ import org.apache.hc.client5.http.entity.mime.HttpMultipartMode;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -44,9 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
-import java.util.ArrayList;
-import java.util.List;
-import contain.opensource.ils.bs.receiver.postgressfallback.IOLogPostgress;
+
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
 import contain.opensource.ils.bs.receiver.classes.Binding.BindRequest;
@@ -55,9 +52,7 @@ import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.LinkedMultiValueMap;
+
 
 @Component
 public class AlfrescoNodeController {
@@ -549,6 +544,7 @@ public class AlfrescoNodeController {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
       } else {
+
         SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,
             Optional.ofNullable(secondpath), Optional.empty());
       }
@@ -666,7 +662,7 @@ public class AlfrescoNodeController {
     }
   }
 
-public AlfrescoNodeResponse GetNode(String nodeid) {
+  public AlfrescoNodeResponse GetNode(String nodeid) {
     this.nodeId = nodeid;
 
     String cleanEndpoint = this.endpoint != null ? this.endpoint.replaceAll("/+$", "") : "";
@@ -682,7 +678,8 @@ public AlfrescoNodeResponse GetNode(String nodeid) {
     HttpGet request = new HttpGet(endpoint);
     request.setHeader("Authorization", "Basic " + auth);
 
-    // try-with-resources zorgt ervoor dat de response ALTIJD netjes wordt gesloten en vrijgegeven
+    // try-with-resources zorgt ervoor dat de response ALTIJD netjes wordt gesloten
+    // en vrijgegeven
     try (CloseableHttpResponse response = (CloseableHttpResponse) this.httpClient.execute(request)) {
       int status = response.getCode();
       if (status == 200) {
@@ -743,7 +740,8 @@ public AlfrescoNodeResponse GetNode(String nodeid) {
           if (ioUUIDValue != null && !ioUUIDValue.toString().isBlank()) {
             alfresconNodeResponse.UUID = ioUUIDValue.toString();
           }
-          GetNodeContent();
+          // Get content and classify
+          ClassificationResult classificationResult = GetNodeContent();
           try {
             alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null);
           } catch (java.lang.NullPointerException e) {
@@ -783,7 +781,7 @@ public AlfrescoNodeResponse GetNode(String nodeid) {
     return response;
   }
 
-  private void GetNodeContent() throws IOException {
+  private ClassificationResult GetNodeContent() throws IOException {
     // Strip any trailing slashes from the base endpoint to avoid double slashes
     String cleanEndpoint = this.endpoint != null ? this.endpoint.replaceAll("/+$", "") : "";
 
@@ -798,26 +796,47 @@ public AlfrescoNodeResponse GetNode(String nodeid) {
     HttpGet request = new HttpGet(endpoint);
     request.setHeader("Authorization", "Basic " + auth);
 
+    ClassificationResult classificationResult = null;
+
     try (CloseableHttpResponse response = this.httpClient.execute(request);
         InputStream in = response.getEntity().getContent()) {
 
       if (response.getCode() != 200) {
         throw new IOException("HTTP error " + response.getCode());
       }
+
       this.alfresconNodeResponse.content = in.readAllBytes();
-      // 1. Haal het ClassificationResult object op uit je ClassifyIO() methode
-      ClassificationResult classificationResult = ClassifyIO();
+
+      // 1. Haal het ClassificationResult object op
+      classificationResult = ClassifyIO();
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
-        this.alfresconNodeResponse.SuggestedBy = classificationResult.classifier();
-        this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
-        this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
+        this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.Suggestedclassification != null
+            ||
+            !this.alfresconNodeResponse.Suggestedclassification.isEmpty() ||
+            !this.alfresconNodeResponse.Suggestedclassification.equals(classificationResult.label()));
 
-        System.out.println("CSuggested classification Result: " + classificationResult.label() + " with confidence: "
-            + classificationResult.confidence());
+        if (this.alfresconNodeResponse.HasSuggestedClassification) {
+          System.out.println("Suggested classification has changed from "
+              + alfresconNodeResponse.Suggestedclassification + " to " + classificationResult.label());
+
+          this.alfresconNodeResponse.SuggestedBy = classificationResult.classifier();
+          this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
+          this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
+
+          System.out.println("CSuggested classification Result: " + classificationResult.label() + " with confidence: "
+              + classificationResult.confidence());
+        }
       }
+
+    } catch (Exception e) {
+      System.err.println("Exception getting node content : " + e);
+      e.printStackTrace();
+      throw new IOException("Failed to get node content", e);
     }
+
+    return classificationResult;
   }
 
   public ClassificationResult ClassifyIO() {
@@ -900,6 +919,7 @@ public AlfrescoNodeResponse GetNode(String nodeid) {
           jsonPropertiesBlock = String.format(
               "\"contain:IOUUID\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\",\n              \"contain:AUTOCLASSIFIER\": \"%s\"",
               propertyValue, classVal, confVal, classifier);
+          this.alfresconNodeResponse.UUID = propertyValue;
           break;
 
         case AlfrescoConstants.NodeTypeFields.Title:
