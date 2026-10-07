@@ -16,8 +16,7 @@ public class IOLog {
         IOLog.delegate = service;
     }
 
-    public static Optional<IOLogBallenbakMongo> GetLog(String uuid) 
-    {
+    public static Optional<IOLogBallenbakMongo> GetLog(String uuid) {
         if (delegate == null) {
             throw new IllegalStateException("IOLog not initialized yet");
         }
@@ -45,6 +44,9 @@ public class IOLog {
             String MarkingID,
             String Classification,
             String ClassificationID,
+            String SuggestionClassifier,
+            String SuggestedClassification,
+            Double ClassificationConfidence,
             String version) {
         if (delegate == null) {
             throw new IllegalStateException("IOLog not initialized yet");
@@ -67,7 +69,7 @@ public class IOLog {
                     ClassificationID,
                     Classification,
                     version);
-                    
+
         } catch (Exception ex) {
             System.out.println("Failed to log IO action: " + ex.getMessage());
         }

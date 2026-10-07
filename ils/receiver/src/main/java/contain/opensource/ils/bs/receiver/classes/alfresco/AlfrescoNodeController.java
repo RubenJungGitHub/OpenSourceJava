@@ -408,7 +408,10 @@ public class AlfrescoNodeController {
               this.taxonomyServiceClient.GetTaxLabel(IOobject.markingID.toString()),
               IOobject.classificationID,
               this.taxonomyServiceClient.GetTaxLabel(IOobject.classificationID.toString()),
-              IOobject.version);
+              IOobject.getSuggestedBy(),
+              IOobject.getSuggestedClassification(),
+              IOobject.getSuggestedClassificationConfidence(),
+              IOobject.getVersion());
         }
       }
     } catch (Exception e) {
@@ -496,6 +499,9 @@ public class AlfrescoNodeController {
               this.taxonomyServiceClient.GetTaxLabel(IOobject.markingID.toString()),
               IOobject.classificationID,
               this.taxonomyServiceClient.GetTaxLabel(IOobject.classificationID.toString()),
+              IOobject.getSuggestedBy(),
+              IOobject.getSuggestedClassification(),
+              IOobject.getSuggestedClassificationConfidence(),
               IOobject.version);
           return "";
         } else {
@@ -655,6 +661,9 @@ public class AlfrescoNodeController {
             Alfrescoitem.marking = this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.markingID),
             Alfrescoitem.classificationID,
             Alfrescoitem.classification = this.taxonomyServiceClient.GetTaxLabel(Alfrescoitem.classificationID),
+            Alfrescoitem.getSuggestedBy(),
+            Alfrescoitem.getSuggestedClassification(),
+            Alfrescoitem.getSuggestedClassificationConfidence(),
             Alfrescoitem.version);
       }
     } catch (Exception ex) {
@@ -857,10 +866,10 @@ public class AlfrescoNodeController {
     // FROM CONFIG!!!!!! (Let op: hier zou tzt de URL van je eigen service of
     // cluster kunnen staan)
     // lamaservieEndpoint
-    // String url = "http://localhost:8080/api/v1/classifyllamaService";
+    String url = "http://localhost:8080/api/v1/classifyllamaService";
 
     // GeminiEndpoint
-    String url = "http://localhost:8080/api/v1/classifygeminiservice";
+    // String url = "http://localhost:8080/api/v1/classifygeminiservice";
 
     // 1. Geef aan dat het om een raw binary stream gaat
     HttpHeaders headers = new HttpHeaders();
@@ -1002,6 +1011,9 @@ public class AlfrescoNodeController {
               this.alfresconNodeResponse.classificationID,
               this.alfresconNodeResponse.classification = this.taxonomyServiceClient
                   .GetTaxLabel(this.alfresconNodeResponse.classificationID),
+              this.alfresconNodeResponse.getSuggestedBy(),
+              this.alfresconNodeResponse.getSuggestedClassification(),  
+              this.alfresconNodeResponse.getSuggestedClassificationConfidence(),  
               this.alfresconNodeResponse.version);
 
           System.out.println("Node updated successfully:");

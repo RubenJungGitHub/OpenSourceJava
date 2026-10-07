@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.activemq.TransportLoggerSupport.SPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -375,6 +376,9 @@ public class GraphService {
                         this.taxonomyServiceClient.GetTaxLabel(node.markingID.toString()),
                         node.getclassificationID(),
                         this.taxonomyServiceClient.GetTaxLabel(node.classificationID.toString()),
+                        "ToDO",
+                        "ToDO",
+                        0.0,
                         node.getVersion());
                 // ==========================================================================================
                 return "Success";
@@ -530,7 +534,9 @@ public class GraphService {
                         SPItem.marking,
                         SPItem.classificationID,
                         SPItem.classification,
-
+                        SPItem.getSuggestedBy(),
+                        SPItem.getSuggestedClassification(),        
+                        SPItem.getSuggestedClassificationConfidence(),
                         SPItem.version);
                 // ==========================================================================================
             }
@@ -750,6 +756,9 @@ public class GraphService {
                         ROobject.markingID,
                         this.taxonomyServiceClient.GetTaxLabel(ROobject.classificationID.toString()),
                         ROobject.classificationID,
+                        ROobject.getSuggestedBy(),
+                        ROobject.getSuggestedClassification(),
+                        ROobject.getSuggestedClassificationConfidence(),  
                         ROobject.version);
             } else {
                 throw new RuntimeException(
@@ -804,6 +813,9 @@ public class GraphService {
                         this.taxonomyServiceClient.GetTaxLabel(ROobject.markingID.toString()),
                         ROobject.classificationID,
                         this.taxonomyServiceClient.GetTaxLabel(ROobject.classificationID.toString()),
+                        ROobject.getSuggestedBy(),
+                        ROobject.getSuggestedClassification(),
+                        ROobject.getSuggestedClassificationConfidence(), 
                         ROobject.version);
             } else {
                 throw new RuntimeException(
@@ -1130,8 +1142,9 @@ public class GraphService {
                             // SPItem.marking = this.taxonomyServiceClient.GetTaxLabel(SPItem.markingID),
                             SPItem.classificationID,
                             SPItem.classification,
-                            // SPItem.classification =
-                            // this.taxonomyServiceClient.GetTaxLabel(SPItem.classificationID),
+                            SPItem.getSuggestedBy(),
+                            SPItem.getSuggestedClassification(),    
+                            SPItem.getSuggestedClassificationConfidence(),    
                             SPItem.version);
                     return migrationinfo;
                 }

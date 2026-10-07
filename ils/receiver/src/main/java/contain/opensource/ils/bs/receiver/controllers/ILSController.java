@@ -92,6 +92,9 @@ public class ILSController {
                     "DeletedFromPlatform",
                     "DeletedFromPlatform",
                     "DeletedFromPlatform",
+                    "DeletedFromPlatform",
+                    "DeletedFromPlatform",
+                    0.0,
                     "DeletedFromPlatform");
         } catch (Exception ex) {
             throw ex;
