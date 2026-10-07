@@ -543,9 +543,11 @@ public class AlfrescoNodeController {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
       } else {
+        if (!alfrescoresponse.HasSuggestedClassification) {
 
-        SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,
-            Optional.ofNullable(secondpath), Optional.empty());
+          SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,
+              Optional.ofNullable(secondpath), Optional.empty());
+        }
       }
       BindObject(alfrescoresponse);
     } catch (Exception ex) {
@@ -725,7 +727,6 @@ public class AlfrescoNodeController {
               .path("contain:EXTTAXCLASSIFICATIONID")
               .asText();
 
-
           alfresconNodeResponse.Suggestedclassification = rootNode.path("entry")
               .path("properties")
               .path("contain:SUGGESTEDCLASSIFICATIONVAL")
@@ -735,7 +736,6 @@ public class AlfrescoNodeController {
               .path("properties")
               .path("contain:EXTTAXCLASSIFICATIONID")
               .asText();
-
 
           alfresconNodeResponse.setcontainerfrom(rootNode.path("entry")
               .path("path")
@@ -823,7 +823,8 @@ public class AlfrescoNodeController {
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
-        this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.Suggestedclassification != null && !this.alfresconNodeResponse.Suggestedclassification.isEmpty());
+        this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.Suggestedclassification != null
+            && !this.alfresconNodeResponse.Suggestedclassification.isEmpty());
       }
       if (this.alfresconNodeResponse.HasSuggestedClassification) {
         this.alfresconNodeResponse.HasSuggestedClassification = this.alfresconNodeResponse.Suggestedclassification
