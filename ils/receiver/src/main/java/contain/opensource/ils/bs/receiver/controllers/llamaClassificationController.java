@@ -5,9 +5,14 @@ import org.apache.tika.Tika;
 import org.springframework.http.ResponseEntity;
 import contain.opensource.ils.bs.receiver.services.LocalLlamaService;
 import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
+import contain.opensource.ils.bs.receiver.model.TaxonomyResponse;
+
 import java.io.ByteArrayInputStream;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import java.util.Base64;
+import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -15,19 +20,22 @@ public class llamaClassificationController {
 
     private final Tika tika = new Tika();
     private final LocalLlamaService llamaService;
+    private final TaxonomyServiceClient taxonomyServiceClient;
 
-    public llamaClassificationController(LocalLlamaService llamaService) {
+    @Autowired
+    public llamaClassificationController(LocalLlamaService llamaService,
+            TaxonomyServiceClient taxonomyServiceClient) {
         this.llamaService = llamaService;
+        this.taxonomyServiceClient = taxonomyServiceClient;
     }
 
     @PostMapping(value = "/classifyllamaService", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ClassificationResult> classifyByteArray(
             @RequestBody byte[] content) throws Exception {
 
-       if (content == null || content.length == 0) {
+        if (content == null || content.length == 0) {
             return ResponseEntity.badRequest().build();
         }
-
 
         // 1. Tika verwerkt de byte array rechtstreeks uit het geheugen
         String extractedText = tika.parseToString(new ByteArrayInputStream(content)).trim();
@@ -37,7 +45,7 @@ public class llamaClassificationController {
             try {
                 byte[] decodedBytes = Base64.getDecoder().decode(extractedText.replaceAll("\\s+", ""));
                 String decodedText = tika.parseToString(new ByteArrayInputStream(decodedBytes)).trim();
-                
+
                 // Alleen overschrijven als er daadwerkelijk tekst is gedecodeerd
                 if (!decodedText.isEmpty()) {
                     extractedText = decodedText;
@@ -48,35 +56,44 @@ public class llamaClassificationController {
         }
 
         // 3. Controleer of er daadwerkelijk bruikbare tekst is overgebleven
-            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_CYAN
-                    + ("Extracted text to be classified : " + extractedText)
-                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_CYAN
+                + ("Extracted text to be classified : " + extractedText)
+                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
-        System.out.println("Extracted text to be classified : " + extractedText) ;
+        System.out.println("Extracted text to be classified : " + extractedText);
         if (extractedText.isBlank()) {
-            return ResponseEntity.ok(new ClassificationResult("llamaclassifier","Unclassified", 0.0, "EMPTY_CONTENT" ));
+            return ResponseEntity.ok(new ClassificationResult("llamaclassifier", "Unclassified", 0.0, "EMPTY_CONTENT"));
         }
 
-        // 4. Truncation: voorkom dat hele lange documenten het LLM context window laten vollopen
+        // 4. Truncation: voorkom dat hele lange documenten het LLM context window laten
+        // vollopen
         if (extractedText.length() > 4000) {
             extractedText = extractedText.substring(0, 4000);
         }
 
-        // 5. Bouw prompt met expliciete labels en veilige concatenatie/ Labels moeten komen uit VocBench!!!!! of andere MMS
+        // Bouw propmt
+        TaxonomyResponse taxonomy = taxonomyServiceClient.GetTaxonomies("classification", "en");
+
+        String labelsList = "";
+        StringBuilder sb = new StringBuilder();
+        sb.append("- Failed to retrieve labels").append("\n");
+        if (taxonomy != null && taxonomy.options != null) {
+            for (var option : taxonomy.options) {
+                sb.append("- ").append(option.label).append("\n");
+            }
+            labelsList = sb.toString().trim();
+        }
+
+        // 2. Bouw de prompt dynamisch op met .formatted()
         String prompt = """
-            Classificeer de onderstaande documenttekst.
-            
-            Kies uitsluitend EÉN van de volgende labels:
-            - Confidential
-            - Internal
-            - Public
-            - Secret
-            - Unclassified
-            
-            Geef alleen het exacte label terug als antwoord.
-            
-            Tekst:
-            """ + extractedText;
+                Classificeer de onderstaande documenttekst.
+                Kies uitsluitend EÉN van de volgende labels:
+                %s
+                Geef alleen het exacte label terug als antwoord.
+
+                Tekst:
+                %s
+                """.formatted(labelsList, extractedText);
 
         // 6. Query LLM
         String suggestedLabel = llamaService.evaluate(prompt);

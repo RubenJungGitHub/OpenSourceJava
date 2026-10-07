@@ -34,52 +34,59 @@ public class GeminiClassificationController {
 
     @PostMapping(value = "/classifygeminiservice", consumes = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<ClassificationResult> classifyWithGemini(@RequestBody byte[] content) throws Exception {
-        if (content == null || content.length == 0) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        String extractedText = tika.parseToString(new ByteArrayInputStream(content)).trim();
-
-        if (extractedText.isBlank()) {
-            return ResponseEntity.ok(new ClassificationResult("Gemini", "Unclassified", 0.0, "EMPTY_CONTENT"));
-        }
-
-        if (extractedText.length() > 4000) {
-            extractedText = extractedText.substring(0, 4000);
-        }
-
-        // 1. Haal de taxonomie op via het directe veld 'options'
-        TaxonomyResponse taxonomy = taxonomyServiceClient.GetTaxonomies("classification", "en");
-
-        String labelsList = "Failed to retrieve labels";
-        if (taxonomy != null && taxonomy.options != null) {
-            StringBuilder sb = new StringBuilder();
-            for (var option : taxonomy.options) {
-                sb.append("- ").append(option.label).append("\n");
+        try {
+            if (content == null || content.length == 0) {
+                return ResponseEntity.badRequest().build();
             }
-            labelsList = sb.toString().trim();
+
+            String extractedText = tika.parseToString(new ByteArrayInputStream(content)).trim();
+
+            if (extractedText.isBlank()) {
+                return ResponseEntity.ok(new ClassificationResult("Gemini", "Unclassified", 0.0, "EMPTY_CONTENT"));
+            }
+
+            if (extractedText.length() > 4000) {
+                extractedText = extractedText.substring(0, 4000);
+            }
+
+            // 1. Haal de taxonomie op via het directe veld 'options'
+            TaxonomyResponse taxonomy = taxonomyServiceClient.GetTaxonomies("classification", "en");
+
+            String labelsList = "";
+            StringBuilder sb = new StringBuilder();
+            sb.append("- Failed to retrieve labels").append("\n");
+            if (taxonomy != null && taxonomy.options != null) {
+                                for (var option : taxonomy.options) {
+                    sb.append("- ").append(option.label).append("\n");
+                }
+                labelsList = sb.toString().trim();
+            }
+
+            // 2. Bouw de prompt dynamisch op met .formatted()
+            String prompt = """
+                    Classificeer de onderstaande documenttekst.
+                    Kies uitsluitend EÉN van de volgende labels:
+                    %s
+                    Geef alleen het exacte label terug als antwoord.
+
+                    Tekst:
+                    %s
+                    """.formatted(labelsList, extractedText);
+
+            // 3. Roep Gemini aan
+            String suggestedLabel = geminiReceiverService.evaluate(prompt);
+
+            if (suggestedLabel != null) {
+                suggestedLabel = suggestedLabel.replaceAll("[^a-zA-Z]", "").trim();
+            } else {
+                suggestedLabel = "Unclassified";
+            }
+
+            return ResponseEntity.ok(new ClassificationResult("Gemini", suggestedLabel, 0.95, "SUCCESS"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(new ClassificationResult("Gemini", "Unclassified", 0.0, "ERROR: " + e.getMessage()));
         }
-
-        // 2. Bouw de prompt dynamisch op met .formatted()
-        String prompt = """
-                Classificeer de onderstaande documenttekst.
-                Kies uitsluitend EÉN van de volgende labels:
-                %s
-                Geef alleen het exacte label terug als antwoord.
-
-                Tekst:
-                %s
-                """.formatted(labelsList, extractedText);
-
-        // 3. Roep Gemini aan
-        String suggestedLabel = geminiReceiverService.evaluate(prompt);
-
-        if (suggestedLabel != null) {
-            suggestedLabel = suggestedLabel.replaceAll("[^a-zA-Z]", "").trim();
-        } else {
-            suggestedLabel = "Unclassified";
-        }
-
-        return ResponseEntity.ok(new ClassificationResult("Gemini", suggestedLabel, 0.95, "SUCCESS"));
     }
 }

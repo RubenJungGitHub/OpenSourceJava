@@ -53,7 +53,6 @@ import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
 
-
 @Component
 public class AlfrescoNodeController {
   public String nodeId;
@@ -726,6 +725,18 @@ public class AlfrescoNodeController {
               .path("contain:EXTTAXCLASSIFICATIONID")
               .asText();
 
+
+          alfresconNodeResponse.Suggestedclassification = rootNode.path("entry")
+              .path("properties")
+              .path("contain:SUGGESTEDCLASSIFICATIONVAL")
+              .asText();
+
+          alfresconNodeResponse.classificationID = rootNode.path("entry")
+              .path("properties")
+              .path("contain:EXTTAXCLASSIFICATIONID")
+              .asText();
+
+
           alfresconNodeResponse.setcontainerfrom(rootNode.path("entry")
               .path("path")
               .path("name")
@@ -812,25 +823,26 @@ public class AlfrescoNodeController {
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
-        this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.Suggestedclassification != null
-            ||
-            !this.alfresconNodeResponse.Suggestedclassification.isEmpty() ||
-            !this.alfresconNodeResponse.Suggestedclassification.equals(classificationResult.label()));
+        this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.Suggestedclassification != null && !this.alfresconNodeResponse.Suggestedclassification.isEmpty());
+      }
+      if (this.alfresconNodeResponse.HasSuggestedClassification) {
+        this.alfresconNodeResponse.HasSuggestedClassification = this.alfresconNodeResponse.Suggestedclassification
+            .equals(classificationResult.label());
+      }
+      if (!this.alfresconNodeResponse.HasSuggestedClassification) {
+        System.out.println("Suggested classification has changed from "
+            + alfresconNodeResponse.Suggestedclassification + " to " + classificationResult.label());
+        this.alfresconNodeResponse.SuggestedBy = classificationResult.classifier();
+        this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
+        this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
 
-        if (this.alfresconNodeResponse.HasSuggestedClassification) {
-          System.out.println("Suggested classification has changed from "
-              + alfresconNodeResponse.Suggestedclassification + " to " + classificationResult.label());
-
-          this.alfresconNodeResponse.SuggestedBy = classificationResult.classifier();
-          this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
-          this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
-
-          System.out.println("CSuggested classification Result: " + classificationResult.label() + " with confidence: "
-              + classificationResult.confidence());
-        }
+        System.out.println("CSuggested classification Result: " + classificationResult.label() + " with confidence: "
+            + classificationResult.confidence());
       }
 
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       System.err.println("Exception getting node content : " + e);
       e.printStackTrace();
       throw new IOException("Failed to get node content", e);

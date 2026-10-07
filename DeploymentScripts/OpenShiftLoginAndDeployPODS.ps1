@@ -738,16 +738,15 @@ if ($PODS -like "*ollama*") {
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 
 
-# --- STAGE 19: Docker Cleanup to Prevent WSL Disk Bloat ---
-Write-Host "[INFO] Cleaning up Docker build cache and dangling layers..." -ForegroundColor Cyan
+# --- STAGE 19: Complete Docker Data Reset (Vervangt de vhdx door een lege schijf) ---
+#Write-Host "[INFO] Shutting down Docker and WSL to wipe the bloated virtual disk..." -ForegroundColor Cyan
+#Stop-Process -Name "Docker Desktop" -ErrorAction SilentlyContinue
+#wsl --shutdown
+#Start-Sleep -Seconds 3
 
-# Verwijdert de tijdelijke build cache die tijdens het bouwen van images wordt aangemaakt
-docker builder prune -f --all 2>$null
+#Write-Host "[INFO] Removing old bloated docker data disk..." -ForegroundColor Cyan
+#wsl --unregister docker-desktop-data
 
-# Verwijdert losse, niet-gekoppelde image-lagen en gestopte containers
-docker image prune -f 2>$null
-docker container prune -f 2>$null
-
-Write-Host "[SUCCESS] Docker disk cleanup completed!" -ForegroundColor Green
+#Write-Host "[SUCCESS] Docker data disk wiped! A fresh, empty disk will be created on next startup." -ForegroundColor Green
 
 Write-Host "[SUCCESS] Completed deployment!" -ForegroundColor Green
