@@ -120,6 +120,7 @@ public class AlfrescoConstants {
         IOCLASSIIFIED,
         COPIEDUUID,
         IODELETED,
-        IOBOUND
+        IOBOUND,
+        IOSUGGESTEDCLASSIFICATIONUPDATED
     }
 }

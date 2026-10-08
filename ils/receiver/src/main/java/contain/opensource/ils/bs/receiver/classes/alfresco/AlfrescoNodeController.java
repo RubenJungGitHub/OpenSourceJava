@@ -7,14 +7,13 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
 import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Optional;
 import java.net.URL;
 import java.net.URI;
 
-import java.net.URLEncoder;
+
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -37,7 +36,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
+import contain.opensource.ils.bs.receiver.classes.Classification.AutoCLassify;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -64,6 +63,7 @@ public class AlfrescoNodeController {
   private ILSRestProperties ilsproperties;
   private AlfrescoProperties alfrescoProperties;
   private TaxonomyServiceClient taxonomyServiceClient;
+  private AutoCLassify autoClassify;
   private CloseableHttpClient httpClient;
   private RestTemplate restTemplate;
 
@@ -74,13 +74,15 @@ public class AlfrescoNodeController {
       AlfrescoProperties alfrescoProperties,
       ILSRestProperties ilsproperties,
       TaxonomyServiceClient taxonomyServiceClient,
-      CloseableHttpClient httpClient) {
+      CloseableHttpClient httpClient,
+      AutoCLassify autoClassify) {
 
     this.restTemplate = restTemplate;
     this.alfrescoProperties = alfrescoProperties;
     this.ilsproperties = ilsproperties;
     this.taxonomyServiceClient = taxonomyServiceClient;
     this.httpClient = httpClient;
+    this.autoClassify = autoClassify;
 
     // Initialize the endpoint and credentials from your configuration properties
     this.endpoint = alfrescoProperties.getBaseUrl();
@@ -550,7 +552,6 @@ public class AlfrescoNodeController {
             Optional.empty());
       } else {
         if (!alfrescoresponse.HasSuggestedClassification) {
-
           SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,
               Optional.ofNullable(secondpath), Optional.empty());
         }
@@ -764,14 +765,21 @@ public class AlfrescoNodeController {
               .path("mimeType")
               .asText();
 
-          Object ioUUIDValue = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
+        //  Object ioUUIDValue = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
+          Object ioUUIDValue = rootNode.path("entry")
+              .path("properties")
+              .path("contain:IOUUID")
+              .asText();
+
           if (ioUUIDValue != null && !ioUUIDValue.toString().isBlank()) {
             alfresconNodeResponse.UUID = ioUUIDValue.toString();
           }
+
           // Get content and classify
-          ClassificationResult classificationResult = GetNodeContent();
+
           try {
             alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null);
+            ClassificationResult classificationResult = GetNodeContent();
           } catch (java.lang.NullPointerException e) {
           } catch (Exception e) {
             System.err.println("Exception UUID : " + e);
@@ -836,7 +844,7 @@ public class AlfrescoNodeController {
       this.alfresconNodeResponse.content = in.readAllBytes();
 
       // 1. Haal het ClassificationResult object op
-      classificationResult = ClassifyIO();
+      classificationResult = autoClassify.ClassifyIO(this.alfresconNodeResponse.content)  ;
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
@@ -869,32 +877,6 @@ public class AlfrescoNodeController {
     return classificationResult;
   }
 
-  public ClassificationResult ClassifyIO() {
-    RestTemplate restTemplate = new RestTemplate();
-    // FROM CONFIG!!!!!! (Let op: hier zou tzt de URL van je eigen service of
-    // cluster kunnen staan)
-    // lamaservieEndpoint
-    String url = "http://localhost:8080/api/v1/classifyllamaService";
-
-    // GeminiEndpoint
-    //String url = "http://localhost:8080/api/v1/classifygeminiservice";
-
-    // 1. Geef aan dat het om een raw binary stream gaat
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-
-    // 2. Stop de byte[] direct in de HttpEntity body
-    HttpEntity<byte[]> requestEntity = new HttpEntity<>(this.alfresconNodeResponse.content, headers);
-
-    // 3. Verstuur het request
-    ResponseEntity<ClassificationResult> response = restTemplate.postForEntity(
-        url,
-        requestEntity,
-        ClassificationResult.class);
-
-    return response.getBody();
-  }
-
   private boolean UpdateNode(NodeTypeFields field, Optional<String> IOPath,
       Optional<String> fieldValue) {
     try {
@@ -907,6 +889,11 @@ public class AlfrescoNodeController {
 
       String Path = IOPath.orElse("Unknown");
       String propertyValue = fieldValue.orElse("Dummy");
+      if(propertyValue.equals("Dummy"))
+      {
+          System.out.println("No property value provided, using default 'Dummy'");
+
+      }
       String action = "";
       String jsonPropertiesBlock = "";
       String classVal = this.alfresconNodeResponse.Suggestedclassification;

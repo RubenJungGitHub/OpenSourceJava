@@ -21,9 +21,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
-import org.apache.activemq.TransportLoggerSupport.SPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -65,7 +63,9 @@ import contain.opensource.ils.bs.receiver.classes.sharepoint.SharePointItemRespo
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.shared.constants.AlfrescoConstants;
 import io.swagger.v3.oas.annotations.Parameter;
+import contain.opensource.ils.bs.receiver.classes.Classification.AutoCLassify;
 import java.util.Collections;
+import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
 //import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 
 //========================================================================
@@ -96,13 +96,14 @@ public class GraphService {
     static AlfrescoConstants.eItemtype itemtype;
     static ILSRestProperties ILSProperties = null;
     static TaxonomyServiceClient taxonomyServiceClient;
-    // static AlfrescoNodeController acontroller = null;
+    static AutoCLassify autoClassify;
 
     @Autowired
     public GraphService(ILSRestProperties ilsProperties, AlfrescoNodeController alfresconodecontroller,
-            TaxonomyServiceClient taxonomyServiceClient) {
+            TaxonomyServiceClient taxonomyServiceClient, AutoCLassify autoClassify) {
         this.ILSProperties = ilsProperties;
         this.taxonomyServiceClient = taxonomyServiceClient;
+        this.autoClassify = autoClassify;
         mapper = new ObjectMapper();
         this.DeltaLinkFile = ILSProperties.getdeltalinkfile();
         mapper.registerModule(new JavaTimeModule());
@@ -223,7 +224,7 @@ public class GraphService {
             body.put("ContAInUUID", uuid);
             body.put("markingexternaltax", marking);
             body.put("classificationexternaltax", classification);
-            body.put("Title", "Test Updated Document Title Ruben from JaVa");
+            body.put("Title", "Test Updated Document Title from JaVa code");
             // body.put("ObjectClassificationText", "Changed from Java");
 
             String json = mapper.writeValueAsString(body);
@@ -535,7 +536,7 @@ public class GraphService {
                         SPItem.classificationID,
                         SPItem.classification,
                         SPItem.getSuggestedBy(),
-                        SPItem.getSuggestedClassification(),        
+                        SPItem.getSuggestedClassification(),
                         SPItem.getSuggestedClassificationConfidence(),
                         SPItem.version);
                 // ==========================================================================================
@@ -758,7 +759,7 @@ public class GraphService {
                         ROobject.classificationID,
                         ROobject.getSuggestedBy(),
                         ROobject.getSuggestedClassification(),
-                        ROobject.getSuggestedClassificationConfidence(),  
+                        ROobject.getSuggestedClassificationConfidence(),
                         ROobject.version);
             } else {
                 throw new RuntimeException(
@@ -815,7 +816,7 @@ public class GraphService {
                         this.taxonomyServiceClient.GetTaxLabel(ROobject.classificationID.toString()),
                         ROobject.getSuggestedBy(),
                         ROobject.getSuggestedClassification(),
-                        ROobject.getSuggestedClassificationConfidence(), 
+                        ROobject.getSuggestedClassificationConfidence(),
                         ROobject.version);
             } else {
                 throw new RuntimeException(
@@ -931,7 +932,7 @@ public class GraphService {
                     .items(listItemId)
                     .buildRequest()
                     .select("id,fields,createdBy,createdDateTime,contentType") // top-level props
-                    .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,OData__UIVersionString,markingexternaltax, markingexternaltaxsystemid,classificationexternaltax, classificationexternaltaxsystemid),driveItem")
+                    .expand("fields($select=Title,containIODescription,ContAInUUID,LinkFilename,OData__UIVersionString,markingexternaltax, markingexternaltaxsystemid,classificationexternaltax, classificationexternaltaxsystemid, SuggestionClassifier, SuggestedClassification, ClassificationConfidence ),driveItem")
                     .get();
             if (li != null) {
                 try {
@@ -1005,6 +1006,9 @@ public class GraphService {
                         Object title = adm.get("Title");
                         Object filename = driveItem.name;
                         Object description = adm.get("containIODescription");
+                        Object SuggestionClassifier = adm.get("SuggestionClassifier");
+                        Object SuggestedClassification = adm.get("SuggestedClassification");
+                        Object ClassificationConfidence = adm.get("ClassificationConfidence");
                         // Object description = adm.get("Description");
                         if (adm.get("classificationexternaltaxsystemid") != null) {
                             classificationID = adm.get("classificationexternaltaxsystemid").getAsString();
@@ -1020,6 +1024,15 @@ public class GraphService {
                         String titleStr = title != null ? title.toString().replace("\"", "") : "";
                         String filenameStr = filename != null ? filename.toString().replace("\"", "") : "";
                         String descriptionStr = description != null ? description.toString().replace("\"", "") : "";
+                        String SuggestionClassifierStr = SuggestionClassifier != null
+                                ? SuggestionClassifier.toString().replace("\"", "")
+                                : "";
+                        String SuggestedClassificationStr = SuggestedClassification != null
+                                ? SuggestedClassification.toString().replace("\"", "")
+                                : "";
+                        String ClassificationConfidenceStr = ClassificationConfidence != null
+                                ? ClassificationConfidence.toString().replace("\"", "")
+                                : "";
 
                         // FIX APPLIED HERE: Use proper setters or capitalized public fields
                         SPItem.setTitle(titleStr);
@@ -1045,6 +1058,25 @@ public class GraphService {
                         SPItem.classificationID = classificationID;
                         SPItem.classification = classification;
                         SPItem.filecontent = getSPItemContentById(li.id, listId);
+                        ClassificationResult classificationResult = autoClassify.ClassifyIO(SPItem.filecontent);
+                        SPItem.HasSuggestedClassification = !SuggestedClassificationStr.isEmpty();
+                        if (classificationResult != null && SPItem.HasSuggestedClassification) {
+                            SPItem.HasSuggestedClassification = SuggestedClassificationStr
+                                    .equals(classificationResult.label());
+                        }
+                        if (!SPItem.HasSuggestedClassification) {
+                            System.out.println("Suggested classification has changed from "
+                                    + SPItem.Suggestedclassification + " to "
+                                    + classificationResult.label());
+                            SPItem.SuggestedBy = classificationResult.classifier();
+                            SPItem.Suggestedclassification = classificationResult.label();
+                            SPItem.setSuggestedClassificationConfidence(classificationResult.confidence());
+
+                            System.out.println("Suggested classification Result: " + classificationResult.label()
+                                    + " with confidence: "
+                                    + classificationResult.confidence());
+                        }
+
                     } catch (Exception e) {
                         System.err.println("Failed to fetch item ID: " + li + " -> " + e.getMessage());
                         throw e;
@@ -1060,7 +1092,8 @@ public class GraphService {
                                     + " , Marking: " + SPItem.getMarking())
                             + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
-                    System.out.println("Item " + li.id + " marked for move to " + SPItem.getplatformto() + " in container " + SPItem.getcontainerto());
+                    System.out.println("Item " + li.id + " marked for move to " + SPItem.getplatformto()
+                            + " in container " + SPItem.getcontainerto());
                 }
                 return SPItem;
             }
@@ -1120,10 +1153,21 @@ public class GraphService {
                 if (!SPItem.getmustmove() && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
-                if (!SPItem.HasUUID) {
-                    SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId, SPItem.getclassification(),
-                            SPItem.getMarking());
-                    action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+                AlfrescoConstants.eActionPerformed eactionperformed ;
+                if (!SPItem.HasUUID || !SPItem.HasSuggestedClassification) {
+                    eactionperformed = AlfrescoConstants.eActionPerformed.ASSIGNUUID;
+                    if (!SPItem.HasUUID) {
+
+                        SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId, SPItem.getclassification(),
+                                SPItem.getMarking());
+                        action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
+                    }
+                    if (SPItem.HasUUID && SPItem.HasUUID){
+                        eactionperformed = AlfrescoConstants.eActionPerformed.IOSUGGESTEDCLASSIFICATIONUPDATED;
+                        SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId, SPItem.getclassification(),
+                                SPItem.getMarking());
+                        action = "Updated Suggested classification " + SPItem.UUID + "  for SharePoint IO " + SPItem.filename;
+                    }
 
                     IOLog.log(
                             SPItem.UUID,
@@ -1135,7 +1179,7 @@ public class GraphService {
                             "NewOnPlatform",
                             SPItem.filename,
                             "",
-                            AlfrescoConstants.eActionPerformed.ASSIGNUUID,
+                            eactionperformed,
                             "System",
                             SPItem.markingID,
                             SPItem.marking,
@@ -1143,8 +1187,8 @@ public class GraphService {
                             SPItem.classificationID,
                             SPItem.classification,
                             SPItem.getSuggestedBy(),
-                            SPItem.getSuggestedClassification(),    
-                            SPItem.getSuggestedClassificationConfidence(),    
+                            SPItem.getSuggestedClassification(),
+                            SPItem.getSuggestedClassificationConfidence(),
                             SPItem.version);
                     return migrationinfo;
                 }

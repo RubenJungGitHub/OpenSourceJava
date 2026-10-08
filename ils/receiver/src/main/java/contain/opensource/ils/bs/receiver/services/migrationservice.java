@@ -21,6 +21,7 @@ public class migrationservice {
     private final AlfrescoNodeController AlfrescoNodeController;
     // private final KieServicesClient Kieserviceclient;
 
+    
     public class RelocateInformationDTO implements Serializable {
         private static final long serialVersionUID = 1L;
 
