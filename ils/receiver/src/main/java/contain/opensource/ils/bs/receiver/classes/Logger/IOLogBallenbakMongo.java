@@ -19,6 +19,15 @@ public class IOLogBallenbakMongo {
     private String marking;
     private String markingID;
 
+    @Field("SuggestionClassifier")
+    private String SuggestionClassifier;
+
+    @Field("SuggestedClassification")
+    private String SuggestedClassification;
+
+    @Field("ClassificationConfidence")
+    private Double ClassificationConfidence;
+
     @Field("classification")
     private String classification;
 
@@ -81,6 +90,10 @@ public class IOLogBallenbakMongo {
     public void setPath(String path) { this.path = path; }
     public void setMarking(String marking) { this.marking = marking; }
     public void setMarkingID(String markingID) { this.markingID = markingID; }
+
+    public void setSuggestionClassifier(String SuggestionClassifier) { this.SuggestionClassifier = SuggestionClassifier; }
+    public void setSuggestedClassification(String SuggestedClassification) { this.SuggestedClassification = SuggestedClassification; }
+    public void setClassificationConfidence(Double ClassificationConfidence) { this.ClassificationConfidence = ClassificationConfidence; }
     public void setClassification(String classification) { this.classification = classification; }
     public void setClassificationID(String classificationID) { this.classificationID = classificationID; }
     public void setVersion(String version) { this.version = version; }

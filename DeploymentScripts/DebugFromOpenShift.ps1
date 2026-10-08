@@ -1,4 +1,4 @@
-﻿$token  = 'sha256~j9Fb7romHI4YbZukHMv7tgWpDBLfOxKjCjItdLxuPf4'
+﻿$token  = 'sha256~T4_8dygydRzjV_RR8e8OMd0gb38n1XfrOBOKDeIWWAo'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 cls

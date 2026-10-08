@@ -68,6 +68,9 @@ public class IOLog {
                     MarkingID,
                     ClassificationID,
                     Classification,
+                    SuggestionClassifier,
+                    SuggestedClassification,
+                    ClassificationConfidence,
                     version);
 
         } catch (Exception ex) {

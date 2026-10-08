@@ -736,10 +736,18 @@ public class AlfrescoNodeController {
               .path("contain:EXTTAXCLASSIFICATIONID")
               .asText();
 
+          alfresconNodeResponse.SuggestedBy = rootNode.path("entry")
+              .path("properties")
+              .path("contain:AUTOCLASSIFIER")
+              .asText();
           alfresconNodeResponse.Suggestedclassification = rootNode.path("entry")
               .path("properties")
               .path("contain:SUGGESTEDCLASSIFICATIONVAL")
               .asText();
+
+          alfresconNodeResponse.SuggestedclassificationConfidence = rootNode.path("entry")
+              .path("properties")
+              .path("contain:SUGGESTEDCLASSIFICATIONCONFIDENCE").asDouble();
 
           alfresconNodeResponse.classificationID = rootNode.path("entry")
               .path("properties")
@@ -869,7 +877,7 @@ public class AlfrescoNodeController {
     String url = "http://localhost:8080/api/v1/classifyllamaService";
 
     // GeminiEndpoint
-    // String url = "http://localhost:8080/api/v1/classifygeminiservice";
+    //String url = "http://localhost:8080/api/v1/classifygeminiservice";
 
     // 1. Geef aan dat het om een raw binary stream gaat
     HttpHeaders headers = new HttpHeaders();
