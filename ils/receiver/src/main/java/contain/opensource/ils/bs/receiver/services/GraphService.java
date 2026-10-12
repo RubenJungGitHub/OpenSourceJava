@@ -180,58 +180,76 @@ public class GraphService {
         return graphClient;
     }
 
-    public static String updateSharepointItemGraphAPI(
-            @Parameter(description = "List Item ID") @RequestParam String listItemId,
-            @Parameter(description = "List ID") @RequestParam String ListId,
-            @Parameter(description = "classification") @RequestParam String classification,
-            @Parameter(description = "Marking") @RequestParam String marking) {
+    // public static String updateSharepointItemGraphAPI(
+    // @Parameter(description = "List Item ID") @RequestParam String listItemId,
+    // @Parameter(description = "List ID") @RequestParam String ListId,
+    // @Parameter(description = "classification") @RequestParam String
+    // classification,
+    // @Parameter(description = "Marking") @RequestParam String marking,
+    // @Parameter(description = "SuggestedBy") @RequestParam String SuggestedBy,
+    // @Parameter(description = "Suggestedclassification") @RequestParam String
+    // Suggestedclassification,
+    // @Parameter(description = "SuggestedClassificationConfidence") @RequestParam
+    // String SuggestedClassificationConfidence)
+    public static String updateSharepointItemGraphAPI(@Parameter(description = "List ID") @RequestParam String ListId,
+            @Parameter(description = "SPItem") @RequestParam SharePointItemResponse SPItem) {
 
         try {
             if (accessToken == null || accessToken.isEmpty()) {
                 accessToken = getGraphToken();
             }
-
-            // First obtain new UUID and accesstoken
+            HttpClient client = HttpClient.newHttpClient();
+            Map<String, Object> body = new HashMap<>();
             String uuid = "";
-            // String uuid =
-            // UUIDUtil.getUUIDOverHTTP(Optional.of(AlfrescoConstants.ContainPlatforms.SPO));
-            System.out.println(
-                    AlfrescoConstants.RED + "Get UUID endpoint  : "
-                            + ILSProperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
+            if (!SPItem.HasUUID) {
+                // First obtain new UUID and accesstoken
 
-            String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.SPO;
+                System.out.println(
+                        AlfrescoConstants.RED + "Get UUID endpoint  : "
+                                + ILSProperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
 
-            String urlString = ILSProperties.getuudiutilendpoint() + query;
+                String query = "?prefix=" + AlfrescoConstants.ContainPlatforms.SPO;
 
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+                String urlString = ILSProperties.getuudiutilendpoint() + query;
 
-            int status = conn.getResponseCode();
-            System.out.println(
-                    "Accessing uuid rest url on " + ILSProperties.getuudiutilendpoint() + " return code -> " + status);
+                URL url = new URL(urlString);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
 
-            if (status == 200) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                uuid = in.readLine(); // assuming API returns plain UUID
-                in.close();
+                int status = conn.getResponseCode();
+                System.out.println(
+                        "Accessing uuid rest url on " + ILSProperties.getuudiutilendpoint() + " return code -> "
+                                + status);
+
+                if (status == 200) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    uuid = in.readLine(); // assuming API returns plain UUID
+                    in.close();
+                    // Build payload to update Title and ObjectClassificationText
+                    body.put("ContAInUUID", uuid);
+                    body.put("markingexternaltax", SPItem.getMarking());
+                    body.put("classificationexternaltax", SPItem.getclassification());
+                    body.put("Title", "Test Updated Document Title from JaVa code");
+                    body.put("SuggestionClassifier", SPItem.getSuggestedBy());
+                    body.put("SuggestedClassification", SPItem.getSuggestedClassification());
+                    body.put("ClassificationConfidence", SPItem.getSuggestedClassificationConfidence());
+
+                }
+            } else {
+                uuid = SPItem.UUID;
             }
 
-            HttpClient client = HttpClient.newHttpClient();
-
-            // Build payload to update Title and ObjectClassificationText
-            Map<String, Object> body = new HashMap<>();
-            body.put("ContAInUUID", uuid);
-            body.put("markingexternaltax", marking);
-            body.put("classificationexternaltax", classification);
-            body.put("Title", "Test Updated Document Title from JaVa code");
-            // body.put("ObjectClassificationText", "Changed from Java");
+            if (SPItem.HasUUID && !SPItem.HasSuggestedClassification) {
+                body.put("SuggestionClassifier", SPItem.getSuggestedBy());
+                body.put("SuggestedClassification", SPItem.getSuggestedClassification());
+                body.put("ClassificationConfidence", SPItem.getSuggestedClassificationConfidence());
+            }
 
             String json = mapper.writeValueAsString(body);
 
             String endpoint = String.format(
                     "https://graph.microsoft.com/v1.0/sites/%s/lists/%s/items/%s/fields",
-                    SiteID, ListId, listItemId);
+                    SiteID, ListId, SPItem.id);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
@@ -245,7 +263,7 @@ public class GraphService {
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 System.out.println(contain.opensource.shared.constants.AlfrescoConstants.MAGENTA
-                        + "UUID assigned updated successfully to : " + listItemId
+                        + "UUID assigned updated successfully to : " + SPItem.id
                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                 // Cahc in Redis
                 // RedisManager.putHash("IOinUUIDAssigned", "IOinUUIDAssigned" + uuid,
@@ -1055,10 +1073,20 @@ public class GraphService {
                         SPItem.version = latestVersion.id;
                         SPItem.markingID = markingID;
                         SPItem.marking = marking;
+                        SPItem.SuggestedBy = SuggestedClassificationStr;
+                        SPItem.Suggestedclassification = SuggestedClassificationStr;
+                        if (ClassificationConfidenceStr != null && !ClassificationConfidenceStr.isEmpty()) {
+                            SPItem.setSuggestedClassificationConfidence(
+                                    Double.parseDouble(ClassificationConfidenceStr));
+                        }
                         SPItem.classificationID = classificationID;
                         SPItem.classification = classification;
                         SPItem.filecontent = getSPItemContentById(li.id, listId);
                         ClassificationResult classificationResult = autoClassify.ClassifyIO(SPItem.filecontent);
+                        System.out.println("Suggested classification Result: " + classificationResult.label()
+                                + " with confidence: "
+                                + classificationResult.confidence());
+                        // Check if SUggestedclassification is deined to Item
                         SPItem.HasSuggestedClassification = !SuggestedClassificationStr.isEmpty();
                         if (classificationResult != null && SPItem.HasSuggestedClassification) {
                             SPItem.HasSuggestedClassification = SuggestedClassificationStr
@@ -1153,21 +1181,23 @@ public class GraphService {
                 if (!SPItem.getmustmove() && SPItem.HasUUID) {
                     System.out.println("Changes detected on item : " + SPItem.id + " , only rebind required.");
                 }
-                AlfrescoConstants.eActionPerformed eactionperformed ;
+                // This definatley can become more efficient. If UUID is uploaded also Suggested
+                // values can
+                AlfrescoConstants.eActionPerformed eactionperformed = AlfrescoConstants.eActionPerformed.ASSIGNUUID;
                 if (!SPItem.HasUUID || !SPItem.HasSuggestedClassification) {
-                    eactionperformed = AlfrescoConstants.eActionPerformed.ASSIGNUUID;
                     if (!SPItem.HasUUID) {
-
-                        SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId, SPItem.getclassification(),
-                                SPItem.getMarking());
+                        // SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId,
+                        // SPItem.getclassification(),
+                        // SPItem.getMarking(), SPItem.SuggestedBy, SPItem.Suggestedclassification,
+                        // SPItem.SuggestedclassificationConfidence);
                         action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
                     }
-                    if (SPItem.HasUUID && SPItem.HasUUID){
+                    if (SPItem.HasUUID && !SPItem.HasSuggestedClassification) {
                         eactionperformed = AlfrescoConstants.eActionPerformed.IOSUGGESTEDCLASSIFICATIONUPDATED;
-                        SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId, SPItem.getclassification(),
-                                SPItem.getMarking());
-                        action = "Updated Suggested classification " + SPItem.UUID + "  for SharePoint IO " + SPItem.filename;
+                        action = "Updated Suggested classification " + SPItem.UUID + "  for SharePoint IO "
+                                + SPItem.filename;
                     }
+                    SPItem.UUID = updateSharepointItemGraphAPI(ListId, SPItem);
 
                     IOLog.log(
                             SPItem.UUID,

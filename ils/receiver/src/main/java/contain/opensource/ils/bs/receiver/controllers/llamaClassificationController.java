@@ -76,7 +76,7 @@ public class llamaClassificationController {
 
         String labelsList = "";
         StringBuilder sb = new StringBuilder();
-        sb.append("- Failed to retrieve labels").append("\n");
+        sb.append("- Unable to classify content").append("\n");
         if (taxonomy != null && taxonomy.options != null) {
             for (var option : taxonomy.options) {
                 sb.append("- ").append(option.label).append("\n");
