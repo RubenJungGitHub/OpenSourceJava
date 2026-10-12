@@ -1073,7 +1073,7 @@ public class GraphService {
                         SPItem.version = latestVersion.id;
                         SPItem.markingID = markingID;
                         SPItem.marking = marking;
-                        SPItem.SuggestedBy = SuggestedClassificationStr;
+                        SPItem.SuggestedBy = SuggestionClassifierStr;
                         SPItem.Suggestedclassification = SuggestedClassificationStr;
                         if (ClassificationConfidenceStr != null && !ClassificationConfidenceStr.isEmpty()) {
                             SPItem.setSuggestedClassificationConfidence(
