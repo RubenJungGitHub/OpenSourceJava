@@ -1190,6 +1190,7 @@ public class GraphService {
                         // SPItem.getclassification(),
                         // SPItem.getMarking(), SPItem.SuggestedBy, SPItem.Suggestedclassification,
                         // SPItem.SuggestedclassificationConfidence);
+                        SPItem.UUID = updateSharepointItemGraphAPI(ListId, SPItem);
                         action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
                     }
                     if (SPItem.HasUUID && !SPItem.HasSuggestedClassification) {
@@ -1197,7 +1198,7 @@ public class GraphService {
                         action = "Updated Suggested classification " + SPItem.UUID + "  for SharePoint IO "
                                 + SPItem.filename;
                     }
-                    SPItem.UUID = updateSharepointItemGraphAPI(ListId, SPItem);
+                    
 
                     IOLog.log(
                             SPItem.UUID,

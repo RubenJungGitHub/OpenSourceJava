@@ -52,8 +52,9 @@ public class LocalLlamaService {
             // Log de echte foutmelding in je terminal voor debug-doeleinden
             System.err.println("Ollama aanroep mislukt: " + e.getMessage());
             e.printStackTrace();
+            return e.getMessage();
         }
 
-        return "UNKNOWN";
+        return "Unknown";
     }
 }
