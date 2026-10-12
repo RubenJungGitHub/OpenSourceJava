@@ -939,6 +939,9 @@ public class AlfrescoNodeController {
         case AlfrescoConstants.NodeTypeFields.Title:
           action = "To do title update for ballenbak registration";
           jsonPropertiesBlock = String.format("\"cm:title\": \"%s\"", propertyValue);
+
+
+          //Debug
           if (jsonPropertiesBlock.contains("Dummy")) {
             System.out.println("Warning: The properties block contains a Dummy value!");
           }
