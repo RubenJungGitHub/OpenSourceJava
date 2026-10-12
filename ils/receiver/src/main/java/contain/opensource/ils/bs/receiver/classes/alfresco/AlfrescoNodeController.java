@@ -950,13 +950,13 @@ public class AlfrescoNodeController {
 
           // Gebruik hier direct de getter van je object:
           // confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
-
+          propertyValue = alfresconNodeResponse.UUID;
           action = "Assign Suggested Classification " + classVal + " and Confidence " + confVal + " to Alfresco IO "
               + this.alfresconNodeResponse.entry.filename;
 
           jsonPropertiesBlock = String.format(
               "\"contain:IOUUID\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\",\n              \"contain:AUTOCLASSIFIER\": \"%s\"",
-              alfresconNodeResponse.UUID, classVal, confVal, classifier);
+              propertyValue, classVal, confVal, classifier);
           break;
 
         default:
