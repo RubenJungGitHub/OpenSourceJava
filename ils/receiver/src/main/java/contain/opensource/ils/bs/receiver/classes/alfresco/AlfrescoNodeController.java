@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.net.URL;
 import java.net.URI;
 
-
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -765,7 +764,8 @@ public class AlfrescoNodeController {
               .path("mimeType")
               .asText();
 
-        //  Object ioUUIDValue = alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
+          // Object ioUUIDValue =
+          // alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
           Object ioUUIDValue = rootNode.path("entry")
               .path("properties")
               .path("contain:IOUUID")
@@ -844,7 +844,7 @@ public class AlfrescoNodeController {
       this.alfresconNodeResponse.content = in.readAllBytes();
 
       // 1. Haal het ClassificationResult object op
-      classificationResult = autoClassify.ClassifyIO(this.alfresconNodeResponse.content)  ;
+      classificationResult = autoClassify.ClassifyIO(this.alfresconNodeResponse.content);
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
@@ -889,11 +889,7 @@ public class AlfrescoNodeController {
 
       String Path = IOPath.orElse("Unknown");
       String propertyValue = fieldValue.orElse("Dummy");
-      if(propertyValue.equals("Dummy"))
-      {
-          System.out.println("No property value provided, using default 'Dummy'");
 
-      }
       String action = "";
       String jsonPropertiesBlock = "";
       String classVal = this.alfresconNodeResponse.Suggestedclassification;
@@ -936,12 +932,17 @@ public class AlfrescoNodeController {
           jsonPropertiesBlock = String.format(
               "\"contain:IOUUID\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\",\n              \"contain:AUTOCLASSIFIER\": \"%s\"",
               propertyValue, classVal, confVal, classifier);
+
           this.alfresconNodeResponse.UUID = propertyValue;
           break;
 
         case AlfrescoConstants.NodeTypeFields.Title:
           action = "To do title update for ballenbak registration";
           jsonPropertiesBlock = String.format("\"cm:title\": \"%s\"", propertyValue);
+          if (jsonPropertiesBlock.contains("Dummy")) {
+            System.out.println("Warning: The properties block contains a Dummy value!");
+          }
+
           break;
 
         case AlfrescoConstants.NodeTypeFields.SuggestedClassification:
@@ -955,7 +956,7 @@ public class AlfrescoNodeController {
 
           jsonPropertiesBlock = String.format(
               "\"contain:IOUUID\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n              \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\",\n              \"contain:AUTOCLASSIFIER\": \"%s\"",
-              propertyValue, classVal, confVal, classifier);
+              alfresconNodeResponse.UUID, classVal, confVal, classifier);
           break;
 
         default:
@@ -1007,8 +1008,8 @@ public class AlfrescoNodeController {
               this.alfresconNodeResponse.classification = this.taxonomyServiceClient
                   .GetTaxLabel(this.alfresconNodeResponse.classificationID),
               this.alfresconNodeResponse.getSuggestedBy(),
-              this.alfresconNodeResponse.getSuggestedClassification(),  
-              this.alfresconNodeResponse.getSuggestedClassificationConfidence(),  
+              this.alfresconNodeResponse.getSuggestedClassification(),
+              this.alfresconNodeResponse.getSuggestedClassificationConfidence(),
               this.alfresconNodeResponse.version);
 
           System.out.println("Node updated successfully:");
