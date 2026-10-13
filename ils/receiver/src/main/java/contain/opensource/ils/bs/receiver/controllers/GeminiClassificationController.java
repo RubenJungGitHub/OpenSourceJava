@@ -16,6 +16,7 @@ import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 
 import org.springframework.stereotype.Component;
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 @RestController
@@ -80,7 +81,16 @@ public class GeminiClassificationController {
 
             // 3. Roep Gemini aan
             String suggestedLabel = geminiReceiverService.evaluate(prompt);
-            if (!suggestedLabel.equalsIgnoreCase(labelsList)) {
+            List<String> validLabels = Arrays.asList(labelsList.split("\n"));
+            boolean isValid = false;
+
+            for (String validLabel : validLabels) {
+                if (validLabel.trim().equalsIgnoreCase(suggestedLabel.trim())) {
+                    isValid = true;
+                    break;
+                }
+            }
+            if (!isValid) {
                 suggestedLabel = "No valid label detected : unable to classify";
             }
 

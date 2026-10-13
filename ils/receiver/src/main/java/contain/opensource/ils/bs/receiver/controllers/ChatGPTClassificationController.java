@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -103,7 +104,16 @@ public class ChatGPTClassificationController {
 
         // 6. Query LLM
         String suggestedLabel = chatgptservice.evaluate(prompt);
-        if (!suggestedLabel.equalsIgnoreCase(labelsList)) {
+        List<String> validLabels = Arrays.asList(labelsList.split("\n"));
+        boolean isValid = false;
+
+        for (String validLabel : validLabels) {
+            if (validLabel.trim().equalsIgnoreCase(suggestedLabel.trim())) {
+                isValid = true;
+                break;
+            }
+        }
+        if (!isValid) {
             suggestedLabel = "No valid label detected : unable to classify";
         }
         ClassificationResult result = new ClassificationResult("chatGPTClassifier", suggestedLabel, 0.95, "SUCCESS");
