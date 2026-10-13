@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 
 import org.springframework.stereotype.Component;
+import java.util.Arrays;
 
 @Component
 @RestController
@@ -54,13 +55,17 @@ public class GeminiClassificationController {
 
             String labelsList = "";
             StringBuilder sb = new StringBuilder();
-            sb.append("- Unable to classify content").append("\n");
             if (taxonomy != null && taxonomy.options != null) {
-                                for (var option : taxonomy.options) {
+                for (var option : taxonomy.options) {
                     sb.append("- ").append(option.label).append("\n");
                 }
-                labelsList = sb.toString().trim();
             }
+
+            labelsList = Arrays.stream(sb.toString().split("\n"))
+                    .map(line -> line.trim())
+                    .filter(line -> !line.toLowerCase().contains("unable to classify content"))
+                    .filter(line -> !line.toLowerCase().contains("unclassified"))
+                    .collect(Collectors.joining("\n"));
 
             // 2. Bouw de prompt dynamisch op met .formatted()
             String prompt = """
@@ -75,11 +80,14 @@ public class GeminiClassificationController {
 
             // 3. Roep Gemini aan
             String suggestedLabel = geminiReceiverService.evaluate(prompt);
+            if (!suggestedLabel.equalsIgnoreCase(labelsList)) {
+                suggestedLabel = "No valid label detected : unable to classify";
+            }
 
             if (suggestedLabel != null) {
                 suggestedLabel = suggestedLabel.replaceAll("[^a-zA-Z]", "").trim();
             } else {
-                suggestedLabel = "Unclassified";
+                suggestedLabel = "No label determined";
             }
 
             return ResponseEntity.ok(new ClassificationResult("Gemini", suggestedLabel, 0.95, "SUCCESS"));

@@ -12,11 +12,19 @@ public class AutoCLassify {
     RestTemplate restTemplate = new RestTemplate();
     // FROM CONFIG!!!!!! (Let op: hier zou tzt de URL van je eigen service of
     // cluster kunnen staan)
-    // lamaservieEndpoint
+
+    // lamaservieEndpoint. Text generator in OS pod. No licence but inconsistant and unreliable responds. 
     String url = "http://localhost:8080/api/v1/classifyllamaService";
 
     // GeminiEndpoint
+    //Very limited usage without payed account (Approx 10 / 24 hours) before 429 too many requests.  
     //String url = "http://localhost:8080/api/v1/classifygeminiservice";
+
+
+    // chatgptservieEndpoint
+    //No use without payed account
+    //String url = "http://localhost:8080/api/v1/chatgptService";
+
 
     // 1. Geef aan dat het om een raw binary stream gaat
     HttpHeaders headers = new HttpHeaders();

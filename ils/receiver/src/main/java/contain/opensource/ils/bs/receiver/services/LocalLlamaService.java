@@ -27,13 +27,19 @@ public class LocalLlamaService {
         requestBody.put("prompt", promptText);
         requestBody.put("stream", false);
 
+        // --- FORCE DETERMINISTIC RESULTS ---
+        Map<String, Object> options = new HashMap<>();
+        options.put("temperature", 0.0); // 0.0 = Geen creativiteit, puur voorspelbaar
+        options.put("seed", 42); // Vaste seed voor consistente random-generatie
+        requestBody.put("options", options);
+        // -----------------------------------
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         try {
-            // Specificeer Map<String, Object> op de ResponseEntity
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                     ollamaApiUrl,
                     org.springframework.http.HttpMethod.POST,
@@ -49,12 +55,11 @@ public class LocalLlamaService {
                 }
             }
         } catch (Exception e) {
-            // Log de echte foutmelding in je terminal voor debug-doeleinden
             System.err.println("Ollama aanroep mislukt: " + e.getMessage());
             e.printStackTrace();
             return e.getMessage();
         }
 
-        return "Unknown";
+        return "UNKNOWN";
     }
 }

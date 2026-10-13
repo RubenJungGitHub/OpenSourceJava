@@ -80,6 +80,9 @@ spec:
               value: "/app/data/storeddeltalinks.csv"
             - name: GEMINI_API_KEY
               value: "AQ.Ab8RN6KJQvQzYv9luncDlykEQGQTHlq-TTVo2yh5YFfvpXvavQ"
+            - name: OPENAI_API_KEY
+              value: "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"
+
           image: 'ghcr.io/rubenjunggithub/ils-receiver:v1.0'
           imagePullPolicy: Always
           name: receiver

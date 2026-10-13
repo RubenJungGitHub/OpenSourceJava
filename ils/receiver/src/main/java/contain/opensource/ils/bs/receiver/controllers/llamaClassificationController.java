@@ -12,7 +12,9 @@ import java.io.ByteArrayInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import java.util.Base64;
+import java.util.stream.Collectors;
 import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -76,13 +78,17 @@ public class llamaClassificationController {
 
         String labelsList = "";
         StringBuilder sb = new StringBuilder();
-        sb.append("- Unable to classify content").append("\n");
         if (taxonomy != null && taxonomy.options != null) {
             for (var option : taxonomy.options) {
                 sb.append("- ").append(option.label).append("\n");
             }
-            labelsList = sb.toString().trim();
         }
+
+        labelsList = Arrays.stream(sb.toString().split("\n"))
+                .map(line -> line.trim())
+                .filter(line -> !line.toLowerCase().contains("unable to classify content"))
+                .filter(line -> !line.toLowerCase().contains("unclassified"))
+                .collect(Collectors.joining("\n"));
 
         // 2. Bouw de prompt dynamisch op met .formatted()
         String prompt = """
@@ -97,6 +103,10 @@ public class llamaClassificationController {
 
         // 6. Query LLM
         String suggestedLabel = llamaService.evaluate(prompt);
+
+        if (!suggestedLabel.equalsIgnoreCase(labelsList)) {
+            suggestedLabel = "No valid label detected : unable to classify";
+        }
         ClassificationResult result = new ClassificationResult("llamaclassifier", suggestedLabel, 0.95, "SUCCESS");
 
         return ResponseEntity.ok(result);

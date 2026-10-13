@@ -1221,7 +1221,7 @@ public class GraphService {
                             SPItem.getSuggestedClassification(),
                             SPItem.getSuggestedClassificationConfidence(),
                             SPItem.version);
-                    return migrationinfo;
+                    //return migrationinfo;
                 }
                 BindObject(SPItem);
                 return migrationinfo;

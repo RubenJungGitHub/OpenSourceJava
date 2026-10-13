@@ -38,6 +38,11 @@ gemini:
   api:
     key: "AQ.Ab8RN6KJQvQzYv9luncDlykEQGQTHlq-TTVo2yh5YFfvpXvavQ"
 
+
+openai:
+  api:
+    key: "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"
+
 alfresco:
   username: admin
   password: admin
