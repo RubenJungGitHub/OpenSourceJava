@@ -44,7 +44,7 @@ public class GeminiClassificationController {
             String extractedText = tika.parseToString(new ByteArrayInputStream(content)).trim();
 
             if (extractedText.isBlank()) {
-                return ResponseEntity.ok(new ClassificationResult("Gemini", "Unclassified", 0.0, "EMPTY_CONTENT"));
+                return ResponseEntity.ok(new ClassificationResult("Gemini", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT"));
             }
 
             if (extractedText.length() > 4000) {
@@ -64,7 +64,6 @@ public class GeminiClassificationController {
 
             labelsList = Arrays.stream(sb.toString().split("\n"))
                     .map(line -> line.trim())
-                    .filter(line -> !line.toLowerCase().contains("unable to classify content"))
                     .filter(line -> !line.toLowerCase().contains("unclassified"))
                     .collect(Collectors.joining("\n"));
 
@@ -83,9 +82,9 @@ public class GeminiClassificationController {
             String suggestedLabel = geminiReceiverService.evaluate(prompt);
             List<String> validLabels = Arrays.asList(labelsList.split("\n"));
             boolean isValid = false;
-
             for (String validLabel : validLabels) {
-                if (validLabel.trim().equalsIgnoreCase(suggestedLabel.trim())) {
+                String cleanValidLabel = validLabel.replaceFirst("^-\\s*", "").trim();
+                if (cleanValidLabel.equalsIgnoreCase(suggestedLabel.trim())) {
                     isValid = true;
                     break;
                 }

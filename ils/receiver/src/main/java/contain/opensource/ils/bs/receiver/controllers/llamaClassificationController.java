@@ -65,7 +65,7 @@ public class llamaClassificationController {
 
         System.out.println("Extracted text to be classified : " + extractedText);
         if (extractedText.isBlank()) {
-            return ResponseEntity.ok(new ClassificationResult("llamaclassifier", "Unclassified", 0.0, "EMPTY_CONTENT"));
+            return ResponseEntity.ok(new ClassificationResult("llamaclassifier", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT"));
         }
 
         // 4. Truncation: voorkom dat hele lange documenten het LLM context window laten
@@ -109,7 +109,8 @@ public class llamaClassificationController {
         boolean isValid = false;
 
         for (String validLabel : validLabels) {
-            if (validLabel.trim().equalsIgnoreCase(suggestedLabel.trim())) {
+            String cleanValidLabel = validLabel.replaceFirst("^-\\s*", "").trim();
+            if (cleanValidLabel.equalsIgnoreCase(suggestedLabel.trim())) {
                 isValid = true;
                 break;
             }
