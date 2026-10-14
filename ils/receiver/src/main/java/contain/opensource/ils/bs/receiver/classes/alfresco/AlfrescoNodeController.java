@@ -542,6 +542,7 @@ public class AlfrescoNodeController {
             + alfrescoresponse.getplatformto() + " ->" + alfrescoresponse.getcontainerto());
       }
       boolean SuggestedClassificationUpdateResult;
+      boolean bindIO = true;
       // =
       // UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,Optional.ofNullable(secondpath),
       // Optional.empty());
@@ -549,14 +550,17 @@ public class AlfrescoNodeController {
       if (!alfrescoresponse.HasUUID) {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
-            BindObject(alfrescoresponse);
+
       } else {
         if (!alfrescoresponse.HasSuggestedClassification) {
           SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,
               Optional.ofNullable(secondpath), Optional.empty());
+          bindIO = false;
         }
       }
-
+      if (bindIO) {
+        BindObject(alfrescoresponse);
+      }
     } catch (Exception ex) {
       System.err.println("Failed to process changed SP item: " + ex);
       ex.printStackTrace();
@@ -902,8 +906,10 @@ public class AlfrescoNodeController {
       Double confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
       String classifier = this.alfresconNodeResponse.SuggestedBy;
       eActionPerformed actionperformed;
+      String pkihash = "";
       switch (field) {
         case AlfrescoConstants.NodeTypeFields.UUID:
+          pkihash = "NewOnPlatform";
           actionperformed = eActionPerformed.ASSIGNUUID;
           System.out.println(
               AlfrescoConstants.RED + "Get UUID endpoint  : "
@@ -957,6 +963,7 @@ public class AlfrescoNodeController {
           break;
 
         case AlfrescoConstants.NodeTypeFields.SuggestedClassification:
+          pkihash = "Identical to previous";
           // classVal = this.alfresconNodeResponse.Suggestedclassification;
           actionperformed = eActionPerformed.IOSUGGESTEDCLASSIFICATIONUPDATED;
           // Gebruik hier direct de getter van je object:
@@ -1007,7 +1014,7 @@ public class AlfrescoNodeController {
               action,
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
               AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-              "NewOnPlatform",
+              pkihash,
               this.alfresconNodeResponse.entry.filename,
               jsonBody,
               actionperformed,
