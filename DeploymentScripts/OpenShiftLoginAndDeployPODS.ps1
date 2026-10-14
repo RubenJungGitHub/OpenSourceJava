@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~YwUAqyYdFpSChkL2KD65RkNZsUJICPauuLUKZOTYnFM'
+$token  = 'sha256~3fmvzKmtYnPs3r_kOQXpgYFR3w-MuJQamLRFh2AI1Mc'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 

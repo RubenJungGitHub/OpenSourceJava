@@ -549,13 +549,14 @@ public class AlfrescoNodeController {
       if (!alfrescoresponse.HasUUID) {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
+            BindObject(alfrescoresponse);
       } else {
         if (!alfrescoresponse.HasSuggestedClassification) {
           SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,
               Optional.ofNullable(secondpath), Optional.empty());
         }
       }
-      BindObject(alfrescoresponse);
+
     } catch (Exception ex) {
       System.err.println("Failed to process changed SP item: " + ex);
       ex.printStackTrace();
@@ -701,6 +702,11 @@ public class AlfrescoNodeController {
         try {
           alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
           alfresconNodeResponse.setplatformfrom(AlfrescoConstants.ContainPlatforms.ALFRESCO);
+
+          alfresconNodeResponse.filename = rootNode.path("entry")
+              .path("name")
+              .asText();
+
           alfresconNodeResponse.Title = rootNode.path("entry")
               .path("properties")
               .path("cm:title")
@@ -895,8 +901,10 @@ public class AlfrescoNodeController {
       String classVal = this.alfresconNodeResponse.Suggestedclassification;
       Double confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
       String classifier = this.alfresconNodeResponse.SuggestedBy;
+      eActionPerformed actionperformed;
       switch (field) {
         case AlfrescoConstants.NodeTypeFields.UUID:
+          actionperformed = eActionPerformed.ASSIGNUUID;
           System.out.println(
               AlfrescoConstants.RED + "Get UUID endpoint  : "
                   + ilsproperties.getuudiutilendpoint() + AlfrescoConstants.RESET);
@@ -937,11 +945,11 @@ public class AlfrescoNodeController {
           break;
 
         case AlfrescoConstants.NodeTypeFields.Title:
+          actionperformed = eActionPerformed.TITLECHANGE;
           action = "To do title update for ballenbak registration";
           jsonPropertiesBlock = String.format("\"cm:title\": \"%s\"", propertyValue);
 
-
-          //Debug
+          // Debug
           if (jsonPropertiesBlock.contains("Dummy")) {
             System.out.println("Warning: The properties block contains a Dummy value!");
           }
@@ -950,7 +958,7 @@ public class AlfrescoNodeController {
 
         case AlfrescoConstants.NodeTypeFields.SuggestedClassification:
           // classVal = this.alfresconNodeResponse.Suggestedclassification;
-
+          actionperformed = eActionPerformed.IOSUGGESTEDCLASSIFICATIONUPDATED;
           // Gebruik hier direct de getter van je object:
           // confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
           propertyValue = alfresconNodeResponse.UUID;
@@ -1002,7 +1010,7 @@ public class AlfrescoNodeController {
               "NewOnPlatform",
               this.alfresconNodeResponse.entry.filename,
               jsonBody,
-              eActionPerformed.ASSIGNUUID,
+              actionperformed,
               alfresconNodeResponse.entry.modifiedByUser.displayName,
               this.alfresconNodeResponse.markingID,
               this.alfresconNodeResponse.marking = this.taxonomyServiceClient

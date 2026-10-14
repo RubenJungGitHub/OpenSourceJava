@@ -121,6 +121,7 @@ public class AlfrescoConstants {
         COPIEDUUID,
         IODELETED,
         IOBOUND,
-        IOSUGGESTEDCLASSIFICATIONUPDATED
+        IOSUGGESTEDCLASSIFICATIONUPDATED,
+        TITLECHANGE,
     }
 }
