@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~3fmvzKmtYnPs3r_kOQXpgYFR3w-MuJQamLRFh2AI1Mc'
+$token  = 'sha256~dNY4GiaEihSYzpTkSUYjsheC-ZYpIoSg_y-M_9RccdM'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -40,8 +40,8 @@ oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-"
 # Define which components to process in this run
 $PODS = @(
     #-------------------------------------------
-    #"Postgres",
-    #"Alfresconew"
+    "Postgres",
+    "Alfresconew"
     #-------------------------------------------
     #"ALfrescoupdate"
     #"ActiveMQ"
@@ -54,7 +54,7 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
