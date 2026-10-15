@@ -395,8 +395,8 @@ public class GraphService {
                         this.taxonomyServiceClient.GetTaxLabel(node.markingID.toString()),
                         node.getclassificationID(),
                         this.taxonomyServiceClient.GetTaxLabel(node.classificationID.toString()),
-                        "ToDO",
-                        "ToDO",
+                        "To be processed",
+                        "To be processed",
                         0.0,
                         node.getVersion());
                 // ==========================================================================================

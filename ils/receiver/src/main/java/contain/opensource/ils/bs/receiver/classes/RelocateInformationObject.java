@@ -36,6 +36,9 @@ public class RelocateInformationObject extends IOObjectProperties {
         this.platformfrom = AlfrescoConstants.ContainPlatforms.ALFRESCO;
         this.version = Anode.version;
         this.mimeType = Anode.mimeType;
+        this.SuggestedBy = Anode.SuggestedBy;
+        this.Suggestedclassification = Anode.Suggestedclassification;
+        this.SuggestedclassificationConfidence = Anode.SuggestedclassificationConfidence;
     }
 
     // Constructor for SP
