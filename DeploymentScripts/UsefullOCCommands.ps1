@@ -80,3 +80,12 @@ cls
 $PodName = "Alfresco"
 oc get pods -l io.kompose.service=$PodName
 $pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=200
+
+
+#REDEPLOY ALFRESCO WITH NEW CONFIG MANIFEST
+
+CD D:\contAIn\OpenSourceJava\OpenShift\manifests\Alfresco
+oc apply -f alfresco-deploymentconfig.yaml -n contain-dvl
+#Deletion of old pod will initiate new opod creation on updated manifest
+ oc delete pod -l io.kompose.service=alfresco -n contain-dvl
+oc logs -f dc/alfresco -n contain-dvl | Select-String -Pattern "event.subsystem", "events.repo", "Updated"

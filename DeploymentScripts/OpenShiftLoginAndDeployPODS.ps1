@@ -40,8 +40,8 @@ oc patch sa default --type=json -p='[{"op": "add", "path": "/imagePullSecrets/-"
 # Define which components to process in this run
 $PODS = @(
     #-------------------------------------------
-    "Postgres",
-    "Alfresconew"
+    #"Postgres",
+    #"Alfresconew"
     #-------------------------------------------
     #"ALfrescoupdate"
     #"ActiveMQ"
@@ -55,7 +55,7 @@ $PODS = @(
     #"RHBC",
     #"RHKIE"
     #"Receiver"
-    #"SharePointNotification"
+    "SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
     #'VocBench3'
