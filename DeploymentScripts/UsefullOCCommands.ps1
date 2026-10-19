@@ -89,3 +89,15 @@ oc apply -f alfresco-deploymentconfig.yaml -n contain-dvl
 #Deletion of old pod will initiate new opod creation on updated manifest
  oc delete pod -l io.kompose.service=alfresco -n contain-dvl
 oc logs -f dc/alfresco -n contain-dvl | Select-String -Pattern "event.subsystem", "events.repo", "Updated"
+oc get pods -n contain-dvl --no-headers | Where-Object { $_ -match '-deploy\s' } | ForEach-Object {
+    $podName = ($_.Trim() -split '\s+')[0]
+    Write-Host "Deleting $podName..."
+    oc delete pod $podName -n contain-dvl
+}
+
+#List env variables
+oc exec dc/alfresco -n contain-dvl -- env | Select-String JAVA_OPTS
+
+
+oc scale dc/alfrescoqueuepoller --replicas=0 -n contain-dvl
+oc scale dc/alfrescoqueuepoller --replicas=1 -n contain-dvl

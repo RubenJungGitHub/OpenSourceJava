@@ -69,10 +69,14 @@ spec:
                 -XX:MinRAMPercentage=50 
                 -XX:MaxRAMPercentage=80 
                 -Dtransform.event.enabled=true 
-                -Dtransform.events.async.enabled=true 
-                -Dcontent.metadata.extract.async=false 
-                -Dlogger.org.alfresco.repo.events=DEBUG 
-                -Dlogger.org.alfresco.repo.transaction=DEBUG
+                -Drepo.event2.send.strategy=async
+                -Daudit.enabled=true
+                -Daudit.filter.alfresco-access.enabled=true
+                -Dalfresco.events.node.update.enabled=true
+                -Dalfresco.events.node.metadata.update.enabled=true
+                -Dalfresco.events.node.content.update.enabled=true
+                -Dalfresco.events.node.content.create.enabled=true
+                -Dalfresco.events.node.content.delete.enabled=true
             - name: JAVA_TOOL_OPTIONS
               value: >-
                 -Dencryption.keystore.type=JCEKS
@@ -83,8 +87,6 @@ spec:
                 -Dmetadata-keystore.aliases=metadata
                 -Dmetadata-keystore.metadata.password=oKIWzVdEdA
                 -Dmetadata-keystore.metadata.algorithm=DESede
-                -Dalfresco.events.node.update.enabled=true
-                -Dalfresco.events.node.metadata.update.enabled=true
           image: ghcr.io/rubenjunggithub/alfresco-custom:build-20261015-105131
           securityContext:
             allowPrivilegeEscalation: true

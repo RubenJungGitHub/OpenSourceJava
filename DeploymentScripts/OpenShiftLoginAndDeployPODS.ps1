@@ -55,7 +55,7 @@ $PODS = @(
     #"RHBC",
     #"RHKIE"
     #"Receiver"
-    "SharePointNotification"
+    #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
     #'VocBench3'
