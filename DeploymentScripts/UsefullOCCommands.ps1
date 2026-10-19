@@ -77,13 +77,13 @@ oc exec $sharePod -n contain-dvl -- curl --max-time 5 -I http://alfresco:8082/al
 
 #Get Pod tail logs 
 cls
-oc get pods -n contain-dvl
+#oc get pods -n contain-dvl
 $PodName = "Alfresco"
 oc get pods -l io.kompose.service=$PodName
 $pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]
 
 Write-Host "Detected $pod..."
-oc logs $pod --tail=200
+oc logs $pod --tail=500
 
 
 
@@ -138,3 +138,10 @@ oc exec dc/alfresco -n contain-dvl -- env | Select-String JAVA_OPTS
 
 oc scale dc/alfrescoqueuepoller --replicas=0 -n contain-dvl
 oc scale dc/alfrescoqueuepoller --replicas=1 -n contain-dvl
+
+
+#Fix elastisearch misery
+$esPod = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -match "^elasticsearch" } | Select-Object -First 1) -replace '\s+.*$', ''
+
+Write-Host "Reopening the alfresco index on OpenSearch pod $esPod..." -ForegroundColor Cyan
+oc exec $esPod -n contain-dvl -- curl -X POST "http://localhost:9200/alfresco/_open"
