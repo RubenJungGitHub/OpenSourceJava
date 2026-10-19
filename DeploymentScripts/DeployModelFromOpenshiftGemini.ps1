@@ -12,8 +12,7 @@ $shareExtPath  = "/usr/local/tomcat/shared/classes/alfresco/web-extension/"
 
 $quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
 $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
-
-$token       = 'sha256~eSx4mibiPtW_V-Eh88mjrGcem9srlemkQySqiTpAzsM'
+$token  = 'sha256~GbNSU_r9TgRia0o190w9gCpEwbWRmdawYrxuqGbjZLM'
 $server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project     = "contain-dvl"
 $namespace   = $project

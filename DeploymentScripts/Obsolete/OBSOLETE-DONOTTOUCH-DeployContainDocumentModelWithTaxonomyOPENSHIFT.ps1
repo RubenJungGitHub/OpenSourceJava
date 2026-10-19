@@ -1,17 +1,21 @@
 ﻿cls
 
-
 function Test-AlfrescoReady {
     param($podName, $ns, $maxRetries = 60)
-    Write-Host "Analyzing " $podName " conditions for health..." -ForegroundColor Cyan
-    # Dynamically find the running Alfresco pod name as a strict single string
+    Write-Host "Analyzing $podName conditions for health..." -ForegroundColor Cyan
+    
     $count = 0
     while ($count -lt $maxRetries) {
-        # Fetch full JSON and let PowerShell handle the property lookup cleanly
-        $podsJson = oc get pod alfresco-1-l95kk -n contain-dvl -o json 2>$null | ConvertFrom-Json
-        $conditions = @($podsJson.status.conditions)
+        # FIX: Use the parameters passed into the function ($podName and $ns)
+        $podsJson = oc get pod $podName -n $ns -o json 2>$null | ConvertFrom-Json
+        
+        if ($null -eq $podsJson -or $null -eq $podsJson.status.conditions) {
+            Start-Sleep -Seconds 5
+            $count++
+            continue
+        }
 
-        # Filter for the Ready condition status safely
+        $conditions = @($podsJson.status.conditions)
         $readyStatus = ($conditions | Where-Object { $_.type -eq "Ready" }).status
 
         Write-Host "Ready Status is: '$readyStatus'" -ForegroundColor Yellow
@@ -29,9 +33,8 @@ function Test-AlfrescoReady {
 }
 
 
-
 # --- 1. CONFIGURATION ---
-$projectRoot = "D:\contAIn\taxonomyservice"
+$projectRoot = "D:\contAIn\taxonomyservice\contain-alfresco"
 $namespace = "contain-dvl" # Update with your OpenShift namespace if needed
 $constraintJarPath = "$projectRoot\alfrescointegration\target"
 
@@ -39,7 +42,7 @@ $constraintJarPath = "$projectRoot\alfrescointegration\target"
 $targetLibPath = "/usr/local/tomcat/webapps/alfresco/WEB-INF/lib/"
 $shareExtPath  = "/usr/local/tomcat/shared/classes/alfresco/web-extension/"
 
-$token  = 'sha256~6LAo7RkcnrBsN18oDYIT1fTYE7N4qNwsF_JvlmIgwF8'
+$token  = 'sha256~GbNSU_r9TgRia0o190w9gCpEwbWRmdawYrxuqGbjZLM'
 
 #------------------------------------------------------------------
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'

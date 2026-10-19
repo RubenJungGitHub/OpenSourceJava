@@ -9,7 +9,7 @@
 $projectRoot = "D:\contAIn\alfrescotaxintegration"
 $namespace = "contain-dvl" 
 
-$token  = 'sha256~dNY4GiaEihSYzpTkSUYjsheC-ZYpIoSg_y-M_9RccdM'
+$token  = 'sha256~GbNSU_r9TgRia0o190w9gCpEwbWRmdawYrxuqGbjZLM'
 $server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
 
 # --- GitHub Registry Configuration ---
