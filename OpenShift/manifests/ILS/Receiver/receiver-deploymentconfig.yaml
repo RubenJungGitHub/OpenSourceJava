@@ -32,6 +32,16 @@ spec:
               value: redis
             - name: REDIS_PORT
               value: "6379"
+            - name: ACTIVEMQ_ALFRESCOSOURCE_BROKERURL
+              value: tcp://activemq:61616
+            - name: ACTIVEMQ_MIGRATIONHUB_BROKERURL
+              value: tcp://activemq:61616
+            - name: ACTIVEMQ_ALFRESCOSOURCE_USER
+              value: "admin"
+            - name: ACTIVEMQ_ALFRESCOSOURCE_PASSWORD
+              value: "admin"
+            - name: ACTIVEMQ_ALFRESCOSOURCE_QUEUE
+              value: "Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes"
             - name: APP_KEYSTORE_PATH
               value: /app/config/Containselfsigned_cert.p12
             - name: SPRING_DATASOURCE_PASSWORD

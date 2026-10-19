@@ -134,4 +134,19 @@ public class ILSController {
             return ResponseEntity.internalServerError().body(ex.getMessage());
         }
     }
+
+    @PostMapping(value = "/PushToAlfrescoQueue", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> PushToAlfrescoQueue(
+            @RequestParam String nodeid,
+            @RequestParam String secondpath) {
+        System.out.println(">>> Direct queue push requested for node: " + nodeid);
+        try {
+            // Call your internal ActiveMQ/JMS sender directly here 
+            // (bypassing the migration poll logic)
+            alfrescoNodeController.SendAlfrescoNodeMessageToQueue(nodeid, secondpath);
+            return ResponseEntity.ok().build();
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError().body(ex.getMessage());
+        }
+    }
 }

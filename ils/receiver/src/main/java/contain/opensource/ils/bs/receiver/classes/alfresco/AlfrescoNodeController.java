@@ -7,12 +7,21 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Optional;
 import java.net.URL;
 import java.net.URI;
 
+import jakarta.jms.DeliveryMode;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.Session;
+import jakarta.jms.Connection;
+import jakarta.jms.TextMessage;
+import jakarta.jms.Queue;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -41,6 +50,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import contain.opensource.shared.configurationproperties.ILSRestProperties;
 import contain.opensource.ils.bs.receiver.classes.Logger.IOLog;
+import org.springframework.jms.core.JmsTemplate;
+import org.apache.activemq.ActiveMQConnectionFactory;
 
 import contain.opensource.shared.configurationproperties.AlfrescoProperties;
 import contain.opensource.ils.bs.receiver.classes.RelocateInformationObject;
@@ -50,6 +61,9 @@ import contain.opensource.shared.constants.AlfrescoConstants.NodeTypeFields;
 import contain.opensource.shared.constants.AlfrescoConstants.eActionPerformed;
 import contain.opensource.ils.bs.receiver.services.TaxonomyServiceClient;
 import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
+import contain.opensource.shared.classes.MigrationQueueMessage;
+import contain.opensource.shared.configurationproperties.ActiveMQProperties;
+import contain.opensource.shared.configurationproperties.ActiveMQProperties.BrokerConfig;
 
 @Component
 public class AlfrescoNodeController {
@@ -61,17 +75,23 @@ public class AlfrescoNodeController {
   public AlfrescoNodeResponse alfresconNodeResponse;
   private ILSRestProperties ilsproperties;
   private AlfrescoProperties alfrescoProperties;
+  private ActiveMQProperties activeMQprops;
   private TaxonomyServiceClient taxonomyServiceClient;
   private AutoCLassify autoClassify;
   private CloseableHttpClient httpClient;
   private RestTemplate restTemplate;
 
   // (alongside your other fields like ilsproperties, taxonomyServiceClient, etc.)
+
+  @Autowired
+  private JmsTemplate jmsTemplate;
+
   @Autowired
   public AlfrescoNodeController(
       RestTemplate restTemplate,
       AlfrescoProperties alfrescoProperties,
       ILSRestProperties ilsproperties,
+      ActiveMQProperties activeMQProps,
       TaxonomyServiceClient taxonomyServiceClient,
       CloseableHttpClient httpClient,
       AutoCLassify autoClassify) {
@@ -79,6 +99,7 @@ public class AlfrescoNodeController {
     this.restTemplate = restTemplate;
     this.alfrescoProperties = alfrescoProperties;
     this.ilsproperties = ilsproperties;
+    this.activeMQprops = activeMQProps;
     this.taxonomyServiceClient = taxonomyServiceClient;
     this.httpClient = httpClient;
     this.autoClassify = autoClassify;
@@ -513,6 +534,72 @@ public class AlfrescoNodeController {
       System.err.println("Exception uploading item to alfresco : " + e);
       e.printStackTrace();
       throw e;
+    }
+  }
+
+  public void SendAlfrescoNodeMessageToQueue(String nodeid, String secondpath) {
+    System.out.println(">>> Direct queue push requested for node: " + nodeid);
+    //ActiveMQProperties activeMQProps = new ActiveMQProperties();
+    //Should be loaded from bean but fails... hardcoded for now.
+    BrokerConfig config = activeMQprops.getAlfrescoSource();
+    config.setUser("admin");
+    config.setPassword("admin");
+    config.setQueue("Consumer.MyJavaConsumer.VirtualTopic.alfresco.repo.events.nodes");
+    // Use the 'migconnection' and 'migsession' you created locally
+    ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(config.getUser(), config.getPassword(),
+        config.getBrokerUrl());
+    try (Connection conn = factory.createConnection()) {
+      conn.start();
+      try (Session session = conn.createSession(true, Session.SESSION_TRANSACTED)) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Queue migqueue = session.createQueue(config.getQueue());
+        MessageProducer producer = session.createProducer(migqueue);
+        producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+        long currentTimestamp = System.currentTimeMillis();
+        String eventUuid = java.util.UUID.randomUUID().toString();
+        String extractedFilename = "";
+        if (secondpath == null || secondpath.isEmpty()) {
+          extractedFilename = "unknown";
+        }
+        int lastSlash = secondpath.lastIndexOf('/');
+        extractedFilename = lastSlash != -1 ? secondpath.substring(lastSlash + 1) : secondpath;
+        // MigrationQueueMessage payload = new MigrationQueueMessage(weburl, "Migrate",
+        // deltalink, platformfrom,
+        // id, migrateinfo.get("platformto"), migrateinfo.get("containerto"));
+        String payload = "{"
+            + "\"@class\":\"org.alfresco.sync.events.types.NodeContentPutEvent\","
+            + "\"id\":\"" + eventUuid + "\","
+            + "\"type\":\"CONTENTPUT\","
+            + "\"username\":\"admin\","
+            + "\"timestamp\":" + currentTimestamp + ","
+            + "\"seqNumber\":0,"
+            + "\"nodeId\":\"" + nodeid + "\","
+            + "\"siteId\":\"ontobind\","
+            + "\"nodeType\":\"contain:containdocument\","
+            + "\"name\":\"" + extractedFilename + "\","
+            + "\"paths\":[\"java.util.ArrayList\",[\"" + secondpath + "\"]],"
+            + "\"nodeProperties\":{\"@class\":\"java.util.HashMap\"}"
+            + "}";
+
+        // Ensure this variable name matches what's in the Grandparent
+        String json = objectMapper.writeValueAsString(payload);
+
+        // Use 'migsession' here, NOT 'session'
+        TextMessage message = session.createTextMessage(json);
+
+        producer.send(message);
+
+        producer.close();
+        session.commit();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime().format(formatter);
+        String feedback = timestamp + " -> Information object queued for migration";
+        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
+            + feedback
+            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+      }
+    } catch (Exception ex) {
+      throw new IllegalStateException("Failed to send migration message to ActiveMQ", ex);
     }
   }
 

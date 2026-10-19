@@ -82,6 +82,7 @@ $PodName = "Alfresco"
 oc get pods -l io.kompose.service=$PodName
 $pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]
 
+cls
 Write-Host "Detected $pod..."
 oc logs $pod --tail=500
 
@@ -89,8 +90,6 @@ oc logs $pod --tail=500
 
 #Get latest  jar deployment 
 oc exec $pod -n contain-dvl -- ls -la /usr/local/tomcat/webapps/alfresco/WEB-INF/lib/contain-alfresco-platform-1.0-SNAPSHOT.jar
-
-
 
 oc exec $pod -n contain-dvl -- jar tf /usr/local/tomcat/webapps/alfresco/WEB-INF/lib/contain-alfresco-platform-1.0-SNAPSHOT.jar | Select-String "BinaryNodeUpdateBehavior"
 
