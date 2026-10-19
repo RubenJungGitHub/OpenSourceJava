@@ -77,9 +77,46 @@ oc exec $sharePod -n contain-dvl -- curl --max-time 5 -I http://alfresco:8082/al
 
 #Get Pod tail logs 
 cls
+oc get pods -n contain-dvl
 $PodName = "Alfresco"
 oc get pods -l io.kompose.service=$PodName
-$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]; oc logs $pod --tail=200
+$pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]
+
+Write-Host "Detected $pod..."
+oc logs $pod --tail=200
+
+
+
+#Get latest  jar deployment 
+oc exec $pod -n contain-dvl -- ls -la /usr/local/tomcat/webapps/alfresco/WEB-INF/lib/contain-alfresco-platform-1.0-SNAPSHOT.jar
+
+
+
+oc exec $pod -n contain-dvl -- jar tf /usr/local/tomcat/webapps/alfresco/WEB-INF/lib/contain-alfresco-platform-1.0-SNAPSHOT.jar | Select-String "BinaryNodeUpdateBehavior"
+
+
+
+#DOwNLOAD JAR FROM POD
+$pod = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -match "^alfresco" -and $_ -notmatch "deploy|build" } | Select-Object -First 1) -replace '\s+.*$', ''
+
+if (!(Test-Path "C:\temp")) { New-Item -ItemType Directory -Path "C:\temp" | Out-Null }
+
+Write-Host "Extracting and downloading JAR from pod $pod..." -ForegroundColor Cyan
+
+# Encode the JAR to base64 inside the pod and decode it locally
+$base64Jar = oc exec $pod -n contain-dvl -c alfresco -- base64 /usr/local/tomcat/webapps/alfresco/WEB-INF/lib/contain-alfresco-platform-1.0-SNAPSHOT.jar
+[System.Convert]::FromBase64String($base64Jar) | Set-Content "C:\temp\pod-contain-alfresco-platform-1.0-SNAPSHOT.jar" -Encoding Byte
+
+Write-Host "Verification:" -ForegroundColor Green
+Test-Path "C:\temp\pod-contain-alfresco-platform-1.0-SNAPSHOT.jar"
+
+
+#Check service context file 
+$pod = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -match "^alfresco" -and $_ -notmatch "deploy|build" } | Select-Object -First 1) -replace '\s+.*$', ''
+
+Write-Host "Checking service-context.xml inside pod $pod..." -ForegroundColor Cyan
+oc exec $pod -n contain-dvl -c alfresco -- cat /usr/local/tomcat/webapps/alfresco/WEB-INF/classes/alfresco/extension/context/service-context.xml
+
 
 
 #REDEPLOY ALFRESCO WITH NEW CONFIG MANIFEST
