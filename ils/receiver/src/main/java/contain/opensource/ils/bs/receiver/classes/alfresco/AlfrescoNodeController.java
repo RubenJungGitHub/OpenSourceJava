@@ -582,10 +582,10 @@ public class AlfrescoNodeController {
             + "}";
 
         // Ensure this variable name matches what's in the Grandparent
-        String json = objectMapper.writeValueAsString(payload);
+        //String json = objectMapper.writeValueAsString(payload);
 
         // Use 'migsession' here, NOT 'session'
-        TextMessage message = session.createTextMessage(json);
+        TextMessage message = session.createTextMessage(payload);
 
         producer.send(message);
 
