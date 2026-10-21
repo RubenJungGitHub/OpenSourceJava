@@ -84,7 +84,10 @@ $pod = (oc get pods --no-headers | Where-Object { $_ -match $podname -and $_ -no
 
 cls
 Write-Host "Detected $pod..."
+
+#log 
 oc logs $pod --tail=500
+
 
 
 
@@ -137,6 +140,10 @@ oc exec dc/alfresco -n contain-dvl -- env | Select-String JAVA_OPTS
 
 oc scale dc/alfrescoqueuepoller --replicas=0 -n contain-dvl
 oc scale dc/alfrescoqueuepoller --replicas=1 -n contain-dvl
+
+
+#Reindex elstic
+oc exec -it dc/elasticsearch -n contain-dvl -- curl -X POST "localhost:9200/alfresco/_open"
 
 
 #Fix elastisearch misery

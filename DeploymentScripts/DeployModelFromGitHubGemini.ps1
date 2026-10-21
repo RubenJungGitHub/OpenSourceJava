@@ -9,7 +9,7 @@
 $projectRoot = "D:\contAIn\alfrescotaxintegration"
 $namespace = "contain-dvl" 
 
-$token  = 'sha256~EZPaoSkEliztSkeGWSBUwS4iL0T72KTjogi6YpT527o'
+$token  = 'sha256~sHwvQt4MbxRklcYBJHvyoRIfqRAshpEA7rye_JbCSpM'
 $server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
 
 # --- GitHub Registry Configuration ---
@@ -259,5 +259,15 @@ if (-not $shareHealthy) {
 Write-Host "--- STAGE 5: Cleaning up obsolete pods ---" -ForegroundColor Cyan
 oc delete pods --field-selector=status.phase=Failed --ignore-not-found=true -n $namespace
 oc delete pods --field-selector=status.phase=Succeeded --ignore-not-found=true -n $namespace
+
+# --- STAGE 6: Defensively Ensure Alfresco is Scaled Up and Healthy ---
+Write-Host "Verifying final replica state for Alfresco..." -ForegroundColor Cyan
+oc scale dc/alfresco --replicas=1 -n $namespace
+
+Write-Host "Waiting for Alfresco rollout to complete..." -ForegroundColor Cyan
+oc rollout status dc/alfresco -n $namespace --timeout=120s
+
+Write-Host "Deployment pipeline finished successfully!" -ForegroundColor Green
+
 
 Write-Host "--- ALL PIPELINE STAGES COMPLETED SUCCESSFULLY ---" -ForegroundColor Green
