@@ -1,5 +1,11 @@
 ﻿
-
+$token  = 'sha256~KFsYsjQugm1SdfM6ged-vm3Q2l7SejAW-kMP0xgYn-M'
+$server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
+# ==========================================
+# STAGE 0: Login to OpenShift & Setup Secret
+# ==========================================
+Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
+oc login --token=$token --server=$server --insecure-skip-tls-verify=true
 
 $project = "contain-dvl"
 #List all pods in project
@@ -142,8 +148,7 @@ oc scale dc/alfrescoqueuepoller --replicas=0 -n contain-dvl
 oc scale dc/alfrescoqueuepoller --replicas=1 -n contain-dvl
 
 
-#Reindex elstic
-oc exec -it dc/elasticsearch -n contain-dvl -- curl -X POST "localhost:9200/alfresco/_open"
+
 
 
 #Fix elastisearch misery
@@ -151,3 +156,20 @@ $esPod = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -match "^e
 
 Write-Host "Reopening the alfresco index on OpenSearch pod $esPod..." -ForegroundColor Cyan
 oc exec $esPod -n contain-dvl -- curl -X POST "http://localhost:9200/alfresco/_open"
+
+#Fix elastisearch pod for Rules
+# Find your elasticsearch pod
+$esPod = (oc get pods --no-headers -n contain-dvl | Where-Object { $_ -match "elasticsearch" } | Select-Object -First 1).Split()[0]
+
+
+
+
+# Force open the closed alfresco index
+oc exec -it $esPod -n contain-dvl -- curl -X POST "http://localhost:9200/alfresco/_open"
+
+
+#Check elastic health. Open port and update indexes/
+oc port-forward svc/elasticsearch 9201:9200
+Invoke-RestMethod -Uri "http://localhost:9200/_cluster/health?pretty" -Method Get
+Invoke-RestMethod -Uri "http://localhost:9200/_cat/indices?v" -Method Get
+Invoke-RestMethod -Uri "http://localhost:9200/alfresco/_settings" -Method Put -Body '{"index" : {"number_of_replicas" : 0}}' -ContentType "application/json"

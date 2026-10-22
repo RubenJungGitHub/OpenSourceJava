@@ -1,7 +1,10 @@
-﻿$token  = 'sha256~sHwvQt4MbxRklcYBJHvyoRIfqRAshpEA7rye_JbCSpM'
+﻿# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
+$token  = 'sha256~KFsYsjQugm1SdfM6ged-vm3Q2l7SejAW-kMP0xgYn-M'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
-cls
+Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
+oc login --token=$token --server=$server
+
 
 
 function EnablePortFirst{
@@ -18,59 +21,41 @@ function EnablePortFirst{
 }
 
 
-# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
-Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
-oc login --token=$token --server=$server
-$port = 27017
-EnablePortFirst $port
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/mongodb 27017:27017 -n contain-dvl"
+# Define a collection of port-forwarding rules: Service/Resource, LocalPort, RemotePort, Namespace
+$portForwards = @(
+    @{ Resource = "svc/mongodb";             LocalPort = 27017; RemotePort = 27017; Namespace = "contain-dvl" },
+    @{ Resource = "svc/taxonomyservice";     LocalPort = 53000; RemotePort = 53000; Namespace = "contain-dvl" },
+    @{ Resource = "svc/notificationservice"; LocalPort = 9200;  RemotePort = 9200;  Namespace = "contain-dvl" }, # Elastic
+    @{ Resource = "svc/notificationservice"; LocalPort = 5001;  RemotePort = 5001;  Namespace = "contain-dvl" },
+    @{ Resource = "svc/kie-server";          LocalPort = 8080;  RemotePort = 8080;  Namespace = "contain-dvl" },
+    @{ Resource = "service/postgres";        LocalPort = 5432;  RemotePort = 5432;  Namespace = "contain-dvl" }
+)
 
-$port = 53000
-EnablePortFirst $port
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/taxonomyservice 53000:53000 -n contain-dvl"
-
-$port = 55500
-EnablePortFirst $port
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/taxonomyservice 55000:55000 -n contain-dvl"
-
-
-
-$port = 5001
-EnablePortFirst $port
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/notificationservice 5001:5001 -n contain-dvl"
-
-$port = 8080
-EnablePortFirst $port
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward svc/kie-server 8080:8080 -n contain-dvl"
-
-$port = 5432
-EnablePortFirst $port
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward service/postgres 5432:5432 -n contain-dvl"
-
+# Loop through each item, enable the port, and start the port-forward process
+foreach ($pf in $portForwards) {
+    EnablePortFirst $pf.LocalPort
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward $($pf.Resource) $($pf.LocalPort):$($pf.RemotePort) -n $($pf.Namespace)"
+}
 
 # Use 'start' to open these in separate windows
 Start-Process "C:\ContainOpenSource\NGrok\GrokonLocalHost-StartAll.cmd"
 
 
-
-
-
-#Optinonal open Java debug port from Open Shift (For receiver in this case)
-# 1. Kill any existing process using port 5005
+# Optional: Open Java debug port from OpenShift (For receiver in this case)
+# 1. Check/Clear process using port 5005
 Get-NetTCPConnection -LocalPort 5005 -ErrorAction SilentlyContinue | ForEach-Object {
- #   Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
+    # Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
     Write-Host "Cleared old process on port 5005."
 }
-
 
 # 2. Find the active RUNNING receiver pod dynamically
 $podName = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -like "receiver-*" -and $_ -like "*Running*" } | Select-Object -First 1).Split()[0]
 
-Write-Host "Pod found " $podName
+Write-Host "Pod found: $podName"
 if ($podName) {
     Write-Host "Found active receiver pod: $podName" -ForegroundColor Green
-    # 3. Open port-forward in a new window
-#    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
+    # 3. Open port-forward in a new window (uncomment below line if you want to activate it)
+    # Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
 } else {
     Write-Host "Error: No running receiver pod found!" -ForegroundColor Red
 }

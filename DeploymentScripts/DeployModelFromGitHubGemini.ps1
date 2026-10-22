@@ -9,7 +9,7 @@
 $projectRoot = "D:\contAIn\alfrescotaxintegration"
 $namespace = "contain-dvl" 
 
-$token  = 'sha256~sHwvQt4MbxRklcYBJHvyoRIfqRAshpEA7rye_JbCSpM'
+$token  = 'sha256~KFsYsjQugm1SdfM6ged-vm3Q2l7SejAW-kMP0xgYn-M'
 $server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
 
 # --- GitHub Registry Configuration ---
@@ -267,7 +267,26 @@ oc scale dc/alfresco --replicas=1 -n $namespace
 Write-Host "Waiting for Alfresco rollout to complete..." -ForegroundColor Cyan
 oc rollout status dc/alfresco -n $namespace --timeout=120s
 
+
+# --- STAGE: Auto-Reset Admin Preferences Post-Deployment ---
+Write-Host "Automatically clearing admin preferences to prevent Share UI freezes..." -ForegroundColor Cyan
+
+# Find the active alfresco pod
+$podName = "Alfresco"
+$pod = (oc get pods --no-headers -n $namespace | Where-Object { $_ -match $podname -and $_ -notmatch "deploy|build" } | Select-Object -First 1).Split()[0]
+
+if ($pod) {
+    Write-Host "Targeting pod $pod for preference cleanup..." -ForegroundColor Yellow
+    # Execute the curl delete inside the container using default admin credentials
+    oc exec -it $pod -n $namespace -- curl -X DELETE -u admin:admin "http://localhost:8080/alfresco/s/api/people/admin/preferences"
+    Write-Host "Admin preferences successfully cleared for the new build!" -ForegroundColor Green
+} else {
+    Write-Warning "Could not find an active Alfresco pod to clear preferences."
+}
+
+# Force open the closed alfresco index
+oc exec -it $esPod -n contain-dvl -- curl -X POST "http://localhost:9200/alfresco/_open"
+
 Write-Host "Deployment pipeline finished successfully!" -ForegroundColor Green
 
 
-Write-Host "--- ALL PIPELINE STAGES COMPLETED SUCCESSFULLY ---" -ForegroundColor Green

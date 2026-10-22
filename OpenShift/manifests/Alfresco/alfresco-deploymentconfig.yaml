@@ -77,6 +77,8 @@ spec:
                 -Dalfresco.events.node.content.update.enabled=true
                 -Dalfresco.events.node.content.create.enabled=true
                 -Dalfresco.events.node.content.delete.enabled=true
+                -Delasticsearch.createIndexIfNotExists=true
+                -Dindex.recovery.mode=FULL
             - name: JAVA_TOOL_OPTIONS
               value: >-
                 -Dencryption.keystore.type=JCEKS
