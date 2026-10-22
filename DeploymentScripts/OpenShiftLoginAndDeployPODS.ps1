@@ -502,6 +502,8 @@ if ($PODS -contains "Receiver") {
     $ErrorActionPreference = 'SilentlyContinue'
 
     try {
+        $env:DOCKER_BUILDKIT = "1"
+        $env:COMPOSE_DOCKER_CLI_BUILD = "1"
         # Pointing to the root 'ils' folder where docker-compose.yml actually lives
 
         #ONLY USE NO CAHCE IF FUNDAMENTAL THINGS ARE CHANGED LIKE POM DEPENDENCIES ETS> To Save time normally use 

@@ -539,8 +539,8 @@ public class AlfrescoNodeController {
 
   public void SendAlfrescoNodeMessageToQueue(String nodeid, String secondpath) {
     System.out.println(">>> Direct queue push requested for node: " + nodeid);
-    //ActiveMQProperties activeMQProps = new ActiveMQProperties();
-    //Should be loaded from bean but fails... hardcoded for now.
+    // ActiveMQProperties activeMQProps = new ActiveMQProperties();
+    // Should be loaded from bean but fails... hardcoded for now.
     BrokerConfig config = activeMQprops.getAlfrescoSource();
     config.setUser("admin");
     config.setPassword("admin");
@@ -582,7 +582,7 @@ public class AlfrescoNodeController {
             + "}";
 
         // Ensure this variable name matches what's in the Grandparent
-        //String json = objectMapper.writeValueAsString(payload);
+        // String json = objectMapper.writeValueAsString(payload);
 
         // Use 'migsession' here, NOT 'session'
         TextMessage message = session.createTextMessage(payload);
@@ -616,7 +616,7 @@ public class AlfrescoNodeController {
         String jsonOutput = objectMapper.writeValueAsString(alfrescoresponse);
         System.out.println("AlfrescoNodeResponse JSON: " + jsonOutput);
       } catch (Exception e) {
-        System.err.println("Failed to serialize response: " + e.getMessage());
+        System.err.println("Failed to serialize response, possibly hiddenrendition too pdf thumbnail: " + e.getMessage());
       }
       itemmustmigrate(alfrescoresponse);
       migrationinfo.put("platformto",
@@ -637,7 +637,7 @@ public class AlfrescoNodeController {
       if (!alfrescoresponse.HasUUID) {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
-
+            bindIO = false;
       } else {
         if (!alfrescoresponse.HasSuggestedClassification) {
           SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,
@@ -789,6 +789,26 @@ public class AlfrescoNodeController {
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(json);
+        JsonNode entry = rootNode.path("entry");
+
+        // 🛑 GUARD CLAUSE: Skip background renditions and thumbnails to prevent
+        // duplicate events
+        boolean isHiddenRendition = false;
+        JsonNode aspectNames = entry.path("aspectNames");
+        if (aspectNames.isArray()) {
+          for (JsonNode aspect : aspectNames) {
+            String aspectStr = aspect.asText();
+            if (aspectStr.contains("hiddenRendition") || aspectStr.contains("thumbnail")) {
+              isHiddenRendition = true;
+              break;
+            }
+          }
+        }
+
+        if (isHiddenRendition) {
+          // Exit early so background preview generation isn't processed as an IO event
+          return null;
+        }
 
         try {
           alfresconNodeResponse = mapper.readValue(json, AlfrescoNodeResponse.class);
