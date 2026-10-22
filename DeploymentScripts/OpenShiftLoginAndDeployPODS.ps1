@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~sHwvQt4MbxRklcYBJHvyoRIfqRAshpEA7rye_JbCSpM'
+$token  = 'sha256~KFsYsjQugm1SdfM6ged-vm3Q2l7SejAW-kMP0xgYn-M'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -503,7 +503,11 @@ if ($PODS -contains "Receiver") {
 
     try {
         # Pointing to the root 'ils' folder where docker-compose.yml actually lives
-        cmd /c "docker compose -f D:\contAIn\OpenSourceJava\ils\receiver\docker-compose.yml build --no-cache receiver"
+
+        #ONLY USE NO CAHCE IF FUNDAMENTAL THINGS ARE CHANGED LIKE POM DEPENDENCIES ETS> To Save time normally use 
+        cmd /c "docker compose -f D:\contAIn\OpenSourceJava\ils\receiver\docker-compose.yml build receiver"
+
+#        cmd /c "docker compose -f D:\contAIn\OpenSourceJava\ils\receiver\docker-compose.yml build --no-cache receiver"
     } finally {
         $ErrorActionPreference = $oldPreference
     }
