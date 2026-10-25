@@ -233,7 +233,6 @@ public class GraphService {
                     body.put("SuggestionClassifier", SPItem.getSuggestedBy());
                     body.put("SuggestedClassification", SPItem.getSuggestedClassification());
                     body.put("ClassificationConfidence", SPItem.getSuggestedClassificationConfidence());
-
                 }
             } else {
                 uuid = SPItem.UUID;
@@ -349,6 +348,9 @@ public class GraphService {
             body.put("classificationexternaltax", cleanClassification);
             body.put("markingexternaltaxsystemid", node.getMarkingID());
             body.put("classificationexternaltaxsystemid", node.getclassificationID());
+            body.put("SuggestionClassifier", node.getSuggestedBy());
+            body.put("SuggestedClassification", node.getSuggestedClassification());
+            body.put("ClassificationConfidence", node.getSuggestedClassificationConfidence());
 
             // Graph API will not allow description field to be a[dated. Even wordso./ If
             // this field is added the entire update fails!
@@ -1198,7 +1200,6 @@ public class GraphService {
                         action = "Updated Suggested classification " + SPItem.UUID + "  for SharePoint IO "
                                 + SPItem.filename;
                     }
-                    
 
                     IOLog.log(
                             SPItem.UUID,
@@ -1221,7 +1222,7 @@ public class GraphService {
                             SPItem.getSuggestedClassification(),
                             SPItem.getSuggestedClassificationConfidence(),
                             SPItem.version);
-                    //return migrationinfo;
+                    // return migrationinfo;
                 }
                 BindObject(SPItem);
                 return migrationinfo;
