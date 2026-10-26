@@ -167,7 +167,9 @@ public class AlfrescoNodeController {
             return guid;
           }
         }
-        System.out.println("GUID not found");
+        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_RED
+            + "site GUID not found for " + IOobject.getcontainerto().split("[/\\\\]")[0]
+            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
         return "site GUID not found";
       }
     } catch (Exception e) {
@@ -209,7 +211,9 @@ public class AlfrescoNodeController {
         }
       }
     } catch (Exception e) {
-      System.err.println("Exception uploading item to alfresco : " + e);
+      System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_RED
+          + "Exception retrieving documentlibrary from Alfresco " + e
+          + contain.opensource.shared.constants.AlfrescoConstants.RESET);
       e.printStackTrace();
     }
     return null;
@@ -556,7 +560,9 @@ public class AlfrescoNodeController {
         }
       }
     } catch (Exception e) {
-      System.err.println("Exception uploading item to alfresco : " + e);
+      System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_RED
+          + "Exception uploading item to alfresco : " + e
+          + contain.opensource.shared.constants.AlfrescoConstants.RESET);
       e.printStackTrace();
       throw e;
     }
