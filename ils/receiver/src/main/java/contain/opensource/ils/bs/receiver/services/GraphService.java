@@ -386,8 +386,8 @@ public class GraphService {
                         listItemId,
                         "-",
                         action,
-                        AlfrescoConstants.ContainPlatforms.ALFRESCO.toString(),
-                        AlfrescoConstants.ContainPlatforms.SPO.toString(),
+                        node.getplatformfrom().toString(),
+                        node.getplatformto().toString(),
                         "BOUND ON DESTINATION",
                         node.getFileName(),
                         "",
@@ -397,9 +397,9 @@ public class GraphService {
                         this.taxonomyServiceClient.GetTaxLabel(node.markingID.toString()),
                         node.getclassificationID(),
                         this.taxonomyServiceClient.GetTaxLabel(node.classificationID.toString()),
-                        "To be processed",
-                        "To be processed",
-                        0.0,
+                        node.SuggestedBy,
+                        node.getSuggestedClassification(),
+                        node.SuggestedclassificationConfidence,
                         node.getVersion());
                 // ==========================================================================================
                 return "Success";
@@ -773,10 +773,10 @@ public class GraphService {
                         "",
                         AlfrescoConstants.eActionPerformed.IODELETED,
                         "System",
-                        this.taxonomyServiceClient.GetTaxLabel(ROobject.markingID.toString()),
                         ROobject.markingID,
-                        this.taxonomyServiceClient.GetTaxLabel(ROobject.classificationID.toString()),
+                        this.taxonomyServiceClient.GetTaxLabel(ROobject.markingID.toString()),
                         ROobject.classificationID,
+                        this.taxonomyServiceClient.GetTaxLabel(ROobject.classificationID.toString()),
                         ROobject.getSuggestedBy(),
                         ROobject.getSuggestedClassification(),
                         ROobject.getSuggestedClassificationConfidence(),
@@ -1148,7 +1148,6 @@ public class GraphService {
             String resourceValue)
             throws MalformedURLException, Exception {
         String siteId = null;
-        // String driveId = null;
         String action = "";
         System.out.println("Processing sharepoint item: " + ItemWebUrl + " , ListItemID: " + ListItemID);
         Hashtable<String, String> migrationinfo = new Hashtable<>();
@@ -1185,13 +1184,11 @@ public class GraphService {
                 }
                 // This definatley can become more efficient. If UUID is uploaded also Suggested
                 // values can
+                boolean bindIO = true;
                 AlfrescoConstants.eActionPerformed eactionperformed = AlfrescoConstants.eActionPerformed.ASSIGNUUID;
                 if (!SPItem.HasUUID || !SPItem.HasSuggestedClassification) {
                     if (!SPItem.HasUUID) {
-                        // SPItem.UUID = updateSharepointItemGraphAPI(SPItem.id, ListId,
-                        // SPItem.getclassification(),
-                        // SPItem.getMarking(), SPItem.SuggestedBy, SPItem.Suggestedclassification,
-                        // SPItem.SuggestedclassificationConfidence);
+                        bindIO = false;
                         SPItem.UUID = updateSharepointItemGraphAPI(ListId, SPItem);
                         action = "Assign UUID " + SPItem.UUID + "  to new SharePoint IO " + SPItem.filename;
                     }
@@ -1199,6 +1196,7 @@ public class GraphService {
                         eactionperformed = AlfrescoConstants.eActionPerformed.IOSUGGESTEDCLASSIFICATIONUPDATED;
                         action = "Updated Suggested classification " + SPItem.UUID + "  for SharePoint IO "
                                 + SPItem.filename;
+                        bindIO = false;
                     }
 
                     IOLog.log(
@@ -1224,7 +1222,9 @@ public class GraphService {
                             SPItem.version);
                     // return migrationinfo;
                 }
-                BindObject(SPItem);
+                if (bindIO) {
+                    BindObject(SPItem);
+                }
                 return migrationinfo;
             }
         } catch (Exception ex) {

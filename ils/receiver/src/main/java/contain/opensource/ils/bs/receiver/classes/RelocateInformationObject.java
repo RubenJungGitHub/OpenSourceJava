@@ -57,6 +57,9 @@ public class RelocateInformationObject extends IOObjectProperties {
         this.classificationID = SPItem.classificationID;
         this.version = SPItem.version;
         this.platformfrom = AlfrescoConstants.ContainPlatforms.SPO;
+        this.SuggestedBy = SPItem.SuggestedBy;
+        this.Suggestedclassification = SPItem.Suggestedclassification;
+        this.SuggestedclassificationConfidence = SPItem.SuggestedclassificationConfidence;
     }
 
     public void setcontainerto(String containerto) {
