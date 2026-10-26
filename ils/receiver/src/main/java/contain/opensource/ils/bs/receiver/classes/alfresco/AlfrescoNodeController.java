@@ -260,37 +260,62 @@ public class AlfrescoNodeController {
    * the file name.
    */
   private String GetNewNodeID(CloseableHttpClient client, String libNode, String fileId) throws Exception {
-    String nodeId = null;
     String auth = Base64.getEncoder()
         .encodeToString((this.username + ":" + this.password).getBytes());
+
+    // Kick off the recursive search across subfolders
+    String nodeId = findNodeRecursive(client, libNode, fileId, auth);
+
+    if (nodeId == null) {
+      throw new RuntimeException("Uploaded file not found in library: " + fileId);
+    }
+
+    return nodeId;
+  }
+
+  private String findNodeRecursive(CloseableHttpClient client, String currentNodeId, String fileName, String auth) {
     String childrenEndpoint = String.format(
         "%s/alfresco/api/-default-/public/alfresco/versions/1/nodes/%s/children",
-        this.endpoint, libNode);
+        this.endpoint, currentNodeId);
+
     HttpGet get = new HttpGet(childrenEndpoint);
     get.setHeader("Authorization", "Basic " + auth);
     get.setHeader("Accept", "application/json");
 
     try (CloseableHttpResponse response = client.execute(get)) {
+      if (response.getCode() != 200) {
+        return null;
+      }
+
       String respBody = EntityUtils.toString(response.getEntity());
       ObjectMapper mapper = new ObjectMapper();
       JsonNode root = mapper.readTree(respBody);
+
       for (JsonNode entry : root.path("list").path("entries")) {
         JsonNode node = entry.path("entry");
-        if (fileId.equals(node.path("name").asText())) {
-          nodeId = node.path("id").asText();
-          break;
+        String nodeName = node.path("name").asText();
+        String nodeId = node.path("id").asText();
+        boolean isFolder = node.path("isFolder").asBoolean(false);
+
+        // If it's a file and matches the target filename, return its ID immediately
+        if (!isFolder && fileName.equals(nodeName)) {
+          return nodeId;
+        }
+
+        // If it's a folder (e.g., Unclassified, Secret, etc.), search inside it
+        // recursively
+        if (isFolder) {
+          String foundId = findNodeRecursive(client, nodeId, fileName, auth);
+          if (foundId != null) {
+            return foundId;
+          }
         }
       }
-    }
-    if (nodeId == null) {
-      throw new RuntimeException("Uploaded file not found in library");
-    }
-    try {
     } catch (Exception e) {
-      System.err.println("Exception uploading item to alfresco : " + e);
-      e.printStackTrace();
+      System.err.println(
+          ">>> [MIGRATION] Error during recursive node lookup in node " + currentNodeId + ": " + e.getMessage());
     }
-    return nodeId;
+    return null; // Not found in this branch
   }
 
   private void getNodeFields(String nodeId, CloseableHttpClient client, String auth) throws Exception {
@@ -616,7 +641,8 @@ public class AlfrescoNodeController {
         String jsonOutput = objectMapper.writeValueAsString(alfrescoresponse);
         System.out.println("AlfrescoNodeResponse JSON: " + jsonOutput);
       } catch (Exception e) {
-        System.err.println("Failed to serialize response, possibly hiddenrendition too pdf thumbnail: " + e.getMessage());
+        System.err
+            .println("Failed to serialize response, possibly hiddenrendition too pdf thumbnail: " + e.getMessage());
       }
       itemmustmigrate(alfrescoresponse);
       migrationinfo.put("platformto",
@@ -637,7 +663,8 @@ public class AlfrescoNodeController {
       if (!alfrescoresponse.HasUUID) {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
-            bindIO = false;
+        bindIO = false;
+
       } else {
         if (!alfrescoresponse.HasSuggestedClassification) {
           SuggestedClassificationUpdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.SuggestedClassification,

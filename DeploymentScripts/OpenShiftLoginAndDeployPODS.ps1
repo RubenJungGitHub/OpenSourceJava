@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~KFsYsjQugm1SdfM6ged-vm3Q2l7SejAW-kMP0xgYn-M'
+$token  = 'sha256~YOZ2Lp5NoJPHnI5uw02sB0HuX0jmJszcg89u1glKfcs'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -54,9 +54,9 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification"
-    #"SharePointSubscription"
+    "SharePointSubscription"
     #'GraphDB'
     #'VocBench3'
     #'TaxonomyService'
@@ -509,7 +509,7 @@ if ($PODS -contains "Receiver") {
         #ONLY USE NO CAHCE IF FUNDAMENTAL THINGS ARE CHANGED LIKE POM DEPENDENCIES ETS> To Save time normally use 
         cmd /c "docker compose -f D:\contAIn\OpenSourceJava\ils\receiver\docker-compose.yml build receiver"
 
-#        cmd /c "docker compose -f D:\contAIn\OpenSourceJava\ils\receiver\docker-compose.yml build --no-cache receiver"
+        #cmd /c "docker compose -f D:\contAIn\OpenSourceJava\ils\receiver\docker-compose.yml build --no-cache receiver"
     } finally {
         $ErrorActionPreference = $oldPreference
     }
@@ -648,7 +648,7 @@ if ($PODS -contains "SharePointNotification") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\Sharepoint\NotificationService\'
     Write-Host "[INFO] Starting recreation of Sharepoint notification service..." -ForegroundColor Cyan
     
-    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
+    oc delete -R -f $folder -n $project --ignore-not-found #--wait=false
     oc apply -R -f $folder -n $project
 
     Write-Host "[INFO] Waiting for notificationservice to become ready..." -ForegroundColor Yellow
