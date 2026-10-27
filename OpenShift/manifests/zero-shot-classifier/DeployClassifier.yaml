@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zero-shot-classifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zero-shot-classifier
+  template:
+    metadata:
+      labels:
+        app: zero-shot-classifier
+    spec:
+      containers:
+      - name: classifier
+        image: ghcr.io/rubenjunggithub/ils-zero-shot-classifier:v1.0
+        imagePullPolicy: Always
+        env:
+        - name: HF_HOME
+          value: "/tmp/huggingface_cache"
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zero-shot-classifier-service
+spec:
+  selector:
+    app: zero-shot-classifier
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP

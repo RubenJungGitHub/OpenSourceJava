@@ -54,13 +54,14 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
     #'VocBench3'
     #'TaxonomyService'
     #'TaxonomyCacher'
+    "ZeroShotClassifier"
 )
 
 #First start Desktop if not running
@@ -740,6 +741,62 @@ if ($PODS -like "*ollama*") {
 }
 
 
+# --- STAGE 19 : Zero-Shot Classifier ---
+# --- STAGE: Zero-Shot Classifier ---
+# --- STAGE: Zero-Shot Classifier ---
+    if ($PODS -contains "ZeroShotClassifier") {
+
+        $container  = "zero-shot-classifier"
+        $localRepo  = "ils-" + $container
+        $remoteRepo = "ils-" + $container
+        $targetTag  = "v1.0"
+        
+        # LET OP: Geen backslash (\) aan het einde van het pad!
+        $folderPath = "D:\contAIn\OpenSourceJava\OpenShift\manifests\zero-shot-classifier"
+
+        Write-Host "[INFO] Building fresh Docker image for Zero-Shot Classifier (this may take a few minutes for PyTorch)..." -ForegroundColor Cyan
+        
+        # Laat de output van Docker nu WEL zien zodat je de voortgang ziet
+        docker build -t "$localRepo`:latest" $folderPath
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Docker build failed for Zero-Shot Classifier!" -ForegroundColor Red
+            exit 1
+        }
+
+        # 2. Tag en push naar GitHub Packages (GHCR)
+        $localImage = "$localRepo`:latest"
+        $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
+
+        Write-Host "[INFO] Tagging local image to $ghcrImage..." -ForegroundColor Cyan
+        docker tag $localImage $ghcrImage
+
+        Write-Host "[INFO] Pushing fresh image to GitHub..." -ForegroundColor Green
+        docker push $ghcrImage
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Docker push failed for Zero-Shot Classifier!" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
+
+        # 3. Pas ná het pushen de OpenShift manifesten toe
+        Write-Host "[INFO] Starting recreation of Zero-Shot Classifier in OpenShift..." -ForegroundColor Cyan
+        oc delete -R -f $folderPath -n $project --ignore-not-found --wait=false
+        oc apply -R -f $folderPath -n $project
+
+        Write-Host "[INFO] Waiting for zero-shot-classifier pod to become ready..." -ForegroundColor Yellow
+        oc rollout status deployment/zero-shot-classifier -n $project --timeout=300s
+
+        # 4. Exposeer de service route als die nog niet bestaat
+        $routeExists = oc get route vocbench-classifier-route -n $project --ignore-not-found
+        if (-not $routeExists) {
+            Write-Host "[INFO] Exposing zero-shot-classifier-service route..." -ForegroundColor Cyan
+            oc expose service zero-shot-classifier-service --name=vocbench-classifier-route --port=8000 -n $project
+        }
+
+        Write-Host "[SUCCESS] Zero-Shot Classifier is deployed and ready!" -ForegroundColor Green
+    }
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 
