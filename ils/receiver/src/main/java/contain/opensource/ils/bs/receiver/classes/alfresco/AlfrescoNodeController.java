@@ -15,6 +15,8 @@ import java.util.Hashtable;
 import java.util.Optional;
 import java.net.URL;
 import java.net.URI;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.core5.util.Timeout;
 
 import jakarta.jms.DeliveryMode;
 import jakarta.jms.MessageProducer;
@@ -939,6 +941,30 @@ public class AlfrescoNodeController {
           System.err.println("Exception parsing node json : " + e);
           e.printStackTrace();
         }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode entryNode = rootNode.path("entry");
+
+        // 1. FileName (uit entry -> name)
+        String fileName = entryNode.path("name").asText();
+
+        // 2. FileType (uit entry -> content -> mimeTypeName)
+        String fileType = entryNode.path("content").path("mimeTypeName").asText();
+
+        // 3. Classification (uit entry -> properties ->
+        // contain:EXTTAXCLASSIFICATIONVAL)
+        String classification = entryNode.path("properties").path("contain:EXTTAXCLASSIFICATIONVAL").asText();
+
+        // 4. Marking (uit entry -> properties -> contain:EXTTAXMARKINGVAL)
+        String marking = entryNode.path("properties").path("contain:EXTTAXMARKINGVAL").asText();
+
+        // Netjes weergeven op de console
+        System.out.println("========================================");
+        System.out.println(" FileName       : " + fileName);
+        System.out.println(" FileType       : " + fileType);
+        System.out.println(" Classification : " + classification);
+        System.out.println(" Marking        : " + marking);
+        System.out.println("========================================");
         System.out.println("Node metadata:");
         System.out.println(json);
       } else {
@@ -1121,6 +1147,9 @@ public class AlfrescoNodeController {
           throw new IllegalArgumentException("Unsupported field: " + field);
       }
 
+      // ... (binnen je UpdateNode methode, net voor de try-with-resources van de
+      // httpClient):
+
       String jsonBody = """
           {
             "properties": {
@@ -1140,6 +1169,14 @@ public class AlfrescoNodeController {
       request.setHeader("Authorization", "Basic " + auth);
       request.setHeader("Content-Type", "application/json");
       request.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
+
+      // STEL HIER DE TIMEOUT OP OP (bijv. 120 seconden i.p.v. de standaard 10 sec)
+      RequestConfig requestConfig = RequestConfig.custom()
+          .setConnectTimeout(Timeout.ofSeconds(30))
+          .setResponseTimeout(Timeout.ofSeconds(120)) // Voorkomt dat de client te vroeg opgeeft
+          .build();
+
+      request.setConfig(requestConfig);
 
       try (CloseableHttpResponse response = this.httpClient.execute(request)) {
         int statusCode = response.getCode();

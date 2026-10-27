@@ -1,5 +1,5 @@
 ﻿# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
-$token  = 'sha256~YOZ2Lp5NoJPHnI5uw02sB0HuX0jmJszcg89u1glKfcs'
+$token  = 'sha256~cbFr9UE8NYVIvIwYiGctHjgyZhSdZR9L5GY99V0Q3sM'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 Write-Host "[INFO] Logging into OpenShift cluster..." -ForegroundColor Cyan
