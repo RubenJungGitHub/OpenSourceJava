@@ -34,7 +34,7 @@ import jakarta.jms.TextMessage;
 
 @Component
 public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
-  //  private Integer PollInterval = 5;
+    // private Integer PollInterval = 5;
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -110,10 +110,53 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                             // TO BE MANAGED BY RULE-ENGINE AND GENERATOR
                             // ===========================================================================================
                             NodeType nodeType = NodeType.fromString(type);
+                            System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
+                                    + "Nodetype  : " + nodeType 
+                                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
                             if (nodeType != null) {
                                 // Call Alfresco object controller
                                 // aController.nodeId = QMessage.getNodeId();
                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
+                                    // Don't log site related objects, only IO's
+                                    String nodeName = QMessage.getName() != null ? QMessage.getName().toLowerCase()
+                                            : "";
+                                    String nodePath = secondpath != null ? secondpath.toString().toLowerCase() : "";
+                                    System.out.println(contain.opensource.shared.constants.AlfrescoConstants.GREEN
+                                            + "Processing object deletion  Nodepath : " + nodePath + " NodeName "
+                                            + nodeName
+                                            + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                                    boolean isSystemOrFolder = nodeName.endsWith(".xml") ||
+                                            nodeName.equals("components") ||
+                                            nodeName.equals("pages") ||
+                                            nodeName.equals("surf-config") ||
+                                            nodeName.equals("surf-config") ||
+                                            nodeName.equals("site") ||
+                                            nodeName.equals("documentlibrary") ||
+                                            nodeName.equals("ontobind") ||
+                                            nodeName.equals("blog") ||
+                                            nodeName.equals("calendar") ||
+                                            nodeName.equals("wiki") ||
+                                            nodeName.equals("links") ||
+                                            nodeName.equals("discussions") ||
+                                            nodeName.equals("secret") ||
+                                            nodeName.equals("internal") ||
+                                            nodeName.equals("unclassified") ||
+                                            nodeName.equals("confidential");
+
+                                    // Controleer of het zich wel in een van de gewenste doelmappen bevindt
+                                    boolean isInTargetFolder = nodePath.contains("/secret/") ||
+                                            nodePath.contains("/internal/") ||
+                                            nodePath.contains("/unclassified/") ||
+                                            nodePath.contains("/confidential/");
+
+                                    // Als het een systeemmap/bestand is, of NIET in een targetfolder staat -> SLA
+                                    // OVER!
+                                    if (isSystemOrFolder || !isInTargetFolder) {
+                                        // Dit filtert al de site-structuren, mappen en subcomponenten eruit
+                                        return; // of continue; afhankelijk van je loop/structuur
+                                    }
+
                                     // Only for ballenbak
                                     String action = QMessage.getId() + " : " + QMessage.getName()
                                             + " deleted from Alfresco by user " + QMessage.getUsername();
