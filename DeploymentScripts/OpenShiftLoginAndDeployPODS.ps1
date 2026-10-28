@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~cbFr9UE8NYVIvIwYiGctHjgyZhSdZR9L5GY99V0Q3sM'
+$token  = 'sha256~tYiNh4ADbeDX6n15CRbsU6Iu7TWrm1udriPjKprYqrE'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -54,14 +54,14 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    #"Receiver"
+    "Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
     #'VocBench3'
     #'TaxonomyService'
     #'TaxonomyCacher'
-    "ZeroShotClassifier"
+    #"ZeroShotClassifier"
 )
 
 #First start Desktop if not running

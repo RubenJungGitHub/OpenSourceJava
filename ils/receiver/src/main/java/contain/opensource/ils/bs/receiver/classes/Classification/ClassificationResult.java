@@ -4,4 +4,7 @@ public record ClassificationResult(
     String label,
     double confidence,
     String status
-) {}
+) {
+
+    
+}
