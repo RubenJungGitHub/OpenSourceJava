@@ -20,7 +20,7 @@
 		<module>uuidutil</module>
 		<module>receiver</module>
 		<module>sharepointqueuepoller</module>
-    	<module>alfrescoqueuepoller</module>
+		<module>alfrescoqueuepoller</module>
 		<module>migrationqueuepoller</module>
 		<module>taxonomycacher</module>
 	</modules>

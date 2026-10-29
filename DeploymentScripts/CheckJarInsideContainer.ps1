@@ -6,7 +6,7 @@ $project = "contain-dvl"
 oc login --token=$token --server=$server
 oc project $project
 
-$pod = "alfrescoqueuepoller-1-qh9rb"
+$pod = "alfrescoqueuepoller-1-9fm56"
 $localPath = "D:\temp\alfrescoqueuepoller.jar"
 
 # Zorg dat de doelmap bestaat
