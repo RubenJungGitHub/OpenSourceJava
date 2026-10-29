@@ -644,7 +644,7 @@ public class AlfrescoNodeController {
       System.out.println("processalfresconodepoint nodeID " + nodeid + " secondpath " + secondpath);
 
       AlfrescoNodeResponse alfrescoresponse = GetNode(nodeid);
-      //For now Force Autoclassification value for alfresco.
+      // For now Force Autoclassification value for alfresco.
       this.alfresconNodeResponse.setForceSuggestedClassification(true);
       try {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -835,13 +835,14 @@ public class AlfrescoNodeController {
         if (aspectNames.isArray()) {
           for (JsonNode aspect : aspectNames) {
             String aspectStr = aspect.asText();
-            if (aspectStr.contains("hiddenRendition") || aspectStr.contains("thumbnail")) {
+            // Controleer op exacte rendition/thumbnail aspecten i.p.v. een losse sub-string
+            if (aspectStr.equals("rn:hiddenRendition") || aspectStr.equals("app:thumbnail")
+                || aspectStr.contains("rendition")) {
               isHiddenRendition = true;
               break;
             }
           }
         }
-
         if (isHiddenRendition) {
           // Exit early so background preview generation isn't processed as an IO event
           return null;
@@ -1024,7 +1025,6 @@ public class AlfrescoNodeController {
       // 1. Haal het ClassificationResult object op
       classificationResult = autoClassify.ClassifyIO(this.alfresconNodeResponse.content);
       this.alfresconNodeResponse.SuggestedclassificationGuid = classificationResult.correspondingGuid();
-
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
