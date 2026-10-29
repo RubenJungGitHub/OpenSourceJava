@@ -46,6 +46,7 @@ spec:
             - name: ILS_RULEENGINEPROJECTNAME
               value: "contAlnMigrationRuleset"
           image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-sharepointqueuepoller:v1.0'
+          imagePullPolicy: Always
           name: sharepointqueuepoller
           ports:
             - containerPort: 3001

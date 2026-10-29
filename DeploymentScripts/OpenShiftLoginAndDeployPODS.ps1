@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token = 'sha256~gelGcfoDLvgr7uPUB_rZRAxeCcJZEMvVxfX81qAPIco'
+$token  = 'sha256~bz1St_C8qKLTT5kT9zanScjL_bsEgre9vL-8PhnWSg4'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -566,41 +566,108 @@ if ($PODS -contains "Receiver") {
     Start-Process $swaggerUrl
 }
 
-# --- STAGE 9: AlfrescoQueuePoller---
+# --- STAGE 9: AlfrescoQueuePoller ---
 if ($PODS -contains "AlfrescoQueuePoller") {
-    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\Alfrescoqueuepoller\'
-    Write-Host "[INFO] Starting recreation of Alfresco queupoller..." -ForegroundColor Cyan
+    $container  = "alfrescoqueuepoller"
+    $localRepo  = "ilsqueuepollers-" + $container  
+    $remoteRepo = "ilsqueuepollers-" + $container  
+    $localTag   = "latest"
+    $targetTag  = "latest" # Vastgezet op 'latest' voor probleemloos ontwikkelen zonder versienummers op te hoeven hogen
+    $projectDir = "D:\contAIn\OpenSourceJava\ils\alfrescoqueuepoller"
+
+    Write-Host "[INFO] Vrijmaken van eventuele actieve lock-bestanden..." -ForegroundColor Cyan
+    Get-Process -Name "java" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
+
+    # ==========================================
+    # 0. MAVEN BUILD (Zorgt dat de nieuwe .jar met je aangepaste pom.xml wordt gebouwd)
+    # ==========================================
+    Write-Host "[INFO] Running mvn clean package for AlfrescoQueuePoller..." -ForegroundColor Cyan
+    Push-Location $projectDir
+    try {
+        mvn clean package
+    } finally {
+        Pop-Location
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Maven build for AlfrescoQueuePoller failed!" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "[SUCCESS] Maven build completed successfully!" -ForegroundColor Green
+
+    # ==========================================
+    # 1. BUILD FRESH DOCKER IMAGE LOCALLY (Met normale cache, super snel)
+    # ==========================================
+    Write-Host "[INFO] Building Docker image for AlfrescoQueuePoller..." -ForegroundColor Cyan
+
+    $oldPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
+
+    try {
+        $env:DOCKER_BUILDKIT = "1"
+        $env:COMPOSE_DOCKER_CLI_BUILD = "1"
+
+        cmd /c "docker compose -f $projectDir\docker-compose.yml build alfrescoqueuepoller"
+    } finally {
+        $ErrorActionPreference = $oldPreference
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker build for AlfrescoQueuePoller failed!" -ForegroundColor Red
+        exit 1
+    }
+
+    $localImage = "$localRepo`:latest"
+    $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
+
+    Write-Host "[INFO] Tagging local image to $ghcrImage..." -ForegroundColor Cyan
+    docker tag $localImage $ghcrImage
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker tag failed!" -ForegroundColor Red
+        exit 1
+    }
+
+    # ==========================================
+    # 2. PUSH TO GITHUB CONTAINER REGISTRY (GHCR)
+    # ==========================================
+    Write-Host "[INFO] Pushing fresh image to GitHub Container Registry..." -ForegroundColor Green
+    docker push $ghcrImage
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker push failed! Controleer of je bent ingelogd op ghcr.io." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
+
+    # ==========================================
+    # 3. DEPLOY VIA OPENSHIFT MANIFESTS & ROLLOUT
+    # ==========================================
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\AlfrescoQueuePoller\'  
+    Write-Host "[INFO] Starting update of AlfrescoQueuePoller pod..." -ForegroundColor Cyan
     
-    # 1. Verwijder en pas de manifests opnieuw toe
-    oc delete -R -f $folder -n $project --ignore-not-found --wait=false
+    $global:ErrorActionPreference = "Continue"
+    
+    # 1. Pas de manifests toe
     oc apply -R -f $folder -n $project
 
-    # 2. Wacht even tot de nieuwe pod is opgestart
-    Write-Host "[INFO] Wachten tot de pod operationeel is..." -ForegroundColor Yellow
-    Start-Sleep -Seconds 10
+    # 2. Los direct de 'unresolved images' op door de externe registry-tag te koppelen aan de ImageStream
+    Write-Host "[INFO] Resolving latest image stream tag from GHCR..." -ForegroundColor Yellow
+    oc tag ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):latest alfrescoqueuepoller:latest -n $project --source=docker
 
-    # 3. Zoek de actieve pod naam dynamisch op
-    $podName = (oc get pods -l app=alfrescoqueuepoller -o jsonpath="{.items[0].metadata.name}" 2>$null)
-    if (-not $podName) {
-        $podName = "alfrescoqueuepoller-1-7fdjx" # Jouw bekende fallback naam
-    }
+    # 3. Trigger de rollout feilloos
+    Write-Host "[INFO] Triggering new deployment rollout..." -ForegroundColor Yellow
+    oc rollout latest dc/alfrescoqueuepoller -n $project
 
-    # 4. Kopieer de vers gebouwde lokale JAR direct naar de pod
-    $localJar = "D:\contAIn\OpenSourceJava\ils\alfrescoqueuepoller\target\alfrescoqueuepoller-3.3.0.jar"
-    
-    if (Test-Path $localJar) {
-        Write-Host "[INFO] Nieuwe JAR kopiëren naar pod $podName..." -ForegroundColor Yellow
-        oc cp $localJar "$($podName):/app/alfrescoqueuepoller.jar"
-        
-        # 5. Herstart de pod zodat Java de nieuwe JAR inlaadt
-        Write-Host "[INFO] Pod herstarten om de nieuwe JAR in te laden..." -ForegroundColor Yellow
-        oc delete pod $podName --ignore-not-found
-        
-        Write-Host "[SUCCESS] AlfrescoQueuePoller is succesvol bijgewerkt met de laatste code!" -ForegroundColor Green
-    } else {
-        Write-Host "[ERROR] Kan de lokale target JAR niet vinden op: $localJar" -ForegroundColor Red
-    }
+    # 4. Wacht tot de pod volledig draait met de nieuwe code
+    Write-Host "[INFO] Waiting for AlfrescoQueuePoller pod to be ready..." -ForegroundColor Yellow
+    oc rollout status dc/alfrescoqueuepoller -n $project --timeout=180s
+
+    $global:ErrorActionPreference = "Stop"
+    Write-Host "[SUCCESS] AlfrescoQueuePoller is succesvol gedeployd met je nieuwe code!" -ForegroundColor Green
 }
+
 
 # --- STAGE 10: SharepointQueuePoller---
 if ($PODS -contains "SharepointQueuePoller") {

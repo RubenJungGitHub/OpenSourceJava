@@ -1,6 +1,7 @@
 package contain.opensource.ils.bs.alfrescopoller;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import  org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import contain.opensource.ils.bs.alfrescopoller.classes.QueuePolling.ALfrescoQueuePoller;
@@ -20,7 +21,6 @@ public class StartupRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-       
-    AlfrescoPoll.startPolling();
+        AlfrescoPoll.startPolling();
     }
 }

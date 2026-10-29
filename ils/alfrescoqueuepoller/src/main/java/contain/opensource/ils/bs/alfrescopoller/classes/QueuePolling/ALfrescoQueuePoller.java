@@ -51,6 +51,7 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                 null,
                                 activeMQProps.getAlfrescoSource().getQueue().toString(),
                                 activeMQProps.getAlfrescoSource());
+
         }
 
         /**
@@ -79,7 +80,7 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                 try {
                         String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime()
                                         .format(formatter);
-                        String feedback = timestamp + " -> New ALFRESCO poll loop on broker : "
+                        String feedback = "v1.0 :  " +  timestamp + " -> New ALFRESCO poll loop on broker : "
                                         + this.currentSource.getBrokerUrl()
                                         + " on queue " + this.queuetopoll + ". Interval : " + PollInterval + " seconds";
                         System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW

@@ -13,7 +13,6 @@ spec:
       labels:
         io.kompose.service: alfrescoqueuepoller
     spec:
-      # ---> 1. Add the imagePullSecrets block here <---
       imagePullSecrets:
         - name: containgithubrepos
       containers:
@@ -24,7 +23,6 @@ spec:
               value: alfresco
             - name: SPRING_DATASOURCE_USERNAME
               value: alfresco
-            # 👇 Fixed to use internal OpenShift service 'postgres' instead of 'postgres-db'
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres:5432/contAInBallenbak
             - name: ACTIVEMQ_ALFRESCOSOURCE_BROKERURL
@@ -33,7 +31,6 @@ spec:
               value: tcp://activemq:61616
             - name: SPRING_DATA_MONGODB_URI
               value: "mongodb://mongodb.contain-dvl.svc.cluster.local:27017/contAInBallenbak"
-            # 👇 Ensures the baseurl property gets overridden inside the cluster
             - name: ILS_BASEURL
               value: "http://receiver.contain-dvl.svc.cluster.local:8080"
             - name: ILS_PROCESSALFRESCONODEPOINT
@@ -48,8 +45,8 @@ spec:
               value: "http://kie-server.contain-dvl.svc.cluster.local:8080/kie-server/services/rest/server/containers/{CONTAINER_ID}/dmn"
             - name: ILS_RULEENGINEPROJECTNAME
               value: "contAlnMigrationRuleset"
-          image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-alfrescoqueuepoller:v1.0'  # (Replace with your actual repo name if different)
-          imagePullPolicy: IfNotPresent
+          image: 'ghcr.io/rubenjunggithub/ilsqueuepollers-alfrescoqueuepoller:latest'
+          imagePullPolicy: Always
           name: alfrescoqueuepoller
           ports:
             - containerPort: 5002
@@ -65,5 +62,4 @@ spec:
         from:
           kind: ImageStreamTag
           name: alfrescoqueuepoller:latest
-      type: ConfigChange
-          # - imageChangeParams: ... (remove this block)
+      type: ImageChange
