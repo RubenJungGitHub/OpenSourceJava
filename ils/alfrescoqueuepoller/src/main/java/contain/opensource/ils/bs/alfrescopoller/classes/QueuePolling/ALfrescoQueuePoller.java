@@ -122,54 +122,6 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                                 // Call Alfresco object controller
                                                                 // aController.nodeId = QMessage.getNodeId();
                                                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
-
-                                                                     /*   String nodeName = QMessage.getName() != null
-                                                                                        ? QMessage.getName()
-                                                                                                        .toLowerCase()
-                                                                                        : "";
-                                                                        String nodePath = secondpath != null
-                                                                                        ? secondpath.toString()
-                                                                                                        .toLowerCase()
-                                                                                        : "";
-
-                                                                        // 1. Haal de 'before' map op (bevat de
-                                                                        // node-eigenschappen van vóór de verwijdering)
-                                                                        Map<String, Object> beforeData = QMessage
-                                                                                        .getBefore();
-
-                                                                        String mimeType = null;
-                                                                        if (beforeData != null) {
-                                                                                // Haal het mimetype op uit de
-                                                                                // eigenschappen (de sleutel kan per
-                                                                                // Alfresco model peren,
-                                                                                // vaak is dit 'mimetype' of onderdeel
-                                                                                // van content eigenschappen)
-                                                                                Object mimeObj = beforeData
-                                                                                                .get("mimetype");
-                                                                                if (mimeObj != null) {
-                                                                                        mimeType = mimeObj.toString();
-                                                                                }
-                                                                        }
-
-                                                                        System.out.println(
-                                                                                        contain.opensource.shared.constants.AlfrescoConstants.GREEN
-                                                                                                        + "nodeName : "
-                                                                                                        + nodeName
-                                                                                                        + " nodePath  : "
-                                                                                                        + nodePath
-                                                                                                        + " mimeType  : "
-                                                                                                        + mimeType
-                                                                                                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
-                                                                        // 2. Als het Mime-type leeg of null is, is het
-                                                                        // geen bestand (maar een map of container) ->
-                                                                        // NEGEREN!
-                                                                        if (mimeType == null
-                                                                                        || mimeType.trim().isEmpty()) {
-                                                                                return;
-                                                                        }*/
-
-
                                                                         // Only for ballenbak
                                                                         if ("contain:containdocument".equals(nodeType)) {
                                                                         String action = QMessage.getId() + " : "
