@@ -1,4 +1,4 @@
-package contain.opensource.ils.bs.alfrescopoller.classes.messagequeuehandling;
+package contain.opensource.ils.bs.alfrescopoller.classes.QueuePolling;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -32,16 +32,16 @@ import jakarta.jms.QueueBrowser;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
+
 @Component
-public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
-    // private Integer PollInterval = 5;
+public class ALfrescoQueuePoller extends MessageBrowserPollParent{
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     // @Autowired
     // private AlfrescoNodeController aController;
     @Autowired
-    public MessageBrowserPollAlfresco(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
+    public ALfrescoQueuePoller(ActiveMQProperties activeMQProps, AlfrescoProperties alfrescoProps,
             ILSRestProperties ilsproperties, ObjectMapper objectMapper) {
         super(
                 activeMQProps,
@@ -53,6 +53,8 @@ public class MessageBrowserPollAlfresco extends MessageBrowserPollParent {
                 activeMQProps.getAlfrescoSource());
         ;
     }
+
+    int a = 1;
 
     /**
      * Reads messages from a specified ActiveMQ queue and polls for new messages at

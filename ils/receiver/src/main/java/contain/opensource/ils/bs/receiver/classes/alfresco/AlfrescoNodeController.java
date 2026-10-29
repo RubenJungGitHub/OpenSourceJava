@@ -644,6 +644,8 @@ public class AlfrescoNodeController {
       System.out.println("processalfresconodepoint nodeID " + nodeid + " secondpath " + secondpath);
 
       AlfrescoNodeResponse alfrescoresponse = GetNode(nodeid);
+      //For now Force Autoclassification value for alfresco.
+      this.alfresconNodeResponse.setForceSuggestedClassification(true);
       try {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonOutput = objectMapper.writeValueAsString(alfrescoresponse);
@@ -680,7 +682,7 @@ public class AlfrescoNodeController {
           bindIO = false;
         }
       }
-      if (bindIO) {
+      if (bindIO || this.alfresconNodeResponse.getForceSuggestedClassification()) {
         BindObject(alfrescoresponse);
       }
     } catch (Exception ex) {
@@ -1022,6 +1024,8 @@ public class AlfrescoNodeController {
       // 1. Haal het ClassificationResult object op
       classificationResult = autoClassify.ClassifyIO(this.alfresconNodeResponse.content);
 
+
+
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
         this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.Suggestedclassification != null
@@ -1037,8 +1041,9 @@ public class AlfrescoNodeController {
         this.alfresconNodeResponse.SuggestedBy = classificationResult.classifier();
         this.alfresconNodeResponse.Suggestedclassification = classificationResult.label();
         this.alfresconNodeResponse.setSuggestedClassificationConfidence(classificationResult.confidence());
+        this.alfresconNodeResponse.setSuggestedClassificationGUID(classificationResult.correspondingGuid());
 
-        System.out.println("CSuggested classification Result: " + classificationResult.label() + " with confidence: "
+        System.out.println("Suggested classification Result: " + classificationResult.label() + " with confidence: "
             + classificationResult.confidence());
       }
 

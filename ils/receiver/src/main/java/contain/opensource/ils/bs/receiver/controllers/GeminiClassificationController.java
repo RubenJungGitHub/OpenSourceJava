@@ -44,7 +44,7 @@ public class GeminiClassificationController {
             String extractedText = tika.parseToString(new ByteArrayInputStream(content)).trim();
 
             if (extractedText.isBlank()) {
-                return ResponseEntity.ok(new ClassificationResult("Gemini", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT"));
+                return ResponseEntity.ok(new ClassificationResult("Gemini", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT","<Unknown>"));
             }
 
             if (extractedText.length() > 4000) {
@@ -99,11 +99,11 @@ public class GeminiClassificationController {
                 suggestedLabel = "No label determined";
             }
 
-            return ResponseEntity.ok(new ClassificationResult("Gemini", suggestedLabel, 0.95, "SUCCESS"));
+            return ResponseEntity.ok(new ClassificationResult("Gemini", suggestedLabel, 0.95, "SUCCESS","ToDo"));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500)
-                    .body(new ClassificationResult("Gemini", "Unclassified", 0.0, "ERROR: " + e.getMessage()));
+                    .body(new ClassificationResult("Gemini", "Unclassified", 0.0, "ERROR: " + e.getMessage(),"<Unknown>"));
         }
     }
 }

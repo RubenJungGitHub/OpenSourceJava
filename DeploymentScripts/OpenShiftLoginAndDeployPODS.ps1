@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~tYiNh4ADbeDX6n15CRbsU6Iu7TWrm1udriPjKprYqrE'
+$token = 'sha256~gelGcfoDLvgr7uPUB_rZRAxeCcJZEMvVxfX81qAPIco'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -47,14 +47,14 @@ $PODS = @(
     #"ActiveMQ"
     #"Routes"
     #"Ollama"
-    #"AlfrescoQueuePoller"
+    "AlfrescoQueuePoller"
     #"SharepointQueuePoller"
     #"MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -570,8 +570,36 @@ if ($PODS -contains "Receiver") {
 if ($PODS -contains "AlfrescoQueuePoller") {
     $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\ILSqueuepollers\Alfrescoqueuepoller\'
     Write-Host "[INFO] Starting recreation of Alfresco queupoller..." -ForegroundColor Cyan
+    
+    # 1. Verwijder en pas de manifests opnieuw toe
     oc delete -R -f $folder -n $project --ignore-not-found --wait=false
     oc apply -R -f $folder -n $project
+
+    # 2. Wacht even tot de nieuwe pod is opgestart
+    Write-Host "[INFO] Wachten tot de pod operationeel is..." -ForegroundColor Yellow
+    Start-Sleep -Seconds 10
+
+    # 3. Zoek de actieve pod naam dynamisch op
+    $podName = (oc get pods -l app=alfrescoqueuepoller -o jsonpath="{.items[0].metadata.name}" 2>$null)
+    if (-not $podName) {
+        $podName = "alfrescoqueuepoller-1-7fdjx" # Jouw bekende fallback naam
+    }
+
+    # 4. Kopieer de vers gebouwde lokale JAR direct naar de pod
+    $localJar = "D:\contAIn\OpenSourceJava\ils\alfrescoqueuepoller\target\alfrescoqueuepoller-3.3.0.jar"
+    
+    if (Test-Path $localJar) {
+        Write-Host "[INFO] Nieuwe JAR kopiëren naar pod $podName..." -ForegroundColor Yellow
+        oc cp $localJar "$($podName):/app/alfrescoqueuepoller.jar"
+        
+        # 5. Herstart de pod zodat Java de nieuwe JAR inlaadt
+        Write-Host "[INFO] Pod herstarten om de nieuwe JAR in te laden..." -ForegroundColor Yellow
+        oc delete pod $podName --ignore-not-found
+        
+        Write-Host "[SUCCESS] AlfrescoQueuePoller is succesvol bijgewerkt met de laatste code!" -ForegroundColor Green
+    } else {
+        Write-Host "[ERROR] Kan de lokale target JAR niet vinden op: $localJar" -ForegroundColor Red
+    }
 }
 
 # --- STAGE 10: SharepointQueuePoller---

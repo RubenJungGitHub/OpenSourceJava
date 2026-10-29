@@ -3,15 +3,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import  org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import contain.opensource.ils.bs.alfrescopoller.classes.messagequeuehandling.MessageBrowserPollAlfresco;
+import contain.opensource.ils.bs.alfrescopoller.classes.QueuePolling.ALfrescoQueuePoller;
 import contain.opensource.shared.configurationproperties.ActiveMQProperties;
 
 @Component
 public class StartupRunner implements CommandLineRunner {
 
-    private final MessageBrowserPollAlfresco AlfrescoPoll;
+    private final ALfrescoQueuePoller AlfrescoPoll;
 
-    public StartupRunner(MessageBrowserPollAlfresco AlfrescoPoll) {
+    public StartupRunner(ALfrescoQueuePoller AlfrescoPoll) {
         this.AlfrescoPoll = AlfrescoPoll;
     }
 

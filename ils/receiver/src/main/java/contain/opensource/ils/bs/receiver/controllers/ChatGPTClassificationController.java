@@ -66,7 +66,7 @@ public class ChatGPTClassificationController {
 
         System.out.println("Extracted text to be classified : " + extractedText);
         if (extractedText.isBlank()) {
-            return ResponseEntity.ok(new ClassificationResult("ChatGPT", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT"));
+            return ResponseEntity.ok(new ClassificationResult("ChatGPT", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT","<Unknown>"));
         }
 
         // 4. Truncation: voorkom dat hele lange documenten het LLM context window laten
@@ -117,7 +117,7 @@ public class ChatGPTClassificationController {
         if (!isValid) {
             suggestedLabel = "No valid label detected : unable to classify";
         }
-        ClassificationResult result = new ClassificationResult("chatGPTClassifier", suggestedLabel, 0.95, "SUCCESS");
+        ClassificationResult result = new ClassificationResult("chatGPTClassifier", suggestedLabel, 0.95, "SUCCESS","<Unknown>");
         return ResponseEntity.ok(result);
     }
 

@@ -3,7 +3,8 @@ public record ClassificationResult(
     String classifier,
     String label,
     double confidence,
-    String status
+    String status,
+    String correspondingGuid
 ) {
 
     

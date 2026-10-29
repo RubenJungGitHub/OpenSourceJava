@@ -102,6 +102,7 @@ public class MessageBrowserPollSP extends MessageBrowserPollParent {
                             }
                         }
                     }
+                    
                     consumeMessageById(msg.getJMSMessageID());
                 } catch (JMSException e) {
                     System.out.println(contain.opensource.shared.constants.AlfrescoConstants.RED

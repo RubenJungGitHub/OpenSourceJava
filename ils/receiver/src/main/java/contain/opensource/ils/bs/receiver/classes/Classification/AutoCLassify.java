@@ -40,6 +40,9 @@ public class AutoCLassify {
     // Genereer een random getal tussen 0.0 en 1.0 voor de gewogen verdeling
     double roll = random.nextDouble();
 
+    //Temp to force llmaclassifier 
+    roll = 0.75;
+
     if (roll < 0.60) {
       // 60% Kans: Bart-large (Zero-Shot Classifier)
       return callZeroShotClassifier(content, restTemplate);
@@ -96,13 +99,14 @@ public class AutoCLassify {
             "bart-large-mnli",
             pyResponse.getTop_label(),
             pyResponse.getConfidence(),
+            "TODO",
             "SUCCESS");
       }
     } catch (Exception e) {
       System.err.println("Fout bij aanroepen Zero-Shot Classifier: " + e.getMessage());
     }
 
-    return new ClassificationResult("bart-large-mnli", "UNKNOWN", 0.0, "FAILED");
+    return new ClassificationResult("bart-large-mnli", "UNKNOWN", 0.0, "FAILED","<Unknown>");
   }
 
   private ClassificationResult callLegacyClassifier(byte[] content, RestTemplate restTemplate, String url,
@@ -120,7 +124,7 @@ public class AutoCLassify {
       return response.getBody();
     } catch (Exception e) {
       System.err.println("Fout bij aanroepen " + classifierName + ": " + e.getMessage());
-      return new ClassificationResult(classifierName, "ERROR", 0.0, "FAILED");
+      return new ClassificationResult(classifierName, "ERROR", 0.0, "FAILED", "<Unknown>");
     }
   }
 

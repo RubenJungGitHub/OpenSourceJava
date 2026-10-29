@@ -13,6 +13,8 @@ public class Notification {
         return subscriptionId;
     }
 
+    
+
     public void setSubscriptionId(String subscriptionId) {
         this.subscriptionId = subscriptionId;
     }

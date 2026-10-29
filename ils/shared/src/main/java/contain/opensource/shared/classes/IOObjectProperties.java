@@ -13,7 +13,9 @@ public abstract class IOObjectProperties {
     public boolean HasUUID = false;
     public boolean HasSuggestedClassification = false;
     private boolean MustMove = false;
+    private boolean ForceSuggestedClassification = false;
     public String UUID;
+
 
     @JsonProperty("name")
     public String filename;
@@ -49,6 +51,9 @@ public abstract class IOObjectProperties {
     @JsonProperty("SuggestedclassificationConfidence")
     public double SuggestedclassificationConfidence;
 
+    @JsonProperty("SuggestedclassificationGuid")
+    public String SuggestedclassificationGuid;
+
     @JsonProperty("markingID")
     public String markingID;
 
@@ -77,6 +82,21 @@ public abstract class IOObjectProperties {
 
     @JsonProperty("path")
     public String path;
+
+    public void setForceSuggestedClassification(boolean force) {
+        if(force)
+        {
+                this.classification = this.Suggestedclassification;
+                this.classificationID = this.SuggestedclassificationGuid;
+                this.ForceSuggestedClassification = force;
+        }
+    }
+
+    
+    public Boolean getForceSuggestedClassification() {
+        return this.ForceSuggestedClassification;
+    }
+
 
 
     // getters and setters
@@ -181,6 +201,13 @@ public abstract class IOObjectProperties {
         this.Suggestedclassification = Suggestedclassification;
     }
 
+        public String getSuggestedClassificationGuid() {
+        return this.SuggestedclassificationGuid;
+    }
+
+    public void setSuggestedClassificationGUID(String SuggestedclassificationGUID) {
+        this.SuggestedclassificationGuid = SuggestedclassificationGUID;
+    }
     public double getSuggestedClassificationConfidence() {
         return this.SuggestedclassificationConfidence;
     }
