@@ -830,14 +830,16 @@ public class AlfrescoNodeController {
 
         // 🛑 GUARD CLAUSE: Skip background renditions and thumbnails to prevent
         // duplicate events
+        // 🛑 GUARD CLAUSE: Skip background renditions and thumbnails to prevent
+        // duplicate events
         boolean isHiddenRendition = false;
         JsonNode aspectNames = entry.path("aspectNames");
         if (aspectNames.isArray()) {
           for (JsonNode aspect : aspectNames) {
             String aspectStr = aspect.asText();
-            // Controleer op exacte rendition/thumbnail aspecten i.p.v. een losse sub-string
-            if (aspectStr.equals("rn:hiddenRendition") || aspectStr.equals("app:thumbnail")
-                || aspectStr.contains("rendition")) {
+            // Alleen negeren bij daadwerkelijke, ongewenste achtergrond-renditions of
+            // thumbnails
+            if (aspectStr.equals("app:thumbnail") || aspectStr.equals("rn:hiddenRendition")) {
               isHiddenRendition = true;
               break;
             }
