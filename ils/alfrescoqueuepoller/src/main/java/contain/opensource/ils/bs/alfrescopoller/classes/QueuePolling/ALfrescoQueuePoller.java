@@ -122,7 +122,8 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                                 // Call Alfresco object controller
                                                                 // aController.nodeId = QMessage.getNodeId();
                                                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
-                                                                        String nodeName = QMessage.getName() != null
+
+                                                                     /*   String nodeName = QMessage.getName() != null
                                                                                         ? QMessage.getName()
                                                                                                         .toLowerCase()
                                                                                         : "";
@@ -166,15 +167,18 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                                         if (mimeType == null
                                                                                         || mimeType.trim().isEmpty()) {
                                                                                 return;
-                                                                        }
+                                                                        }*/
+
 
                                                                         // Only for ballenbak
+                                                                        if ("contain:containdocument".equals(nodeType)) {
                                                                         String action = QMessage.getId() + " : "
                                                                                         + QMessage.getName()
                                                                                         + " deleted from Alfresco by user "
                                                                                         + QMessage.getUsername();
                                                                         logalfrescoiodeletedendpoint(QMessage,
                                                                                         secondpath.toString());
+                                                                        }
                                                                 } else {
                                                                         Hashtable<String, String> migrateinfo = processalfresconode(
                                                                                         QMessage.getNodeId(),

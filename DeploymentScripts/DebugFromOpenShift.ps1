@@ -1,40 +1,37 @@
-﻿$token  = 'sha256~YwUAqyYdFpSChkL2KD65RkNZsUJICPauuLUKZOTYnFM'
+﻿$token  = 'sha256~bz1St_C8qKLTT5kT9zanScjL_bsEgre9vL-8PhnWSg4'
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 cls
 
-
-function EnablePortFirst{
-    param($port)
+# 1. Kill oude processen op zowel poort 5005 (receiver) als poort 5006 (poller)
+foreach ($port in @(5005, 5006)) {
     $connection = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
     if ($connection) {
         $pidVal = $connection.OwningProcess
-        $ProcessName = Get-Process -Id $pidVal | Select-Object Id, ProcessName, Path
-        Write-Host "Process $processName with PID $pidVal is using port $port. Stopping it..." -ForegroundColor Yellow
-        Stop-Process -Id $pidVal -Force
+        $ProcessName = Get-Process -Id $pidVal -ErrorAction SilentlyContinue | Select-Object -ExpandProperty ProcessName
+        Write-Host "Process $ProcessName with PID $pidVal is using port $port. Stopping it..." -ForegroundColor Yellow
+        Stop-Process -Id $pidVal -Force -ErrorAction SilentlyContinue
     } else {
-        Write-Host "No active process found directly on port $port via Get-NetTCPConnection." -ForegroundColor Cyan
+        Write-Host "No active process found on port $port." -ForegroundColor Cyan
     }
 }
 
+# 2. Zoek de actieve RUNNING receiver pod en zet port-forward op (poort 5005 -> 5005)
+$receiverPod = (oc get pods -n $project --no-headers | Where-Object { $_ -like "receiver-*" -and $_ -like "*Running*" } | Select-Object -First 1).Split()[0]
 
-
-#Optinonal open Java debug port from Open Shift (For receiver in this case)
-# 1. Kill any existing process using port 5005
-Get-NetTCPConnection -LocalPort 5005 -ErrorAction SilentlyContinue | ForEach-Object {
-    Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue
-    Write-Host "Cleared old process on port 5005."
-}
-
-
-# 2. Find the active RUNNING receiver pod dynamically
-$podName = (oc get pods -n contain-dvl --no-headers | Where-Object { $_ -like "receiver-*" -and $_ -like "*Running*" } | Select-Object -First 1).Split()[0]
-
-Write-Host "Pod found " $podName
-if ($podName) {
-    Write-Host "Found active receiver pod: $podName" -ForegroundColor Green
-    # 3. Open port-forward in a new window
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$podName 5005:5005 -n contain-dvl"
+if ($receiverPod) {
+    Write-Host "Found active receiver pod: $receiverPod" -ForegroundColor Green
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$receiverPod 5005:5005 -n $project"
 } else {
     Write-Host "Error: No running receiver pod found!" -ForegroundColor Red
+}
+
+# 3. Zoek de actieve RUNNING alfrescoqueuepoller pod en zet port-forward op (lokale poort 5006 -> pod poort 5005)
+$pollerPod = (oc get pods -n $project --no-headers | Where-Object { $_ -like "alfrescoqueuepoller-*" -and $_ -like "*Running*" } | Select-Object -First 1).Split()[0]
+
+if ($pollerPod) {
+    Write-Host "Found active poller pod: $pollerPod" -ForegroundColor Green
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "oc port-forward pod/$pollerPod 5006:5005 -n $project"
+} else {
+    Write-Host "Error: No running alfrescoqueuepoller pod found!" -ForegroundColor Red
 }

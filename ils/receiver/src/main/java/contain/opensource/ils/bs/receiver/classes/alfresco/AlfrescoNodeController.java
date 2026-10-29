@@ -1023,7 +1023,7 @@ public class AlfrescoNodeController {
 
       // 1. Haal het ClassificationResult object op
       classificationResult = autoClassify.ClassifyIO(this.alfresconNodeResponse.content);
-
+      this.alfresconNodeResponse.SuggestedclassificationGuid = classificationResult.correspondingGuid();
 
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse

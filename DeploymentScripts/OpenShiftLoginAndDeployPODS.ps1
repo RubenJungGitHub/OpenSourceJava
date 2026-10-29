@@ -47,14 +47,14 @@ $PODS = @(
     #"ActiveMQ"
     #"Routes"
     #"Ollama"
-    "AlfrescoQueuePoller"
+    #"AlfrescoQueuePoller"
     #"SharepointQueuePoller"
     #"MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    #"Receiver"
+    "Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -894,7 +894,7 @@ if ($PODS -like "*ollama*") {
     }
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
-
+docker system prune -a --volumes --force
 
 # --- STAGE 19: Complete Docker Data Reset (Vervangt de vhdx door een lege schijf) ---
 #Write-Host "[INFO] Shutting down Docker and WSL to wipe the bloated virtual disk..." -ForegroundColor Cyan

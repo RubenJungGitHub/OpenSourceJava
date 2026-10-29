@@ -17,6 +17,8 @@ spec:
         - name: containgithubrepos
       containers:
         - env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
             - name: SPRING_CONFIG_LOCATION
               value: /app/data/application.yaml
             - name: SPRING_DATASOURCE_PASSWORD
@@ -50,6 +52,8 @@ spec:
           name: alfrescoqueuepoller
           ports:
             - containerPort: 5002
+              protocol: TCP
+            - containerPort: 5005
               protocol: TCP
       restartPolicy: Always
   test: false
