@@ -3,7 +3,7 @@ package contain.opensource.ils.bs.receiver.controllers;
 import org.springframework.web.bind.annotation.*;
 import org.apache.tika.Tika;
 import org.springframework.http.ResponseEntity;
-import contain.opensource.ils.bs.receiver.services.LocalLlamaService;
+import contain.opensource.ils.bs.receiver.services.LlamaClassifierService;
 import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
 import contain.opensource.ils.bs.receiver.model.TaxonomyResponse;
 
@@ -24,11 +24,11 @@ import java.util.List;
 public class llamaClassificationController {
 
     private final Tika tika = new Tika();
-    private final LocalLlamaService llamaService;
+    private final LlamaClassifierService llamaService;
     private final TaxonomyServiceClient taxonomyServiceClient;
 
     @Autowired
-    public llamaClassificationController(LocalLlamaService llamaService,
+    public llamaClassificationController(LlamaClassifierService llamaService,
             TaxonomyServiceClient taxonomyServiceClient) {
         this.llamaService = llamaService;
         this.taxonomyServiceClient = taxonomyServiceClient;

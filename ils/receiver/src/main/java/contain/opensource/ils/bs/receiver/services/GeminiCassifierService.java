@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class GeminiService {
+public class GeminiCassifierService {
 
     @Value("${gemini.api.key:${GEMINI_API_KEY:#{null}}}")
     String apiKey;

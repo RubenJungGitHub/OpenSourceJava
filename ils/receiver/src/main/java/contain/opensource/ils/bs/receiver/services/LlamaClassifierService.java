@@ -11,13 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class LocalLlamaService {
+public class LlamaClassifierService {
 
     private final RestTemplate restTemplate;
     // Adres van je lokale Ollama instantie. MOET UIT CONIF KOMEN!!!!
     private final String ollamaApiUrl = "http://ollama:11434/api/generate";
 
-    public LocalLlamaService() {
+    public LlamaClassifierService() {
         this.restTemplate = new RestTemplate();
     }
 

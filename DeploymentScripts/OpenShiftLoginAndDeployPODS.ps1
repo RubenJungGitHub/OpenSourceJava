@@ -54,7 +54,7 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -906,5 +906,38 @@ docker system prune -a --volumes --force
 #wsl --unregister docker-desktop-data
 
 #Write-Host "[SUCCESS] Docker data disk wiped! A fresh, empty disk will be created on next startup." -ForegroundColor Green
+
+#Restart AlfrescoPoller omdat deze na receiverdeployment stopt
+
+
+
+Write-Host "Zoeken naar de alfrescoqueuepoller deployment in namespace '$project'..." -ForegroundColor Cyan
+
+# Zoek flexibel naar de resource bij zowel deploymentconfigs (dc) als deployments
+$rawResult = oc get deploymentconfigs,deployments -n $project -o custom-columns=":metadata.name" --no-headers 2>$null | Select-String "alfrescoqueuepoller"
+
+if ($null -eq $rawResult) {
+    Write-Host "Geen deployment of deploymentconfig gevonden met de naam 'alfrescoqueuepoller'!" -ForegroundColor Red
+    exit
+}
+
+$deploymentName = $rawResult.Line.Trim()
+Write-Host "Gevonden resource: $deploymentName" -ForegroundColor Green
+
+# Bepaal automatisch of het een deploymentconfig of deployment is om te scalen
+$resourceType = if (oc get dc $deploymentName -n $project --no-headers 2>$null) { "dc" } else { "deployment" }
+
+# 2. Scale omlaag naar 0 om te stoppen
+Write-Host "$resourceType '$deploymentName' wordt gestopt (replicas = 0)..." -ForegroundColor Yellow
+oc scale ${resourceType}/$deploymentName --replicas=0 -n $project
+
+# Wacht even zodat de pod netjes wordt opgeruimd
+Start-Sleep -Seconds 3
+
+# 3. Scale weer omhoog naar 1 om een schone herstart te triggeren
+Write-Host "$resourceType '$deploymentName' wordt weer gestart (replicas = 1)..." -ForegroundColor Yellow
+oc scale ${resourceType}/$deploymentName --replicas=1 -n $project
+
+Write-Host "Klaar! De poller is succesvol herstart." -ForegroundColor Green
 
 Write-Host "[SUCCESS] Completed deployment!" -ForegroundColor Green

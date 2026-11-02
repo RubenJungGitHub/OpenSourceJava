@@ -3,7 +3,7 @@ package contain.opensource.ils.bs.receiver.controllers;
 import org.springframework.web.bind.annotation.*;
 import org.apache.tika.Tika;
 import org.springframework.http.ResponseEntity;
-import contain.opensource.ils.bs.receiver.services.ChatGPTService;
+import contain.opensource.ils.bs.receiver.services.ChatGPTClassifierService;
 import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
 import contain.opensource.ils.bs.receiver.model.TaxonomyResponse;
 
@@ -23,11 +23,11 @@ import java.util.List;
 public class ChatGPTClassificationController {
 
     private final Tika tika = new Tika();
-    private final ChatGPTService chatgptservice;
+    private final ChatGPTClassifierService chatgptservice;
     private final TaxonomyServiceClient taxonomyServiceClient;
 
     @Autowired
-    public ChatGPTClassificationController(ChatGPTService chatGPTservice,
+    public ChatGPTClassificationController(ChatGPTClassifierService chatGPTservice,
             TaxonomyServiceClient taxonomyServiceClient) {
         this.chatgptservice = chatGPTservice;
         this.taxonomyServiceClient = taxonomyServiceClient;

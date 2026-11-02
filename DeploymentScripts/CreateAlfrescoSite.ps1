@@ -4,8 +4,8 @@ $serverUrl = "https://alfresco-proxy-route-contain-dvl.apps.ocp0.anders-nogic.at
 $username  = "admin"
 $password  = "admin"
 
-#$sitesToProcess = @("ontobind", "ontobindarchive")
-$sitesToProcess = @("Test1")
+$sitesToProcess = @("ontobind", "ontobindarchive")
+#$sitesToProcess = @("Test1")
 
 $folderCollection = @("Secret", "Internal", "Unclassified", "Confidential")
 

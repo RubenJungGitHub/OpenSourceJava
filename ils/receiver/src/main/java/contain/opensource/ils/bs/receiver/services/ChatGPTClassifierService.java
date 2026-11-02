@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class ChatGPTService {
+public class ChatGPTClassifierService {
 
     @Value("${openai.api.key:${OPENAI_API_KEY:#{null}}}")
     String apiKey;

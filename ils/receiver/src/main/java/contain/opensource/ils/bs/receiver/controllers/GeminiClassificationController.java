@@ -3,7 +3,7 @@ package contain.opensource.ils.bs.receiver.controllers;
 import org.springframework.web.bind.annotation.*;
 import org.apache.tika.Tika;
 import org.springframework.http.ResponseEntity;
-import contain.opensource.ils.bs.receiver.services.GeminiService;
+import contain.opensource.ils.bs.receiver.services.GeminiCassifierService;
 import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationResult;
 import contain.opensource.ils.bs.receiver.model.TaxonomyResponse;
 
@@ -24,11 +24,11 @@ import java.util.List;
 public class GeminiClassificationController {
 
     private final Tika tika = new Tika();
-    private final GeminiService geminiReceiverService;
+    private final GeminiCassifierService geminiReceiverService;
     private final TaxonomyServiceClient taxonomyServiceClient;
 
     @Autowired
-    public GeminiClassificationController(GeminiService geminiReceiverService,
+    public GeminiClassificationController(GeminiCassifierService geminiReceiverService,
             TaxonomyServiceClient taxonomyServiceClient) {
         this.geminiReceiverService = geminiReceiverService;
         this.taxonomyServiceClient = taxonomyServiceClient;
