@@ -1154,6 +1154,27 @@ public class AlfrescoNodeController {
           throw new IllegalArgumentException("Unsupported field: " + field);
       }
 
+      // Altijd beginnen met een lege string, NOOIT null!
+      String forcedClassificationProperties = "";
+
+      if (this.alfresconNodeResponse.getForceSuggestedClassification()) {
+        String classId = this.alfresconNodeResponse.classificationID; // Of je suggested classification ID veld
+
+        if (classId != null && !classId.isEmpty() && this.taxonomyServiceClient != null) {
+          String classLabel = this.taxonomyServiceClient.GetTaxLabel(classId);
+
+          // De komma zit hier netjes vooraan in de string
+          forcedClassificationProperties = String.format(
+              ",\n            \"contain:EXTTAXCLASSIFICATIONID\": \"%s\",\n            \"contain:EXTTAXCLASSIFICATIONVAL\": \"%s\"",
+              classId, classLabel);
+        }
+      }
+
+      // Samenvoegen in de JSON block
+      jsonPropertiesBlock = String.format(
+          "\"contain:IOUUID\": \"%s\",\n            \"contain:SUGGESTEDCLASSIFICATIONVAL\": \"%s\",\n            \"contain:SUGGESTEDCLASSIFICATIONCONFIDENCE\": \"%s\",\n            \"contain:AUTOCLASSIFIER\": \"%s\"%s",
+          propertyValue, classVal, confVal, classifier, forcedClassificationProperties);
+
       // ... (binnen je UpdateNode methode, net voor de try-with-resources van de
       // httpClient):
 
