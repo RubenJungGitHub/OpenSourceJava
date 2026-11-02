@@ -13,9 +13,8 @@ public abstract class IOObjectProperties {
     public boolean HasUUID = false;
     public boolean HasSuggestedClassification = false;
     private boolean MustMove = false;
-    private boolean ForceSuggestedClassification = false;
+    public boolean ForceSuggestedClassification = false;
     public String UUID;
-
 
     @JsonProperty("name")
     public String filename;
@@ -43,7 +42,6 @@ public abstract class IOObjectProperties {
 
     @JsonProperty("SuggestedBy")
     public String SuggestedBy;
-
 
     @JsonProperty("Suggestedclassification")
     public String Suggestedclassification;
@@ -83,21 +81,14 @@ public abstract class IOObjectProperties {
     @JsonProperty("path")
     public String path;
 
-    public void setForceSuggestedClassification(boolean force) {
-        if(force)
-        {
-                this.classification = this.Suggestedclassification;
-                this.classificationID = this.SuggestedclassificationGuid;
-                this.ForceSuggestedClassification = force;
-        }
+    public void setForceSuggestedClassification() {
+        this.classification = this.Suggestedclassification;
+        this.classificationID = this.SuggestedclassificationGuid;
     }
 
-    
     public Boolean getForceSuggestedClassification() {
         return this.ForceSuggestedClassification;
     }
-
-
 
     // getters and setters
     public String getId() {
@@ -168,7 +159,6 @@ public abstract class IOObjectProperties {
         this.marking = marking;
     }
 
-
     public String getMarkingID() {
         return this.markingID;
     }
@@ -186,7 +176,7 @@ public abstract class IOObjectProperties {
     }
 
     public String getSuggestedBy() {
-        return this.SuggestedBy ;
+        return this.SuggestedBy;
     }
 
     public void setSuggestedBY(String SuggestedBy) {
@@ -201,13 +191,14 @@ public abstract class IOObjectProperties {
         this.Suggestedclassification = Suggestedclassification;
     }
 
-        public String getSuggestedClassificationGuid() {
+    public String getSuggestedClassificationGuid() {
         return this.SuggestedclassificationGuid;
     }
 
     public void setSuggestedClassificationGUID(String SuggestedclassificationGUID) {
         this.SuggestedclassificationGuid = SuggestedclassificationGUID;
     }
+
     public double getSuggestedClassificationConfidence() {
         return this.SuggestedclassificationConfidence;
     }
@@ -216,7 +207,7 @@ public abstract class IOObjectProperties {
         this.SuggestedclassificationConfidence = SuggestedclassificationConfidence;
     }
 
-       public String getclassificationID() {
+    public String getclassificationID() {
         return this.classificationID;
     }
 
@@ -232,7 +223,6 @@ public abstract class IOObjectProperties {
         this.version = version;
     }
 
-    
     public String getpath() {
         return this.path;
     }
@@ -249,7 +239,6 @@ public abstract class IOObjectProperties {
         this.platformfrom = platformfrom;
     }
 
-
     public String getcontainerfrom() {
         return containerfrom;
     }
@@ -257,7 +246,6 @@ public abstract class IOObjectProperties {
     public void setcontainerfrom(String containerfrom) {
         this.containerfrom = containerfrom;
     }
-
 
     public AlfrescoConstants.ContainPlatforms getplatformto() {
         return platformto;
@@ -274,11 +262,12 @@ public abstract class IOObjectProperties {
     public void setcontainerto(String containerto) {
         this.containerto = containerto;
     }
-    public void setmustmove () {
-        this.MustMove  =  (this.containerto != null && !this.containerto.isEmpty());
+
+    public void setmustmove() {
+        this.MustMove = (this.containerto != null && !this.containerto.isEmpty());
     }
 
-        public boolean getmustmove() {
+    public boolean getmustmove() {
         return this.MustMove;
     }
 }

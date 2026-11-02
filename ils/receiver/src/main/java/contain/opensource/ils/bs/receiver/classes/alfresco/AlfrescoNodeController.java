@@ -640,7 +640,7 @@ public class AlfrescoNodeController {
       throws MalformedURLException, Exception {
     Hashtable<String, String> migrationinfo = new Hashtable<>();
     try {
-      this.alfresconNodeResponse.setForceSuggestedClassification(true);
+
       this.nodeId = nodeid;
       System.out.println("processalfresconodepoint nodeID " + nodeid + " secondpath " + secondpath);
 
@@ -934,7 +934,6 @@ public class AlfrescoNodeController {
           }
 
           // Get content and classify
-
           try {
             alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null);
             ClassificationResult classificationResult = GetNodeContent();
@@ -966,10 +965,13 @@ public class AlfrescoNodeController {
 
         // Netjes weergeven op de console
         System.out.println("========================================");
-        System.out.println(" FileName       : " + fileName);
-        System.out.println(" FileType       : " + fileType);
-        System.out.println(" Classification : " + classification);
-        System.out.println(" Marking        : " + marking);
+        System.out.println(" FileName                       : " + fileName);
+        System.out.println(" FileType                       : " + fileType);
+        System.out.println(" Classification                 : " + classification);
+        System.out.println(" Marking                        : " + marking);
+        System.out.println(" Suggestedclassification        : " + this.alfresconNodeResponse.Suggestedclassification);
+        System.out.println(" SuggestedBy                    : " + this.alfresconNodeResponse.SuggestedBy);
+        System.out.println(" Force suggested classification : " + this.alfresconNodeResponse.ForceSuggestedClassification);
         System.out.println("========================================");
         System.out.println("Node metadata:");
         System.out.println(json);
@@ -1027,17 +1029,15 @@ public class AlfrescoNodeController {
 
       // 1. Haal het ClassificationResult object op
       classificationResult = autoClassify.ClassifyIO(this.alfresconNodeResponse.content);
+
+      // Force suggestedclassification
+      this.alfresconNodeResponse.ForceSuggestedClassification = true;
       this.alfresconNodeResponse.SuggestedclassificationGuid = classificationResult.correspondingGuid();
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
       if (classificationResult != null) {
         this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.Suggestedclassification != null
             && !this.alfresconNodeResponse.Suggestedclassification.isEmpty());
-      }
-      if(this.alfresconNodeResponse.getForceSuggestedClassification())
-      {
-        //Now if we want the engine to force classification then always override
-         this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.classification.equals(this.alfresconNodeResponse.Suggestedclassification));
       }
 
       if (this.alfresconNodeResponse.HasSuggestedClassification) {
@@ -1055,6 +1055,15 @@ public class AlfrescoNodeController {
         System.out.println("Suggested classification Result: " + classificationResult.label() + " with confidence: "
             + classificationResult.confidence());
       }
+      //Check if we need to force the suggestedclassification 
+        if(this.alfresconNodeResponse.getForceSuggestedClassification() && !this.alfresconNodeResponse.classificationID.equals(this.alfresconNodeResponse.SuggestedclassificationGuid))
+       {
+        //Now if we want the engine to force classification then always override
+        this.alfresconNodeResponse.setForceSuggestedClassification();
+         this.alfresconNodeResponse.HasSuggestedClassification = false;
+       }
+
+
 
     } catch (
 

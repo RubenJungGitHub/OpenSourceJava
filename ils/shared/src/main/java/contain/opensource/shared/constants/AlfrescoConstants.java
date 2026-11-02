@@ -122,6 +122,7 @@ public class AlfrescoConstants {
         IODELETED,
         IOBOUND,
         IOSUGGESTEDCLASSIFICATIONUPDATED,
+        SUGGESTEDCLASSIFICATIONFORCED,
         TITLECHANGE,
     }
 }
