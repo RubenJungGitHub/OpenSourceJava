@@ -54,7 +54,7 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    #"Receiver"
+    "Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -893,8 +893,7 @@ if ($PODS -like "*ollama*") {
         Write-Host "[SUCCESS] Zero-Shot Classifier is deployed and ready!" -ForegroundColor Green
     }
 
-oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
-docker system prune -a --volumes --force
+
 
 # --- STAGE 19: Complete Docker Data Reset (Vervangt de vhdx door een lege schijf) ---
 #Write-Host "[INFO] Shutting down Docker and WSL to wipe the bloated virtual disk..." -ForegroundColor Cyan
@@ -939,5 +938,9 @@ Write-Host "$resourceType '$deploymentName' wordt weer gestart (replicas = 1)...
 oc scale ${resourceType}/$deploymentName --replicas=1 -n $project
 
 Write-Host "Klaar! De poller is succesvol herstart." -ForegroundColor Green
+
+
+oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
+docker system prune -a --volumes --force
 
 Write-Host "[SUCCESS] Completed deployment!" -ForegroundColor Green

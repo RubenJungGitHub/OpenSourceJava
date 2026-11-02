@@ -640,12 +640,13 @@ public class AlfrescoNodeController {
       throws MalformedURLException, Exception {
     Hashtable<String, String> migrationinfo = new Hashtable<>();
     try {
+      this.alfresconNodeResponse.setForceSuggestedClassification(true);
       this.nodeId = nodeid;
       System.out.println("processalfresconodepoint nodeID " + nodeid + " secondpath " + secondpath);
 
       AlfrescoNodeResponse alfrescoresponse = GetNode(nodeid);
       // For now Force Autoclassification value for alfresco.
-      this.alfresconNodeResponse.setForceSuggestedClassification(true);
+
       try {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonOutput = objectMapper.writeValueAsString(alfrescoresponse);
@@ -1033,6 +1034,12 @@ public class AlfrescoNodeController {
         this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.Suggestedclassification != null
             && !this.alfresconNodeResponse.Suggestedclassification.isEmpty());
       }
+      if(this.alfresconNodeResponse.getForceSuggestedClassification())
+      {
+        //Now if we want the engine to force classification then always override
+         this.alfresconNodeResponse.HasSuggestedClassification = (this.alfresconNodeResponse.classification.equals(this.alfresconNodeResponse.Suggestedclassification));
+      }
+
       if (this.alfresconNodeResponse.HasSuggestedClassification) {
         this.alfresconNodeResponse.HasSuggestedClassification = this.alfresconNodeResponse.Suggestedclassification
             .equals(classificationResult.label());

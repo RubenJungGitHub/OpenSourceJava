@@ -41,25 +41,29 @@ public class AutoCLassify {
     // Genereer een random getal tussen 0.0 en 1.0 voor de gewogen verdeling
     double roll = random.nextDouble();
 
-    //Temp to force llmaclassifier 
-//    roll = 0.75;
+    // Temp to force llmaclassifier
+    // roll = 0.75;
 
     if (roll < 0.60) {
       // 60% Kans: Bart-large (Zero-Shot Classifier)
-     return callClassifier(content, restTemplate, "http://localhost:8080/api/v1/classifypythonService",
+      return callClassifier(content, restTemplate, "http://localhost:8080/api/v1/classifypythonService",
           "pythonclassifier");
     } else if (roll < 0.95) {
       // 35% Kans (van 0.60 tot 0.95): Llama Classifier endpoint
       return callClassifier(content, restTemplate, "http://localhost:8080/api/v1/classifyllamaService",
           "llamaclassifier");
     } else {
+      // Disable gemini for now
       // 5% Kans (van 0.95 tot 1.0): Gemini Classifier endpoint
-      return callClassifier(content, restTemplate, "http://localhost:8080/api/v1/classifygeminiservice",
-          "geminiclassifier");
+      // return callClassifier(content, restTemplate,
+      // "http://localhost:8080/api/v1/classifygeminiservice",
+      // "geminiclassifier");
+      return callClassifier(content, restTemplate, "http://localhost:8080/api/v1/classifypythonService",
+          "pythonclassifier");
     }
   }
 
-private ClassificationResult callClassifier(byte[] content, RestTemplate restTemplate, String url,
+  private ClassificationResult callClassifier(byte[] content, RestTemplate restTemplate, String url,
 
       String classifierName) {
     try {
