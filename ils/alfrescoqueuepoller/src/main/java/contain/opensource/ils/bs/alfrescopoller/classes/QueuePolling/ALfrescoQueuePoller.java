@@ -119,7 +119,7 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                                                         + "Nodetype  : " + nodeType
                                                                                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
-                                                        if (nodeType != null) {
+                                                        if (nodeType != null ) {
                                                                 // 1. GEWIJZIGD: Controleer of het om een
                                                                 // verwijderingstype gaat
                                                                 if (nodeType.equals(NodeType.NODEREMOVED)) {

@@ -99,6 +99,7 @@ public class AlfrescoConstants {
         NODEADDED,
         NODEUPDATED, // unsure if this is correct
         NODEREMOVED,
+        NODEMOVED,
         CONTENTPUT;
 
         public static NodeType fromString(String value) {
