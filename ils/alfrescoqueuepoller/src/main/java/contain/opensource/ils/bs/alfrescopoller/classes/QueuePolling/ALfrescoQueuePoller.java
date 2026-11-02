@@ -78,29 +78,32 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
 
         public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
                 try {
-                        String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam")).toLocalDateTime()
+                        String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
+                                        .toLocalDateTime()
                                         .format(formatter);
-                        String feedback = "v1.0 :  " +  timestamp + " -> New ALFRESCO poll loop on broker : "
+                        String feedback = "v1.0 :  " + timestamp + " -> New ALFRESCO poll loop on broker : "
                                         + this.currentSource.getBrokerUrl()
                                         + " on queue " + this.queuetopoll + ". Interval : " + PollInterval + " seconds";
                         System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
                                         + feedback
                                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
                         Enumeration<?> messages = browser.getEnumeration();
                         int count = 0;
+
                         while (messages.hasMoreElements()) {
                                 Message msg = (Message) messages.nextElement();
                                 count++;
                                 System.out.println("Processing " + msg + " message # " + count + " from queue");
+
                                 try {
                                         String json = "";
                                         if (msg instanceof TextMessage) {
                                                 TextMessage text = (TextMessage) msg;
                                                 json = text.getText();
                                                 ObjectMapper mapper = new ObjectMapper();
-                                                // To do additional checkslike contenttype
+
                                                 try {
-                                                        // to do validation on content type
                                                         AlfrescoQueMessage QMessage = mapper.readValue(json,
                                                                         AlfrescoQueMessage.class);
                                                         Object secondpath = "";
@@ -108,10 +111,8 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                         if (paths != null && paths.size() > 1) {
                                                                 secondpath = paths.get(1);
                                                         }
+
                                                         String type = QMessage.getType();
-                                                        // ===========================================================================================
-                                                        // TO BE MANAGED BY RULE-ENGINE AND GENERATOR
-                                                        // ===========================================================================================
                                                         NodeType nodeType = NodeType.fromString(type);
                                                         System.out.println(
                                                                         contain.opensource.shared.constants.AlfrescoConstants.GREEN
@@ -119,25 +120,41 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                                                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
                                                         if (nodeType != null) {
-                                                                // Call Alfresco object controller
-                                                                // aController.nodeId = QMessage.getNodeId();
+                                                                // 1. GEWIJZIGD: Controleer of het om een
+                                                                // verwijderingstype gaat
                                                                 if (nodeType.equals(NodeType.NODEREMOVED)) {
-                                                                        // Only for ballenbak
-                                                                        if ("contain:containdocument".equals(nodeType)) {
-                                                                        String action = QMessage.getId() + " : "
-                                                                                        + QMessage.getName()
-                                                                                        + " deleted from Alfresco by user "
-                                                                                        + QMessage.getUsername();
-                                                                        logalfrescoiodeletedendpoint(QMessage,
-                                                                                        secondpath.toString());
+                                                                        String nodeTypeName = QMessage.getNodeType(); // Of
+                                                                                                                      // haal
+                                                                                                                      // het
+                                                                                                                      // op
+                                                                                                                      // uit
+                                                                                                                      // de
+                                                                                                                      // juiste
+                                                                                                                      // eigenschap
+                                                                                                                      // van
+                                                                                                                      // QMessage
+
+                                                                        if ("contain:containdocument"
+                                                                                        .equals(nodeTypeName)) {
+                                                                                String action = QMessage.getId() + " : "
+                                                                                                + QMessage.getName()
+                                                                                                + " deleted from Alfresco by user "
+                                                                                                + QMessage.getUsername();
+                                                                                System.out.println(action);
+
+                                                                                logalfrescoiodeletedendpoint(QMessage,
+                                                                                                secondpath.toString());
+                                                                        } else {
+                                                                                System.out.println(
+                                                                                                "Skipping deletion log for non-document type: "
+                                                                                                                + nodeTypeName);
                                                                         }
                                                                 } else {
+                                                                        // 2. REGULIERE VERWERKING (Create / Update)
                                                                         Hashtable<String, String> migrateinfo = processalfresconode(
                                                                                         QMessage.getNodeId(),
                                                                                         secondpath.toString());
-                                                                        // Check 'platformto' in plaats van
-                                                                        // 'containerto'
-                                                                        // To do source <> destination
+
                                                                         if (migrateinfo != null) {
                                                                                 if (migrateinfo.get(
                                                                                                 "platformto") != null
@@ -151,12 +168,6 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
 
                                                                                         if (pathsList != null
                                                                                                         && !pathsList.isEmpty()) {
-                                                                                                // If the list has at
-                                                                                                // least 2 items, it's
-                                                                                                // likely the nested
-                                                                                                // format
-                                                                                                // [Class,
-                                                                                                // [Data]]
                                                                                                 if (pathsList.size() >= 2
                                                                                                                 && pathsList.get(
                                                                                                                                 1) instanceof List) {
@@ -165,39 +176,24 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                                                                         rawPath = internalList
                                                                                                                         .get(0)
                                                                                                                         .toString();
-                                                                                                }
-                                                                                                // If it only has 1
-                                                                                                // item, it's the simple
-                                                                                                // format
-                                                                                                // [/path/to/file]
-                                                                                                else {
+                                                                                                } else {
                                                                                                         rawPath = pathsList
                                                                                                                         .get(0)
                                                                                                                         .toString();
                                                                                                 }
                                                                                         }
 
-                                                                                        // 2. Now clean the string
-                                                                                        // (Brackets and Filename)
                                                                                         if (!rawPath.isEmpty()) {
                                                                                                 String cleanPath = rawPath
                                                                                                                 .replace("[", "")
                                                                                                                 .replace("]", "");
                                                                                                 int lastSlash = cleanPath
                                                                                                                 .lastIndexOf("/");
-
-                                                                                                // This is your weburl:
-                                                                                                // "/Company
-                                                                                                // Home/Sites/ontobind/documentLibrary"
                                                                                                 String folderOnly = (lastSlash != -1)
                                                                                                                 ? cleanPath.substring(
                                                                                                                                 0,
                                                                                                                                 lastSlash)
                                                                                                                 : cleanPath;
-
-                                                                                                // 3. Now it is safe to
-                                                                                                // call your send
-                                                                                                // function
 
                                                                                                 SendMigrationMessage(
                                                                                                                 folderOnly,
@@ -207,16 +203,17 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                                                                                 AlfrescoConstants.ContainPlatforms.ALFRESCO
                                                                                                                                 .name(),
                                                                                                                 migrateinfo);
-
                                                                                         }
                                                                                 }
                                                                         }
                                                                 }
                                                         }
                                                         consumeMessageById(msg.getJMSMessageID());
-                                                } catch (Exception e) {
-                                                        e.printStackTrace();
+                                                } catch (Exception innerEx) {
+                                                        System.err.println("Failed to parse or process message JSON:");
+                                                        innerEx.printStackTrace();
                                                 }
+
                                                 System.out.println(
                                                                 contain.opensource.shared.constants.AlfrescoConstants.RED
                                                                                 + "Processing message: " + json
@@ -227,20 +224,15 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
                                                                                 + "Processing non-text message: " + msg
                                                                                 + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                                         }
-                                        // To do transaction and persistance
-
                                 } catch (JMSException processingError) {
                                         System.err.println("Error while processing message, ROLLBACK.");
                                         processingError.printStackTrace();
                                 }
                         }
-                } catch (
-
-                JMSException e) {
+                } catch (JMSException e) {
                         System.err.println("Error polling the queue:");
                         e.printStackTrace();
                 }
-                // System.out.println("No remaining ALFRESCO messages on queue");
         }
 
         private Hashtable<String, String> processalfresconode(String nodeid, String secondpath) throws Exception {
