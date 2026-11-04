@@ -655,7 +655,7 @@ public class AlfrescoNodeController {
 
       // 3. Log de verstreken tijd (bijv. via System.out of je logger)
       System.out.println(
-          contain.opensource.shared.constants.AlfrescoConstants.RED
+          contain.opensource.shared.constants.AlfrescoConstants.BG_BRIGHT_CYAN
               + "Performance: GetNode for ID " + nodeid + " and autoclassifiy took " + duration + " ms"
               + contain.opensource.shared.constants.AlfrescoConstants.RESET);
       try {
@@ -685,7 +685,7 @@ public class AlfrescoNodeController {
       if (!alfrescoresponse.HasUUID) {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
-        bindIO = false;
+        //bindIO = false;
 
       } else {
         if (!alfrescoresponse.HasSuggestedClassification) {
@@ -940,13 +940,12 @@ public class AlfrescoNodeController {
           if (!ioUuidNode.isMissingNode() && !ioUuidNode.isNull() && !ioUuidNode.asText().isBlank()) {
             alfresconNodeResponse.UUID = ioUuidNode.asText();
           } else {
-            // Fallback: als contain:IOUUID ontbreekt, gebruik dan de nodeid als UUID
-            alfresconNodeResponse.UUID = nodeid;
+            alfresconNodeResponse.UUID = ""; // Fallback to an empty string instead of null
           }
 
           // Get content and classify
           try {
-            alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null);
+            alfresconNodeResponse.HasUUID = (alfresconNodeResponse.UUID != null && !alfresconNodeResponse.UUID.isEmpty());
             ClassificationResult classificationResult = GetNodeContent();
           } catch (java.lang.NullPointerException e) {
           } catch (Exception e) {
@@ -1044,7 +1043,7 @@ public class AlfrescoNodeController {
       classificationResult = autoClassify.ClassifyIO(this.alfresconNodeResponse.content);
 
       // Force suggestedclassification
-      this.alfresconNodeResponse.ForceSuggestedClassification = true;
+      this.alfresconNodeResponse.ForceSuggestedClassification = false;
       this.alfresconNodeResponse.SuggestedclassificationGuid = classificationResult.correspondingGuid();
 
       // 2. Zet de properties netjes door naar je alfresconNodeResponse
