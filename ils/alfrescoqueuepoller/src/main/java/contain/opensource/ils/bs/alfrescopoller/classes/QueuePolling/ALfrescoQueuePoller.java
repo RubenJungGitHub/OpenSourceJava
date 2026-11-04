@@ -76,164 +76,140 @@ public class ALfrescoQueuePoller extends MessageBrowserPollParent {
          * @param args Command-line arguments (currently unused).
          */
 
-        public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
-                try {
-                        String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
-                                        .toLocalDateTime()
-                                        .format(formatter);
-                        String feedback = "v1.0 :  " + timestamp + " -> New ALFRESCO poll loop on broker : "
-                                        + this.currentSource.getBrokerUrl()
-                                        + " on queue " + this.queuetopoll + ". Interval : " + PollInterval + " seconds";
-                        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
-                                        + feedback
+public void StartPoll(QueueBrowser browser, Session session, Queue queue) {
+    try {
+        String timestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
+                .toLocalDateTime()
+                .format(formatter);
+        String feedback = "v1.0 :  " + timestamp + " -> New ALFRESCO poll loop on broker : "
+                + this.currentSource.getBrokerUrl()
+                + " on queue " + this.queuetopoll + ". Interval : " + PollInterval + " seconds";
+        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BG_YELLOW
+                + feedback
+                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+
+        Enumeration<?> messages = browser.getEnumeration();
+        int count = 0;
+
+        while (messages.hasMoreElements()) {
+            Message msg = (Message) messages.nextElement();
+            count++;
+            System.out.println("Processing " + msg + " message # " + count + " from queue");
+
+            try {
+                String json = "";
+                if (msg instanceof TextMessage) {
+                    TextMessage text = (TextMessage) msg;
+                    json = text.getText();
+                    ObjectMapper mapper = new ObjectMapper();
+
+                    try {
+                        AlfrescoQueMessage QMessage = mapper.readValue(json,
+                                AlfrescoQueMessage.class);
+
+                        // 1. Haal direct het nodeTypeName op
+                        String nodeTypeName = QMessage.getNodeType();
+
+                        // 2. FILTER: Als het geen contain:containdocument is, direct overslaan!
+                        if (!"contain:containdocument".equals(nodeTypeName)) {
+                            System.out.println("Skipping non-document type: " + nodeTypeName);
+                            consumeMessageById(msg.getJMSMessageID());
+                            continue; // Ga door naar het volgende bericht in de while-loop
+                        }
+
+                        Object secondpath = "";
+                        List<Object> paths = QMessage.getPaths();
+                        if (paths != null && paths.size() > 1) {
+                            secondpath = paths.get(1);
+                        }
+
+                        String type = QMessage.getType();
+                        NodeType nodeType = NodeType.fromString(type);
+                        System.out.println(
+                                contain.opensource.shared.constants.AlfrescoConstants.GREEN
+                                        + "Nodetype  : " + nodeType + " | NodeTypeName: " + nodeTypeName
                                         + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
-                        Enumeration<?> messages = browser.getEnumeration();
-                        int count = 0;
+                        if (nodeType != null) {
+                            if (nodeType.equals(NodeType.NODEREMOVED)) {
+                                // Verwijdering logica
+                                String action = QMessage.getId() + " : "
+                                        + QMessage.getName()
+                                        + " deleted from Alfresco by user "
+                                        + QMessage.getUsername();
+                                System.out.println(action);
 
-                        while (messages.hasMoreElements()) {
-                                Message msg = (Message) messages.nextElement();
-                                count++;
-                                System.out.println("Processing " + msg + " message # " + count + " from queue");
+                                logalfrescoiodeletedendpoint(QMessage,
+                                        secondpath.toString());
+                            } else {
+                                // REGULIERE VERWERKING (Create / Update)
+                                Hashtable<String, String> migrateinfo = processalfresconode(
+                                        QMessage.getNodeId(),
+                                        secondpath.toString());
 
-                                try {
-                                        String json = "";
-                                        if (msg instanceof TextMessage) {
-                                                TextMessage text = (TextMessage) msg;
-                                                json = text.getText();
-                                                ObjectMapper mapper = new ObjectMapper();
+                                if (migrateinfo != null) {
+                                    if (migrateinfo.get("platformto") != null
+                                            && !migrateinfo.get("platformto").equals("<NO MOVE>")) {
 
-                                                try {
-                                                        AlfrescoQueMessage QMessage = mapper.readValue(json,
-                                                                        AlfrescoQueMessage.class);
-                                                        Object secondpath = "";
-                                                        List<Object> paths = QMessage.getPaths();
-                                                        if (paths != null && paths.size() > 1) {
-                                                                secondpath = paths.get(1);
-                                                        }
+                                        List<Object> pathsList = QMessage.getPaths();
+                                        String rawPath = "";
 
-                                                        String type = QMessage.getType();
-                                                        NodeType nodeType = NodeType.fromString(type);
-                                                        System.out.println(
-                                                                        contain.opensource.shared.constants.AlfrescoConstants.GREEN
-                                                                                        + "Nodetype  : " + nodeType
-                                                                                        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-
-                                                        if (nodeType != null ) {
-                                                                // 1. GEWIJZIGD: Controleer of het om een
-                                                                // verwijderingstype gaat
-                                                                if (nodeType.equals(NodeType.NODEREMOVED)) {
-                                                                        String nodeTypeName = QMessage.getNodeType(); // Of
-                                                                                                                      // haal
-                                                                                                                      // het
-                                                                                                                      // op
-                                                                                                                      // uit
-                                                                                                                      // de
-                                                                                                                      // juiste
-                                                                                                                      // eigenschap
-                                                                                                                      // van
-                                                                                                                      // QMessage
-
-                                                                        if ("contain:containdocument"
-                                                                                        .equals(nodeTypeName)) {
-                                                                                String action = QMessage.getId() + " : "
-                                                                                                + QMessage.getName()
-                                                                                                + " deleted from Alfresco by user "
-                                                                                                + QMessage.getUsername();
-                                                                                System.out.println(action);
-
-                                                                                logalfrescoiodeletedendpoint(QMessage,
-                                                                                                secondpath.toString());
-                                                                        } else {
-                                                                                System.out.println(
-                                                                                                "Skipping deletion log for non-document type: "
-                                                                                                                + nodeTypeName);
-                                                                        }
-                                                                } else {
-                                                                        // 2. REGULIERE VERWERKING (Create / Update)
-                                                                        Hashtable<String, String> migrateinfo = processalfresconode(
-                                                                                        QMessage.getNodeId(),
-                                                                                        secondpath.toString());
-
-                                                                        if (migrateinfo != null) {
-                                                                                if (migrateinfo.get(
-                                                                                                "platformto") != null
-                                                                                                && !migrateinfo.get(
-                                                                                                                "platformto")
-                                                                                                                .equals("<NO MOVE>")) {
-
-                                                                                        List<Object> pathsList = QMessage
-                                                                                                        .getPaths();
-                                                                                        String rawPath = "";
-
-                                                                                        if (pathsList != null
-                                                                                                        && !pathsList.isEmpty()) {
-                                                                                                if (pathsList.size() >= 2
-                                                                                                                && pathsList.get(
-                                                                                                                                1) instanceof List) {
-                                                                                                        List<?> internalList = (List<?>) pathsList
-                                                                                                                        .get(1);
-                                                                                                        rawPath = internalList
-                                                                                                                        .get(0)
-                                                                                                                        .toString();
-                                                                                                } else {
-                                                                                                        rawPath = pathsList
-                                                                                                                        .get(0)
-                                                                                                                        .toString();
-                                                                                                }
-                                                                                        }
-
-                                                                                        if (!rawPath.isEmpty()) {
-                                                                                                String cleanPath = rawPath
-                                                                                                                .replace("[", "")
-                                                                                                                .replace("]", "");
-                                                                                                int lastSlash = cleanPath
-                                                                                                                .lastIndexOf("/");
-                                                                                                String folderOnly = (lastSlash != -1)
-                                                                                                                ? cleanPath.substring(
-                                                                                                                                0,
-                                                                                                                                lastSlash)
-                                                                                                                : cleanPath;
-
-                                                                                                SendMigrationMessage(
-                                                                                                                folderOnly,
-                                                                                                                QMessage.getNodeId()
-                                                                                                                                .toString(),
-                                                                                                                "-",
-                                                                                                                AlfrescoConstants.ContainPlatforms.ALFRESCO
-                                                                                                                                .name(),
-                                                                                                                migrateinfo);
-                                                                                        }
-                                                                                }
-                                                                        }
-                                                                }
-                                                        }
-                                                        consumeMessageById(msg.getJMSMessageID());
-                                                } catch (Exception innerEx) {
-                                                        System.err.println("Failed to parse or process message JSON:");
-                                                        innerEx.printStackTrace();
-                                                }
-
-                                                System.out.println(
-                                                                contain.opensource.shared.constants.AlfrescoConstants.RED
-                                                                                + "Processing message: " + json
-                                                                                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
-                                        } else {
-                                                System.out.println(
-                                                                contain.opensource.shared.constants.AlfrescoConstants.RED
-                                                                                + "Processing non-text message: " + msg
-                                                                                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                                        if (pathsList != null && !pathsList.isEmpty()) {
+                                            if (pathsList.size() >= 2
+                                                    && pathsList.get(1) instanceof List) {
+                                                List<?> internalList = (List<?>) pathsList.get(1);
+                                                rawPath = internalList.get(0).toString();
+                                            } else {
+                                                rawPath = pathsList.get(0).toString();
+                                            }
                                         }
-                                } catch (JMSException processingError) {
-                                        System.err.println("Error while processing message, ROLLBACK.");
-                                        processingError.printStackTrace();
+
+                                        if (!rawPath.isEmpty()) {
+                                            String cleanPath = rawPath
+                                                    .replace("[", "")
+                                                    .replace("]", "");
+                                            int lastSlash = cleanPath.lastIndexOf("/");
+                                            String folderOnly = (lastSlash != -1)
+                                                    ? cleanPath.substring(0, lastSlash)
+                                                    : cleanPath;
+
+                                            SendMigrationMessage(
+                                                    folderOnly,
+                                                    QMessage.getNodeId().toString(),
+                                                    "-",
+                                                    AlfrescoConstants.ContainPlatforms.ALFRESCO.name(),
+                                                    migrateinfo);
+                                        }
+                                    }
                                 }
+                            }
                         }
-                } catch (JMSException e) {
-                        System.err.println("Error polling the queue:");
-                        e.printStackTrace();
+                        consumeMessageById(msg.getJMSMessageID());
+                    } catch (Exception innerEx) {
+                        System.err.println("Failed to parse or process message JSON:");
+                        innerEx.printStackTrace();
+                    }
+
+                    System.out.println(
+                            contain.opensource.shared.constants.AlfrescoConstants.RED
+                                    + "Processing message: " + json
+                                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+                } else {
+                    System.out.println(
+                            contain.opensource.shared.constants.AlfrescoConstants.RED
+                                    + "Processing non-text message: " + msg
+                                    + contain.opensource.shared.constants.AlfrescoConstants.RESET);
                 }
+            } catch (JMSException processingError) {
+                System.err.println("Error while processing message, ROLLBACK.");
+                processingError.printStackTrace();
+            }
         }
+    } catch (JMSException e) {
+        System.err.println("Error polling the queue:");
+        e.printStackTrace();
+    }
+}
 
         private Hashtable<String, String> processalfresconode(String nodeid, String secondpath) throws Exception {
                 try {

@@ -5,7 +5,7 @@ $username  = "admin"
 $password  = "admin"
 
 $sitesToProcess = @("ontobind", "ontobindarchive")
-#$sitesToProcess = @("Test1")
+#$sitesToProcess = @("Ruben")
 
 $folderCollection = @("Secret", "Internal", "Unclassified", "Confidential")
 

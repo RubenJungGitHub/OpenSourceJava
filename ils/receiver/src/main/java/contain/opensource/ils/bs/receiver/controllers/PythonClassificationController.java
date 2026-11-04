@@ -57,10 +57,11 @@ public class PythonClassificationController {
             }
         }
 
-        System.out.println("Extracted text to be classified : " + extractedText);
-        if (extractedText.isBlank()) {
-            return ResponseEntity.ok(new ClassificationResult("bart-large-mnli", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT", "UNKNOWN_GUID"));
-        }
+        //<Debug>
+        //System.out.println("Extracted text to be classified : " + extractedText);
+        //if (extractedText.isBlank()) {
+       //   return ResponseEntity.ok(new ClassificationResult("bart-large-mnli", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT", "UNKNOWN_GUID"));
+       // }
 
         // 3. Truncation om te langeketen-problemen te voorkomen
         if (extractedText.length() > 4000) {

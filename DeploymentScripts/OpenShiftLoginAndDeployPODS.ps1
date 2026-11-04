@@ -4,7 +4,8 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~SCs0CDHuTPfhQEtPzilcBLPuEqBaH0WiUeyVEB5Lnm0'
+$token  = 'sha256~QvOTf_iwnkaWH50ZBLXvlYRRo0QXj9RwQCvba35eaCc'
+
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
@@ -47,14 +48,14 @@ $PODS = @(
     #"ActiveMQ"
     #"Routes"
     #"Ollama"
-    "AlfrescoQueuePoller"
+    #"AlfrescoQueuePoller"
     #"SharepointQueuePoller"
     #"MigrationQueuePoller"
     #"MongoDB"
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    #"Receiver"
+    "Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -909,11 +910,13 @@ if ($PODS -like "*ollama*") {
 #Restart AlfrescoPoller omdat deze na receiverdeployment stopt
 
 
+$project = "contain-dvl"
 
-Write-Host "Zoeken naar de alfrescoqueuepoller deployment in namespace '$project'..." -ForegroundColor Cyan
+Write-Host "Zoeken naar de alfrescoqueuepoller deployment of deploymentconfig in namespace '$project'..." -ForegroundColor Cyan
 
-# Zoek flexibel naar de resource bij zowel deploymentconfigs (dc) als deployments
-$rawResult = oc get deploymentconfigs,deployments -n $project -o custom-columns=":metadata.name" --no-headers 2>$null | Select-String "alfrescoqueuepoller"
+
+# Zoek flexibel naar deployments/dc's en negeer warnings volledig
+$rawResult = oc get deploymentconfigs,deployments -n $project -o custom-columns=":metadata.name" --no-headers 2>&1 | Select-String "alfrescoqueuepoller"
 
 if ($null -eq $rawResult) {
     Write-Host "Geen deployment of deploymentconfig gevonden met de naam 'alfrescoqueuepoller'!" -ForegroundColor Red
@@ -923,22 +926,23 @@ if ($null -eq $rawResult) {
 $deploymentName = $rawResult.Line.Trim()
 Write-Host "Gevonden resource: $deploymentName" -ForegroundColor Green
 
-# Bepaal automatisch of het een deploymentconfig of deployment is om te scalen
+# Bepaal automatisch of het een deploymentconfig of deployment is
 $resourceType = if (oc get dc $deploymentName -n $project --no-headers 2>$null) { "dc" } else { "deployment" }
 
-# 2. Scale omlaag naar 0 om te stoppen
-Write-Host "$resourceType '$deploymentName' wordt gestopt (replicas = 0)..." -ForegroundColor Yellow
+# 2. Harde reset: Verwijder direct de actieve pods, OpenShift start ze automatisch opnieuw op
+Write-Host "Bezig met geforceerd herstarten van pods voor $resourceType '$deploymentName'..." -ForegroundColor Yellow
+
+# Dit zoekt alle pods die bij deze deployment horen en gooit ze direct weg
+oc delete pods -l app=$deploymentName -n $project --ignore-not-found=true
+# Als de labels anders zijn, pakken we ze via de deployment zelf:
+oc delete pod -l deployment=$deploymentName -n $project --ignore-not-found=true 2>$null
+
+# Voor de zekerheid: als fallback toch even kort scalen naar 0 en direct weer naar 1 als de pods niet weg zijn
 oc scale ${resourceType}/$deploymentName --replicas=0 -n $project
-
-# Wacht even zodat de pod netjes wordt opgeruimd
-Start-Sleep -Seconds 3
-
-# 3. Scale weer omhoog naar 1 om een schone herstart te triggeren
-Write-Host "$resourceType '$deploymentName' wordt weer gestart (replicas = 1)..." -ForegroundColor Yellow
+Start-Sleep -Seconds 2
 oc scale ${resourceType}/$deploymentName --replicas=1 -n $project
 
-Write-Host "Klaar! De poller is succesvol herstart." -ForegroundColor Green
-
+Write-Host "Klaar! De poller is geforceerd herstart." -ForegroundColor Green
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 docker system prune -a --volumes --force

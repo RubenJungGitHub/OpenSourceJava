@@ -59,10 +59,10 @@ public class ChatGPTClassificationController {
             }
         }
 
-        // 3. Controleer of er daadwerkelijk bruikbare tekst is overgebleven
-        System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_CYAN
-                + ("Extracted text to be classified : " + extractedText)
-                + contain.opensource.shared.constants.AlfrescoConstants.RESET);
+        // 3. <Debug> Controleer of er daadwerkelijk bruikbare tekst is overgebleven
+        //System.out.println(contain.opensource.shared.constants.AlfrescoConstants.BRIGHT_CYAN
+        //        + ("Extracted text to be classified : " + extractedText)
+        //        + contain.opensource.shared.constants.AlfrescoConstants.RESET);
 
         System.out.println("Extracted text to be classified : " + extractedText);
         if (extractedText.isBlank()) {

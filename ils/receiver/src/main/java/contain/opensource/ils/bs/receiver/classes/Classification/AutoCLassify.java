@@ -55,10 +55,10 @@ public class AutoCLassify {
     } else {
       // Disable gemini for now
       // 5% Kans (van 0.95 tot 1.0): Gemini Classifier endpoint
-      // return callClassifier(content, restTemplate,
-      // "http://localhost:8080/api/v1/classifygeminiservice",
-      // "geminiclassifier");
-      return callClassifier(content, restTemplate, "http://localhost:8080/api/v1/classifypythonService",
+       //return callClassifier(content, restTemplate,
+       //"http://localhost:8080/api/v1/classifygeminiservice",
+       //"geminiclassifier");
+             return callClassifier(content, restTemplate, "http://localhost:8080/api/v1/classifypythonService",
           "pythonclassifier");
     }
   }

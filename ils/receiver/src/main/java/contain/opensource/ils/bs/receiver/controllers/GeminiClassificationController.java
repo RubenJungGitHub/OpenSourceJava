@@ -8,6 +8,8 @@ import contain.opensource.ils.bs.receiver.classes.Classification.ClassificationR
 import contain.opensource.ils.bs.receiver.model.TaxonomyResponse;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,33 +43,46 @@ public class GeminiClassificationController {
                 return ResponseEntity.badRequest().build();
             }
 
+            // 1. Tika verwerkt de byte array rechtstreeks uit het geheugen
             String extractedText = tika.parseToString(new ByteArrayInputStream(content)).trim();
 
             if (extractedText.isBlank()) {
-                return ResponseEntity.ok(new ClassificationResult("Gemini", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT","<Unknown>"));
+                return ResponseEntity.ok(new ClassificationResult("Gemini", "Unstructured non text : unable to classify", 0.0, "EMPTY_CONTENT", "UNKNOWN_GUID"));
             }
 
+            // 2. Truncation: voorkom dat hele lange documenten het context window laten vollopen
             if (extractedText.length() > 4000) {
                 extractedText = extractedText.substring(0, 4000);
             }
 
-            // 1. Haal de taxonomie op via het directe veld 'options'
+            // 3. Haal taxonomie op en bouw een mapping van Label -> Value (GUID)
             TaxonomyResponse taxonomy = taxonomyServiceClient.GetTaxonomies("classification", "en");
 
             String labelsList = "";
             StringBuilder sb = new StringBuilder();
+            Map<String, String> labelToValueMap = new HashMap<>();
+
             if (taxonomy != null && taxonomy.options != null) {
                 for (var option : taxonomy.options) {
-                    sb.append("- ").append(option.label).append("\n");
+                    String cleanLabel = option.label != null ? option.label.replaceFirst("^-\\s*", "").trim() : "";
+                    String guidValue = option.value; // De unieke ID/value uit VocBench
+
+                    if (!cleanLabel.isEmpty()) {
+                        sb.append("- ").append(cleanLabel).append("\n");
+                        if (guidValue != null) {
+                            labelToValueMap.put(cleanLabel, guidValue);
+                        }
+                    }
                 }
             }
 
             labelsList = Arrays.stream(sb.toString().split("\n"))
                     .map(line -> line.trim())
+                    .filter(line -> !line.toLowerCase().contains("unable to classify content"))
                     .filter(line -> !line.toLowerCase().contains("unclassified"))
                     .collect(Collectors.joining("\n"));
 
-            // 2. Bouw de prompt dynamisch op met .formatted()
+            // 4. Bouw de prompt dynamisch op
             String prompt = """
                     Classificeer de onderstaande documenttekst.
                     Kies uitsluitend EÉN van de volgende labels:
@@ -78,32 +93,43 @@ public class GeminiClassificationController {
                     %s
                     """.formatted(labelsList, extractedText);
 
-            // 3. Roep Gemini aan
-            String suggestedLabel = geminiReceiverService.evaluate(prompt);
+            // 5. Query Gemini en valideer het resultaat
             List<String> validLabels = Arrays.asList(labelsList.split("\n"));
+            String rawResponse = geminiReceiverService.evaluate(prompt);
+            String suggestedLabel = rawResponse != null ? rawResponse.trim() : "";
             boolean isValid = false;
+
             for (String validLabel : validLabels) {
                 String cleanValidLabel = validLabel.replaceFirst("^-\\s*", "").trim();
-                if (cleanValidLabel.equalsIgnoreCase(suggestedLabel.trim())) {
+                if (cleanValidLabel.equalsIgnoreCase(suggestedLabel)) {
+                    suggestedLabel = cleanValidLabel; // Zorg dat de hoofdletters exact matchen met de taxonomie
                     isValid = true;
                     break;
                 }
             }
-            if (!isValid) {
+
+            if (!isValid) { 
                 suggestedLabel = "No valid label detected : unable to classify";
             }
 
-            if (suggestedLabel != null) {
-                suggestedLabel = suggestedLabel.replaceAll("[^a-zA-Z]", "").trim();
-            } else {
-                suggestedLabel = "No label determined";
-            }
+            // 6. Zoek de bijbehorende GUID (value) op basis van het gekozen label
+            String correspondingGuid = labelToValueMap.getOrDefault(suggestedLabel, "UNKNOWN_GUID");
 
-            return ResponseEntity.ok(new ClassificationResult("Gemini", suggestedLabel, 0.95, "SUCCESS","ToDo"));
+            // 7. Retourneer het resultaat inclusief de juiste GUID
+            ClassificationResult result = new ClassificationResult(
+                "Gemini", 
+                suggestedLabel, 
+                0.95, 
+                "SUCCESS", 
+                correspondingGuid
+            );
+
+            return ResponseEntity.ok(result);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500)
-                    .body(new ClassificationResult("Gemini", "Unclassified", 0.0, "ERROR: " + e.getMessage(),"<Unknown>"));
+                    .body(new ClassificationResult("Gemini", "Unclassified", 0.0, "ERROR: " + e.getMessage(), "UNKNOWN_GUID"));
         }
     }
 }

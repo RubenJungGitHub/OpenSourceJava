@@ -644,9 +644,20 @@ public class AlfrescoNodeController {
       this.nodeId = nodeid;
       System.out.println("processalfresconodepoint nodeID " + nodeid + " secondpath " + secondpath);
 
+      // 1. Meet de starttijd vóór de stap
+      long startTime = System.currentTimeMillis();
+
       AlfrescoNodeResponse alfrescoresponse = GetNode(nodeid);
       // For now Force Autoclassification value for alfresco.
 
+      // 2. Meet de eindtijd en bereken het verschil
+      long duration = System.currentTimeMillis() - startTime;
+
+      // 3. Log de verstreken tijd (bijv. via System.out of je logger)
+      System.out.println(
+          contain.opensource.shared.constants.AlfrescoConstants.RED
+              + "Performance: GetNode for ID " + nodeid + " and autoclassifiy took " + duration + " ms"
+              + contain.opensource.shared.constants.AlfrescoConstants.RESET);
       try {
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonOutput = objectMapper.writeValueAsString(alfrescoresponse);
@@ -924,13 +935,13 @@ public class AlfrescoNodeController {
 
           // Object ioUUIDValue =
           // alfresconNodeResponse.entry.properties.otherProperties.get("contain:IOUUID");
-          Object ioUUIDValue = rootNode.path("entry")
-              .path("properties")
-              .path("contain:IOUUID")
-              .asText();
+          JsonNode ioUuidNode = rootNode.path("entry").path("properties").path("contain:IOUUID");
 
-          if (ioUUIDValue != null && !ioUUIDValue.toString().isBlank()) {
-            alfresconNodeResponse.UUID = ioUUIDValue.toString();
+          if (!ioUuidNode.isMissingNode() && !ioUuidNode.isNull() && !ioUuidNode.asText().isBlank()) {
+            alfresconNodeResponse.UUID = ioUuidNode.asText();
+          } else {
+            // Fallback: als contain:IOUUID ontbreekt, gebruik dan de nodeid als UUID
+            alfresconNodeResponse.UUID = nodeid;
           }
 
           // Get content and classify
@@ -971,7 +982,9 @@ public class AlfrescoNodeController {
         System.out.println(" Marking                        : " + marking);
         System.out.println(" Suggestedclassification        : " + this.alfresconNodeResponse.Suggestedclassification);
         System.out.println(" SuggestedBy                    : " + this.alfresconNodeResponse.SuggestedBy);
-        System.out.println(" Force suggested classification : " + this.alfresconNodeResponse.ForceSuggestedClassification);
+        System.out
+            .println(
+                " Force suggested classification : " + this.alfresconNodeResponse.getForceSuggestedClassification());
         System.out.println("========================================");
         System.out.println("Node metadata:");
         System.out.println(json);
@@ -1055,15 +1068,13 @@ public class AlfrescoNodeController {
         System.out.println("Suggested classification Result: " + classificationResult.label() + " with confidence: "
             + classificationResult.confidence());
       }
-      //Check if we need to force the suggestedclassification 
-        if(this.alfresconNodeResponse.getForceSuggestedClassification() && !this.alfresconNodeResponse.classificationID.equals(this.alfresconNodeResponse.SuggestedclassificationGuid))
-       {
-        //Now if we want the engine to force classification then always override
+      // Check if we need to force the suggestedclassification
+      if (this.alfresconNodeResponse.getForceSuggestedClassification() && !this.alfresconNodeResponse.classificationID
+          .equals(this.alfresconNodeResponse.SuggestedclassificationGuid)) {
+        // Now if we want the engine to force classification then always override
         this.alfresconNodeResponse.setForceSuggestedClassification();
-         this.alfresconNodeResponse.HasSuggestedClassification = false;
-       }
-
-
+        this.alfresconNodeResponse.HasSuggestedClassification = false;
+      }
 
     } catch (
 
@@ -1155,6 +1166,9 @@ public class AlfrescoNodeController {
           pkihash = "Identical to previous";
           // classVal = this.alfresconNodeResponse.Suggestedclassification;
           actionperformed = eActionPerformed.IOSUGGESTEDCLASSIFICATIONUPDATED;
+          if (this.alfresconNodeResponse.ForceSuggestedClassification) {
+            actionperformed = eActionPerformed.SUGGESTEDCLASSIFICATIONFORCED;
+          }
           // Gebruik hier direct de getter van je object:
           // confVal = this.alfresconNodeResponse.getSuggestedClassificationConfidence();
           propertyValue = alfresconNodeResponse.UUID;
