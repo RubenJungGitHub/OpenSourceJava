@@ -55,7 +55,7 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    #"Receiver"
+    "Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -63,7 +63,7 @@ $PODS = @(
     #'TaxonomyService'
     #'TaxonomyCacher'
     #"ZeroShotClassifier"
-    "ElastisearchGeneric"
+    #"ElastisearchGeneric"
 )
 
 #First start Desktop if not running
@@ -926,61 +926,58 @@ if ($PODS -like "*ollama*") {
         Write-Host "[SUCCESS] Zero-Shot Classifier is deployed and ready!" -ForegroundColor Green
     }
 
-
 # --- STAGE 20 : ElastisearchGeneric---
-    if ($PODS -contains "ElastisearchGeneric") {
+if ($PODS -contains "ElastisearchGeneric") {
 
-        $container  = "elasticsearchgeneric"
-        $localRepo  = "ils-" + $container
-        $remoteRepo = "ils-" + $container
-        $targetTag  = "v1.0"
-        
-        # LET OP: Geen backslash (\) aan het einde van het pad!
-        $folderPath = "D:\contAIn\OpenSourceJava\OpenShift\manifests\elasticsearchgeneric"
+    $container  = "elasticsearchgeneric"
+    $localRepo  = "ils-" + $container
+    $remoteRepo = "ils-" + $container
+    $targetTag  = "v1.0"
+    
+    $folderPath = "D:\contAIn\OpenSourceJava\OpenShift\manifests\elasticsearchgeneric"
 
-        Write-Host "[INFO] Building fresh Docker image for ElastisearchGeneric  (this may take a few minutes for PyTorch)..." -ForegroundColor Cyan
-        
-        # Laat de output van Docker nu WEL zien zodat je de voortgang ziet
-        docker build -t "$localRepo`:latest" $folderPath
+    Write-Host "[INFO] Building fresh Docker image for ElastisearchGeneric..." -ForegroundColor Cyan
+    
+    docker build -t "$localRepo`:latest" $folderPath
 
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Docker build failed for ElastisearchGeneric!" -ForegroundColor Red
-            exit 1
-        }
-
-        # 2. Tag en push naar GitHub Packages (GHCR)
-        $localImage = "$localRepo`:latest"
-        $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
-
-        Write-Host "[INFO] Tagging local image to $ghcrImage..." -ForegroundColor Cyan
-        docker tag $localImage $ghcrImage
-
-        Write-Host "[INFO] Pushing fresh image to GitHub..." -ForegroundColor Green
-        docker push $ghcrImage
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Docker push failed for ElastisearchGeneric!" -ForegroundColor Red
-            exit 1
-        }
-        Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
-
-        # 3. Pas ná het pushen de OpenShift manifesten toe
-        Write-Host "[INFO] Starting recreation of ElastisearchGeneric in OpenShift..." -ForegroundColor Cyan
-        oc delete -R -f $folderPath -n $project --ignore-not-found --wait=false
-        oc apply -R -f $folderPath -n $project
-
-        Write-Host "[INFO] Waiting for ElastisearchGeneric pod to become ready..." -ForegroundColor Yellow
-        oc rollout status deployment/zero-shot-classifier -n $project --timeout=300s
-
-        # 4. Exposeer de service route als die nog niet bestaat
-        $routeExists = oc get route vocbench-classifier-route -n $project --ignore-not-found
-        if (-not $routeExists) {
-            Write-Host "[INFO] Exposing ElastisearchGeneric-service route..." -ForegroundColor Cyan
-            oc expose service ElastisearchGeneric-service --name=ElastisearchGeneric-route --port=8000 -n $project
-        }
-
-        Write-Host "[SUCCESS] ElastisearchGeneric is deployed and ready!" -ForegroundColor Green
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker build failed for ElastisearchGeneric!" -ForegroundColor Red
+        exit 1
     }
+
+    # 2. Tag en push naar GitHub Packages (GHCR)
+    $localImage = "$localRepo`:latest"
+    $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
+
+    Write-Host "[INFO] Tagging local image to $ghcrImage..." -ForegroundColor Cyan
+    docker tag $localImage $ghcrImage
+
+    Write-Host "[INFO] Pushing fresh image to GitHub..." -ForegroundColor Green
+    docker push $ghcrImage
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker push failed for ElastisearchGeneric!" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
+
+    # 3. Pas ná het pushen de OpenShift manifesten toe (inclusief PVC en Deployment)
+    Write-Host "[INFO] Starting recreation of ElastisearchGeneric in OpenShift..." -ForegroundColor Cyan
+    oc delete -R -f $folderPath -n $project --ignore-not-found --wait=false
+    oc apply -R -f $folderPath -n $project
+
+    Write-Host "[INFO] Waiting for enterprise-elasticsearch pod to become ready..." -ForegroundColor Yellow
+    oc rollout status deployment/enterprise-elasticsearch -n $project --timeout=300s
+
+    # 4. Exposeer de service route optioneel op poort 9200 indien gewenst
+    $routeExists = oc get route elasticsearch-route -n $project --ignore-not-found
+    if (-not $routeExists) {
+        Write-Host "[INFO] Exposing enterprise-elasticsearch route..." -ForegroundColor Cyan
+        oc expose service elasticsearch-svc --name=elasticsearch-route --port=9200 -n $project
+    }
+
+    Write-Host "[SUCCESS] ElastisearchGeneric is deployed and ready!" -ForegroundColor Green
+}
 
 
 

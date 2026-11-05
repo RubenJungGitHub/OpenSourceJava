@@ -20,7 +20,7 @@ spec:
         - name: github-secret
       containers:
         - name: elasticsearch
-          image: ghcr.io/RubenJungGotHub/ils-elasticsearchgeneric:latest
+          image: image: ghcr.io/rubenjunggithub/ils-elasticsearchgeneric:latest
           resources:
             limits:
               memory: "4Gi"
