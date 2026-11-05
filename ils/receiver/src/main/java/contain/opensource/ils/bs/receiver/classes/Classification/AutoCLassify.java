@@ -41,8 +41,8 @@ public class AutoCLassify {
     // Genereer een random getal tussen 0.0 en 1.0 voor de gewogen verdeling
     double roll = random.nextDouble();
 
-    // Temp to force llmaclassifier
-    // roll = 0.75;
+    // Temp to force python classifier for now, until we have a better LLM model
+     roll = 0.5;
 
     if (roll < 0.60) {
       // 60% Kans: Bart-large (Zero-Shot Classifier)

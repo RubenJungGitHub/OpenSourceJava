@@ -4,7 +4,7 @@ $quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~QvOTf_iwnkaWH50ZBLXvlYRRo0QXj9RwQCvba35eaCc'
+$token  = 'sha256~q8zkeJusASfmXmBsufP50AH864v9dahXCvzwMJyDK90'
 
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
@@ -55,7 +55,7 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -63,6 +63,7 @@ $PODS = @(
     #'TaxonomyService'
     #'TaxonomyCacher'
     #"ZeroShotClassifier"
+    "ElastisearchGeneric"
 )
 
 #First start Desktop if not running
@@ -565,6 +566,39 @@ if ($PODS -contains "Receiver") {
     Write-Host "[SUCCESS] Receiver Swagger UI is ready!" -ForegroundColor Green
     Write-Host "URL: $swaggerUrl" -ForegroundColor Cyan
     Start-Process $swaggerUrl
+
+    
+Write-Host "Zoeken naar de alfrescoqueuepoller deployment of deploymentconfig in namespace '$project'..." -ForegroundColor Cyan
+
+
+# Zoek flexibel naar deployments/dc's en negeer warnings volledig
+$rawResult = oc get deploymentconfigs,deployments -n $project -o custom-columns=":metadata.name" --no-headers 2>&1 | Select-String "alfrescoqueuepoller"
+
+if ($null -eq $rawResult) {
+    Write-Host "Geen deployment of deploymentconfig gevonden met de naam 'alfrescoqueuepoller'!" -ForegroundColor Red
+    exit
+}
+
+$deploymentName = $rawResult.Line.Trim()
+Write-Host "Gevonden resource: $deploymentName" -ForegroundColor Green
+
+# Bepaal automatisch of het een deploymentconfig of deployment is
+$resourceType = if (oc get dc $deploymentName -n $project --no-headers 2>$null) { "dc" } else { "deployment" }
+
+# 2. Harde reset: Verwijder direct de actieve pods, OpenShift start ze automatisch opnieuw op
+Write-Host "Bezig met geforceerd herstarten van pods voor $resourceType '$deploymentName'..." -ForegroundColor Yellow
+
+# Dit zoekt alle pods die bij deze deployment horen en gooit ze direct weg
+oc delete pods -l app=$deploymentName -n $project --ignore-not-found=true
+# Als de labels anders zijn, pakken we ze via de deployment zelf:
+oc delete pod -l deployment=$deploymentName -n $project --ignore-not-found=true 2>$null
+
+# Voor de zekerheid: als fallback toch even kort scalen naar 0 en direct weer naar 1 als de pods niet weg zijn
+oc scale ${resourceType}/$deploymentName --replicas=0 -n $project
+Start-Sleep -Seconds 2
+oc scale ${resourceType}/$deploymentName --replicas=1 -n $project
+
+Write-Host "Klaar! De poller is geforceerd herstart." -ForegroundColor Green
 }
 
 # --- STAGE 9: AlfrescoQueuePoller ---
@@ -837,9 +871,7 @@ if ($PODS -like "*ollama*") {
 }
 
 
-# --- STAGE 19 : Zero-Shot Classifier ---
-# --- STAGE: Zero-Shot Classifier ---
-# --- STAGE: Zero-Shot Classifier ---
+    # --- STAGE 19 : Zero-Shot Classifier ---
     if ($PODS -contains "ZeroShotClassifier") {
 
         $container  = "zero-shot-classifier"
@@ -895,54 +927,65 @@ if ($PODS -like "*ollama*") {
     }
 
 
+# --- STAGE 20 : ElastisearchGeneric---
+    if ($PODS -contains "ElastisearchGeneric") {
 
-# --- STAGE 19: Complete Docker Data Reset (Vervangt de vhdx door een lege schijf) ---
-#Write-Host "[INFO] Shutting down Docker and WSL to wipe the bloated virtual disk..." -ForegroundColor Cyan
-#Stop-Process -Name "Docker Desktop" -ErrorAction SilentlyContinue
-#wsl --shutdown
-#Start-Sleep -Seconds 3
+        $container  = "elasticsearchgeneric"
+        $localRepo  = "ils-" + $container
+        $remoteRepo = "ils-" + $container
+        $targetTag  = "v1.0"
+        
+        # LET OP: Geen backslash (\) aan het einde van het pad!
+        $folderPath = "D:\contAIn\OpenSourceJava\OpenShift\manifests\elasticsearchgeneric"
 
-#Write-Host "[INFO] Removing old bloated docker data disk..." -ForegroundColor Cyan
-#wsl --unregister docker-desktop-data
+        Write-Host "[INFO] Building fresh Docker image for ElastisearchGeneric  (this may take a few minutes for PyTorch)..." -ForegroundColor Cyan
+        
+        # Laat de output van Docker nu WEL zien zodat je de voortgang ziet
+        docker build -t "$localRepo`:latest" $folderPath
 
-#Write-Host "[SUCCESS] Docker data disk wiped! A fresh, empty disk will be created on next startup." -ForegroundColor Green
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Docker build failed for ElastisearchGeneric!" -ForegroundColor Red
+            exit 1
+        }
 
-#Restart AlfrescoPoller omdat deze na receiverdeployment stopt
+        # 2. Tag en push naar GitHub Packages (GHCR)
+        $localImage = "$localRepo`:latest"
+        $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
+
+        Write-Host "[INFO] Tagging local image to $ghcrImage..." -ForegroundColor Cyan
+        docker tag $localImage $ghcrImage
+
+        Write-Host "[INFO] Pushing fresh image to GitHub..." -ForegroundColor Green
+        docker push $ghcrImage
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Docker push failed for ElastisearchGeneric!" -ForegroundColor Red
+            exit 1
+        }
+        Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
+
+        # 3. Pas ná het pushen de OpenShift manifesten toe
+        Write-Host "[INFO] Starting recreation of ElastisearchGeneric in OpenShift..." -ForegroundColor Cyan
+        oc delete -R -f $folderPath -n $project --ignore-not-found --wait=false
+        oc apply -R -f $folderPath -n $project
+
+        Write-Host "[INFO] Waiting for ElastisearchGeneric pod to become ready..." -ForegroundColor Yellow
+        oc rollout status deployment/zero-shot-classifier -n $project --timeout=300s
+
+        # 4. Exposeer de service route als die nog niet bestaat
+        $routeExists = oc get route vocbench-classifier-route -n $project --ignore-not-found
+        if (-not $routeExists) {
+            Write-Host "[INFO] Exposing ElastisearchGeneric-service route..." -ForegroundColor Cyan
+            oc expose service ElastisearchGeneric-service --name=ElastisearchGeneric-route --port=8000 -n $project
+        }
+
+        Write-Host "[SUCCESS] ElastisearchGeneric is deployed and ready!" -ForegroundColor Green
+    }
 
 
-$project = "contain-dvl"
-
-Write-Host "Zoeken naar de alfrescoqueuepoller deployment of deploymentconfig in namespace '$project'..." -ForegroundColor Cyan
 
 
-# Zoek flexibel naar deployments/dc's en negeer warnings volledig
-$rawResult = oc get deploymentconfigs,deployments -n $project -o custom-columns=":metadata.name" --no-headers 2>&1 | Select-String "alfrescoqueuepoller"
 
-if ($null -eq $rawResult) {
-    Write-Host "Geen deployment of deploymentconfig gevonden met de naam 'alfrescoqueuepoller'!" -ForegroundColor Red
-    exit
-}
-
-$deploymentName = $rawResult.Line.Trim()
-Write-Host "Gevonden resource: $deploymentName" -ForegroundColor Green
-
-# Bepaal automatisch of het een deploymentconfig of deployment is
-$resourceType = if (oc get dc $deploymentName -n $project --no-headers 2>$null) { "dc" } else { "deployment" }
-
-# 2. Harde reset: Verwijder direct de actieve pods, OpenShift start ze automatisch opnieuw op
-Write-Host "Bezig met geforceerd herstarten van pods voor $resourceType '$deploymentName'..." -ForegroundColor Yellow
-
-# Dit zoekt alle pods die bij deze deployment horen en gooit ze direct weg
-oc delete pods -l app=$deploymentName -n $project --ignore-not-found=true
-# Als de labels anders zijn, pakken we ze via de deployment zelf:
-oc delete pod -l deployment=$deploymentName -n $project --ignore-not-found=true 2>$null
-
-# Voor de zekerheid: als fallback toch even kort scalen naar 0 en direct weer naar 1 als de pods niet weg zijn
-oc scale ${resourceType}/$deploymentName --replicas=0 -n $project
-Start-Sleep -Seconds 2
-oc scale ${resourceType}/$deploymentName --replicas=1 -n $project
-
-Write-Host "Klaar! De poller is geforceerd herstart." -ForegroundColor Green
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 docker system prune -a --volumes --force
