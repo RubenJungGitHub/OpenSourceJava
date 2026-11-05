@@ -55,7 +55,7 @@ $PODS = @(
     #"REDIS"
     #"RHBC",
     #"RHKIE"
-    "Receiver"
+    #"Receiver"
     #"SharePointNotification"
     #"SharePointSubscription"
     #'GraphDB'
@@ -63,7 +63,7 @@ $PODS = @(
     #'TaxonomyService'
     #'TaxonomyCacher'
     #"ZeroShotClassifier"
-    #"ElastisearchGeneric"
+    "ElastisearchGeneric"
 )
 
 #First start Desktop if not running

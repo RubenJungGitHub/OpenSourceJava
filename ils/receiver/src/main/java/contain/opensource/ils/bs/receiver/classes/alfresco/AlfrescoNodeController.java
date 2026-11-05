@@ -685,7 +685,7 @@ public class AlfrescoNodeController {
       if (!alfrescoresponse.HasUUID) {
         boolean uuiddupdateResult = UpdateNode(AlfrescoConstants.NodeTypeFields.UUID, Optional.ofNullable(secondpath),
             Optional.empty());
-            bindIO = false;
+            bindIO = true;
 
       } else {
         if (!alfrescoresponse.HasSuggestedClassification) {
