@@ -15,9 +15,8 @@ spec:
       labels:
         app: elasticsearch
     spec:
-      # Nodig omdat het package op private staat in GitHub
       imagePullSecrets:
-        - name: github-secret
+        - name: containgithubrepos
       containers:
         - name: elasticsearch
           image: ghcr.io/rubenjunggithub/ils-elasticsearchgeneric:latest
@@ -32,10 +31,7 @@ spec:
             - name: discovery.type
               value: "single-node"
             - name: ELASTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: es-secrets
-                  key: elastic-password
+              value: "admin"  # Of het wachtwoord dat jouw andere services gebruiken
             - name: xpack.security.enabled
               value: "true"
             - name: "ES_JAVA_OPTS"
@@ -50,17 +46,3 @@ spec:
         - name: es-data
           persistentVolumeClaim:
             claimName: es-pv-claim
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: enterprise-elasticsearch-svc
-  namespace: search-system
-spec:
-  selector:
-    app: elasticsearch
-  ports:
-    - protocol: TCP
-      port: 9200
-      targetPort: 9200
-  type: ClusterIP
