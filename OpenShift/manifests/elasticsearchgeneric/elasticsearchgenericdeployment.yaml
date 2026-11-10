@@ -5,7 +5,7 @@ metadata:
   namespace: contain-dvl
   labels:
     app: elasticsearch
-    role: Search
+    Search: ""
 spec:
   replicas: 1
   selector:
@@ -15,7 +15,7 @@ spec:
     metadata:
       labels:
         app: elasticsearch
-        role: Search   # <--- Voeg het label hier ook toe!
+        Search: ""
     spec:
       imagePullSecrets:
         - name: containgithubrepos
