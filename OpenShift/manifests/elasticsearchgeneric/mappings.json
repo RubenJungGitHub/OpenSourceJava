@@ -1,0 +1,14 @@
+{
+  "mappings": {
+    "properties": {
+      "id": { "type": "keyword" },
+      "title": { "type": "text" },
+      "content": { "type": "text" },
+      "source_system": { "type": "keyword" },
+      "file_type": { "type": "keyword" },
+      "url": { "type": "keyword" },
+      "created_date": { "type": "date" },
+      "access_control": { "type": "keyword" }
+    }
+  }
+}

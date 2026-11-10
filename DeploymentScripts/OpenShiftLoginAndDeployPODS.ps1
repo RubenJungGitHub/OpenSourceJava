@@ -63,7 +63,7 @@ $PODS = @(
     #'TaxonomyService'
     #'TaxonomyCacher'
     #"ZeroShotClassifier"
-    "ElastisearchGeneric"
+    "EnterpriseSearch"
 )
 
 #First start Desktop if not running
@@ -925,8 +925,10 @@ if ($PODS -like "*ollama*") {
 
         Write-Host "[SUCCESS] Zero-Shot Classifier is deployed and ready!" -ForegroundColor Green
     }
-    # --- STAGE 20 : ElastisearchGeneric ---
-    if ($PODS -contains "ElastisearchGeneric") {
+
+
+# --- STAGE 20 : EnterpriseSearch ---
+    if ($PODS -contains "EnterpriseSearch") {
 
         $container   = "elasticsearchgeneric"
         $localRepo   = "ils-" + $container
@@ -963,8 +965,11 @@ if ($PODS -like "*ollama*") {
         # 3. OpenShift manifesten toepassen op basis van de losse bestanden in de map
         Write-Host "[INFO] Applying OpenShift manifests (PVC, Deployment, Service) from folder..." -ForegroundColor Cyan
         
-        # -R leest alle losse yaml-bestanden uit de map (pvc, deployment, service)
         oc apply -R -f $folderPath -n $project
+
+        # Forceer een rolling restart zodat OpenShift de nieuwe image direct ophaalt en ververst
+        Write-Host "[INFO] Forcing rollout restart to fetch latest image..." -ForegroundColor Cyan
+        oc rollout restart deployment/enterprise-elasticsearch -n $project
 
         Write-Host "[INFO] Waiting for enterprise-elasticsearch pod to become ready..." -ForegroundColor Yellow
         oc rollout status deployment/enterprise-elasticsearch -n $project --timeout=300s
@@ -976,9 +981,45 @@ if ($PODS -like "*ollama*") {
             oc expose service enterprise-elasticsearch-svc --name=elasticsearch-route --port=9200 -n $project
         }
 
+        # 5. Automatisch aanmaken van de uniforme index en mapping via een tijdelijke achtergrond port-forward
+        Write-Host "[INFO] Initializing Enterprise Search index and mapping..." -ForegroundColor Cyan
+
+        $pfJob = Start-Job -ScriptBlock {
+            param($proj)
+            oc port-forward svc/enterprise-elasticsearch-svc 9200:9200 -n $proj
+        } -ArgumentList $project
+
+        # Geef de port-forward enkele seconden de tijd om op te starten
+        Start-Sleep -Seconds 6
+
+        try {
+            $mappingPath = Join-Path $folderPath "mapping.json"
+            
+            if (Test-Path $mappingPath) {
+                Write-Host "[INFO] Applying mapping from $mappingPath..." -ForegroundColor Cyan
+                
+                # Stuur het bestand direct door naar Elasticsearch met authenticatie
+                $response = curl.exe -X PUT "http://localhost:9200/enterprise-search-index" `
+                    -H "Content-Type: application/json" `
+                    -u "elastic:admin" `
+                    --data "@$mappingPath"
+                
+                Write-Host "[SUCCESS] Index 'enterprise-search-index' successfully initialized!" -ForegroundColor Green
+            } else {
+                Write-Host "[WARNING] mapping.json not found in $folderPath. Skipping automatic index creation." -ForegroundColor Yellow
+            }
+        }
+        catch {
+            Write-Host "[ERROR] Failed to initialize Elasticsearch index: $_" -ForegroundColor Red
+        }
+        finally {
+            # Altijd de achtergrond port-forward job netjes opruimen
+            Stop-Job $pfJob -ErrorAction SilentlyContinue
+            Remove-Job $pfJob -ErrorAction SilentlyContinue
+        }
+
         Write-Host "[SUCCESS] ElastisearchGeneric is deployed and ready!" -ForegroundColor Green
     }
-
 
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
