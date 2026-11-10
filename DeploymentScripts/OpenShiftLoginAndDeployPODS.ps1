@@ -927,100 +927,48 @@ if ($PODS -like "*ollama*") {
     }
 
 
-# --- STAGE 20 : EnterpriseSearch ---
-    if ($PODS -contains "EnterpriseSearch") {
-
-        $container   = "elasticsearchgeneric"
-        $localRepo   = "ils-" + $container
-        $remoteRepo = "ils-" + $container
-        $targetTag   = "latest"
+    # 6. Dynamisch de juiste ACTIEVE pod ophalen, mapping.json kopiëren en index initialiseren
+        Write-Host "[INFO] 7. Finding running pod and initializing Enterprise Search index..." -ForegroundColor Cyan
         
-        $folderPath = "D:\contAIn\OpenSourceJava\OpenShift\manifests\elasticsearchgeneric"
+        if (Test-Path $mappingPath) {
+            # Zoek uitsluitend een pod die daadwerkelijk in fase 'Running' is
+            $podName = (oc get pods -n $project -l app=elasticsearch --field-selector=status.phase=Running -o jsonpath="{.items[0].metadata.name}" 2>&1).Trim()
 
-        Write-Host "[INFO] Building fresh Docker image for ElastisearchGeneric..." -ForegroundColor Cyan
-        
-        docker build -t "$localRepo`:latest" $folderPath
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Docker build failed for ElastisearchGeneric!" -ForegroundColor Red
-            exit 1
-        }
-
-        # 2. Tag en push naar GitHub Packages (GHCR)
-        $localImage = "$localRepo`:latest"
-        $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
-
-        Write-Host "[INFO] Tagging local image to $ghcrImage..." -ForegroundColor Cyan
-        docker tag $localImage $ghcrImage
-
-        Write-Host "[INFO] Pushing fresh image to GitHub..." -ForegroundColor Green
-        docker push $ghcrImage
-
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Docker push failed for ElastisearchGeneric!" -ForegroundColor Red
-            exit 1
-        }
-        Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
-
-        # 3. OpenShift manifesten toepassen op basis van de losse bestanden in de map
-        Write-Host "[INFO] Applying OpenShift manifests (PVC, Deployment, Service) from folder..." -ForegroundColor Cyan
-        
-        oc apply -R -f $folderPath -n $project
-
-        # Forceer een rolling restart zodat OpenShift de nieuwe image direct ophaalt en ververst
-        Write-Host "[INFO] Forcing rollout restart to fetch latest image..." -ForegroundColor Cyan
-        oc rollout restart deployment/enterprise-elasticsearch -n $project
-
-        Write-Host "[INFO] Waiting for enterprise-elasticsearch pod to become ready..." -ForegroundColor Yellow
-        oc rollout status deployment/enterprise-elasticsearch -n $project --timeout=300s
-
-        # 4. Exposeer de service route correct op basis van de juiste servicenaam uit het service-bestand
-        $routeExists = oc get route elasticsearch-route -n $project --ignore-not-found
-        if (-not $routeExists) {
-            Write-Host "[INFO] Exposing enterprise-elasticsearch route..." -ForegroundColor Cyan
-            oc expose service enterprise-elasticsearch-svc --name=elasticsearch-route --port=9200 -n $project
-        }
-
-        # 5. Automatisch aanmaken van de uniforme index en mapping via een tijdelijke achtergrond port-forward
-        Write-Host "[INFO] Initializing Enterprise Search index and mapping..." -ForegroundColor Cyan
-
-        $pfJob = Start-Job -ScriptBlock {
-            param($proj)
-            oc port-forward svc/enterprise-elasticsearch-svc 9200:9200 -n $proj
-        } -ArgumentList $project
-
-        # Geef de port-forward enkele seconden de tijd om op te starten
-        Start-Sleep -Seconds 6
-
-        try {
-            $mappingPath = Join-Path $folderPath "mapping.json"
-            
-            if (Test-Path $mappingPath) {
-                Write-Host "[INFO] Applying mapping from $mappingPath..." -ForegroundColor Cyan
-                
-                # Stuur het bestand direct door naar Elasticsearch met authenticatie
-                $response = curl.exe -X PUT "http://localhost:9200/enterprise-search-index" `
-                    -H "Content-Type: application/json" `
-                    -u "elastic:admin" `
-                    --data "@$mappingPath"
-                
-                Write-Host "[SUCCESS] Index 'enterprise-search-index' successfully initialized!" -ForegroundColor Green
-            } else {
-                Write-Host "[WARNING] mapping.json not found in $folderPath. Skipping automatic index creation." -ForegroundColor Yellow
+            if (-not $podName -or $podName -like "Error*" -or $podName -eq "") {
+                Write-Host "ERROR: No running elasticsearch pod found!" -ForegroundColor Red
+                exit 1
             }
-        }
-        catch {
-            Write-Host "[ERROR] Failed to initialize Elasticsearch index: $_" -ForegroundColor Red
-        }
-        finally {
-            # Altijd de achtergrond port-forward job netjes opruimen
-            Stop-Job $pfJob -ErrorAction SilentlyContinue
-            Remove-Job $pfJob -ErrorAction SilentlyContinue
+
+            Write-Host "[INFO] Running target pod found: $podName. Copying mapping.json..." -ForegroundColor Cyan
+            
+            # Veilige opbouw van het doelpad voor oc cp
+            $destination = "$project/$podName" + ":/tmp/mapping.json"
+            oc cp $mappingPath $destination
+
+            # Voer de PUT uit in de actieve pod
+            $response = oc exec -i $podName -n $project -- curl -s -X PUT "http://localhost:9200/enterprise-search-index" `
+                -H "Content-Type: application/json" `
+                -u "elastic:admin" `
+                --data-binary "@/tmp/mapping.json"
+
+            Write-Host "[INFO] Elasticsearch Response: $response" -ForegroundColor Yellow
+            oc exec -it deployment/enterprise-elasticsearch -n contain-dvl -- curl -s -X GET "http://localhost:9200/enterprise-search-index?pretty" -u "elastic:admin"
+            oc exec -it deployment/enterprise-elasticsearch -n contain-dvl -- curl -s -X GET "http://localhost:9200/_cluster/health?pretty" -u "elastic:admin"
+            # Valideer of de index nu met HTTP 200 reageert
+            $httpCode = oc exec -i $podName -n $project -- curl -s -o /dev/null -w "%{http_code}" -X GET "http://localhost:9200/enterprise-search-index" -u "elastic:admin"
+
+            if ($httpCode -eq "200") {
+                Write-Host "[SUCCESS] Index 'enterprise-search-index' successfully initialized and verified!" -ForegroundColor Green
+            } else {
+                Write-Host "ERROR: Index creation failed! Elasticsearch returned HTTP status: $httpCode" -ForegroundColor Red
+                exit 1
+            }
+        } else {
+            Write-Host "[WARNING] mapping.json not found at $mappingPath. Skipping automatic index creation." -ForegroundColor Yellow
         }
 
-        Write-Host "[SUCCESS] ElastisearchGeneric is deployed and ready!" -ForegroundColor Green
-    }
 
+   
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 docker system prune -a --volumes --force
