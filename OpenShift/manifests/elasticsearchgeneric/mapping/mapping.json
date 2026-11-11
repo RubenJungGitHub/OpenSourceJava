@@ -1,5 +1,6 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0
@@ -15,10 +16,15 @@
       },
       "Classification": { "type": "keyword" },
 =======
+=======
+>>>>>>> 1bb1b046237dffac4476601d72e6307305603044
   "mappings": {
     "properties": {
       "id": { "type": "keyword" },
       "title": { "type": "text" },
+<<<<<<< HEAD
+>>>>>>> 1bb1b046237dffac4476601d72e6307305603044
+=======
 >>>>>>> 1bb1b046237dffac4476601d72e6307305603044
       "content": { "type": "text" },
       "source_system": { "type": "keyword" },

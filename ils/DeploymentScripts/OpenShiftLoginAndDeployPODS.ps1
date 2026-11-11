@@ -930,6 +930,7 @@ if ($PODS -like "*ollama*") {
         Write-Host "[SUCCESS] Zero-Shot Classifier is deployed and ready!" -ForegroundColor Green
     }
 
+<<<<<<< HEAD
     # --- STAGE 20 : EnterpriseSearch ---
     if ($PODS -contains "EnterpriseSearch" -or $PODS -contains "ElasticsearchGeneric") {
 
@@ -1043,6 +1044,51 @@ if ($PODS -like "*ollama*") {
 
         Write-Host "[SUCCESS] ElasticsearchGeneric is deployed, configured and ready!" -ForegroundColor Green
     }
+=======
+
+    # 6. Dynamisch de juiste ACTIEVE pod ophalen, mapping.json kopiëren en index initialiseren
+        Write-Host "[INFO] 7. Finding running pod and initializing Enterprise Search index..." -ForegroundColor Cyan
+        
+        if (Test-Path $mappingPath) {
+            # Zoek uitsluitend een pod die daadwerkelijk in fase 'Running' is
+            $podName = (oc get pods -n $project -l app=elasticsearch --field-selector=status.phase=Running -o jsonpath="{.items[0].metadata.name}" 2>&1).Trim()
+
+            if (-not $podName -or $podName -like "Error*" -or $podName -eq "") {
+                Write-Host "ERROR: No running elasticsearch pod found!" -ForegroundColor Red
+                exit 1
+            }
+
+            Write-Host "[INFO] Running target pod found: $podName. Copying mapping.json..." -ForegroundColor Cyan
+            
+            # Veilige opbouw van het doelpad voor oc cp
+            $destination = "$project/$podName" + ":/tmp/mapping.json"
+            oc cp $mappingPath $destination
+
+            # Voer de PUT uit in de actieve pod
+            $response = oc exec -i $podName -n $project -- curl -s -X PUT "http://localhost:9200/enterprise-search-index" `
+                -H "Content-Type: application/json" `
+                -u "elastic:admin" `
+                --data-binary "@/tmp/mapping.json"
+
+            Write-Host "[INFO] Elasticsearch Response: $response" -ForegroundColor Yellow
+            oc exec -it deployment/enterprise-elasticsearch -n contain-dvl -- curl -s -X GET "http://localhost:9200/enterprise-search-index?pretty" -u "elastic:admin"
+            oc exec -it deployment/enterprise-elasticsearch -n contain-dvl -- curl -s -X GET "http://localhost:9200/_cluster/health?pretty" -u "elastic:admin"
+            # Valideer of de index nu met HTTP 200 reageert
+            $httpCode = oc exec -i $podName -n $project -- curl -s -o /dev/null -w "%{http_code}" -X GET "http://localhost:9200/enterprise-search-index" -u "elastic:admin"
+
+            if ($httpCode -eq "200") {
+                Write-Host "[SUCCESS] Index 'enterprise-search-index' successfully initialized and verified!" -ForegroundColor Green
+            } else {
+                Write-Host "ERROR: Index creation failed! Elasticsearch returned HTTP status: $httpCode" -ForegroundColor Red
+                exit 1
+            }
+        } else {
+            Write-Host "[WARNING] mapping.json not found at $mappingPath. Skipping automatic index creation." -ForegroundColor Yellow
+        }
+
+
+   
+>>>>>>> 1bb1b046237dffac4476601d72e6307305603044
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 docker system prune -a --volumes --force
