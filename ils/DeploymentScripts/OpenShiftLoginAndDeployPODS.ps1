@@ -1,5 +1,5 @@
-﻿$quayUser = $env:QUAI_USER
-$quayPass = $env:QUAI_PASS
+﻿$quayUser = $env:QUAY_USER
+$quayPass = $env:QUAY_PASS
 
 
 
@@ -930,7 +930,6 @@ if ($PODS -like "*ollama*") {
         Write-Host "[SUCCESS] Zero-Shot Classifier is deployed and ready!" -ForegroundColor Green
     }
 
-<<<<<<< HEAD
     # --- STAGE 20 : EnterpriseSearch ---
     if ($PODS -contains "EnterpriseSearch" -or $PODS -contains "ElasticsearchGeneric") {
 
@@ -1044,7 +1043,6 @@ if ($PODS -like "*ollama*") {
 
         Write-Host "[SUCCESS] ElasticsearchGeneric is deployed, configured and ready!" -ForegroundColor Green
     }
-=======
 
     # 6. Dynamisch de juiste ACTIEVE pod ophalen, mapping.json kopiëren en index initialiseren
         Write-Host "[INFO] 7. Finding running pod and initializing Enterprise Search index..." -ForegroundColor Cyan
@@ -1088,7 +1086,6 @@ if ($PODS -like "*ollama*") {
 
 
    
->>>>>>> 1bb1b046237dffac4476601d72e6307305603044
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 docker system prune -a --volumes --force
