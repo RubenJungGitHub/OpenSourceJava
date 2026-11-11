@@ -1,5 +1,5 @@
 ﻿
-$token  = 'sha256~KFsYsjQugm1SdfM6ged-vm3Q2l7SejAW-kMP0xgYn-M'
+$token  = 'sha256~L--lIAHE0w5pNaDakG2-O2mUuaNk1MDWmCXiYASi_Cw'
 $server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
 # ==========================================
 # STAGE 0: Login to OpenShift & Setup Secret
@@ -173,3 +173,18 @@ oc port-forward svc/elasticsearch 9201:9200
 Invoke-RestMethod -Uri "http://localhost:9200/_cluster/health?pretty" -Method Get
 Invoke-RestMethod -Uri "http://localhost:9200/_cat/indices?v" -Method Get
 Invoke-RestMethod -Uri "http://localhost:9200/alfresco/_settings" -Method Put -Body '{"index" : {"number_of_replicas" : 0}}' -ContentType "application/json"
+
+
+
+
+
+#DELETE PODS
+oc delete deployment enterprise-elasticsearch -n contain-dvl
+
+
+
+
+#Check ElasticEnterprise
+cls
+oc exec -it enterprise-elasticsearch-84ccfd5f74-fpfnm -- curl -u elastic:admin -X GET "http://localhost:9200/_cat/indices?v"
+oc exec -it enterprise-elasticsearch-84ccfd5f74-fpfnm -- curl -u elastic:admin -X GET "http://localhost:9200/enterprise-search-index/_search?pretty"

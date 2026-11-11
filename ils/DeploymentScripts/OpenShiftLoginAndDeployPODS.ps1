@@ -1,20 +1,17 @@
-﻿$quayUser = "alfresco+partner_hsi37983_atos_nederland_bv"
-$quayPass = "CA2YQB59N337ZN642NHK6QO3ZJV04JOL7JOC3C0HB6UCVXP10E94C9TWF18UQI8G"
+﻿$quayUser = $env:QUAI_USER
+$quayPass = $env:QUAI_PASS
 
 
 
 #------------------------------------------------------------------
-$token  = 'sha256~OMF-9jyuMW3CarKhT0F0rpwtZGtsBRNtkoVH0410hPg'
+$token  = $env:OPENSHIFT_TOKEN
 
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"
 
 $localTag   = "latest"               # Local Docker tag
-$ghUser     = "RubenJungGitHub"      # Your GitHub username
-
-# IMPORTANT: Replace with your actual Classic Personal Access Token (ghp_...)
-$githubToken = "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" 
-
+$ghUser     = "RubenJungGitHub"    
+$githubToken = $env:GITHUB_TOKEN
 
 cls
 # 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
@@ -23,6 +20,14 @@ oc login --token=$token --server=$server
 
 Write-Host "[INFO] Logging into Quay.io..." -ForegroundColor Cyan
 $quayPass | docker login quay.io -u $quayUser --password-stdin
+
+Write-Host "[INFO] Logging into GitHub Container Registry (ghcr.io)..." -ForegroundColor Cyan
+$githubToken | docker login ghcr.io -u $ghUser --password-stdin
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Docker login op ghcr.io mislukt!" -ForegroundColor Red
+    exit 1
+}
 
 # 2. Create/update OpenShift image pull secret
 Write-Host "[INFO] Creating/updating OpenShift image pull secret..." -ForegroundColor Cyan
@@ -44,8 +49,7 @@ $PODS = @(
     #"Postgres",
     #"Alfresconew"
     #-------------------------------------------
-    #"ALfrescoupdate"
-    #"ActiveMQ"
+    #"ALfrescoupdate"    #"ActiveMQ"
     #"Routes"
     #"Ollama"
     #"AlfrescoQueuePoller"
@@ -63,7 +67,7 @@ $PODS = @(
     #'TaxonomyService'
     #'TaxonomyCacher'
     #"ZeroShotClassifier"
-    "ElastisearchGeneric"
+    "EnterpriseSearch"
 )
 
 #First start Desktop if not running
@@ -925,26 +929,36 @@ if ($PODS -like "*ollama*") {
 
         Write-Host "[SUCCESS] Zero-Shot Classifier is deployed and ready!" -ForegroundColor Green
     }
-    # --- STAGE 20 : ElastisearchGeneric ---
-    if ($PODS -contains "ElastisearchGeneric") {
 
-        $container   = "elasticsearchgeneric"
-        $localRepo   = "ils-" + $container
+    # --- STAGE 20 : EnterpriseSearch ---
+    if ($PODS -contains "EnterpriseSearch" -or $PODS -contains "ElasticsearchGeneric") {
+
+        $container  = "elasticsearchgeneric"
+        $localRepo  = "ils-" + $container
         $remoteRepo = "ils-" + $container
-        $targetTag   = "latest"
-        
+        $targetTag  = "v1.0"
+    
         $folderPath = "D:\contAIn\OpenSourceJava\OpenShift\manifests\elasticsearchgeneric"
+        $mappingPath = Join-Path $folderPath "mapping\mappings.json"
 
-        Write-Host "[INFO] Building fresh Docker image for ElastisearchGeneric..." -ForegroundColor Cyan
-        
+        Write-Host "[INFO] Building fresh Docker image for ElasticsearchGeneric..." -ForegroundColor Cyan
         docker build -t "$localRepo`:latest" $folderPath
 
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Docker build failed for ElastisearchGeneric!" -ForegroundColor Red
+            Write-Host "ERROR: Docker build failed for ElasticsearchGeneric!" -ForegroundColor Red
             exit 1
         }
 
-        # 2. Tag en push naar GitHub Packages (GHCR)
+        # 2. Log expliciet in op GHCR om 'denied' fouten te voorkomen
+        Write-Host "[INFO] Logging into GitHub Container Registry (GHCR)..." -ForegroundColor Cyan
+        $githubToken | docker login ghcr.io -u $ghUser --password-stdin
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Docker login for GHCR failed!" -ForegroundColor Red
+            exit 1
+        }
+
+        # Tag en push naar GitHub Packages (GHCR)
         $localImage = "$localRepo`:latest"
         $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
 
@@ -955,31 +969,80 @@ if ($PODS -like "*ollama*") {
         docker push $ghcrImage
 
         if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Docker push failed for ElastisearchGeneric!" -ForegroundColor Red
+            Write-Host "ERROR: Docker push failed for ElasticsearchGeneric!" -ForegroundColor Red
             exit 1
         }
         Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
 
-        # 3. OpenShift manifesten toepassen op basis van de losse bestanden in de map
-        Write-Host "[INFO] Applying OpenShift manifests (PVC, Deployment, Service) from folder..." -ForegroundColor Cyan
-        
-        # -R leest alle losse yaml-bestanden uit de map (pvc, deployment, service)
+        # OpenShift implementatie en index initialisatie
+        Write-Host "[INFO] Starting recreation of ElasticsearchGeneric in OpenShift..." -ForegroundColor Cyan
+        oc delete -R -f $folderPath -n $project --ignore-not-found --wait=false
         oc apply -R -f $folderPath -n $project
 
         Write-Host "[INFO] Waiting for enterprise-elasticsearch pod to become ready..." -ForegroundColor Yellow
         oc rollout status deployment/enterprise-elasticsearch -n $project --timeout=300s
 
-        # 4. Exposeer de service route correct op basis van de juiste servicenaam uit het service-bestand
         $routeExists = oc get route elasticsearch-route -n $project --ignore-not-found
         if (-not $routeExists) {
             Write-Host "[INFO] Exposing enterprise-elasticsearch route..." -ForegroundColor Cyan
-            oc expose service enterprise-elasticsearch-svc --name=elasticsearch-route --port=9200 -n $project
+            oc expose service elasticsearch-svc --name=elasticsearch-route --port=9200 -n $project
         }
 
-        Write-Host "[SUCCESS] ElastisearchGeneric is deployed and ready!" -ForegroundColor Green
+        # Wacht op API en initialiseer mapping
+        Write-Host "[INFO] Waiting for Elasticsearch API to respond..." -ForegroundColor Cyan
+        $indexName = "enterprise-search-index"
+        $maxRetries = 30
+        $retryCount = 0
+        $elasticsearchUrl = "http://elasticsearch-route-$project.apps.cluster-domain.com"
+        
+        do {
+            Start-Sleep -Seconds 5
+            $retryCount++
+            try {
+                $response = Invoke-RestMethod -Uri "$elasticsearchUrl/_cluster/health" -Method Get -ErrorAction Stop
+                if ($response.status -eq "green" -or $response.status -eq "yellow") {
+                    Write-Host "[SUCCESS] Elasticsearch is online!" -ForegroundColor Green
+                    break
+                }
+            } catch {
+                Write-Host "[INFO] Waiting for Elasticsearch to accept connections (attempt $retryCount/$maxRetries)..." -ForegroundColor Yellow
+            }
+        } while ($retryCount -lt $maxRetries)
+
+        if (Test-Path $mappingPath) {
+            $podName = (oc get pods -n $project -l app=enterprise-elasticsearch --field-selector=status.phase=Running -o jsonpath="{.items[0].metadata.name}" 2>&1).Trim()
+
+            if (-not $podName -or $podName -like "Error*" -or $podName -eq "") {
+                $podName = (oc get pods -n $project -l app=elasticsearch --field-selector=status.phase=Running -o jsonpath="{.items[0].metadata.name}" 2>&1).Trim()
+            }
+
+            if (-not $podName -or $podName -like "Error*" -or $podName -eq "") {
+                Write-Host "ERROR: No running elasticsearch pod found!" -ForegroundColor Red
+                exit 1
+            }
+
+            $destination = "$project/$podName" + ":/tmp/mapping.json"
+            oc cp $mappingPath $destination
+
+            $response = oc exec -i $podName -n $project -- curl -s -X PUT "http://localhost:9200/$indexName" `
+                -H "Content-Type: application/json" `
+                -u "elastic:admin" `
+                --data-binary "@/tmp/mapping.json"
+
+            $httpCode = oc exec -i $podName -n $project -- curl -s -o /dev/null -w "%{http_code}" -X GET "http://localhost:9200/$indexName" -u "elastic:admin"
+
+            if ($httpCode -eq "200") {
+                Write-Host "[SUCCESS] Index '$indexName' successfully initialized and verified!" -ForegroundColor Green
+            } else {
+                Write-Host "ERROR: Index creation failed! Elasticsearch returned HTTP status: $httpCode" -ForegroundColor Red
+                exit 1
+            }
+        } else {
+            Write-Host "[WARNING] mapping.json not found at $mappingPath. Skipping automatic index creation." -ForegroundColor Yellow
+        }
+
+        Write-Host "[SUCCESS] ElasticsearchGeneric is deployed, configured and ready!" -ForegroundColor Green
     }
-
-
 
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 docker system prune -a --volumes --force

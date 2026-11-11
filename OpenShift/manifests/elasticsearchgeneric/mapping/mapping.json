@@ -1,0 +1,31 @@
+{
+<<<<<<< HEAD
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "properties": {
+      "id": { "type": "keyword" },
+      "Title": { 
+        "type": "text",
+        "fields": {
+          "keyword": { "type": "keyword", "ignore_above": 256 }
+        }
+      },
+      "Classification": { "type": "keyword" },
+=======
+  "mappings": {
+    "properties": {
+      "id": { "type": "keyword" },
+      "title": { "type": "text" },
+>>>>>>> 1bb1b046237dffac4476601d72e6307305603044
+      "content": { "type": "text" },
+      "source_system": { "type": "keyword" },
+      "file_type": { "type": "keyword" },
+      "url": { "type": "keyword" },
+      "created_date": { "type": "date" },
+      "access_control": { "type": "keyword" }
+    }
+  }
+}
