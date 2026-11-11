@@ -1,5 +1,6 @@
 ﻿
-$token  = 'sha256~L--lIAHE0w5pNaDakG2-O2mUuaNk1MDWmCXiYASi_Cw'
+#------------------------------------------------------------------
+$token  = $env:OPENSHIFT_TOKEN
 $server      = 'https://api.ocp0.anders-nogic.atos.net:6443'
 # ==========================================
 # STAGE 0: Login to OpenShift & Setup Secret
