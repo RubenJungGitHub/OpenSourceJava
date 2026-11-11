@@ -1,5 +1,6 @@
 ﻿# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
-$token  = 'sha256~OMF-9jyuMW3CarKhT0F0rpwtZGtsBRNtkoVH0410hPg'
+$token  = 'sha256~L--lIAHE0w5pNaDakG2-O2mUuaNk1MDWmCXiYASi_Cw'
+
 
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
 $project = "contain-dvl"

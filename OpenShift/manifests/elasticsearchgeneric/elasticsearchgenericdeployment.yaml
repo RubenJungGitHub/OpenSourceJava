@@ -5,7 +5,6 @@ metadata:
   namespace: contain-dvl
   labels:
     app: elasticsearch
-    Search: ""
 spec:
   replicas: 1
   selector:
@@ -15,14 +14,12 @@ spec:
     metadata:
       labels:
         app: elasticsearch
-        Search: ""
     spec:
       imagePullSecrets:
         - name: containgithubrepos
       containers:
         - name: elasticsearch
           image: ghcr.io/rubenjunggithub/ils-elasticsearchgeneric:latest
-          imagePullPolicy: Always
           resources:
             limits:
               memory: "4Gi"
@@ -34,7 +31,7 @@ spec:
             - name: discovery.type
               value: "single-node"
             - name: ELASTIC_PASSWORD
-              value: "admin"
+              value: "admin"  # Of het wachtwoord dat jouw andere services gebruiken
             - name: xpack.security.enabled
               value: "true"
             - name: "ES_JAVA_OPTS"
