@@ -20,7 +20,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: "sp"
             - name: SPRING_ELASTICSEARCH_URIS
-              value: "http://elasticsearch-service:9200" 
+              value: "http://enterprise-elasticsearch-svc:9200" 
             - name: SHAREPOINT_CLIENT_ID
               value: "f590b477-5bd7-47d6-8bda-36f77fa10afd"
             - name: SHAREPOINT_CLIENT_SECRET
