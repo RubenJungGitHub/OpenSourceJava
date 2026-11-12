@@ -67,6 +67,7 @@ $PODS = @(
     #'TaxonomyService'
     #'TaxonomyCacher'
     #"ZeroShotClassifier"
+    #"ElasticGeneric"
     "EnterpriseSearch"
 )
 
@@ -930,8 +931,8 @@ if ($PODS -like "*ollama*") {
         Write-Host "[SUCCESS] Zero-Shot Classifier is deployed and ready!" -ForegroundColor Green
     }
 
-# --- STAGE 20 : EnterpriseSearch ---
-if ($PODS -contains "EnterpriseSearch" -or $PODS -contains "ElasticsearchGeneric") {
+# --- STAGE 20 : ElasticGeneric ---
+if ($PODS -contains "ElasticGeneric" -or $PODS -contains "ElasticsearchGeneric") {
 
     $container   = "elasticsearchgeneric"
     $localRepo   = "ils-" + $container
@@ -1065,8 +1066,111 @@ if ($PODS -contains "EnterpriseSearch" -or $PODS -contains "ElasticsearchGeneric
 
     Write-Host "[SUCCESS] ElasticsearchGeneric is deployed, configured and ready!" -ForegroundColor Green
 }
-   
+# --- STAGE 21: Enterprise Search Portal ---
+if ($PODS -contains "EnterpriseSearch") {
+    $container  = "enterprise-search"
+    $localRepo  = "enterprise-search"  
+    $remoteRepo = "enterprise-search"  
+    $localTag   = "latest"
+    $targetTag  = "latest"
+    $projectDir = "D:\contAIn\elassticenterprisesearch"
 
+    Write-Host "[INFO] Vrijmaken van eventuele actieve lock-bestanden..." -ForegroundColor Cyan
+    Get-Process -Name "java" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
+
+    # ==========================================
+    # 0. MAVEN BUILD (Expliciet in de projectmap)
+    # ==========================================
+    Write-Host "[INFO] Running mvn clean package in $projectDir..." -ForegroundColor Cyan
+    Push-Location $projectDir
+    try {
+        mvn clean package -DskipTests
+    } finally {
+        Pop-Location
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Maven build for Enterprise Search failed!" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "[SUCCESS] Maven build completed successfully!" -ForegroundColor Green
+
+    # ==========================================
+    # 1. BUILD FRESH DOCKER IMAGE LOCALLY 
+    # ==========================================
+    Write-Host "[INFO] Building Docker image for Enterprise Search from $projectDir..." -ForegroundColor Cyan
+
+    $oldPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+
+    try {
+        $env:DOCKER_BUILDKIT = "1"
+        $env:COMPOSE_DOCKER_CLI_BUILD = "1"
+
+        # Gebruik cmd /c om te voorkomen dat stderr van Docker BuildKit een PowerShell exception triggert
+        cmd /c "docker build -t `"$localRepo`:$localTag`" `"$projectDir`""
+    } finally {
+        $ErrorActionPreference = $oldPreference
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker build for Enterprise Search failed!" -ForegroundColor Red
+        exit 1
+    }
+
+    $localImage = "$localRepo`:$localTag"
+    $ghcrImage  = "ghcr.io/$($ghUser.ToLower())/$($remoteRepo.ToLower()):$targetTag"
+
+    Write-Host "[INFO] Tagging local image to $ghcrImage..." -ForegroundColor Cyan
+    docker tag $localImage $ghcrImage
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker tag failed!" -ForegroundColor Red
+        exit 1
+    }
+
+    # ==========================================
+    # 2. PUSH TO GITHUB CONTAINER REGISTRY (GHCR)
+    # ==========================================
+    Write-Host "[INFO] Pushing fresh image to GitHub Container Registry..." -ForegroundColor Green
+    docker push $ghcrImage
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Docker push failed! Controleer of je bent ingelogd op ghcr.io." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "[SUCCESS] Image successfully pushed to GHCR: $ghcrImage" -ForegroundColor Green
+
+    # ==========================================
+    # 3. DEPLOY VIA OPENSHIFT MANIFESTS & ROLLOUT
+    # ==========================================
+    $folder = 'D:\contAIn\OpenSourceJava\OpenShift\manifests\EnterpriseSearch\' 
+    Write-Host "[INFO] Starting update of EnterpriseSearch pod..." -ForegroundColor Cyan
+    
+    $global:ErrorActionPreference = "Continue"
+    
+    # 1. Pas de manifests toe (inclusief ImageStream en DeploymentConfig)
+    oc apply -R -f $folder -n $project
+
+    # 2. Forceer het importeren van de GHCR image zodat OpenShift deze direct 'resolved'
+    Write-Host "[INFO] Importing latest image from GHCR into OpenShift ImageStream..." -ForegroundColor Yellow
+    oc import-image enterprise-search:latest --from=$ghcrImage --confirm -n $project
+
+    # 3. Geef OpenShift een moment om de image-metadata te verwerken
+    Start-Sleep -Seconds 3
+
+    # 4. Trigger de rollout
+    Write-Host "[INFO] Triggering new deployment rollout..." -ForegroundColor Yellow
+    oc rollout latest dc/enterprise-search -n $project
+
+    # 5. Wacht tot de pod daadwerkelijk draait
+    Write-Host "[INFO] Waiting for EnterpriseSearch pod to be ready..." -ForegroundColor Yellow
+    oc rollout status dc/enterprise-search -n $project --timeout=180s
+
+    $global:ErrorActionPreference = "Stop"
+    Write-Host "[SUCCESS] Enterprise Search is succesvol gedeployd!" -ForegroundColor Green
+}
 oc delete pod --field-selector=status.phase==Succeeded -n contain-dvl
 docker system prune -a --volumes --force
 

@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    io.kompose.service: enterprise-search
+  name: enterprise-search
+spec:
+  to:
+    kind: Service
+    name: enterprise-search
+    weight: 100
+  port:
+    targetPort: "5004"
+  wildcardPolicy: None

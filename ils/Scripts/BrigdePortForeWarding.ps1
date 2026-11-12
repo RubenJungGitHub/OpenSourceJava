@@ -1,5 +1,5 @@
 ﻿# 1. Log into OpenShift FIRST so all subsequent 'oc' commands target the correct cluster and context
-$token  = 'sha256~L--lIAHE0w5pNaDakG2-O2mUuaNk1MDWmCXiYASi_Cw'
+$token  = $env:OPENSHIFT_TOKEN
 
 
 $server = 'https://api.ocp0.anders-nogic.atos.net:6443'
@@ -27,7 +27,7 @@ function EnablePortFirst{
 $portForwards = @(
     @{ Resource = "svc/mongodb";             LocalPort = 27017; RemotePort = 27017; Namespace = "contain-dvl" },
     @{ Resource = "svc/taxonomyservice";     LocalPort = 53000; RemotePort = 53000; Namespace = "contain-dvl" },
-    @{ Resource = "svc/enterprise-elasticsearch-svc"; LocalPort = 9200;  RemotePort = 9200;  Namespace = "contain-dvl" }, # Elastic
+    @{ Resource = "svc/enterprise-elasticsearch-svc"; LocalPort = 5004;  RemotePort = 5004;  Namespace = "contain-dvl" }, # Elastic
     @{ Resource = "svc/notificationservice"; LocalPort = 5001;  RemotePort = 5001;  Namespace = "contain-dvl" },
     @{ Resource = "svc/kie-server";          LocalPort = 8080;  RemotePort = 8080;  Namespace = "contain-dvl" },
     @{ Resource = "service/postgres";        LocalPort = 5432;  RemotePort = 5432;  Namespace = "contain-dvl" }

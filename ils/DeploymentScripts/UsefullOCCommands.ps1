@@ -187,5 +187,6 @@ oc delete deployment enterprise-elasticsearch -n contain-dvl
 
 #Check ElasticEnterprise
 cls
-oc exec -it enterprise-elasticsearch-84ccfd5f74-fpfnm -- curl -u elastic:admin -X GET "http://localhost:9200/_cat/indices?v"
-oc exec -it enterprise-elasticsearch-84ccfd5f74-fpfnm -- curl -u elastic:admin -X GET "http://localhost:9200/enterprise-search-index/_search?pretty"
+$Pod = "enterprise-elasticsearch-7f699bbc78-9hfhs"
+oc exec -it $Pod -- curl -u elastic:admin -X GET "http://localhost:9200/_cat/indices?v"
+oc exec -it $Pod -- curl -u elastic:admin -X GET "http://localhost:9200/enterprise-search-index/_search?pretty"

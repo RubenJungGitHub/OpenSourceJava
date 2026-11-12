@@ -1,0 +1,47 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    io.kompose.service: enterprise-search
+  name: enterprise-search
+spec:
+  replicas: 1
+  selector:
+    io.kompose.service: enterprise-search
+  template:
+    metadata:
+      labels:
+        io.kompose.service: enterprise-search
+    spec:
+      imagePullSecrets:
+        - name: containgithubrepos
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "sp"
+            - name: SPRING_ELASTICSEARCH_URIS
+              value: "http://elasticsearch-service:9200" 
+            - name: SHAREPOINT_CLIENT_ID
+              value: "f590b477-5bd7-47d6-8bda-36f77fa10afd"
+            - name: SHAREPOINT_CLIENT_SECRET
+              value: "pE.8Q~ZQRGngJ1YliTP4EDC5bejaEl72LlBAzb50"
+            - name: SHAREPOINT_TENANT_ID
+              value: "9a1b5f77-1f1a-40ac-b1a1-38617300f02a"
+          image: 'ghcr.io/rubenjunggithub/enterprise-search:latest'
+          imagePullPolicy: Always
+          name: enterprise-search
+          ports:
+            - containerPort: 5004
+              protocol: TCP
+      restartPolicy: Always
+  test: false
+  triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - enterprise-search
+        from:
+          kind: ImageStreamTag
+          name: enterprise-search:latest
+      type: ImageChange
